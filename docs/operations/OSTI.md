@@ -26,9 +26,13 @@ Curl will return either success or failure.  An email will sent with the status.
  
 # Email 
 
-Ask Steph to update the email distribution list.
+The emails related to test server submission are sent to pdsen-doi-test@jpl.nasa.gov
 
-We might also consider giving them separate credentials so that we all don’t get overrun by emails.
+The emails related to production server submission are sent to pdsen-doi-prod@jpl.nasa.gov
+
+Both email lists are managed as jpl groups, see https://dir.jpl.nasa.gov/groups/index.cgi.
+
+The contact at OSTI is:
 
 **Contact:** 
 
