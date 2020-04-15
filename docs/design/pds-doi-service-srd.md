@@ -50,31 +50,8 @@ TBD
 TBD
 
 ### Level 5 Requirements
-The level 5 requirements in PDS represent subsystem or componentrequirements at a detailed level. The following requirements pertain to this service:
-
-### DOI Management
-| ID | Requirement | Notes |
-| -- | ----------- | ----------- |
-| DOI.DRAFT | The software shall be capable of accepting a request to create a draft DOI. | |
-| DOI.RESER | The software shall be capable of accepting a request to reserve a DOI. | |
-| DOI.RELEA | The software shall be capable of accepting a request to release a DOI. | |
-| DOI.DELET | The software shall be capable of accepting a request to delete a DOI. | |
-| DOI.UPDAT | The software shall be capable of accepting a request to update DOI metadata. | |
-| DOI.BATCH | The software shall be capable of batch processing >1 DOI requests. | |
-
-### DOI Metadata
-| ID | Requirement | Notes |
-| -- | ----------- | ----------- |
-| DOI.CREATE | The software shall be capable of autonomously generating the minimum set of DOI metadata from PDS4 Collection, Bundle, Document products. | |
-| DOI.VALIN | The software shall validate a minimum set of metadata is provided when reserving, releasing, or updating a DOI. This minimum set of metadata will be defined by the PDS DOI Working Group. | | 
-| DOI.VALOUT | The software shall validate the DOI metadata meets  is provided when reserving, releasing, or updating a DOI. | |
-
-### DOI Interface Support
-| ID | Requirement | Notes |
-| -- | ----------- | ----------- |
-| DOI.TRACK | The software shall maintain a database of PDS DOIs and their current state. | Related to Tracking Service. |
-| DOI.OSTI | The software shall maintain the ability to manage DOIs through [OSTI](https://www.osti.gov/iad2/docs) | Should support OSTI originally, but provide the ability to switch to DataCite (or other interface) in the future. |
-| DOI.DCITE | The software shall maintain the ability to manage DOIs through  [DataCite](https://support.datacite.org/docs/api). | In the future. |
+The level 5 requirements in PDS are documented as github actions:
+https://github.com/NASA-PDS-Incubator/pds-doi-service/issues?q=is%3Aissue+label%3Arequirement
 
 ---
 
