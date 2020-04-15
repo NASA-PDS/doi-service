@@ -20,9 +20,9 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml label is validated for DOI production')
 
 
-@then(u'OSTI DOI label is created like tests/data/valid_bundle_doi.xml')
+@then(u'OSTI DOI label is created like test/data/valid_bundle_doi.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like tests/data/valid_bundle_doi.xml')
+    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like test/data/valid_bundle_doi.xml')
 
 
 @then(u'The OSTI DOI label is valid')
@@ -35,9 +35,9 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml label is validated for DOI production')
 
 
-@then(u'OSTI DOI label is created like tests/data/valid_datacoll_doi.xml')
+@then(u'OSTI DOI label is created like test/data/valid_datacoll_doi.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like tests/data/valid_datacoll_doi.xml')
+    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like test/data/valid_datacoll_doi.xml')
 
 
 @then(u'PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml label is validated for DOI production')
@@ -45,9 +45,9 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml label is validated for DOI production')
 
 
-@then(u'OSTI DOI label is created like tests/data/valid_browsecoll_doi.xml')
+@then(u'OSTI DOI label is created like test/data/valid_browsecoll_doi.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like tests/data/valid_browsecoll_doi.xml')
+    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like test/data/valid_browsecoll_doi.xml')
 
 
 @then(u'PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml label is validated for DOI production')
@@ -55,9 +55,9 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml label is validated for DOI production')
 
 
-@then(u'OSTI DOI label is created like tests/data/valid_calibcoll_doi.xml')
+@then(u'OSTI DOI label is created like test/data/valid_calibcoll_doi.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like tests/data/valid_calibcoll_doi.xml')
+    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like test/data/valid_calibcoll_doi.xml')
 
 
 @then(u'PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml label is validated for DOI production')
@@ -65,19 +65,19 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then PDS4 https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml label is validated for DOI production')
 
 
-@then(u'OSTI DOI label is created like tests/data/valid_docucoll_doi.xml')
+@then(u'OSTI DOI label is created like test/data/valid_docucoll_doi.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like tests/data/valid_docucoll_doi.xml')
+    raise NotImplementedError(u'STEP: Then OSTI DOI label is created like test/data/valid_docucoll_doi.xml')
 
 
-@given(u'an invalid PDS4 bundle at tests/data/invalid_bundle.xml')
+@given(u'an invalid PDS4 bundle at test/data/invalid_bundle.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Given an invalid PDS4 bundle at tests/data/invalid_bundle.xml')
+    raise NotImplementedError(u'STEP: Given an invalid PDS4 bundle at test/data/invalid_bundle.xml')
 
 
-@then(u'an error report is generated as tests/data/error_report.txt')
+@then(u'an error report is generated as test/data/error_report.txt')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then an error report is generated as tests/data/error_report.txt')
+    raise NotImplementedError(u'STEP: Then an error report is generated as test/data/error_report.txt')
 
 
 @when(u'reserve DOI in OSTI format')
@@ -95,9 +95,9 @@ def step_impl(context):
     raise NotImplementedError(u'STEP: Then The OSTI DOI is submitted to the OSTI server')
 
 
-@given(u'an invalid PDS4 bundle label at url tests/data/invalid_bundle.xml')
+@given(u'an invalid PDS4 bundle label at url test/data/invalid_bundle.xml')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Given an invalid PDS4 bundle label at url tests/data/invalid_bundle.xml')
+    raise NotImplementedError(u'STEP: Given an invalid PDS4 bundle label at url test/data/invalid_bundle.xml')
 
 
 @then(u'an error report is generated')
