@@ -1387,6 +1387,7 @@ class DOICoreServices:
         if m_debug_mode:
             print(function_name,"target_url",target_url);
 
+        # Get the default configuration from external file.  Location may have to be absolute.
         xmlConfigFile = '.' + os.path.sep + 'config' + os.path.sep + 'default_config.xml';
         dict_configList = {}                                                                                                            
         dict_fixedList  = {}
@@ -1529,6 +1530,43 @@ class DOICoreServices:
         # end for elem1 in appt.getchildren():
         # end for appt in root.getchildren():
         return(1);
+
+    def CreateDOILabel(self,target_url,contributor_value):
+        function_name = 'CreateDOILabel:';
+        global m_debug_mode
+        o_doi_label = None;
+
+        action_type = 'create_osti_label';
+        publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE;
+        o_contributor_is_valid_flag = False;
+
+        (o_contributor_is_valid_flag,o_permissible_contributor_list) = self.ValidateContributorValue(DOI_CORE_CONST_PUBLISHER_URL,contributor_value);
+        if (not o_contributor_is_valid_flag):
+            print(function_name,"ERROR: The value of given contributor is not valid:",contributor_value);
+            print(function_name,"permissible_contributor_list",o_permissible_contributor_list);
+            exit(0);
+
+        #exit(0);
+        type_is_valid = False;
+        o_doi_label = 'invalid action type:action_type ' + action_type;
+
+        if action_type == 'create_osti_label':
+            #print(function_name,"target_url.startswith('http')",target_url.startswith('http'));
+            if target_url.startswith('http'):
+                o_doi_label = self.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value);
+                type_is_valid = True;
+
+        if not type_is_valid:
+            print(function_name,"ERROR:",o_doi_label);
+            print(function_name,"action_type",action_type);
+            print(function_name,"target_url",target_url);
+            exit(0);
+
+        if m_debug_mode:
+           print(function_name,"o_doi_label",o_doi_label.decode());
+           print(function_name,"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY",target_index,target_url);
+
+        return(o_doi_label);
         
 #------------------------------
 #------------------------------
@@ -1572,6 +1610,12 @@ if __name__ == '__main__':
         print(function_name,"publisher_value",publisher_value);
         print(function_name,"target_url",target_url);
         print(function_name,"contributor_value",contributor_value);
+
+    doiCoreServices = DOICoreServices();
+    o_doi_label = doiCoreServices.CreateDOILabel(target_url,contributor_value);
+    print(o_doi_label.decode());
+    exit(0);
+    #return(1);
 
     #prodDate = '2019-01-01';
     #doi_date = ReturnDOIDate(f_debug, debug_flag, prodDate);
