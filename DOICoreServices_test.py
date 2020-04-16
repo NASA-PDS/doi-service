@@ -146,7 +146,7 @@ if __name__ == '__main__':
 # First time:
 # cd ~/sandbox/pds-doi-service
 # pip install virtualenv
-# pip install -r requirements_2.txt
+# pip install -r requirements.txt
 # python3 -m venv venv
 # source venv/bin/activate
 # python3 doi_core.py "./" -f aaaConfig_IAD2_IMG_InSight_20191216.xml
@@ -156,7 +156,7 @@ if __name__ == '__main__':
 # python3 doi_core.py create_osti_label 'PDS Cartography and Imaging Sciences Discipline (IMG) Node' 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
 
 # Unit test
-# python3 DOICoreServices.py create_osti_label 'Cartography and Imaging Sciences Discipline' dummy1
+# python3 DOICoreServices_test.py 
 #    publisher = 'PDS Cartography and Imaging Sciences Discipline (IMG) Node';
 
 
@@ -170,5 +170,3 @@ if __name__ == '__main__':
 #    Browse Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml
 #    Calibration Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml
 #    Document Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml
-
-
