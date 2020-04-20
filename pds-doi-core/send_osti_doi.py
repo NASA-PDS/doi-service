@@ -14,7 +14,7 @@ headers = {'Accept': 'application/xml',
 test_doi_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              "test",
                              "data",
-                             "osti_doi.xml")
+                             "osti_doi_broken.xml")
 
 with open(test_doi_file,'rb') as payload:
     response = requests.post("https://www.osti.gov/iad2test/api/records",

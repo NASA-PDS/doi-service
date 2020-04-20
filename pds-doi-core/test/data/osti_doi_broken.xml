@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <records>
     <record>
-        <title>InSight Cameras Bundle</title>
+        <ttle>InSight Cameras Bundle</ttle>
         <creators>R. Deen, H. Abarca, P. Zamani, J.Maki</creators>
         <publisher>NASA Planetary Data System</publisher>
         <publication_date>01/01/2019</publication_date>
@@ -35,41 +35,10 @@
         <contact_email>pds-operator@jpl.nasa.gov</contact_email>
         <contact_phone>818.393.7165</contact_phone>
         <contributors>
-            <!--use <editor_list>  in PDS4 Product label to populate-->
-               <contributor>
-                    <email/>
-                    <first_name>D.R.</first_name>
-                    <last_name>Williams</last_name>
-                    <contributor_type>Editor</contributor_type>
-                    <affiliations/>
-                </contributor>
-                <contributor>
-                    <email/>
-                    <first_name>S.A.</first_name>
-                    <last_name>McLaughlin</last_name>
-                    <contributor_type>Editor</contributor_type>
-                    <affiliations/>
-                </contributor>
-            <!—-add Node specific metadata -->
             <contributor>
                 <full_name>PDS Cartography and Imaging Sciences Discipline Node</full_name>
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>
-        <!-- use <author_list> in PDS4 Product label to populate -->
-       <authors>
-            <author>
-                <email/>
-                <first_name> A.</first_name>
-                <last_name>Davies</last_name>
-                <affiliations/>
-            </author>
-            <author>
-                <email/>
-                <first_name> G.</first_name>
-                <last_name> Veeder</last_name>
-                <affiliations/>
-            </author>
-        </authors>
     </record>
 </records>
