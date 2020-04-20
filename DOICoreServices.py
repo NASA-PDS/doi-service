@@ -18,10 +18,14 @@ import sys
 from xml.etree import ElementTree                                                                                               
 from lxml import etree
 from lxml import html
+import logging
 
 import urllib.request
 import urllib.parse
 import urllib.error
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # For now, check to see which version we are running.
 # setenv DOI_ENV_PYTHON3_FLAG true
@@ -1397,6 +1401,7 @@ class DOICoreServices:
             print(function_name,"dict_configList",dict_configList);
             print(function_name,"dict_fixedList",dict_fixedList);
 
+        logger.info(f"Getting pds4 label from url {target_url}")
         my_file = urllib.request.urlopen(target_url)
         n_count = 0;
 
