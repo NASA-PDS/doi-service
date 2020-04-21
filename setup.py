@@ -32,9 +32,11 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[],
+    scripts=['bin/pds-doi-start'],
     entry_points={
-        'console_scripts': ['snapshot-release=pds_github_util:snapshot_release.main'],
+        'console_scripts': [],
     },
+
 data_files=[('pds-doi-core',
                  ['config/conf.ini.default']
                  )

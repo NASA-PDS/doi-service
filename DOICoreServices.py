@@ -196,7 +196,7 @@ class DOICoreServices:
     def ReturnNameSpaceDictionary(self,f_debug, debug_flag, xmlFile,xmlContent=None):
     #------------------------------
     # 20170513 -- http://stackoverflow.com/questions/14853243/parsing-xml-with-namespace-in-python-via-elementtree
-    #                -- generates dictionary of namespaces defined in the XML preamble
+    #          -- generates dictionary of namespaces defined in the XML preamble
     #
     # eg:  {'': '"http://pds.nasa.gov/pds4/pds/v1',
     #        'pds': 'http://pds.nasa.gov/pds4/pds/v1',
@@ -1640,7 +1640,6 @@ if __name__ == '__main__':
     #exit(0);
     type_is_valid = False;
     o_doi_label = 'invalid action type:action_type ' + action_type;
-
 
     if action_type == 'create_osti_label':
         #print(function_name,"target_url.startswith('http')",target_url.startswith('http'));

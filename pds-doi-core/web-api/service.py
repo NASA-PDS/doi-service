@@ -32,17 +32,21 @@ class MainClass(Resource):
         }
 
     @app.marshal_with(doi_record)
-    @app.doc(description="submit a DOI as reserved or draft, the payload is the record to be submitted",
-             responses={200: 'OK', 400: 'Invalid Argument', 500: 'Internal error'},
+    @app.doc(description="submit a DOI as reserved or draft, the payload is the record to be submitted."
+                         "You can upload information in different formats: PDS4 label, csv or xls."
+                         "You can also read csv/xls client side and submit DOI request line by line in a Json object.",
+             responses={200: 'Success', 201: "Success", 400: 'Invalid Argument', 500: 'Internal error'},
              params={
                  'node': 'pds node in charge of the dataset',
                  'status': '"reserved" | "draft"',
-                 'format': '"PDS4" | "Json" '
+                 'format': '"PDS4" | "Json" | "csv" | "xls" ',
+                 'url': 'url of the resource to be loaded (optional)'
              })
     def post(self):
         return {
             "status": "To be implemented"
         }
+
 
 @name_space.route('/<id>', doc={'params':{'id': 'The DOI identifier (without the prefix)'}})
 class DoiClass(Resource):
@@ -56,8 +60,15 @@ class DoiClass(Resource):
         }
 
     @app.marshal_with(doi_record, envelope='resource')
-    @app.doc(description="update a DOI record",
-             responses={200: 'OK', 400: 'Invalid Argument', 404: 'Not existing', 500: 'Internal error'})
+    @app.doc(description="update a DOI record. ",
+             responses={200: 'OK', 400: 'Invalid Argument', 404: 'Not existing', 500: 'Internal error'},
+             params={
+                 'node': 'pds node in charge of the dataset',
+                 'status': '"reserved" | "draft"',
+                 'format': '"PDS4" | "Json"',
+                 'url': 'url of the resource to be loaded (optional)'
+             }
+             )
     def put(self):
         return {
             "status": "To be implemented"

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export FLASK_APP=pds-doi-core/web-api/service.py
+flask run
