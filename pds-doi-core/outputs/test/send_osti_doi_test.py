@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 parser = configparser.ConfigParser()
 candidates = ['conf.ini.default',
               'conf.ini',]
-candidates_full_path = [os.path.join(sys.prefix, "pds-doi-core", f) for f in candidates] # for real deployment
-candidates_full_path.extend([os.path.join(os.getcwd(), "config", f) for f in candidates]) # for development deployment
+candidates_full_path = [os.path.join(os.getcwd(), "config", f) for f in candidates] # for development deployment
+candidates_full_path.extend([os.path.join(sys.prefix, "pds-doi-core", f) for f in candidates]) # for real deployment
 logger.info(f"search configuration files in {candidates_full_path}")
 found = parser.read(candidates_full_path)
 logger.info(f"used configuration following files {found}")
