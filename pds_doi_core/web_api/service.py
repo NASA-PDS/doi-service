@@ -98,3 +98,10 @@ class DoiClass(Resource):
             "status": "To be implemented"
         }
 
+
+def main():
+    flask_app.run()
+
+
+if __name__ == "__main__":
+    main()
