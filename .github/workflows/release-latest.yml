@@ -40,7 +40,7 @@ jobs:
         import sys
         import os
         conf_file = os.path.join(sys.prefix, "pds-doi-core", "conf.ini")
-        with open(credentials_target_path, "w") as f:
+        with open(conf_file, "w") as f:
             f.write("[OSTI]]")
             f.write("user = {}".format("${{secrets.osti_login}}"))
             f.write("password = {}".format("${{secrets.osti_password}}"))
