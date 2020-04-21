@@ -45,10 +45,9 @@ jobs:
             f.write("user = {}\n".format("${{secrets.osti_login}}"))
             f.write("password = {}\n".format("${{secrets.osti_password}}"))
       shell: python
-    - name: Test with pytest
+    - name: Unit Tests
       run: |
-        pip install pytest
-        pytest -s
+        python setup.py test
     - name: Create the package
       run: |
         pip install setuptools wheel
