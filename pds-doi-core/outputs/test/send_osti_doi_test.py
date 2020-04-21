@@ -23,7 +23,7 @@ osti_password = parser.get("OSTI", "password")
 
 # curl -u username:password https://www.osti.gov/iad2test/api/records -X POST -H "Content-Type: application/xml" -H "Accept: application/xml" --data @osti_doi.xml
 # DON'T LOG THE CONNECTION PARAMETERS FOR SECURITY REASON
-#logger.debug(f"connection with codes {osti_user}:{osti_password}")
+logger.debug(f"connection with codes {osti_user}:{osti_password}")
 auth = HTTPBasicAuth(osti_user, osti_password)
 headers = {'Accept': 'application/xml',
            'Content-Type': 'application/xml'}
