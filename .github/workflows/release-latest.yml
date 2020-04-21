@@ -39,7 +39,10 @@ jobs:
       run: |
         import sys
         import os
-        conf_file = os.path.join(sys.prefix, "pds-doi-core", "conf.ini")
+        from pathlib import Path
+        conf_dir = os.path.join(sys.prefix, "pds-doi-core")
+        Path(conf_dir).mkdir(parents=True, exist_ok=True)
+        conf_file = os.path.join(conf_dir, "conf.ini")
         with open(conf_file, "w") as f:
             f.write("[OSTI]\n")
             f.write("user = {}\n".format("${{secrets.osti_login}}"))

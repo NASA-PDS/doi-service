@@ -43,10 +43,10 @@ It is available in the release section of gitHub
 
 ## Deploy    
 
-Deploy the package and launch the API server:
+Deploy the package and launch the API server (for demo or test purpose):
 
     pip install ....
-    pds-doi-start
+    pds-doi-dev-start
     
 
    
