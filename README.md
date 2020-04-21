@@ -18,6 +18,12 @@ python 3
     export FLASK_APP=DOIWebServer.py
     python -m flask run
     
+    
+Or (version with flask-restplus):
+
+     FLASK_APP=pds-doi-core/web-api/service.py flask run
+
+    
 ## Test 
 
 The library:
