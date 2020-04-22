@@ -25,6 +25,10 @@ Or (version with flask-restplus):
 
 ## Test 
 
+Unit tests:
+
+    python setup.py test
+
 The library:
 
     python  DOICoreServices_test.py
@@ -45,8 +49,9 @@ It is available in the release section of gitHub
 
 Deploy the package and launch the API server (for demo or test purpose):
 
-    pip install ....
-    pds-doi-dev-start
+    pip install  --upgrade --force-reinstall https://github.com/NASA-PDS-Incubator/pds-doi-service/releases/download/0.0.1%2Bdev/pds_doi_core-0.0.1+dev-py3-none-any.whl
+    pds-doi-start-dev
+    
     
 
    
