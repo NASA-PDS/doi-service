@@ -7,10 +7,13 @@ app = Api(app=flask_app)
 name_space = app.namespace('dois', description='PDS DOI Core function restFull API')
 
 doi_summary = app.model('doi_summary', {
-    'id': fields.String,
+    'doi': fields.String,
+    'lid' : fields.String,
+    'vid' : fields.String,
+    'submitter': fields.String,
     'status': fields.String,
-    'owner': fields.String,
-    'date': fields.DateTime(dt_format='rfc822'),
+    'creation_date': fields.String,
+    'update_date': fields.DateTime(dt_format='rfc822'),
 })
 
 doi_record = app.inherit('doi_record', doi_summary, {
@@ -23,8 +26,11 @@ doi_record = app.inherit('doi_record', doi_summary, {
 class MainClass(Resource):
 
     @app.marshal_with(doi_summary, as_list=True)
-    @app.doc(description="list the DOI of the user",
-             responses={200: 'OK', 500: 'Internal error'}
+    @app.doc(description="list the DOIs",
+             responses={200: 'OK', 500: 'Internal error'},
+             params={
+                 "submitter": "the submitter of the doi identifier, filter the DOIs (optional)"
+             }
              )
     def get(self):
         return {
@@ -38,8 +44,8 @@ class MainClass(Resource):
              responses={200: 'Success', 201: "Success", 400: 'Invalid Argument', 500: 'Internal error'},
              params={
                  'node': 'pds node in charge of the dataset',
-                 'status': '"reserved" | "draft"',
-                 'format': '"PDS4" | "Json" | "csv" | "xls" ',
+                 'action': '"reserve" | "draft"',
+                 'format': '"pds4" | "json" | "csv" | "xls" ',
                  'url': 'url of the resource to be loaded (optional)'
              })
     def post(self):
@@ -48,7 +54,8 @@ class MainClass(Resource):
         }
 
 
-@name_space.route('/<id>', doc={'params':{'id': 'The DOI identifier (without the prefix)'}})
+@name_space.route('/<doi_prefix>/<doi_suffix>', doc={'params':{'doi_prefix': 'The prefix of the DOI identifier',
+                                                               'doi_suffix': 'The suffix of the DOI identifier'}})
 class DoiClass(Resource):
 
     @app.marshal_with(doi_record, envelope='resource')
@@ -64,8 +71,7 @@ class DoiClass(Resource):
              responses={200: 'OK', 400: 'Invalid Argument', 404: 'Not existing', 500: 'Internal error'},
              params={
                  'node': 'pds node in charge of the dataset',
-                 'status': '"reserved" | "draft"',
-                 'format': '"PDS4" | "Json"',
+                 'format': '"pds4" | "json"',
                  'url': 'url of the resource to be loaded (optional)'
              }
              )
@@ -75,7 +81,9 @@ class DoiClass(Resource):
         }
 
 
-@name_space.route('/<id>/release', doc={'params':{'id': 'The DOI identifier (without the prefix)'}})
+@name_space.route('/<doi_prefix>/<doi_suffix>/release', doc={'params': {
+                                                                    'doi_prefix': 'The prefix of the DOI identifier',
+                                                                    'doi_suffix': 'The suffix of the DOI identifier'}})
 class DoiClass(Resource):
 
     @app.marshal_with(doi_record, envelope='resource')
@@ -87,7 +95,9 @@ class DoiClass(Resource):
         }
 
 
-@name_space.route('/<id>/deactivate', doc={'params':{'id': 'The DOI identifier (without the prefix)'}})
+@name_space.route('/<doi_prefix>/<doi_suffix>/deactivate', doc={'params': {
+                                                                    'doi_prefix': 'The prefix of the DOI identifier',
+                                                                    'doi_suffix': 'The suffix of the DOI identifier'}})
 class DoiClass(Resource):
 
     @app.marshal_with(doi_record, envelope='resource')
