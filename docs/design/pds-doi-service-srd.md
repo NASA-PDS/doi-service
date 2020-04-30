@@ -102,7 +102,7 @@ TBD
 
 #### Update a DOI
 
-See #9 for design details
+See https://github.com/NASA-PDS-Incubator/pds-doi-service/issues/9 for design details
 
 ---
 
