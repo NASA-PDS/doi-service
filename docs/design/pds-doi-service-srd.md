@@ -102,7 +102,8 @@ TBD
 
 #### Update a DOI
 
-TBD
+See https://github.com/NASA-PDS-Incubator/pds-doi-service/issues/9 for design details
+
 ---
 
 #### Delete a DOI
