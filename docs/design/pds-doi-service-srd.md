@@ -102,7 +102,8 @@ TBD
 
 #### Update a DOI
 
-TBD
+See #9 for design details
+
 ---
 
 #### Delete a DOI
