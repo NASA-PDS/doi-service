@@ -4,6 +4,8 @@ on:
   push:
       branches:
         - master
+      paths-ignore:
+        - "CHANGELOG.md"
 
 jobs:
   build:
@@ -65,9 +67,13 @@ jobs:
       run: |
         sudo gem install github_changelog_generator
         github_changelog_generator --user NASA-PDS-Incubator --project pds-doi-service  --token ${{ secrets.GITHUB_TOKEN }} --configure-sections '{"improvements":{"prefix":"**Improvements:**","labels":["enhancement"]},"defects":{"prefix":"**Defects:**","labels":["bug"]},"deprecations":{"prefix":"**Deprecations:**","labels":["deprecation"]}}' --no-pull-requests
-    - name: Update changelog
-      uses: alexesprit/action-update-file@master
+    - name: Commit CHANGELOG.md file:
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add CHANGELOG.md
+        git commit -m "update changelog on master push"
+    - name: Push changes
+      uses: ad-m/github-push-action@master
       with:
-        file-path: CHANGELOG.md
-        commit-msg: update changelog on master push
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
