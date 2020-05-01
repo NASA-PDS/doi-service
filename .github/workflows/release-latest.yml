@@ -3,7 +3,7 @@ name: dev build release
 on:
   push:
       branches:
-        - dev
+        - master
 
 jobs:
   build:
@@ -61,3 +61,13 @@ jobs:
       run: |
         pip install pds-github-util
         python-snapshot-release --token ${{ secrets.GITHUB_TOKEN }}
+    - name: Create changelog
+      run: |
+        gem install github_changelog_generator
+        github_changelog_generator --user NASA-PDS-Incubator --project pds-doi-service  --token ${{ secrets.GITHUB_TOKEN }} --configure-sections '{"improvements":{"prefix":"**Improvements:**","labels":["enhancement"]},"defects":{"prefix":"**Defects:**","labels":["bug"]},"deprecations":{"prefix":"**Deprecations:**","labels":["deprecation"]}}' --no-pull-requests
+    - name: Update changelog
+      uses: alexesprit/action-update-file@master
+      with:
+        file-path: CHANGELOG.md
+        commit-msg: update changelog on master push
+        github-token: ${{ secrets.GITHUB_TOKEN }}
