@@ -3,7 +3,7 @@ name: dev build release
 on:
   push:
       branches:
-        - master
+        - dev
       paths-ignore:
         - 'CHANGELOG.md'
 
@@ -74,10 +74,7 @@ jobs:
         git add CHANGELOG.md
         git commit -m "update changelog on master push"
     - name: Push changes
-      uses: phips28/gh-action-bump-version@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.push_on_protected_token }}
-      #uses: ad-m/github-push-action@master
-      #with:
-      # personal token of an admin has to be in the github secrets section
-      #github_token: ${{ secrets.push_on_protected_token }}
+      uses: ad-m/github-push-action@master
+      with:
+        # personal token of an admin has to be in the github secrets section
+        github_token: ${{ secrets.push_on_protected_token }}
