@@ -72,7 +72,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add CHANGELOG.md
-        git commit -m "update changelog on master push"
+        git commit -m "update changelog on master push" --allow-empty
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
