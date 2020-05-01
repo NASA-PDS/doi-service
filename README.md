@@ -1,5 +1,5 @@
-# NASA PDS Incubator New Project Template
-This repo is a template repo used for creating new NASA PDS Incubator projects.
+# NASA PDS DOI Service
+This tools provides services for PDS operators to mint DOIs.
 
 ## Prerequisites
 

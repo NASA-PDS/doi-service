@@ -3,7 +3,7 @@ name: dev build release
 on:
   push:
       branches:
-        - dev
+        - master
       paths-ignore:
         - 'CHANGELOG.md'
 
