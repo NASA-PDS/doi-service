@@ -77,4 +77,5 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         # personal token of an admin has to be in the github secrets section
-        github_token: ${{ secrets.push_on_protected_token }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: dev
