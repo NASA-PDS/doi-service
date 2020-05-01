@@ -5,7 +5,7 @@ on:
       branches:
         - master
       paths-ignore:
-        - "CHANGELOG.md"
+        - 'CHANGELOG.md'
 
 jobs:
   build:
