@@ -69,9 +69,11 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        git fetch
+        git checkout gh-pages
+        git pull
         git add CHANGELOG.md
         git commit -m "update changelog on master push" --allow-empty
-        git fetch
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
