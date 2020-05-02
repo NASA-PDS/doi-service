@@ -57,10 +57,12 @@ jobs:
         pip install setuptools wheel
         rm -f dist/*
         python setup.py sdist bdist_wheel
+    # the releases are available on https://github.com/NASA-PDS/<you repo>/releases
     - name: Publish new snapshot release
       run: |
         pip install pds-github-util
         python-snapshot-release --token ${{ secrets.GITHUB_TOKEN }}
+    # the changelog will be available on https://nasa-pds.github.io/<your repo>/CHANGELOG
     - name: Create changelog
       run: |
         sudo gem install github_changelog_generator
