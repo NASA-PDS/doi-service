@@ -61,6 +61,9 @@ jobs:
     - name: Publish new snapshot release
       run: |
         pip install pds-github-util
+        # delete previous dev tags
+        git fetch --prune --unshallow --tags
+        git tag -l | grep 'dev' | xargs -t -I arg sh -c 'git tag -d arg;git push --delete origin arg;'
         python-snapshot-release --token ${{ secrets.GITHUB_TOKEN }}
     # the changelog will be available on https://nasa-pds.github.io/<your repo>/CHANGELOG
     - uses: actions/checkout@v2
@@ -79,6 +82,5 @@ jobs:
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        # personal token of an admin has to be in the github secrets section
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
