@@ -25,7 +25,6 @@
 
 from flask import Flask;
 from flask import request;
-from markupsafe import escape;
 
 app = Flask(__name__)
 @app.route('/')
@@ -63,7 +62,7 @@ def create_osti_label_2():
     print(function_name,"contributor_value",contributor_value);
     contributor_value = contributor_value.replace('%20',' ').replace('%27','');   # Replace %20 with ' ', and replace "'" with ''
     print(function_name,"contributor_value",contributor_value);
-    from DOICoreServices import DOICoreServices;
+    from pds_doi_core.cmd.DOICoreServices import DOICoreServices;
     doiCoreServices = DOICoreServices() 
     #contributor_value = 'Cartography and Imaging Sciences Discipline'
     #target_url = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
@@ -85,7 +84,7 @@ def reserve_osti_label():
     print(function_name,"contributor_value",contributor_value);
     contributor_value = contributor_value.replace('%20',' ').replace('%27','');   # Replace %20 with ' ', and replace "'" with ''
     print(function_name,"contributor_value",contributor_value);
-    from DOICoreServices import DOICoreServices;
+    from pds_doi_core.cmd.DOICoreServices import DOICoreServices;
     doiCoreServices = DOICoreServices()
     #contributor_value = 'Cartography and Imaging Sciences Discipline'
     #target_url = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'

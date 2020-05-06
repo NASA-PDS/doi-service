@@ -8,18 +8,12 @@
 #------------------------------                                                                                                 
 
 import json;
-import os
 import requests
-import sys
 import time
-
-from datetime import datetime
-from time import gmtime,strftime
-from xml.etree import ElementTree                                                                                               
 
 from const import *;
 
-from DOIContributorUtil import DOIContributorUtil;
+from pds_doi_core.references.DOIContributorUtil import DOIContributorUtil;
 
 class DOIValidatorUtil:
     # This class DOIValidatorUtil provides functions to validate various values.
@@ -51,7 +45,6 @@ class DOIValidatorUtil:
 
             if not use_new_method:
                 # Old method:
-                import urllib;
                 from urllib.request import urlopen
                 #print(function_name,"TIMER_START:urlopen",target_url);
                 response = urlopen(target_url)
