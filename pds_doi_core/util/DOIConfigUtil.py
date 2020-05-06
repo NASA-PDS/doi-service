@@ -7,22 +7,13 @@
 #
 #------------------------------                                                                                                 
 
-import os
-import shutil
-import sys
 #import unicodedata
 
 from xml.etree import ElementTree
-from lxml import etree
-from lxml import html
-
-from datetime import datetime
-from time import gmtime,strftime
-import xlrd
 
 from const import *;
 
-from DOIOutputUtil import DOIOutputUtil;
+from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
 
 class DOIConfigUtil:
     global m_debug_mode;

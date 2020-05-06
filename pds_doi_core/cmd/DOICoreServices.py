@@ -11,28 +11,16 @@
 # Import the Python libraries                                                                                                   
 #------------------------------                                                                                                 
 
-import os
-import shutil
-import sys
-
-from xml.etree import ElementTree                                                                                               
 from lxml import etree
-
-from bs4 import BeautifulSoup
-
-from datetime import datetime                                                                                                   
-from optparse import OptionParser                                                                                               
-from time import gmtime,strftime                                                                                                
-import xlrd
 
 from const import *;
 
-from DOIConfigUtil import DOIConfigUtil;
-from DOIGeneralUtil import DOIGeneralUtil;
-from DOIInputUtil import DOIInputUtil;
-from DOIPDS4LabelUtil import DOIPDS4LabelUtil;
-from DOIValidatorUtil import DOIValidatorUtil;
-from DOIWebClient import DOIWebClient;
+from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil;
+from pds_doi_core.util.DOIGeneralUtil import DOIGeneralUtil;
+from pds_doi_core.input.DOIInputUtil import DOIInputUtil;
+from pds_doi_core.input.DOIPDS4LabelUtil import DOIPDS4LabelUtil;
+from pds_doi_core.input.DOIValidatorUtil import DOIValidatorUtil;
+from pds_doi_core.cmd.DOIWebClient import DOIWebClient;
 
 class DOICoreServices:
     global m_debug_mode;
@@ -245,6 +233,7 @@ if __name__ == '__main__':
 
     publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE;
 
+    # to be done: argparse
     if (len(sys.argv) > 1):
         action_type       = sys.argv[1];
         contributor_value = sys.argv[2].lstrip().rstrip();  # Remove any leading and trailing blanks.

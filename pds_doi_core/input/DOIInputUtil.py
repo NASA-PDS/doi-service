@@ -7,22 +7,16 @@
 #
 #------------------------------                                                                                                 
 
-import os
-import shutil
-import sys
-
-from xml.etree import ElementTree
 from lxml import etree
 import xlrd
 
 from datetime import datetime
-from time import gmtime,strftime
 
 from const import *;
 
-from DOIConfigUtil import DOIConfigUtil;
-from DOIOutputUtil import DOIOutputUtil;
-from FileDirUtil import FileDirUtil;
+from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil;
+from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
+from pds_doi_core.util.FileDirUtil import FileDirUtil;
 
 class DOIInputUtil:
     global m_debug_mode;

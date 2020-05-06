@@ -7,9 +7,7 @@
 #
 #------------------------------                                                                                                 
 
-import os                                                                                                                       
-
-from xml.etree import ElementTree                                                                                               
+from xml.etree import ElementTree
 from lxml import etree
 
 import requests
@@ -18,9 +16,9 @@ from datetime import datetime
 
 from const import *;
 
-from DOIConfigUtil import DOIConfigUtil;
-from DOIGeneralUtil import DOIGeneralUtil;
-from DOIOutputUtil import DOIOutputUtil;
+from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil;
+from pds_doi_core.util.DOIGeneralUtil import DOIGeneralUtil;
+from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
 
 class DOIPDS4LabelUtil:
     global m_debug_mode;
