@@ -29,7 +29,12 @@ class MainClass(Resource):
     @app.doc(description="list the DOIs",
              responses={200: 'OK', 500: 'Internal error'},
              params={
-                 "submitter": "the submitter of the doi identifier, filter the DOIs (optional)"
+                 "submitter": "the submitter of the doi identifier, filter the DOIs (optional)",
+                 "node" : "the node which is cited as contributor of the DOI, filter the DOIs (optional), "
+                          " use pds steward ids see "
+                          " https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146",
+                 "lid" : "pds identifier, filter the DOIs (optional)",
+                 "vid": "pds version, filter the DOIs (optional)"
              }
              )
     def get(self):
@@ -43,7 +48,9 @@ class MainClass(Resource):
                          "You can also read csv/xls client side and submit DOI request line by line in a Json object.",
              responses={200: 'Success', 201: "Success", 400: 'Invalid Argument', 500: 'Internal error'},
              params={
-                 'node': 'pds node in charge of the dataset',
+                 'node': "the node which is cited as contributor of the DOI, filter the DOIs (optional), "
+                         " use pds steward ids see "
+                         " https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146",
                  'action': '"reserve" | "draft"',
                  'format': '"pds4" | "json" | "csv" | "xls" ',
                  'url': 'url of the resource to be loaded (optional)'
@@ -70,7 +77,10 @@ class DoiClass(Resource):
     @app.doc(description="update a DOI record. ",
              responses={200: 'OK', 400: 'Invalid Argument', 404: 'Not existing', 500: 'Internal error'},
              params={
-                 'node': 'pds node in charge of the dataset',
+                 'submitter' : "the submitter of the doi identifier",
+                 'node': 'pds node in charge of the dataset, '
+                 ' use pds steward id see '
+                 ' https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146',
                  'format': '"pds4" | "json"',
                  'url': 'url of the resource to be loaded (optional)'
              }

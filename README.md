@@ -11,18 +11,14 @@ python 3
     python -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
+    pip intall -e .
     
     
 ## Launch server
 
-    export FLASK_APP=DOIWebServer.py
-    python -m flask run
+    pds-doi-start-dev
     
     
-Or (version with flask-restplus):
-
-     FLASK_APP=pds-doi-core/web-api/service.py flask run
-
 ## Test 
 
 Unit tests:
