@@ -7,7 +7,7 @@
 #
 #------------------------------
 
-from const import *;
+from pds_doi_core.util.const import *;
 
 from pds_doi_core.cmd.DOICoreServices import DOICoreServices;
 from pds_doi_core.input.DOIPDS4LabelUtil import DOIPDS4LabelUtil;

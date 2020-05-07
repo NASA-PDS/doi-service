@@ -38,7 +38,8 @@ setuptools.setup(
     ],
     scripts=[],
     entry_points={
-        'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main'],
+        'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',
+                            'pds-doi-cmd=pds_doi_core.cmd.DOICoreServices:main'],
     },
 
 data_files=[('pds_doi_core',

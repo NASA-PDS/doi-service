@@ -11,13 +11,10 @@
 # Import the Python libraries                                                                                                   
 #------------------------------                                                                                                 
 
-import os                                                                                                                       
-import shutil                                                                                                                   
-import sys                                                                                                                      
+import shutil
 
 from xml.etree import ElementTree                                                                                               
 from lxml import etree
-from lxml import html
 
 import urllib.request
 import urllib.parse
@@ -33,15 +30,9 @@ import urllib.error
 #    import requests
 #    from urllib2 import urlopen, URLError
 
-from bs4 import BeautifulSoup
+from datetime import datetime
 
-from datetime import datetime                                                                                                   
-from optparse import OptionParser                                                                                               
-from time import gmtime,strftime                                                                                                
-
-import xlrd
-
-from const import *;
+from pds_doi_core.util.const import *;
 
 #------------------------------
 #------------------------------
@@ -1039,7 +1030,6 @@ def GetPermissibleValues(json_value_1,json_key_1):
 
 def ValidateContributorValue(target_url,i_contributor):
     function_name = 'ValidateContributorValue:';
-    import urllib;
     from urllib.request import urlopen
     import json;
     PDS_NODE_IDENTIFIER = '0001_NASA_PDS_1.pds.Node.pds.name'

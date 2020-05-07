@@ -8,10 +8,11 @@
 #------------------------------                                                                                                 
 
 from xml.etree import ElementTree
-
 from datetime import datetime
+from pds_doi_core.util.const import *;
 
-from const import *;
+
+
 
 class DOIGeneralUtil:
     global m_debug_mode;

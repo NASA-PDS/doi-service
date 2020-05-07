@@ -14,7 +14,7 @@ import requests
 
 from datetime import datetime                                                                                                   
 
-from const import *;
+from pds_doi_core.util.const import *;
 
 from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil;
 from pds_doi_core.util.DOIGeneralUtil import DOIGeneralUtil;

@@ -11,7 +11,7 @@
 
 from xml.etree import ElementTree
 
-from const import *;
+from pds_doi_core.util.const import *;
 
 from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
 

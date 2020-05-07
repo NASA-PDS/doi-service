@@ -91,7 +91,7 @@ def reserve_osti_label():
     #print(function_name,"target_url",target_url);
     publisher_value = 'dummy_publisher_value';
     #print(function_name,"contributor_value",contributor_value);
-    o_doi_label = doiCoreServices.ReserveDOILabel(target_url,publisher_value,contributor_value);
+    o_doi_label = doiCoreServices.reserve_doi_label(target_url, publisher_value, contributor_value);
     #o_doi_label = 'hello_world'
     #print(function_name,"o_doi_label",o_doi_label);
 

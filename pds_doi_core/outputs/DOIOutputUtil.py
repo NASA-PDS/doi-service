@@ -7,11 +7,8 @@
 #
 #------------------------------                                                                                                 
 
-import os
-
 from lxml import etree
 
-from const import *;
 
 class DOIOutputUtil:
     # This class DOIOutputUtil provide convenient functions to update a DOI object already in memory.

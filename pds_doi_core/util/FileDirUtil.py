@@ -7,10 +7,7 @@
 #
 #------------------------------                                                                                                 
 
-import os
-import sys
-
-from const import *;
+from pds_doi_core.util.const import *;
 
 class FileDirUtil:
     global m_debug_mode;

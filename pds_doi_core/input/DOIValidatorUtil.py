@@ -11,7 +11,7 @@ import json;
 import requests
 import time
 
-from const import *;
+from pds_doi_core.util.const import *;
 
 from pds_doi_core.references.DOIContributorUtil import DOIContributorUtil;
 
