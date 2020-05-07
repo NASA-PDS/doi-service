@@ -34,12 +34,12 @@ setuptools.setup(
     install_requires=[
         "Flask==1.1.2",
         "flask-restplus==0.13.0",
-        "Werkzeug==0.16.1"
+        "Werkzeug==0.16.0"
     ],
     scripts=[],
     entry_points={
         'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',
-                            'pds-doi-cmd=pds_doi_core.cmd.DOICoreServices:main'],
+                            'pds-doi-cmd=pds_doi_core.cmd.pds_doi_cmd:main'],
     },
 
 data_files=[('pds_doi_core',

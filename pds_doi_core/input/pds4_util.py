@@ -16,9 +16,9 @@ from datetime import datetime
 
 from pds_doi_core.util.const import *;
 
-from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil;
-from pds_doi_core.util.DOIGeneralUtil import DOIGeneralUtil;
-from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
+from pds_doi_core.util.config_parser import DOIConfigUtil;
+from pds_doi_core.util.general_util import DOIGeneralUtil;
+from pds_doi_core.outputs.output_util import DOIOutputUtil;
 
 class DOIPDS4LabelUtil:
     global m_debug_mode;

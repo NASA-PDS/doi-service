@@ -14,9 +14,9 @@ from datetime import datetime
 
 from pds_doi_core.util.const import *;
 
-from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil;
-from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
-from pds_doi_core.util.FileDirUtil import FileDirUtil;
+from pds_doi_core.util.config_parser import DOIConfigUtil
+from pds_doi_core.outputs.output_util import DOIOutputUtil
+from pds_doi_core.util.file_dir_util import FileDirUtil
 
 class DOIInputUtil:
     global m_debug_mode;
@@ -357,7 +357,7 @@ class DOIInputUtil:
         function_name = self.m_module_name + 'ParseCSVFile:';
         global m_debug_mode
         global f_log
-        #m_debug_mode = True;
+        m_debug_mode = True;
         o_doi_label = None;
         o_num_files_created = 0;
 
@@ -372,7 +372,9 @@ class DOIInputUtil:
         parent_xpath = "/records/record/"
 
         DOI_directory_PathName = '.' + os.path.sep + 'output'
-        FileDirUtil.CreateDir(DOI_directory_PathName);
+        # consider to replace with
+        # os.makedirs(DOI_directory_PathName, exist_ok=True)
+        FileDirUtil.CreateDir(DOI_directory_PathName)
 
         #------------------------------
         # Open the DOI reserved XML label

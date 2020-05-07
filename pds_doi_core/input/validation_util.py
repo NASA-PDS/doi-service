@@ -13,7 +13,7 @@ import time
 
 from pds_doi_core.util.const import *;
 
-from pds_doi_core.references.DOIContributorUtil import DOIContributorUtil;
+from pds_doi_core.references.contributors import DOIContributorUtil;
 
 class DOIValidatorUtil:
     # This class DOIValidatorUtil provides functions to validate various values.

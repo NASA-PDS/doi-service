@@ -23,6 +23,7 @@ class FileDirUtil:
         # if /my_home/my_directory_1 does not already exist, the code will fail.
         function_name = 'CreateDir:';
         global m_debug_mode
+        m_debug_mode = False
         actual_dir = i_dir; 
         if m_debug_mode:
             print(function_name,"i_dir     ",i_dir);

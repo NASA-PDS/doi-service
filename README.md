@@ -35,11 +35,25 @@ CSV is not supported.  It was a one-time deal from Ron.
 
 ## Developers
 
+Get the code and work on a branch
+
     git clone ...
+    git checkout -b "#<issue number>"
+    
+
+Install virtual env
+
     pip install virtualenv
     python -m venv venv
     source venv/bin/activate
+    
+
+Deploy dependancies:
+
     pip install -r requirements.txt
+    
+or
+    
     pip intall -e .
 
     

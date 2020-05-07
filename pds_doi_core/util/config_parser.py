@@ -13,7 +13,7 @@ from xml.etree import ElementTree
 
 from pds_doi_core.util.const import *;
 
-from pds_doi_core.outputs.DOIOutputUtil import DOIOutputUtil;
+from pds_doi_core.outputs.output_util import DOIOutputUtil;
 
 class DOIConfigUtil:
     global m_debug_mode;

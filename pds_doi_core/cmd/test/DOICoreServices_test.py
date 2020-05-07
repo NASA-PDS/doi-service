@@ -9,9 +9,9 @@
 
 from pds_doi_core.util.const import *;
 
-from pds_doi_core.cmd.DOICoreServices import DOICoreServices;
-from pds_doi_core.input.DOIPDS4LabelUtil import DOIPDS4LabelUtil;
-from pds_doi_core.input.DOIValidatorUtil import DOIValidatorUtil;
+from pds_doi_core.cmd.pds_doi_cmd import DOICoreServices;
+from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil;
+from pds_doi_core.input.validation_util import DOIValidatorUtil;
 
 if __name__ == '__main__':
     # This is the unit test for DOICoreServices class.

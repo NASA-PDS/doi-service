@@ -223,8 +223,8 @@ class DOIGeneralUtil:
         return(o_xmlContent_as_string);
 
 if __name__ == '__main__':
-    from pds_doi_core.input.DOIInputUtil import DOIInputUtil
-    from pds_doi_core.util.DOIConfigUtil import DOIConfigUtil
+    from pds_doi_core.input.input_util import DOIInputUtil
+    from pds_doi_core.util.config_parser import DOIConfigUtil
     global m_debug_mode
     function_name = 'main:';
     #print(function_name,'entering');
