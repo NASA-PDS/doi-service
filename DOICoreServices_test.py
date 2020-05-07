@@ -9,14 +9,17 @@
 import os
 import sys
 
-from DOICoreServices import *;
+from const import *;
+
+from DOICoreServices import DOICoreServices;
+from DOIPDS4LabelUtil import DOIPDS4LabelUtil;
+from DOIValidatorUtil import DOIValidatorUtil;
 
 if __name__ == '__main__':
     # This is the unit test for DOICoreServices class.
     # How to run: 
     #     source venv/bin/activate
     #     pip install -r requirements.txt
-    #     pip install -r requirements_2.txt
     #     python3 DOICoreServices_test.py
     #
     # The command will loop through all the URIs in the target_urls_list below and create a DOI object for each URIs
@@ -65,8 +68,10 @@ if __name__ == '__main__':
     #print(function_name,"doi_date",doi_date);
     #exit(0);
 
+    doiValidatorUtil = DOIValidatorUtil();
     doiCoreServices = DOICoreServices();
-    (o_contributor_is_valid_flag,o_permissible_contributor_list) = doiCoreServices.ValidateContributorValue(DOI_CORE_CONST_PUBLISHER_URL,contributor_value);
+    doiPDS4LabelUtil = DOIPDS4LabelUtil();
+    (o_contributor_is_valid_flag,o_permissible_contributor_list) = doiValidatorUtil.ValidateContributorValue(DOI_CORE_CONST_PUBLISHER_URL,contributor_value);
     #print(function_name,"o_contributor_is_valid_flag",o_contributor_is_valid_flag);
     if (not o_contributor_is_valid_flag):
         print(function_name,"ERROR: The value of given contribut is not valid:",contributor_value);
@@ -111,7 +116,8 @@ if __name__ == '__main__':
             #print(function_name,"target_url.startswith('http')",target_url.startswith('http'));
             if target_url.startswith('http'):
                 #o_doi_label = doiCoreServices.ParsePDS4LabelViaURI(target_url+'dummy',publisher_value,contributor_value);
-                o_doi_label = doiCoreServices.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value);
+                #o_doi_label = doiCoreServices.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value);
+                o_doi_label = doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value);
                 type_is_valid = True;
 
         if not type_is_valid:
