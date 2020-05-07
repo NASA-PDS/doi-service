@@ -5,8 +5,8 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-#------------------------------                                                                                                 
-
+#------------------------------
+import logging
 from xml.etree import ElementTree
 from datetime import datetime
 from pds_doi_core.util.const import *;
@@ -256,3 +256,11 @@ if __name__ == '__main__':
 
     o_num_files_created = doiInputUtil.ParseSXLSFile(appBasePath,xls_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData);
     print(function_name,"o_num_files_created",o_num_files_created);
+
+
+def get_logger():
+    logger =logging.getLogger(__name__)
+    my_format = "%(levelname)s %(name)s:%(funcName)s %(message)s"
+    logging.basicConfig(format=my_format)
+    logger.setLevel(logging.DEBUG)
+    return logger

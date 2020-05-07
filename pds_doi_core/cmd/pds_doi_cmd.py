@@ -12,22 +12,18 @@
 # ------------------------------
 
 from lxml import etree
-import logging
 
 from pds_doi_core.util.cmd_parser import create_cmd_parser
 from pds_doi_core.util.const import *;
 
 from pds_doi_core.util.config_parser import DOIConfigUtil
-from pds_doi_core.util.general_util import DOIGeneralUtil
+from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 from pds_doi_core.input.input_util import DOIInputUtil
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.input.validation_util import DOIValidatorUtil
 from pds_doi_core.cmd.DOIWebClient import DOIWebClient
 
-logger = logging.getLogger(__name__)
-FORMAT = "%(levelname)s %(name)s:%(funcName)s %(message)s"
-logging.basicConfig(format=FORMAT)
-logger.setLevel(logging.DEBUG)
+logger = get_logger()
 
 
 class DOICoreServices:

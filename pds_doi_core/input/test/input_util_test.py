@@ -3,12 +3,10 @@ import logging
 import unittest
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.input.input_util import DOIInputUtil
+from pds_doi_core.util.general_util import get_logger
 
 
-logger = logging.getLogger(__name__)
-FORMAT = "%(levelname)s %(name)s:%(funcName)s %(message)s"
-logging.basicConfig(format=FORMAT)
-logger.setLevel(logging.DEBUG)
+logger = get_logger()
 
 
 class MyTestCase(unittest.TestCase):
