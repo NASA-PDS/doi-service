@@ -33,7 +33,7 @@
   #     write_DEBUG        = (True|False) used to write lots of DEBUG info to the DEBUG file ("aaajunk.out")
   #===========================================================
 -->   
-<options numOptions="10">
+<options numOptions="11">
   <sys_path>E:\\Python_2.7.11\\aaaProjects\\Util_pyFiles</sys_path>
   <common_module>SYBASE_connection_common_20140929</common_module>
   
@@ -53,6 +53,7 @@
    -->
   <global_keyword_values>PDS; PDS4; Maven; Mars</global_keyword_values>
   <DOI_template>./config/DOI_template_20200407.xml</DOI_template> 
+  <DOI_reserve_template>./config/DOI_IAD2_reserved_template_20200205.xml</DOI_reserve_template> 
 	<fixed_attributes numOptions="6">
 	  <P_member_status>P</P_member_status>
   	<S_member_status>S</S_member_status>

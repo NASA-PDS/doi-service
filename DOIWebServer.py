@@ -8,7 +8,7 @@
 
 # This file DOIWebServer.py is the web server for DOI services.
 #
-# install -r requirements.txt
+# pip install -r requirements.txt
 # export FLASK_APP=DOIWebServer.py
 # python3 -m flask run
 #
@@ -52,15 +52,17 @@ def create_osti_label(myurl):
 
 @app.route('/create_osti_label')
 def create_osti_label_2():
+    function_name = 'create_osti_label_2:'
     if request.method == 'POST':
         my_file = request.files['the_file']
-    import urllib.parse
     # Get the target_url and remove any single or double quotes.
     target_url        = request.args.get('target_url',default='target_url_zzz',type=str);
     target_url        = target_url.replace('"','').replace("'",'');
     # If the value contains single or double quotes, remove them.
-    contributor_value = urllib.parse.quote(request.args.get('contributor',default='contributor_zzz',type=str));
+    contributor_value = request.args.get('contributor',default='contributor_zzz',type=str);
+    print(function_name,"contributor_value",contributor_value);
     contributor_value = contributor_value.replace('%20',' ').replace('%27','');   # Replace %20 with ' ', and replace "'" with ''
+    print(function_name,"contributor_value",contributor_value);
     from DOICoreServices import DOICoreServices;
     doiCoreServices = DOICoreServices() 
     #contributor_value = 'Cartography and Imaging Sciences Discipline'
@@ -68,6 +70,36 @@ def create_osti_label_2():
     o_doi_label = doiCoreServices.CreateDOILabel(target_url,contributor_value);
     return(o_doi_label);
     #return('Hello, World from create_osti_label_2!,method=' + request.method + " target_url [" + target_url + "] contributor_value [" + contributor_value);
+
+
+@app.route('/reserve_osti_label')
+def reserve_osti_label():
+    function_name = 'reserve_osti_label:'
+    if request.method == 'POST':
+        my_file = request.files['the_file']
+    # Get the target_url and remove any single or double quotes.
+    target_url        = request.args.get('target_url',default='target_url_zzz',type=str);
+    target_url        = target_url.replace('"','').replace("'",'');
+    # If the value contains single or double quotes, remove them.
+    contributor_value = request.args.get('contributor',default='contributor_zzz',type=str);
+    print(function_name,"contributor_value",contributor_value);
+    contributor_value = contributor_value.replace('%20',' ').replace('%27','');   # Replace %20 with ' ', and replace "'" with ''
+    print(function_name,"contributor_value",contributor_value);
+    from DOICoreServices import DOICoreServices;
+    doiCoreServices = DOICoreServices()
+    #contributor_value = 'Cartography and Imaging Sciences Discipline'
+    #target_url = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
+    #print(function_name,"target_url",target_url);
+    publisher_value = 'dummy_publisher_value';
+    #print(function_name,"contributor_value",contributor_value);
+    o_doi_label = doiCoreServices.ReserveDOILabel(target_url,publisher_value,contributor_value);
+    #o_doi_label = 'hello_world'
+    #print(function_name,"o_doi_label",o_doi_label);
+
+    return(o_doi_label);
+    #return('Hello, World from create_osti_label_2!,method=' + request.method + " target_url [" + target_url + "] contributor_value [" + contributor_value);
+
+
 
 #def hello_world():
 #    return('Hello, World!');
