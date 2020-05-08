@@ -58,12 +58,13 @@ jobs:
         rm -f dist/*
         python setup.py sdist bdist_wheel
     # the releases are available on https://github.com/NASA-PDS/<you repo>/releases
+    - name: Clean previous dev/snapsoht tags
+      run: |
+        git fetch --prune --unshallow --tags
+        git tag -l | grep 'dev' | xargs -t -I arg sh -c 'git tag -d arg;git push --delete origin arg;'
     - name: Publish new snapshot release
       run: |
         pip install pds-github-util
-        # delete previous dev tags
-        git fetch --prune --unshallow --tags
-        git tag -l | grep 'dev' | xargs -t -I arg sh -c 'git tag -d arg;git push --delete origin arg;'
         python-snapshot-release --token ${{ secrets.GITHUB_TOKEN }}
     # the changelog will be available on https://nasa-pds.github.io/<your repo>/CHANGELOG
     - uses: actions/checkout@v2
