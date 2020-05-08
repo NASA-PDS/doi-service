@@ -6,6 +6,7 @@
 
 **Improvements:**
 
+- Reserve a DOI capability [\#21](https://github.com/NASA-PDS/pds-doi-service/issues/21)
 - Develop draft PDS Policy for Assigning DOIs [\#20](https://github.com/NASA-PDS/pds-doi-service/issues/20)
 - Design REST API and JSON response [\#19](https://github.com/NASA-PDS/pds-doi-service/issues/19)
 - Create / Draft a DOI object capability [\#2](https://github.com/NASA-PDS/pds-doi-service/issues/2)
