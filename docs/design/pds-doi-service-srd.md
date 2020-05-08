@@ -50,30 +50,8 @@ TBD
 TBD
 
 ### Level 5 Requirements
-The level 5 requirements in PDS represent subsystem or componentrequirements at a detailed level. The following requirements pertain to this service:
-
-### DOI Management
-| ID | Requirement | Notes |
-| -- | ----------- | ----------- |
-| DOI.x | The software shall be capable of accepting a request to create a draft DOI. | |
-| DOI.x | The software shall be capable of accepting a request to reserve a DOI. | |
-| DOI.x | The software shall be capable of accepting a request to release a DOI. | |
-| DOI.x | The software shall be capable of accepting a request to delete a DOI. | |
-| DOI.x | The software shall be capable of accepting a request to update DOI metadata. | |
-| DOI.x | The software shall be capable of batch processing >1 DOI requests. | |
-
-### DOI Metadata
-| ID | Requirement | Notes |
-| -- | ----------- | ----------- |
-| DOI.x | The software shall be capable of autonomously generating the minimum set of DOI metadata from PDS4 Collection, Bundle, Document products. | |
-| DOI.x | The software shall validate a minimum set of metadata is provided when reserving, releasing, or updating a DOI. This minimum set of metadata will be defined by the PDS DOI Working Group. | | 
-| DOI.x | The software shall validate the DOI metadata meets  is provided when reserving, releasing, or updating a DOI. | |
-
-### DOI Interface Support
-| ID | Requirement | Notes |
-| -- | ----------- | ----------- |
-| DOI.x | The software shall maintain a database of PDS DOIs and their current state. | Related to Tracking Service. |
-| DOI.x | The software shall maintain the ability to manage DOIs through both [OSTI](https://www.osti.gov/iad2/docs) and [DataCite](https://support.datacite.org/docs/api). | Should support OSTI originally, but provide the ability to switch to DataCite (or other interface) in the future. |
+The level 5 requirements in PDS are documented as github actions:
+https://github.com/NASA-PDS-Incubator/pds-doi-service/issues?q=is%3Aissue+label%3Arequirement
 
 ---
 
@@ -124,7 +102,8 @@ TBD
 
 #### Update a DOI
 
-TBD
+See https://github.com/NASA-PDS-Incubator/pds-doi-service/issues/9 for design details
+
 ---
 
 #### Delete a DOI

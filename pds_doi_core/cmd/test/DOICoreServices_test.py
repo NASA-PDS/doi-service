@@ -5,15 +5,13 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-#------------------------------                                                                                                 
-import os
-import sys
+#------------------------------
 
-from const import *;
+from pds_doi_core.util.const import *;
 
-from DOICoreServices import DOICoreServices;
-from DOIPDS4LabelUtil import DOIPDS4LabelUtil;
-from DOIValidatorUtil import DOIValidatorUtil;
+from pds_doi_core.cmd.DOICoreServices import DOICoreServices;
+from pds_doi_core.input.DOIPDS4LabelUtil import DOIPDS4LabelUtil;
+from pds_doi_core.input.DOIValidatorUtil import DOIValidatorUtil;
 
 if __name__ == '__main__':
     # This is the unit test for DOICoreServices class.

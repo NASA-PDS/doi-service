@@ -208,7 +208,7 @@ if __name__ == '__main__':
     default_action_type = 'create_osti_label'
     default_target_url  = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml';
     default_get_url     = "http://127.0.0.1:5000/create_osti_label"
-    run_dir = "./";
+    run_dir = "/";
     publisher_value   = 'dummy_publisher_value';
     contributor_value = 'dummy_contributor_value';
 

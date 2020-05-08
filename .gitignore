@@ -1,43 +1,19 @@
 # Object files
-*.o
-*.pkl
 *.pyc
-
-# Libraries
-*.lib
-*.a
-
-# Eclipse files
-.settings/
-*.project
-*.classpath
 
 # IntelliJ files
 .idea/
 *.iml
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-
 # Temporary files
 *~
 
 # other stuff
-*.xpr
-*.swp
-/bin/
-.*.swp
-*.sublime-*
+dist/
+config/conf.ini
+.DS_Store
+allure/
+pds_doi_core.egg-info/
+pds_doi_core/.DS_Store
+venv/
 
-# Java stuff
-*.javac
-.gwt/
-target/

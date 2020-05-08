@@ -7,22 +7,15 @@
 #
 #------------------------------                                                                                                 
 
-import os
 #import shutil
-import sys
 #import unicodedata
 
-from xml.etree import ElementTree
 #from lxml import etree
 #from lxml import html
 
-from datetime import datetime
-from time import gmtime,strftime
 #import xlrd
 
-from const import *;
-
-class DOIContributorUtil: 
+class DOIContributorUtil:
 
     global m_debug_mode;
     global f_log

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    <record>
+        <title>InSight Cameras Bundle</title>
+        <creators>R. Deen, H. Abarca, P. Zamani, J.Maki</creators>
+        <publisher>NASA Planetary Data System</publisher>
+        <publication_date>01/01/2019</publication_date>
+        <site_url>https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
+        <!-- Collection definition:
+                a Collection product may refer to an aggregation of resources and research objects.
+                A Collection probably has items in it which have or will receive their own DOIs and thus be
+                retrievable independently. Therefore the Collection record is a high-level description of
+                the overall group of items.
+        -->
+        <product_type>Collection</product_type>
+        <product_type_specific>PDS4 Bundle</product_type_specific>
+        <!-- Product Numbers: insert LIDVID here -->
+        <product_nos>urn:nasa:pds:insight_cameras::1.0</product_nos>
+
+        <description>
+            InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
+        </description>
+        <keywords>PDS;  PDS4;  Insight;  Insight Lander;  cameras;  Mars;  geosciences;  imaging; ; Raw; Surface; Imaging; Insight Context Camera; Insight Deployme
+            nt Camera</keywords>
+
+        <related_resource/>
+        <contributor_organizations/>
+        <sponsor_org>National Aeronautics and Space Administration (NASA)</sponsor_org>
+        <contract_nos/>
+        <other_identifying_nos/>
+        <file_extension/>
+        <availability>NSSDCA</availability>
+        <contact_name>PDS OPERATOR</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+        <contributors>
+            <!--use <editor_list>  in PDS4 Product label to populate-->
+               <contributor>
+                    <email/>
+                    <first_name>D.R.</first_name>
+                    <last_name>Williams</last_name>
+                    <contributor_type>Editor</contributor_type>
+                    <affiliations/>
+                </contributor>
+                <contributor>
+                    <email/>
+                    <first_name>S.A.</first_name>
+                    <last_name>McLaughlin</last_name>
+                    <contributor_type>Editor</contributor_type>
+                    <affiliations/>
+                </contributor>
+            <!—-add Node specific metadata -->
+            <contributor>
+                <full_name>PDS Cartography and Imaging Sciences Discipline Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <!-- use <author_list> in PDS4 Product label to populate -->
+       <authors>
+            <author>
+                <email/>
+                <first_name> A.</first_name>
+                <last_name>Davies</last_name>
+                <affiliations/>
+            </author>
+            <author>
+                <email/>
+                <first_name> G.</first_name>
+                <last_name> Veeder</last_name>
+                <affiliations/>
+            </author>
+        </authors>
+    </record>
+</records>
