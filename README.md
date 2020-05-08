@@ -25,10 +25,6 @@ Unit tests:
 
     python setup.py test
 
-The library:
-
-    python  DOICoreServices_test.py
-
 The service, in a browser http://127.0.0.1:5000/create_osti_label?target_url=%22https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml%22&contributor=%22Cartography+and+Imaging+Sciences+Discipline%22
 
 
