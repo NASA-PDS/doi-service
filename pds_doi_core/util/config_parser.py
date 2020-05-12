@@ -11,26 +11,26 @@
 
 from xml.etree import ElementTree
 
-from pds_doi_core.util.const import *;
+from pds_doi_core.util.const import *
 
-from pds_doi_core.outputs.output_util import DOIOutputUtil;
+from pds_doi_core.outputs.output_util import DOIOutputUtil
 
 class DOIConfigUtil:
-    global m_debug_mode;
+    global m_debug_mode
     m_module_name = 'DOIConfigUtil:'
-    m_debug_mode = False;
-    #m_debug_mode = True;
-    #m_debug_mode = False;
-    m_DOIOutputUtil = DOIOutputUtil();
+    m_debug_mode = False
+    #m_debug_mode = True
+    #m_debug_mode = False
+    m_DOIOutputUtil = DOIOutputUtil()
 
-    def GetConfigFileMetaData(self,filename):
+    def get_config_file_metadata(self,filename):
     #------------------------------
     #------------------------------
-        function_name = self.m_module_name + 'GetConfigFileMetaData:'
+        function_name = self.m_module_name + 'get_config_file_metadata:'
 
         if (not os.path.exists(filename)):
-            print("exiting: configuration file not found - " + filename);
-            sys.exit();
+            print("exiting: configuration file not found - " + filename)
+            sys.exit(1)
 
         else:
             #------------------------------
@@ -54,11 +54,11 @@ class DOIConfigUtil:
         dict_configList = dict((e.tag, e.text) for e in doc)
 
         if (int(numOptions) == len(dict_configList)):
-            #print("dict_configList: found correct number of options in dictionary: '" + numOptions + "'");
-            pass;
+            #print("dict_configList: found correct number of options in dictionary: '" + numOptions + "'")
+            pass
         else:
-            print("exiting: dict_configList -- number of options ('" + numOptions + "') doesn't match elements in dictionary: '" + str(len(dict_configList)) + "'");
-            sys.exit()
+            print("exiting: dict_configList -- number of options ('" + numOptions + "') doesn't match elements in dictionary: '" + str(len(dict_configList)) + "'")
+            sys.exit(1)
 
     #      for eachElement in dict_configList:
     #         print "dict_configList." + eachElement + " == '" + dict_configList.get(eachElement) + "'"
@@ -74,28 +74,28 @@ class DOIConfigUtil:
         for e in doc.find('fixed_attributes'):
             dict_fixedList[e.tag] = e.text
         if (int(numOptions) == len(dict_fixedList)):
-            #print("dict_fixedList: found correct number of options in dictionary: '" + numOptions + "'");
-            pass;
+            #print("dict_fixedList: found correct number of options in dictionary: '" + numOptions + "'")
+            pass
         else:
-            print("exiting: dict_fixedList -- number of options ('" + numOptions + "') doesn't match elements in dictionary: '" + str(len(dict_fixedList)) + "'");
-            sys.exit();
+            print("exiting: dict_fixedList -- number of options ('" + numOptions + "') doesn't match elements in dictionary: '" + str(len(dict_fixedList)) + "'")
+            sys.exit(1)
 
-        return(dict_configList, dict_fixedList);
+        return(dict_configList, dict_fixedList)
 
 if __name__ == '__main__':
     global m_debug_mode
-    function_name = 'main:';
-    #print(function_name,'entering');
-    m_debug_mode = True;
-    m_debug_mode = False;
+    function_name = 'main:'
+    #print(function_name,'entering')
+    m_debug_mode = True
+    m_debug_mode = False
 
-    doiConfigUtil = DOIConfigUtil();
+    doiConfigUtil = DOIConfigUtil()
 
     # Get the default configuration from external file.  Location may have to be absolute.
-    xmlConfigFile = '.' + os.path.sep + 'config' + os.path.sep + 'default_config.xml';
+    xmlConfigFile = os.path.join('.','config','default_config.xml')
 
     dict_configList = {}
     dict_fixedList  = {}
-    (dict_configList, dict_fixedList) = doiConfigUtil.GetConfigFileMetaData(xmlConfigFile);
-    print(function_name,"dict_configList",dict_configList);
-    print(function_name,"dict_fixedList",dict_fixedList);
+    (dict_configList, dict_fixedList) = doiConfigUtil.get_config_file_metadata(xmlConfigFile)
+    print(function_name,"dict_configList",dict_configList)
+    print(function_name,"dict_fixedList",dict_fixedList)

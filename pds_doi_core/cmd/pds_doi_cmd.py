@@ -36,7 +36,7 @@ class DOICoreServices:
 
     def reserve_doi_label(self, target_url, publisher_value, contributor_value):
         """
-        Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk TBD on how to submit them.
+        Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
         :param target_url:
         :param publisher_value:
         :param contributor_value:
@@ -51,7 +51,7 @@ class DOICoreServices:
         file_is_parsed_flag = False
 
         if target_url.endswith('.xml'):
-            o_doi_label = self.m_doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url, publisher_value, contributor_value)
+            o_doi_label = self.m_doiPDS4LabelUtil.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
 
             file_is_parsed_flag = True
 
@@ -60,14 +60,14 @@ class DOICoreServices:
             # Get the default configuration from external file.  Location may have to be absolute.
             xml_config_file = os.path.join('.','config','default_config.xml')
 
-            (dict_configList, dict_fixedList) = self.m_doiConfigUtil.GetConfigFileMetaData(xml_config_file)
+            (dict_configList, dict_fixedList) = self.m_doiConfigUtil.get_config_file_metadata(xml_config_file)
 
             app_base_path = os.path.abspath(os.path.curdir)
 
             dict_condition_data = {}
 
             (o_num_files_created,
-             o_aggregated_DOI_content) = self.m_doiInputUtil.ParseSXLSFile(app_base_path,
+             o_aggregated_DOI_content) = self.m_doiInputUtil.parse_sxls_file(app_base_path,
                                                                            xls_filepath,
                                                                            dict_fixedList=dict_fixedList,
                                                                            dict_configList=dict_configList,
@@ -78,16 +78,16 @@ class DOICoreServices:
         if target_url.endswith('.csv'):
             xls_filepath = target_url
             # Get the default configuration from external file.  Location may have to be absolute.
-            xml_config_file = '.' + os.path.sep + 'config' + os.path.sep + 'default_config.xml'
+            xml_config_file = os.path.join('.','config','default_config.xml')
 
-            (dict_configList, dict_fixedList) = self.m_doiConfigUtil.GetConfigFileMetaData(xml_config_file)
+            (dict_configList, dict_fixedList) = self.m_doiConfigUtil.get_config_file_metadata(xml_config_file)
 
             app_base_path = os.path.abspath(os.path.curdir)
 
             dict_condition_data = {}
 
             (o_num_files_created,
-             o_aggregated_DOI_content) = self.m_doiInputUtil.ParseCSVFile(app_base_path,
+             o_aggregated_DOI_content) = self.m_doiInputUtil.parse_csv_file(app_base_path,
                                                                           xls_filepath,
                                                                           dict_fixedList=dict_fixedList,
                                                                           dict_configList=dict_configList,
@@ -110,7 +110,7 @@ class DOICoreServices:
             exit(0)
 
         # The parsing was successful, convert from bytes to string so we can build a tree.
-        xml_text = self.m_doiGeneralUtil.DecodeBytesToString(o_doi_label)
+        xml_text = self.m_doiGeneralUtil.decode_bytes_to_string(o_doi_label)
 
         logger.info(f'type(o_doi_label) {type(o_doi_label)}')  # The type of o_doi_label is bytes
         logger.info(f'o_doi_label {o_doi_label}')  # The type of o_doi_label is bytes
@@ -158,7 +158,12 @@ class DOICoreServices:
         return s_out_text
 
     def create_doi_label(self, target_url, contributor_value):
-        # Function receives a URI containing either XML or a local file and draft a Data Object Identifier (DOI).
+        """
+        Function receives a URI containing either XML or a local file and draft a Data Object Identifier (DOI).  
+        :param target_url:
+        :param contributor_value:
+        :return: o_doi_label:
+        """
         global m_debug_mode
         # m_debug_mode = True
         o_doi_label = None
@@ -186,9 +191,8 @@ class DOICoreServices:
         if action_type == 'create_osti_label':
             # print(function_name,"target_url.startswith('http')",target_url.startswith('http'))
             # if target_url.startswith('http'):
-            o_doi_label = self.m_doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url, publisher_value,
+            o_doi_label = self.m_doiPDS4LabelUtil.parse_pds4_label_via_uri(target_url, publisher_value,
                                                                         contributor_value)
-            # o_doi_label = self.m_doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value)
             type_is_valid = True
 
         if not type_is_valid:
@@ -204,7 +208,7 @@ class DOICoreServices:
 
 
 def main():
-    default_run_dir = '.' + os.path.sep
+    default_run_dir = os.path.join('.');
     default_target_url = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
 
     # default_publisher_url  = 'https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON'
