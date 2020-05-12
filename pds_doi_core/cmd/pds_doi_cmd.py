@@ -14,7 +14,7 @@
 from lxml import etree
 
 from pds_doi_core.util.cmd_parser import create_cmd_parser
-from pds_doi_core.util.const import *;
+from pds_doi_core.util.const import *
 
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
@@ -56,9 +56,9 @@ class DOICoreServices:
             file_is_parsed_flag = True
 
         if target_url.endswith('.xlsx'):
-            xls_filepath = target_url;
+            xls_filepath = target_url
             # Get the default configuration from external file.  Location may have to be absolute.
-            xml_config_file = '.' + os.path.sep + 'config' + os.path.sep + 'default_config.xml';
+            xml_config_file = os.path.join('.','config','default_config.xml')
 
             (dict_configList, dict_fixedList) = self.m_doiConfigUtil.GetConfigFileMetaData(xml_config_file)
 
@@ -91,23 +91,23 @@ class DOICoreServices:
                                                                           xls_filepath,
                                                                           dict_fixedList=dict_fixedList,
                                                                           dict_configList=dict_configList,
-                                                                          dict_ConditionData=dict_condition_data);
+                                                                          dict_ConditionData=dict_condition_data)
             o_doi_label = o_aggregated_DOI_content
-            file_is_parsed_flag = True;
+            file_is_parsed_flag = True
 
         # Check to see if the given file has an attempt to process.
         if not file_is_parsed_flag:
             logger.error(f"File type has not been implemented:target_url {target_url}")
-            exit(0);
+            exit(0)
 
         if o_doi_label is None:
             logger.error(f"The value of o_doi_label is none.  Will not continue.")
-            exit(0);
+            exit(0)
 
         # If the type of o_doi_label remains as string, and starts with 'invalid', we had a bad time parsing.
         if str(type(o_doi_label)) == 'str' and o_doi_label.startswith('invalid'):
             logger.error(f"Cannot parse given target_url {target_url}")
-            exit(0);
+            exit(0)
 
         # The parsing was successful, convert from bytes to string so we can build a tree.
         xml_text = self.m_doiGeneralUtil.DecodeBytesToString(o_doi_label)
@@ -157,20 +157,20 @@ class DOICoreServices:
         # At this point, the sOutText would contain tag "status = 'Reserved'" in each record tags.
         return s_out_text
 
-    def CreateDOILabel(self, target_url, contributor_value):
+    def create_doi_label(self, target_url, contributor_value):
         # Function receives a URI containing either XML or a local file and draft a Data Object Identifier (DOI).
         global m_debug_mode
-        # m_debug_mode = True;
-        o_doi_label = None;
+        # m_debug_mode = True
+        o_doi_label = None
 
-        action_type = 'create_osti_label';
-        publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE;  # There is only one publisher of these DOI.
-        o_contributor_is_valid_flag = False;
+        action_type = 'create_osti_label'
+        publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE  # There is only one publisher of these DOI.
+        o_contributor_is_valid_flag = False
 
         # Make sure the contributor is valid before proceeding.
         (o_contributor_is_valid_flag,
         o_permissible_contributor_list) = self.m_doiValidatorUtil.ValidateContributorValue(
-        DOI_CORE_CONST_PUBLISHER_URL, contributor_value);
+        DOI_CORE_CONST_PUBLISHER_URL, contributor_value)
 
         logger.info(f"o_contributor_is_valid_flag: {o_contributor_is_valid_flag}")
         logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
@@ -180,15 +180,15 @@ class DOICoreServices:
             logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
             exit(0)
 
-        type_is_valid = False;
-        o_doi_label = 'invalid action type:action_type ' + action_type;
+        type_is_valid = False
+        o_doi_label = 'invalid action type:action_type ' + action_type
 
         if action_type == 'create_osti_label':
-            # print(function_name,"target_url.startswith('http')",target_url.startswith('http'));
+            # print(function_name,"target_url.startswith('http')",target_url.startswith('http'))
             # if target_url.startswith('http'):
             o_doi_label = self.m_doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url, publisher_value,
                                                                         contributor_value)
-            # o_doi_label = self.m_doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value);
+            # o_doi_label = self.m_doiPDS4LabelUtil.ParsePDS4LabelViaURI(target_url,publisher_value,contributor_value)
             type_is_valid = True
 
         if not type_is_valid:
@@ -198,7 +198,7 @@ class DOICoreServices:
             exit(0)
 
         logger.debug(f"o_doi_label {o_doi_label.decode()}")
-        logger.debug(f"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY {target_url}");
+        logger.debug(f"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY {target_url}")
 
         return o_doi_label
 
@@ -207,7 +207,7 @@ def main():
     default_run_dir = '.' + os.path.sep
     default_target_url = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
 
-    # default_publisher_url  = 'https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON';
+    # default_publisher_url  = 'https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON'
     run_dir = default_run_dir
 
     publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE
@@ -226,14 +226,12 @@ def main():
     doiCoreServices = DOICoreServices()
 
     if action_type == 'draft':
-        # doiCoreServices = DOICoreServices();
-        o_doi_label = doiCoreServices.CreateDOILabel(input_location, contributor_value)
+        o_doi_label = doiCoreServices.create_doi_label(input_location, contributor_value)
         logger.info(o_doi_label.decode())
 
     if action_type == 'reserve':
-        # doiCoreServices = DOICoreServices();
         o_doi_label = doiCoreServices.reserve_doi_label(input_location, publisher_value, contributor_value)
-        type_is_valid = True;
+        type_is_valid = True
         logger.info(o_doi_label.decode())
 
 
