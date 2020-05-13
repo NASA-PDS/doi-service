@@ -113,26 +113,27 @@ TBD
 The DOI summary must manage the following information:
 
 Per <b>DOI</b>:
-- current status (among: reserved, draft, released, deactivated)
+- current status (among: pending, draft, reserved, released, deactivated)
 - latest update
 - submitter
 - title
 - product type
-- steward discipline node
+- steward discipline node ID
 - lid/vid
-- doi
+- doi (may be null if pending or draft)
 - release date
 - latest transaction (key is submitter/datetime)
 
 Per <b>transaction</b>:
-- submitter
+- submitting discipline node ID
 - submitted input (link)
 - submitted output (link)
+- transaction datetime start
 - comment on operation
 
 The information are archived in 2 databases:
 - DOIs: a local SQLite database (https://www.sqlite.org), single table
-- Transactions: a file directory structure <submitter>/<transaction datetime>/ with 3 files:
+- Transactions: a file directory structure <submitting discipline node ID>/<transaction datetime start>/ with 3 files:
     - input
     - output
     - comment (optional)
