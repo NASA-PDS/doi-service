@@ -136,6 +136,8 @@ The information are archived in 2 databases:
     - input
     - output
     - comment (optional)
+    
+These databases will be handle locally and later synchronized with the tracking service.
 
 Every command line operation will interact and feed these databases locally.
 
