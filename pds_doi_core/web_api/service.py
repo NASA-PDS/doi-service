@@ -6,6 +6,7 @@ app = Api(app=flask_app)
 
 name_space = app.namespace('dois', description='PDS DOI Core function restFull API')
 
+
 doi_summary = app.model('doi_summary', {
     'doi': fields.String,
     'lid' : fields.String,
@@ -56,6 +57,11 @@ class MainClass(Resource):
                  'url': 'url of the resource to be loaded (optional)'
              })
     def post(self):
+
+        logger.info(f"post request parameters: {request.args}")
+        logger.info(f"post request parameters: {request.args['node']}")
+        logger.info(f"post request content: {request.data}")
+
         return {
             "status": "To be implemented"
         }

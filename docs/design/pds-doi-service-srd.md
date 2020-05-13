@@ -36,6 +36,14 @@ The PDS Data Object Identifier (DOI) service is responsible for the management o
 3. The service submit the DOI object to the IAD Service and verifies return values
 4. The service posts Released/Published DOI information to Tracking Service and forwards response to Operator
 
+### Operator is alerted if a DOI is not processed nominally by the DOI provider
+1. PDS EN operator receives email on DOIs which:
+    - have been pending for too long (e.g. 2 days)
+    - have been in a reserved or draft status without release for too long (e.g. 2 years)
+    
+2. the PDS EN operator can see a dashboard of all the DOIs with status
+3. the submitter can see a summary and status of all the DOI submitted by its node.
+
 ---
 
 ## Requirements
@@ -70,35 +78,74 @@ The following is a more detailed breakdown of the DOI Service based on its funct
 ### DOI Service
 
 The DOI Service a RESTful web service that provides the ability to perform the following operations for PDS DOIs:
-* Draft a DOI
 * Reserve a DOI
+* Draft a DOI
 * Release a DOI
-* Retrieve a DOI
+* List and retrieve DOIs
 * Update a DOI
-* Delete a DOI
+* Deactivate a DOI
+
+Besides a service will automatically raise alerts on DOIs which have been for too long in given status.
 
 ---
 
-
-#### Retrieve a DOI
-
-![Retrieve DOI Activity Diagram](retrieve_activity.png)
----
-
-#### Create / Draft a DOI
-
-![Create DOI Activity Diagram](create_activity.png)
----
 
 #### Reserve a DOI
 
 TBD 
 ---
 
+#### Draft a DOI
+
+![Create DOI Activity Diagram](create_activity.png)
+---
+
+
 #### Release a DOI
 
 TBD
 ---
+
+#### List/Retrieve a DOI
+
+![Retrieve DOI Activity Diagram](retrieve_activity.png)
+
+The DOI summary must manage the following information:
+
+Per <b>DOI</b>:
+- current status (among: reserved, draft, released, deactivated)
+- latest update
+- submitter
+- title
+- product type
+- steward discipline node
+- lid/vid
+- doi
+- release date
+- latest transaction (key is submitter/datetime)
+
+Per <b>transaction</b>:
+- submitter
+- submitted input (link)
+- submitted output (link)
+- comment on operation
+
+The information are archived in 2 databases:
+- DOIs: a local SQLite database (https://www.sqlite.org), single table
+- Transactions: a file directory structure <submitter>/<transaction datetime>/ with 3 files:
+    - input
+    - output
+    - comment (optional)
+
+Every command line operation will interact and feed these databases locally.
+
+Python objects are developed to handle interactions of the rest of the code with the DOI and transacion history.
+
+The updates are logged consistently so to be re-usable in a central logging facility.
+We will possibly use ELK to centralize the local logs by configuring logs and synchronization as detailed here  https://logz.io/blog/python-logs-elk-elastic-stack/
+
+---
+
 
 #### Update a DOI
 
@@ -106,9 +153,18 @@ See https://github.com/NASA-PDS-Incubator/pds-doi-service/issues/9 for design de
 
 ---
 
-#### Delete a DOI
+#### Deactivate a DOI
 
 TBD
+---
+
+#### Alert on DOIs in certain status for too long
+
+A command allow to extract the list of DOI with following properties:
+- doi with a pending status a OSTI
+- doi with a reserve status for longer than {configurable variable}
+- doi with a draft status for longer than  {configurable variable}
+
 ---
 
 ### Batch Processsing Service
