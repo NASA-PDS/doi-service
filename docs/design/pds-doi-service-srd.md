@@ -141,7 +141,7 @@ These databases will be handle locally and later synchronized with the tracking 
 
 Every command line operation will interact and feed these databases locally.
 
-Python objects are developed to handle interactions of the rest of the code with the DOI and transacion history.
+Python objects are developed to handle interactions of the rest of the code with the DOI and transaction history.
 
 The updates are logged consistently so to be re-usable in a central logging facility.
 We will possibly use ELK to centralize the local logs by configuring logs and synchronization as detailed here  https://logz.io/blog/python-logs-elk-elastic-stack/
