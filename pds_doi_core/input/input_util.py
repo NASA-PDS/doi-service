@@ -17,20 +17,23 @@ from pds_doi_core.util.const import *
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.util.file_dir_util import FileDirUtil
+from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+
+# Get the common logger and set the level for this file.
+import logging
+logger = get_logger('pds_doi_core.input.input_util')
+logger.setLevel(logging.INFO)
+#logger.setLevel(logging.DEBUG)
 
 class DOIInputUtil:
-    global m_debug_mode
     global f_log
     m_module_name = 'DOIInputUtil:'
     f_log = None
-    m_debug_mode = False
-    #m_debug_mode = True
 
     m_doiConfigUtil = DOIConfigUtil()
     m_doiOutputUtil = DOIOutputUtil()
 
     def aggregate_reserve_doi(self,DOI_directory_PathName,i_filelist):
-        function_name = self.m_module_name + 'aggregate_reserve_doi:'
 
         #------------------------------
         # Create a file that groups each DOI record into a single file -- that can singly be submitted
@@ -53,7 +56,7 @@ class DOIInputUtil:
         try:
             f_DOI_aggregate_file = open(DOI_aggregate_filepath, mode='w')
         except:
-            print(function_name,"ERROR: Cannot open file for writing.",DOI_aggregate_filepath)
+            logger.error("ERROR: Cannot open file %s for writing." % DOI_aggregate_filepath)
             sys.exit(1)
 
         try:
@@ -62,85 +65,71 @@ class DOIInputUtil:
             o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,"<?xml version='1.0' encoding='UTF-8'?>\n".encode()])
             o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,"<records>\n".encode()])
         except:
-            print(function_name,"ERROR: Cannot write to file.",DOI_aggregate_filepath)
+            logger.error("Cannot write to file %s" % DOI_aggregate_filepath)
+            sys.exit(1)
 
         for doi_filename in i_filelist:
             try:
                 f_DOI_file = open(doi_filename,mode='r')
                 xmlDOI_Text = f_DOI_file.readlines()
-                if m_debug_mode:
-                    print(function_name,"type(xmlDOI_Text)",type(xmlDOI_Text))
-                    print(function_name,"len(xmlDOI_Text)",len(xmlDOI_Text))
-                    print(function_name,"xmlDOI_Text[1:-2]",xmlDOI_Text[1:-2])
                 # Remove the first and last lines and leave everything in between:
                 #     <records>
                 #     </records>
             except:
-                print(function_name,"ERROR: Cannnot read from DOI file",doi_filename)
+                logger.error("Cannot read from DOI file %s" % doi_filename)
                 sys.exit(1)
 
             # Write everything except first and last line:
             #     <records>
             #     </records>
             try:
-                if m_debug_mode:
-                    print(function_name,"WRITING_LINES")
-                    print(function_name,"len(xmlDOI_Text)",len(xmlDOI_Text))
-                    print(function_name,"xmlDOI_Text[1:-2]",xmlDOI_Text[1:-2])
                 for ii in range(1,len(xmlDOI_Text)-1):
                     f_DOI_aggregate_file.writelines(xmlDOI_Text[ii])
                     o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,xmlDOI_Text[ii].encode()])
 
             except:
-                print(function_name,"#0001:ERROR: Cannot write to file.",DOI_aggregate_filepath)
+                logger.error("Cannot write to file %s" % DOI_aggregate_filepath)
+                sys.exit(1)
         # end for doi_filename in i_filelist)
 
 
         # At this point, all the records have been written.
+        # We can write the last tag.
         try:
             f_DOI_aggregate_file.writelines("</records>\n")
             o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,"</records>\n".encode()])
             # add code here to write aggregate files
             f_DOI_aggregate_file.close()
         except:
-            print(function_name,"#0002:ERROR: Cannot write to file.",DOI_aggregate_filepath)
-
-        #print(function_name,"EARLY_0001")
-        #exit(0)
+            logger.error("Cannot write to file %s" % DOI_aggregate_filepath)
+            sys.exit(1);
 
         return(o_aggregated_DOI_content)
 
     def show_column_names_in_xls(self,xl_sheet):
-        function_name = self.m_module_name + 'show_column_names_in_xls:'
         #------------------------------
         # Using 'Open' the XLS workbook & sheet
         #   -- grab the names of the columns
         #------------------------------
         row = xl_sheet.row(0)  # 1st row
-        print(function_name,60*'-' + 'n(Column #) value [type]n' + 60*'-')
+        logger.info(str(60*'-' + 'n(Column #) value [type]n' + 60*'-'))
         for idx, cell_obj in enumerate(row):
             cell_type_str = cell_obj.ctype
-            #cell_type_str = ctype_text.get(cell_obj.ctype, 'unknown type')
-            #print(function_name,'(%s) %s [%s]' % (idx, cell_obj.value, cell_type_str, ))
-            #print(function_name,'(%s) %s [%s]' % (idx, cell_obj.value, cell_type_str))
-            print(function_name,'(%s) %s [%s]' % (idx, cell_obj.value.lstrip().rstrip().strip('\n'), cell_type_str))
+            logger.info('(%s) %s [%s]' % (idx, cell_obj.value.lstrip().rstrip().strip('\n'), cell_type_str))
+
         return(1)
 
     def parse_sxls_file(self,appBasePath,i_filepath,dict_fixedList=None, dict_configList=None, dict_ConditionData=None):
         # Function receives a URI containing SXLS format and create one external file per row to output directory.
-        function_name = self.m_module_name + 'parse_sxls_file:'
-        global m_debug_mode
         global f_log
-        #m_debug_mode = True
         o_doi_label = None
         o_num_files_created = 0
 
         EXPECTED_NUM_COLUMNS = 7
         i_filelist = [] 
 
-        if m_debug_mode:
-            print(function_name,"appBasePath",appBasePath)
-            print(function_name,"i_filepath",i_filepath)
+        logger.info("appBasePath" + " " + appBasePath)
+        logger.info("i_filepath" + " " + i_filepath)
 
         dbl_quote = chr(34)
         parent_xpath = "/records/record/"
@@ -155,23 +144,21 @@ class DOIInputUtil:
         #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
         #------------------------------
         res_pathName = dict_configList.get("DOI_reserve_template")
-        if m_debug_mode:
-            print(function_name,"res_pathName",res_pathName)
-
+        logger.info("res_pathName" + " " + res_pathName)
         try:
             tree = etree.parse(res_pathName)
             xmlProd_root = tree.getroot()
-
+        except OSError as err:
+            logger.error("  -- ABORT: the xml 'Reserved template label file (%s) could not be found\n" % (res_pathName) )
+            sys.exit(1)
         except etree.ParseError as err:
-            print(function_name,"  -- ABORT: the xml 'Reserved template label file (%s) could not be parsed\n" % (res_pathName) )
+            logger.error("  -- ABORT: the xml 'Reserved template label file (%s) could not be parsed\n" % (res_pathName) )
             sys.exit(1)
         else:
             pass
 
         use_panda_flag = True
-        #use_panda_flag = False
-        if m_debug_mode:
-            print(function_name,"use_panda_flag",use_panda_flag)
+        use_panda_flag = False
 
         #
         # Depending on value of use_panda_flag, import different module.
@@ -182,38 +169,29 @@ class DOIInputUtil:
             xl_wb    = pd.ExcelFile(i_filepath)
             actual_sheet_name = xl_wb.sheet_names[0] # We only want the first sheet.
             xl_wb    = pd.read_excel(i_filepath)
-            if m_debug_mode:
-                print(function_name,"actual_sheet_name",actual_sheet_name)
             xl_sheet = pd.read_excel(i_filepath,actual_sheet_name)
             num_cols = len(xl_sheet.columns)
             num_rows = len(xl_sheet.index)
-            if m_debug_mode:
-                print(function_name,"xl_sheet.head()",xl_sheet.head())
         else:
             xl_wb = xlrd.open_workbook(i_filepath,f_log)
             xl_sheet = xl_wb.sheet_by_index(0)
             num_cols = xl_sheet.ncols
             num_rows = xl_sheet.nrows
 
-        if m_debug_mode:
-            print(function_name,"num_cols",num_cols)
-            print(function_name,"num_rows",num_rows)
+        logger.info("num_cols" + " " + str(num_cols))
+        logger.info("num_rows" + " " + str(num_rows))
+        if use_panda_flag:
+            logger.debug("data columns " + " " + str(list(xl_sheet.columns)));
 
         if (num_cols < EXPECTED_NUM_COLUMNS):
-            print(function_name,"ERROR: expecting",EXPECTED_NUM_COLUMNS,"columns in XLS file has %i columns." % (num_cols),i_filepath)
-            print(function_name,"ERROR:i_filepath",i_filepath)
+            logger.error("expecting" + " " + str(EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (num_cols))
+            logger.error("i_filepath" + " " + i_filepath)
             if use_panda_flag:
-                print("data columns",list(xl_sheet.columns))
+                logger.error("columns " + " " + str(list(xl_sheet.columns)));
             else:
                 self.show_column_names_in_xls(xl_sheet)
             sys.exit(1)
         else:
-            if m_debug_mode:
-                if use_panda_flag:
-                    print("data columns",list(xl_sheet.columns))
-                else:
-                    self.show_column_names_in_xls(xl_sheet)
-
             if use_panda_flag:
                 start_row = 0 # Module pandas read in the column header differently, which make the row 0 the first actual data.
             else:
@@ -236,17 +214,14 @@ class DOIInputUtil:
                 else:
                     related_resource = xl_sheet.cell(row_idx, 6).value
 
-                if m_debug_mode:
-                    print(function_name,"row_idx,related_resource",row_idx,related_resource)
+                logger.debug("row_idx,related_resource" + " " + str(row_idx) + " " + str(related_resource))
 
                 FileName = related_resource.replace("urn:nasa:pds:", "")
                 FileName = FileName.replace("::", "_")
 
-                if m_debug_mode:
-                    print(function_name,"related_resource,FileName",related_resource,FileName)
+                logger.debug("related_resource,FileName" + " " + related_resource + " " + FileName)
 
-                if m_debug_mode:
-                    print(function_name," -- processing Product label file: " + FileName)
+                logger.info(" -- processing Product label file: " + FileName)
 
                 dict_ConditionData[FileName] = {}
 
@@ -262,8 +237,8 @@ class DOIInputUtil:
                     type_date_column = str(type(xl_sheet.iloc[actual_index, 2]))
                 else:
                     type_date_column = str((type(xl_sheet.cell(row_idx, 2).value))) 
-                if m_debug_mode:
-                    print(function_name,"type_date_column",type_date_column)
+
+                logger.debug("type_date_column" + " " + type_date_column)
                 if 'unicode' in type_date_column or 'str' in type_date_column:
                     if use_panda_flag:
                         dict_ConditionData[FileName]["publication_date"] = xl_sheet.iloc[actual_index, 2]
@@ -277,10 +252,6 @@ class DOIInputUtil:
                         pb_int = xl_sheet.cell(row_idx, 2).value
                         pb_datetime = datetime(*xlrd.xldate_as_tuple(pb_int, xl_wb.datemode))
                         dict_ConditionData[FileName]["publication_date"] = pb_datetime.strftime("%Y-%m-%d")
-                        if m_debug_mode:
-                            print(function_name,"pb_int, xl_wb.datemode",pb_int, xl_wb.datemode)
-                            print(function_name,"type(pb_int), type(xl_wb.datemode)",type(pb_int), type(xl_wb.datemode))
-                            print(function_name,"xlrd.xldate_as_tuple(pb_int, xl_wb.datemode)",xlrd.xldate_as_tuple(pb_int, xl_wb.datemode))
 
                 dict_ConditionData[FileName]["product_type"] ="Collection"
                 if use_panda_flag:
@@ -294,13 +265,11 @@ class DOIInputUtil:
                     dict_ConditionData[FileName]["authors/author/first_name"] = xl_sheet.cell(row_idx, 5).value
                     dict_ConditionData[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.cell(row_idx, 6).value
 
-                if m_debug_mode:
-                    print(function_name,"FileName,dict_ConditionData[FileName]",FileName,dict_ConditionData[FileName])
-
                 #------------------------------
                 #------------------------------
                 # Begin replacing the metadata in the DOI template file with that in Product Label
                 #------------------------------
+
                 try:
                     #f_DOI_file = open(res_pathName, mode='r+')
                     f_DOI_file = open(res_pathName, mode='r')
@@ -308,7 +277,7 @@ class DOIInputUtil:
                     f_DOI_file.close()
 
                 except:
-                    print(function_name,"DOI template file (%s) not found for edit\n" % (res_pathName))
+                    logger.error("DOI template file (%s) not found for edit" % (res_pathName))
                     sys.exit(1)
 
                 #------------------------------
@@ -327,10 +296,8 @@ class DOIInputUtil:
                 sString = "DOI_reserved_" + FileName + ".xml"
                 sString = sString.replace(":", "_")
                 DOI_filepath = os.path.join(DOI_directory_PathName,sString)
-                if m_debug_mode:
-                    print(function_name,"sString,DOI_filepath",sString,DOI_filepath)
 
-                print(function_name,"FILE_WRITE",DOI_filepath)
+                logger.info("FILE_WRITE" + " " + DOI_filepath);
 
                 f_DOI_file = open(DOI_filepath, mode='w')
                 f_DOI_file.write(xmlDOI_Text.decode())
@@ -340,13 +307,10 @@ class DOIInputUtil:
                 i_filelist.append(DOI_filepath)
 
                 o_num_files_created += 1
-                #print(function_name,"early#exit#0099")
-                #sys.exit()
             # end for row_idx in range(1, xl_sheet.nrows):    # Iterate through rows ignore 1st row
 
-            if m_debug_mode:
-                print(function_name,"FILE_WRITE_SUMMARY:o_num_files_created",o_num_files_created)
-                print(function_name,"FILE_WRITE_SUMMARY:num_rows",num_rows)
+            logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))
+            logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
             o_aggregated_DOI_content = self.aggregate_reserve_doi(DOI_directory_PathName,i_filelist)
 
@@ -354,19 +318,15 @@ class DOIInputUtil:
 
     def parse_csv_file(self,appBasePath,i_filepath,dict_fixedList=None, dict_configList=None, dict_ConditionData=None):
         # Function receives a URI containing CSV format and create one external file per row to output directory.
-        function_name = self.m_module_name + 'parse_csv_file:'
-        global m_debug_mode
         global f_log
-        m_debug_mode = True
         o_doi_label = None
         o_num_files_created = 0
 
         EXPECTED_NUM_COLUMNS = 7
         i_filelist = [] 
 
-        if m_debug_mode:
-            print(function_name,"appBasePath",appBasePath)
-            print(function_name,"i_filepath",i_filepath)
+        logger.info("appBasePath" + " " + appBasePath)
+        logger.info("i_filepath" + " " + i_filepath)
 
         dbl_quote = chr(34)
         parent_xpath = "/records/record/"
@@ -383,23 +343,22 @@ class DOIInputUtil:
         #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
         #------------------------------
         res_pathName = dict_configList.get("DOI_reserve_template")
-        if m_debug_mode:
-            print(function_name,"res_pathName",res_pathName)
+        logger.info("res_pathName" + " " + res_pathName)
 
         try:
             tree = etree.parse(res_pathName)
             xmlProd_root = tree.getroot()
-
+        except OSError as err:
+            logger.error("ABORT: the xml 'Reserved template label file (%s) could not be read" % (res_pathName) )
+            sys.exit(1)
         except etree.ParseError as err:
-            print(function_name,"  -- ABORT: the xml 'Reserved template label file (%s) could not be parsed\n" % (res_pathName) )
+            logger.error("ABORT: the xml 'Reserved template label file (%s) could not be parsed" % (res_pathName) )
             sys.exit(1)
         else:
             pass
 
+        # The value of use_panda_flag must be true since we don't have the CSV implemented using xlrd.
         use_panda_flag = True
-        #use_panda_flag = False
-        if m_debug_mode:
-            print(function_name,"use_panda_flag",use_panda_flag)
 
         #
         # Depending on value of use_panda_flag, import different module.
@@ -410,34 +369,22 @@ class DOIInputUtil:
             xl_sheet = pd.read_csv(i_filepath)
             num_cols = len(xl_sheet.columns)
             num_rows = len(xl_sheet.index)
-            if m_debug_mode:
-                print(function_name,"xl_sheet.head()",xl_sheet.head())
+            logger.debug("xl_sheet.head() " + " " + str(xl_sheet.head()))
         else:
-            pass
-            #xl_wb = xlrd.open_workbook(i_filepath,f_log)
-            #xl_sheet = xl_wb.sheet_by_index(0)
-            #num_cols = xl_sheet.ncols
-            #num_rows = xl_sheet.nrows
+            logger.error("The value of use_panda_flag cannot be False.  The parsing of CSV is not implemented using xlrd.")
+            sys.exit(1)
 
-        if m_debug_mode:
-            print(function_name,"num_cols",num_cols)
-            print(function_name,"num_rows",num_rows)
+        logger.info("num_cols" + " " + str(num_cols))
+        logger.info("num_rows" + " " + str(num_rows))
+        logger.debug("data columns" + str(list(xl_sheet.columns)))
 
         if (num_cols < EXPECTED_NUM_COLUMNS):
-            print(function_name,"ERROR: expecting",EXPECTED_NUM_COLUMNS,"columns in XLS file has %i columns." % (num_cols),i_filepath)
-            print(function_name,"ERROR:i_filepath",i_filepath)
+            logger.error("expecting" + " " + str(EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (num_cols))
+            logger.error("i_filepath" + " " + i_filepath)
             if use_panda_flag:
-                print("data columns",list(xl_sheet.columns))
-            else:
-                self.ShowColumnNamesInXLS(xl_sheet)
+                logger.error("data columns " + " " + str(list(xl_sheet.columns)));
             sys.exit(1)
         else:
-            if m_debug_mode:
-                if use_panda_flag:
-                    print("data columns",list(xl_sheet.columns))
-                else:
-                    self.ShowColumnNamesInXLS(xl_sheet)
-
             if use_panda_flag:
                 start_row = 0 # Module pandas read in the column header differently, which make the row 0 the first actual data.
             else:
@@ -463,20 +410,14 @@ class DOIInputUtil:
                 else:
                     related_resource = xl_sheet.cell(row_idx, 6).value
 
-                if m_debug_mode:
-                    print(function_name,"row_idx,related_resource",row_idx,related_resource)
-                #print(function_name,"related_resource[" + related_resource + "]")
-                #print(function_name,"ZZZ_001")
-                #exit(0)
+                logger.debug("row_idx,related_resource" + " " + str(row_idx) + " " + str(related_resource))
 
                 FileName = related_resource.replace("urn:nasa:pds:", "")
                 FileName = FileName.replace("::", "_")
 
-                if m_debug_mode:
-                    print(function_name,"related_resource,FileName",related_resource,FileName)
+                logger.info("related_resource,FileName" + " " + related_resource + " " + FileName)
 
-                if m_debug_mode:
-                    print(function_name," -- processing Product label file: " + FileName)
+                logger.info(" -- processing Product label file: " + FileName)
 
                 dict_ConditionData[FileName] = {}
 
@@ -492,8 +433,8 @@ class DOIInputUtil:
                     type_date_column = str(type(xl_sheet.iloc[actual_index, 2]))
                 else:
                     type_date_column = str((type(xl_sheet.cell(row_idx, 2).value))) 
-                if m_debug_mode:
-                    print(function_name,"type_date_column",type_date_column)
+
+                logger.debug("type_date_column" + " " + type_date_column)
                 if 'unicode' in type_date_column or 'str' in type_date_column:
                     if use_panda_flag:
                         dict_ConditionData[FileName]["publication_date"] = xl_sheet.iloc[actual_index, 2]
@@ -507,10 +448,6 @@ class DOIInputUtil:
                         pb_int = xl_sheet.cell(row_idx, 2).value
                         pb_datetime = datetime(*xlrd.xldate_as_tuple(pb_int, xl_wb.datemode))
                         dict_ConditionData[FileName]["publication_date"] = pb_datetime.strftime("%Y-%m-%d")
-                        if m_debug_mode:
-                            print(function_name,"pb_int, xl_wb.datemode",pb_int, xl_wb.datemode)
-                            print(function_name,"type(pb_int), type(xl_wb.datemode)",type(pb_int), type(xl_wb.datemode))
-                            print(function_name,"xlrd.xldate_as_tuple(pb_int, xl_wb.datemode)",xlrd.xldate_as_tuple(pb_int, xl_wb.datemode))
 
                 dict_ConditionData[FileName]["product_type"] ="Collection"
                 if use_panda_flag:
@@ -524,9 +461,6 @@ class DOIInputUtil:
                     dict_ConditionData[FileName]["authors/author/first_name"] = xl_sheet.cell(row_idx, 5).value
                     dict_ConditionData[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.cell(row_idx, 6).value
 
-                if m_debug_mode:
-                    print(function_name,"FileName,dict_ConditionData[FileName]",FileName,dict_ConditionData[FileName])
-
                 #------------------------------
                 #------------------------------
                 # Begin replacing the metadata in the DOI template file with that in Product Label
@@ -538,7 +472,7 @@ class DOIInputUtil:
                     f_DOI_file.close()
 
                 except:
-                    print(function_name,"DOI template file (%s) not found for edit\n" % (res_pathName))
+                    logger.error("DOI template file (%s) not found for edit\n" % (res_pathName))
                     sys.exit(1)
 
                 #------------------------------
@@ -557,10 +491,9 @@ class DOIInputUtil:
                 sString = "DOI_reserved_" + FileName + ".xml"
                 sString = sString.replace(":", "_")
                 DOI_filepath = os.path.join(DOI_directory_PathName,sString)
-                if m_debug_mode:
-                    print(function_name,"sString,DOI_filepath",sString,DOI_filepath)
+                logger.info("sString,DOI_filepath" + " " + sString + " " + DOI_filepath)
 
-                print(function_name,"FILE_WRITE",DOI_filepath)
+                logger.info("FILE_WRITE" + " " + DOI_filepath);
 
                 f_DOI_file = open(DOI_filepath, mode='w')
                 f_DOI_file.write(xmlDOI_Text.decode())
@@ -570,15 +503,10 @@ class DOIInputUtil:
                 i_filelist.append(DOI_filepath)
 
                 o_num_files_created += 1
-                #print(function_name,"early#exit#0099")
-                #sys.exit()
             # end for row_idx in range(1, xl_sheet.nrows):    # Iterate through rows ignore 1st row
 
-            if m_debug_mode:
-                print(function_name,"FILE_WRITE_SUMMARY:o_num_files_created",o_num_files_created)
-                print(function_name,"FILE_WRITE_SUMMARY:num_rows",num_rows)
-            #print(function_name,"early#exit#0099")
-            #sys.exit()
+            logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))
+            logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
             o_aggregated_DOI_content = self.aggregate_reserve_doi(DOI_directory_PathName,i_filelist)
 
@@ -586,13 +514,8 @@ class DOIInputUtil:
 
 if __name__ == '__main__':
     global f_log   
-    global m_debug_mode
     function_name = 'main:'
-    #print(function_name,'entering')
     f_log     = None 
-    m_debug_mode = True
-    m_debug_mode = False
-
 
     doiInputUtil = DOIInputUtil()
     doiConfigUtil = DOIConfigUtil()
@@ -617,8 +540,8 @@ if __name__ == '__main__':
     dict_LIDVID_submitted = {}
 
     i_filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.xlsx')
-    #o_num_files_created = doiInputUtil.ParseSXLSFile(appBasePath,i_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData)
-    #print(function_name,"o_num_files_created",o_num_files_created)
+    o_num_files_created = doiInputUtil.ParseSXLSFile(appBasePath,i_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData)
+    print(function_name,"o_num_files_created",o_num_files_created)
 
 
     i_filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.csv')

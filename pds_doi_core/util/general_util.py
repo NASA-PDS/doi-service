@@ -11,14 +11,30 @@ from xml.etree import ElementTree
 from datetime import datetime
 from pds_doi_core.util.const import *
 
+# Put the function get_logger here in the beginning of the file so we can call it.
+def get_logger(module_name=''):
+    # If the user specify the module name, we can use it.
+    if module_name != '':
+        logger =logging.getLogger(module_name)
+    else:
+        logger =logging.getLogger(__name__)
+    my_format = "%(levelname)s %(name)s:%(funcName)s %(message)s"
+    logging.basicConfig(filename="pds_doi_core.log",
+                        format=my_format,
+                        filemode='a')
 
+    logger.setLevel(logging.DEBUG)
+    return logger
 
+# Get the common logger and set the level for this file.
+import logging
+logger = get_logger()
+logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 class DOIGeneralUtil:
-    global m_debug_mode
     global f_debug
     m_module_name = 'DOIGeneralUtil:'
-    m_debug_mode = False
     f_debug = None 
 
     #------------------------------
@@ -37,10 +53,6 @@ class DOIGeneralUtil:
     def return_keyword_values(self,dict_configList, list_keyword_values):
     #------------------------------                                                                                                 
     #------------------------------                                                                                                 
-        function_name = self.m_module_name + 'ReturnKeywordValues:'
-        global m_debug_mode
-        #m_debug_mode = True
-
         keywords = ""
 
         #------------------------------                                                                                                 
@@ -51,8 +63,8 @@ class DOIGeneralUtil:
         # global_keyword_values preceed values scraped from Product label
         #------------------------------   
         global_keywords = dict_configList.get("global_keyword_values", 'None')
-        if m_debug_mode:
-            print(function_name,"global_keywords",global_keywords)
+
+        logger.debug("global_keywords " + str(global_keywords))
 
         if (global_keywords is not None):
             if ("" in global_keywords):
@@ -78,8 +90,7 @@ class DOIGeneralUtil:
                 if (items not in keywords):
                     keywords += " " + items
 
-        if m_debug_mode:
-            print(function_name,"list_keyword_values",len(list_keyword_values),list_keyword_values)
+        logger.debug("list_keyword_values " + str(len(list_keyword_values)) + str(list_keyword_values))
 
         return(keywords)
 
@@ -96,10 +107,6 @@ class DOIGeneralUtil:
     #        'dph': 'http://pds.nasa.gov/pds4/dph/v01'}
     #------------------------------
 
-        function_name = self.m_module_name + 'return_name_space_dictionary:'
-        #print(function_name,'xmlFile',xmlFile)
-        #print(function_name,'xmlContent',xmlContent)
-
         #------------------------------
         # Create a DICT of namespaces identified in the XML label
         #------------------------------
@@ -110,15 +117,10 @@ class DOIGeneralUtil:
             #xmlContent_as_string = xmlContent
             #if isinstance(xmlContent,bytes):
             #    xmlContent_as_string = xmlContent.decode()
-            #print(function_name,'INSPECT_VARIABLE:type(xmlContent)',type(xmlContent))
             xmlContent_as_string = self.decode_bytes_to_string(xmlContent)
-            #print(function_name,'INSPECT_VARIABLE:xmlContent_as_string)',xmlContent_as_string)
-            #print(function_name,'INSPECT_VARIABLE:type(xmlContent_as_string)',type(xmlContent_as_string))
             dict_namespaces = dict([
                 node for _, node in ElementTree.iterparse(StringIO(xmlContent_as_string), events=['start-ns'])
         ])
-            #print(function_name,'NAME_SPACE_SUCCESS',dict_namespaces)
-            #exit(0)
             return dict_namespaces
 
         #------------------------------
@@ -135,8 +137,6 @@ class DOIGeneralUtil:
     def return_relative_path_and_filename(self,rootPath, pathName):                                                                         
     #------------------------------                                                                                                 
     #-------------------------                                                                                                      
-        function_name = self.m_module_name + 'return_relative_path_and_filename:'
-
         RelPath  = ""
         FileName = ""
 
@@ -144,44 +144,29 @@ class DOIGeneralUtil:
         # establish the path for the working directory                                                                              
         #  -- C:\\test\test.xml                                                                                                     
         #------------------------------                                                                                             
-        #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.rootPath: " + rootPath + "\n")                          
-        if m_debug_mode:
-            print(function_name,"rootPath: " + rootPath)
-            print(function_name,"pathName: " + pathName)
 
         #------------------------------                                                                                             
         # Remove the working directory from the Path&FileName                                                                       
         #   --- residual is either just a filename or child subdirectories and a filename                                           
         #------------------------------                                                                                             
         a = pathName.replace(rootPath, "")
-        #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.a: " + a + "\n")                                        
-        if m_debug_mode:
-            print(function_name,"a: " + a)
 
         #------------------------------                                                                                             
         # Check is there are 1 or more child directories                                                                            
         #------------------------------                                                                                             
         chr_92 = os.path.sep
-        if m_debug_mode:
-            print(function_name,"chr_92 in a",chr_92 in a)
         if (chr_92 in a):
             fields = a.split(chr_92)
 
             iFields = len(fields)
-            if m_debug_mode:
-                print(function_name,"fields,iFields",fields,iFields)
-        #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.iFields: " + str(iFields) + "\n")                   
 
             if (iFields == 2):
-                #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.iFields == 2\n")                                
                 RelPath = ""
                 FileName = fields[1]
             elif (iFields == 3):
-                #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.iFields == 3\n")                                
                 RelPath = fields[1]
                 FileName = fields[2]
             elif (iFields > 3):
-                #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.iFields > 3\n")                                 
                 FileName = fields[iFields-1]
                 RelPath = fields[1] + chr_92
 
@@ -206,11 +191,8 @@ class DOIGeneralUtil:
                 RelPath = ""                                                                                                            
                 FileName = a                                                                                                            
 
-        #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.RelPath: " + RelPath + "\n")                            
-        #util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.FileName: " + FileName + "\n")                          
-        if m_debug_mode:
-            print(function_name,"RelPath",RelPath)
-            print(function_name,"FileName",FileName)
+        logger.debug("RelPath %s" % RelPath)
+        logger.debug("FileName %s" % FileName)
 
         return RelPath, FileName
 
@@ -225,15 +207,18 @@ class DOIGeneralUtil:
 if __name__ == '__main__':
     from pds_doi_core.input.input_util import DOIInputUtil
     from pds_doi_core.util.config_parser import DOIConfigUtil
-    global m_debug_mode
+
     function_name = 'main:'
-    #print(function_name,'entering')
-    m_debug_mode = False
 
     xls_filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.xlsx')
 
     doiInputUtil = DOIInputUtil()
     doiConfigUtil = DOIConfigUtil()
+    doiGeneralUtil = DOIGeneralUtil()
+
+    rootPath = './'
+    pathName ='./zzz'
+    (RelPath,FileName) = doiGeneralUtil.return_relative_path_and_filename(rootPath, pathName)
 
     # Get the default configuration from external file.  Location may have to be absolute.
     xmlConfigFile = os.path.join('.','config','default_config.xml')
@@ -254,13 +239,5 @@ if __name__ == '__main__':
     dict_ConditionData = {}
     dict_LIDVID_submitted = {}
 
-    o_num_files_created = doiInputUtil.ParseSXLSFile(appBasePath,xls_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData)
+    o_num_files_created = doiInputUtil.parse_sxls_file(appBasePath,xls_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData)
     print(function_name,"o_num_files_created",o_num_files_created)
-
-
-def get_logger():
-    logger =logging.getLogger(__name__)
-    my_format = "%(levelname)s %(name)s:%(funcName)s %(message)s"
-    logging.basicConfig(format=my_format)
-    logger.setLevel(logging.DEBUG)
-    return logger

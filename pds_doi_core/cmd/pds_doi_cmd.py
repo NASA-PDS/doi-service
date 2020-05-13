@@ -23,8 +23,7 @@ from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.input.validation_util import DOIValidatorUtil
 from pds_doi_core.cmd.DOIWebClient import DOIWebClient
 
-logger = get_logger()
-
+logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 
 class DOICoreServices:
     m_doiConfigUtil = DOIConfigUtil()
@@ -164,8 +163,6 @@ class DOICoreServices:
         :param contributor_value:
         :return: o_doi_label:
         """
-        global m_debug_mode
-        # m_debug_mode = True
         o_doi_label = None
 
         action_type = 'create_osti_label'
