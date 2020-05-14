@@ -175,7 +175,7 @@ class DOICoreServices:
 
         # Make sure the contributor is valid before proceeding.
         (o_contributor_is_valid_flag,
-        o_permissible_contributor_list) = self.m_doiValidatorUtil.ValidateContributorValue(
+        o_permissible_contributor_list) = self.m_doiValidatorUtil.validate_contributor_value(
         DOI_CORE_CONST_PUBLISHER_URL, contributor_value)
 
         logger.info(f"o_contributor_is_valid_flag: {o_contributor_is_valid_flag}")

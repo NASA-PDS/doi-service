@@ -14,6 +14,15 @@ import time
 from pds_doi_core.util.const import *
 
 from pds_doi_core.references.contributors import DOIContributorUtil
+from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+
+# Get the common logger and set the level for this file.
+import logging
+logger = get_logger('pds_doi_core.input.validation_util')
+logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
+#logger.setLevel(logging.DEBUG)  # Comment this line once happy with the level of logging set in get_logger() function.
+# Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
+# to INFO if we don't want debug statements.
 
 class DOIValidatorUtil:
     # This class DOIValidatorUtil provides functions to validate various values.
@@ -22,7 +31,7 @@ class DOIValidatorUtil:
     m_module_name = 'DOIValidatorUtil:'
     m_doiContributorUtil = DOIContributorUtil()
 
-    def ValidateContributorValue(self,target_url,i_contributor):
+    def validate_contributor_value(self,target_url,i_contributor):
         # Function ValidateContributorValue validates the given contributor for correctness by extracting valid values from 
         # DOI_CORE_CONST_PUBLISHER_URL variable defined in const.py. The match has to be exact.
         PDS_NODE_IDENTIFIER = '0001_NASA_PDS_1.pds.Node.pds.name'
@@ -30,6 +39,8 @@ class DOIValidatorUtil:
         o_found_dict = None
         o_contributor_is_valid_flag = False
         o_permissible_contributor_list = []
+
+        logger.debug(f"target_url,i_contributor {target_url},{i_contributor}")
 
         # Read from URL if starts with 'http' otherwise read from local file.
         if target_url.startswith('http'):
@@ -72,19 +83,13 @@ class DOIValidatorUtil:
         class_index = -1
 
         for json_key, json_value in json_data[0].items():
-            #print('json_key',json_key)
-            #print('type(json_value)',type(json_value))
-            #print("    len(json_dict['dataDictionary']['classDictionary'])",len(json_dict['dataDictionary']['classDictionary']))
             for json_key_1, json_value_1 in json_value.items():
-                #print("    json_key_1",json_key_1)
                 if isinstance(json_value_1,list):
-                    #print("    json_key_1,type(json_value_1),len(json_value_1)",json_key_1,type(json_value_1),len(json_value_1))
                     pass
                 else:
-                    #print("    json_key_1,type(json_value_1)",json_key_1,type(json_value_1))
                     pass
 
-                o_permissible_value_list = self.m_doiContributorUtil.GetPermissibleValues(json_value_1,json_key_1)
+                o_permissible_value_list = self.m_doiContributorUtil.get_permissible_values(json_value_1,json_key_1)
 
                 if len(o_permissible_value_list) > 0 and not o_contributor_is_valid_flag:
                     num_permissible_names_matched = 0
@@ -102,22 +107,16 @@ class DOIValidatorUtil:
             if 2 == 3:
                 for ii in range(0,len(json_value_1)):
                     for json_key_2, json_value_2 in json_value_1[ii].items():
-                    #print("        ii,json_key_2,type(json_value_2)",ii,json_key_2,type(json_value_2))
                     # Each json_value_2 is a dictionary, we loop through.
                         if isinstance(json_value_2,dict):
                             for json_key_3, json_value_3 in json_value_2.items():
-                                #print("            ii,json_key_3,type(json_value_3)",ii,json_key_3,type(json_value_3))
                                 # If the type of json_value_3 is a list, we look through for PDS_NODE_IDENTIFIER
                                 if isinstance(json_value_3,list):
                                     for kk in range(0,len(json_value_3)):
-                                    #print("            ii,kk,json_key_3 is list:",json_key_3)
                                         for json_key_4, json_value_4 in json_value_3[kk].items():
-                                            #print("            ii,kk,json_key_3,json_key_4,type(json_value_4),json_value_4",ii,kk,json_key_3,json_key_4,type(json_value_4),json_value_4)
-                                            #print("            ii,kk,json_key_3,ASSOCIATION_KEY,json_key_4,type(json_value_4),json_value_4",ii,kk,json_key_3,json_key_4,type(json_value_4),json_value_4)
+                                            pass
                                         # If the type of json_value_4 is dict, we look for 'identifier' 
                                             if isinstance(json_value_4,dict):
-                                                #print("            FOUND_JASON_VALUE_4_DICT",json_value_4)
-                                                #exit(0)
                                                 for json_key_5, json_value_5 in json_value_4.items():
                                                     if json_key_5 == 'identifier' and json_value_5 == PDS_NODE_IDENTIFIER:
                                                         # Save where we found it.
@@ -129,20 +128,17 @@ class DOIValidatorUtil:
                                                         found_key_5 = json_key_5
                                                         found_index_1 = ii # Found this in index ii in found_key_1
                                                         found_index_2 = kk # Found this in index kk of found_key_3
-                                                        print("            FOUND_PDS_NODE_IDENTIFIER,json_value_3",json_value_3)
-                                                        print("            FOUND_PDS_NODE_IDENTIFIER,json_value_4",json_value_4)
-                                                        exit(0)
+                                                        logger.info(f"FOUND_PDS_NODE_IDENTIFIER,json_value_3 {json_value_3}")
+                                                        logger.info(f"FOUND_PDS_NODE_IDENTIFIER,json_value_4 {json_value_4}")
+                                                        exit(0) # Should never get here.
                                             if isinstance(json_value_4,list):
-                                                print("            FOUND_LIST:len(json_value_4)",len(json_value_4))
-                                                print("            FOUND_LIST:json_value_4",json_value_4)
-                                                print("            FOUND_LIST:json_key_1,json_key_2,json_key_3,json_key_4",json_key_1,json_key_2,json_key_3,json_key_4)
-                                                exit(0)
+                                                logger.info(f"FOUND_LIST:len(json_value_4) {len(json_value_4)}")
+                                                logger.info(f"FOUND_LIST:json_value_4 {json_value_4}")
+                                                logger.info(f"FOUND_LIST:json_key_1,json_key_2,json_key_3,json_key_4 {json_key_1,json_key_2,json_key_3,json_key_4}")
+                                                exit(0) # Should never get here.
 
                 # If json_value_2 is a list, we dig to the next level
 
-            #print("    json_dict['dataDictionary']['classDictionary']",json_dict['dataDictionary']['classDictionary'])
-            #print("    len(json_dict['dataDictionary']['classDictionary'])",len(json_dict['dataDictionary']['classDictionary']))
-            #         #print('x, y',x,y) 
             #  json_key_1 Title
             #  json_key_1 Version
             #  json_key_1 Date
@@ -155,25 +151,12 @@ class DOIValidatorUtil:
             # end if isinstance(json_value_1,list) and json_key_1 == 'classDictionary':
         # end for json_key_1, json_value_1 in json_value.items():
 
-        #print("o_found_dict",o_found_dict)
         if o_found_dict is not None:
             for found_key,found_value in o_found_dict.items():
-                print("found_key,found_value",found_key,found_value)
+                logger.debug(f"found_key,found_value {found_key,found_value}")
 
-    #    print("")
-    #    print("found_key_1",found_key_1)
-    #    print("found_key_2",found_key_2)
-    #    print("found_key_3",found_key_3)
-    #    print("found_key_4",found_key_4)
-    #    print("found_key_5",found_key_5)
-    #    print("found_index_1,from found_key_1",found_index_1,found_key_1)
-    #    print("found_index_2,from found_key_3",found_index_2,found_key_3)
-    #    print("")
-    #    print("json_dict['dataDictionary'][found_key_1][found_index_1][found_key_2][found_key_3][found_index_2]",json_dict['dataDictionary'][found_key_1][found_index_1][found_key_2][found_key_3][found_index_2])
-    #
-    #    print("early#exit#0044")
-    #    exit(0)
-
+        logger.debug(f"o_contributor_is_valid_flag,target_url,i_contributor {o_contributor_is_valid_flag},{target_url},{i_contributor}")
+        logger.debug(f"o_contributor_is_valid_flag,i_contributor,o_permissible_contributor_list {o_contributor_is_valid_flag},{target_url},{o_permissible_contributor_list}")
         return(o_contributor_is_valid_flag,o_permissible_contributor_list)
 
 

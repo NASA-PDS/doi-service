@@ -17,7 +17,7 @@ logger = get_logger('pds_doi_core.references.contributor')
 # to INFO if we don't want debug statements.
 
 class DOIContributorUtil:
-    def GetPermissibleValues(self,json_value_1,json_key_1):
+    def get_permissible_values(self,json_value_1,json_key_1):
             # Function returns the PerrmissibleValueList for attributeDictionary where one element matches with PDS_NODE_IDENTIFIER.
             PDS_NODE_IDENTIFIER = '0001_NASA_PDS_1.pds.Node.pds.name'
 
