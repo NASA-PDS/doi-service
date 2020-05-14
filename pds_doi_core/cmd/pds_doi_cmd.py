@@ -7,10 +7,6 @@
 #
 # ------------------------------
 
-# ------------------------------
-# Import the Python libraries                                                                                                   
-# ------------------------------
-
 from lxml import etree
 
 from pds_doi_core.util.cmd_parser import create_cmd_parser
@@ -23,7 +19,13 @@ from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.input.validation_util import DOIValidatorUtil
 from pds_doi_core.cmd.DOIWebClient import DOIWebClient
 
+# Get the common logger and set the level for this file.
+import logging
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
+#logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
+#logger.setLevel(logging.DEBUG)  # Comment this line once happy with the level of logging set in get_logger() function.
+# Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
+# to INFO if we don't want debug statements.
 
 class DOICoreServices:
     m_doiConfigUtil = DOIConfigUtil()
@@ -59,6 +61,7 @@ class DOICoreServices:
             # Get the default configuration from external file.  Location may have to be absolute.
             xml_config_file = os.path.join('.','config','default_config.xml')
 
+            logger.debug(f"xml_config_file {xml_config_file}")
             (dict_configList, dict_fixedList) = self.m_doiConfigUtil.get_config_file_metadata(xml_config_file)
 
             app_base_path = os.path.abspath(os.path.curdir)
@@ -73,6 +76,8 @@ class DOICoreServices:
                                                                            dict_ConditionData=dict_condition_data)
             o_doi_label = o_aggregated_DOI_content
             file_is_parsed_flag = True
+            logger.debug(f"o_num_files_created {o_num_files_created}")
+            logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
 
         if target_url.endswith('.csv'):
             xls_filepath = target_url
@@ -93,6 +98,8 @@ class DOICoreServices:
                                                                           dict_ConditionData=dict_condition_data)
             o_doi_label = o_aggregated_DOI_content
             file_is_parsed_flag = True
+            logger.debug(f"o_num_files_created {o_num_files_created}")
+            logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
 
         # Check to see if the given file has an attempt to process.
         if not file_is_parsed_flag:
@@ -148,10 +155,7 @@ class DOICoreServices:
         logger.debug(f's_out_text {s_out_text}')
         logger.debug(f'doc {doc}')
 
-        # The xmlText now contain all the records built with 'Reserved' status, we can now send it
-        o_status = self.m_doiWebClient.WebClientSubmitExistingContent(xml_text)
-        logger.info(f'o_status {o_status}')
-        exit(0)
+        # The content would have been submitted already, we don't need to send it.
 
         # At this point, the sOutText would contain tag "status = 'Reserved'" in each record tags.
         return s_out_text
@@ -186,8 +190,6 @@ class DOICoreServices:
         o_doi_label = 'invalid action type:action_type ' + action_type
 
         if action_type == 'create_osti_label':
-            # print(function_name,"target_url.startswith('http')",target_url.startswith('http'))
-            # if target_url.startswith('http'):
             o_doi_label = self.m_doiPDS4LabelUtil.parse_pds4_label_via_uri(target_url, publisher_value,
                                                                         contributor_value)
             type_is_valid = True
