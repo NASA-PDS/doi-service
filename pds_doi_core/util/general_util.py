@@ -72,7 +72,7 @@ class DOIGeneralUtil:
 
                 for items in kv:
                     if (not items == ""):
-                        keywords += items + " "
+                        keywords += items + "; " # Add semi-colon between each keyword
             else:
                 if (not len(global_keywords) == 0):
                     keywords = global_keywords
