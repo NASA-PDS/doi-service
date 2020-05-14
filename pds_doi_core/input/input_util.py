@@ -135,7 +135,7 @@ class DOIInputUtil:
         parent_xpath = "/records/record/"
 
         DOI_directory_PathName = os.path.join('.','output')
-        FileDirUtil.CreateDir(DOI_directory_PathName)
+        os.makedirs(DOI_directory_PathName, exists_ok=True)
 
         #------------------------------
         # Open the DOI reserved XML label
@@ -332,9 +332,7 @@ class DOIInputUtil:
         parent_xpath = "/records/record/"
 
         DOI_directory_PathName = os.path.join('.','output')
-        # consider to replace with
-        # os.makedirs(DOI_directory_PathName, exist_ok=True)
-        FileDirUtil.CreateDir(DOI_directory_PathName)
+        os.makedirs(DOI_directory_PathName, exists_ok=True)
 
         #------------------------------
         # Open the DOI reserved XML label
