@@ -102,8 +102,6 @@ class DOIPDS4LabelUtil:
         #   -- etree doesn't support designation of instances
         #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
         #------------------------------
-        # TODO: Remove next line.
-        #xmlContent = None
         try:  
             if os.path.isfile(eachFile):
                 tree = etree.parse(eachFile)
@@ -195,8 +193,6 @@ class DOIPDS4LabelUtil:
             element_count = 0
             string_to_walk = eachFile
             # If the file is a valid file, walk through it.
-            # TODO: Remove next line.
-            #xmlContent = None
             if os.path.isfile(eachFile):
                 context = etree.iterparse(string_to_walk, events=("start", "end"))
             else:
