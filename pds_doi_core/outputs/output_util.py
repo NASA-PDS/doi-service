@@ -14,7 +14,7 @@ from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 # Get the common logger and set the level for this file.
 import logging
 logger = get_logger('pds_doi_core.input.out_util')
-logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
+#logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
 # Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
 # to INFO if we don't want debug statements.
 
