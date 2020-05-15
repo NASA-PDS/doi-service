@@ -39,21 +39,21 @@ class DOIGeneralUtil:
 
     #------------------------------
     #------------------------------
-    def return_doi_date(self,f_debug, debug_flag, prodDate):
+    def return_doi_date(self,f_debug, debug_flag, i_prod_date):
     #------------------------------
-    # 20171207 -- prodDate -- date in: <modification_date>2015-07-14</modification_date>
-    #              doiDate -- date formatted as: 'yyyy-mm-dd'
+    # 20171207 -- i_prod_date -- date in: <modification_date>2015-07-14</modification_date>
+    #              o_doi_date -- date formatted as: 'yyyy-mm-dd'
     #------------------------------
 
-        doiDate = datetime.strptime(prodDate, '%Y-%m-%d').strftime('%m/%d/%Y')
-        return(doiDate)
+        o_doi_date = datetime.strptime(i_prod_date, '%Y-%m-%d').strftime('%m/%d/%Y')
+        return(o_doi_date)
 
     #------------------------------                                                                                                 
     #------------------------------                                                                                                 
-    def return_keyword_values(self,dict_configList, list_keyword_values):
+    def return_keyword_values(self,i_dict_config_list, i_list_keyword_values):
     #------------------------------                                                                                                 
     #------------------------------                                                                                                 
-        keywords = ""
+        o_keywords = ""
 
         #------------------------------                                                                                                 
         # Add the global keyword values in the Config file to those scraped from the Product label
@@ -62,7 +62,7 @@ class DOIGeneralUtil:
         # 
         # global_keyword_values preceed values scraped from Product label
         #------------------------------   
-        global_keywords = dict_configList.get("global_keyword_values", 'None')
+        global_keywords = i_dict_config_list.get("global_keyword_values", 'None')
 
         logger.debug("global_keywords " + str(global_keywords))
 
@@ -72,32 +72,32 @@ class DOIGeneralUtil:
 
                 for items in kv:
                     if (not items == ""):
-                        keywords += items + "; " # Add semi-colon between each keyword
+                        o_keywords += items + "; " # Add semi-colon between each keyword
             else:
                 if (not len(global_keywords) == 0):
-                    keywords = global_keywords
+                    o_keywords = global_keywords
                 else:
-                    keywords = "PDS "
+                    o_keywords = "PDS "
         else:
-            keywords = ""
+            o_keywords = ""
 
         #------------------------------                                                                                                 
         # Add the keyword values that were scraped from the Product label
         #    -- ensure no duplicate values between global and scraped
         #------------------------------   
-        if (not len(list_keyword_values) == 0):
-            for items in list_keyword_values:
-                if (items not in keywords):
-                    keywords += " " + items
+        if (not len(i_list_keyword_values) == 0):
+            for items in i_list_keyword_values:
+                if (items not in o_keywords):
+                    o_keywords += " " + items
 
-        logger.debug("list_keyword_values " + str(len(list_keyword_values)) + str(list_keyword_values))
+        logger.debug("i_list_keyword_values " + str(len(i_list_keyword_values)) + str(i_list_keyword_values))
 
-        return(keywords)
+        return(o_keywords)
 
 
     #------------------------------
     #------------------------------
-    def return_name_space_dictionary(self,f_debug, debug_flag, xmlFile,xmlContent=None):
+    def return_name_space_dictionary(self,f_debug, debug_flag, i_xml_file,i_xml_content=None):
     #------------------------------
     # 20170513 -- http://stackoverflow.com/questions/14853243/parsing-xml-with-namespace-in-python-via-elementtree
     #                -- generates dictionary of namespaces defined in the XML preamble
@@ -111,34 +111,36 @@ class DOIGeneralUtil:
         # Create a DICT of namespaces identified in the XML label
         #------------------------------
         # 04/03/2020: New code: if the content of the XML is already in memory, we can use it.
-        if (xmlContent is not None):
+        if (i_xml_content is not None):
             from io import StringIO ## for Python 3
-            # If the type of xmlContent are bytes, we convert it to string.
-            #xmlContent_as_string = xmlContent
-            #if isinstance(xmlContent,bytes):
-            #    xmlContent_as_string = xmlContent.decode()
-            xmlContent_as_string = self.decode_bytes_to_string(xmlContent)
-            dict_namespaces = dict([
-                node for _, node in ElementTree.iterparse(StringIO(xmlContent_as_string), events=['start-ns'])
+            # If the type of i_xml_content are bytes, we convert it to string.
+            #i_xml_content_as_string = i_xml_content
+            #if isinstance(i_xml_content,bytes):
+            #    i_xml_content_as_string = i_xml_content.decode()
+            xml_content_as_string = self.decode_bytes_to_string(i_xml_content)
+            o_dict_namespaces = dict([
+                node for _, node in ElementTree.iterparse(StringIO(xml_content_as_string), events=['start-ns'])
         ])
-            return dict_namespaces
+            return o_dict_namespaces
 
         #------------------------------
         # Create a DICT of namespaces identified in the XML label
         #------------------------------
-        dict_namespaces = dict([
-        node for _, node in ElementTree.iterparse(xmlFile, events=['start-ns'])
+        o_dict_namespaces = dict([
+        node for _, node in ElementTree.iterparse(i_xml_file, events=['start-ns'])
         ])
 
-        return dict_namespaces
+        return o_dict_namespaces
 
     #------------------------------                                                                                                 
     #------------------------------                                                                                                 
-    def return_relative_path_and_filename(self,rootPath, pathName):                                                                         
+    def return_relative_path_and_filename(self,i_root_path, i_pathname):                                                                         
     #------------------------------                                                                                                 
     #-------------------------                                                                                                      
-        RelPath  = ""
-        FileName = ""
+        #RelPath  = ""
+        #FileName = ""
+        o_rel_path  = ""
+        o_filename  = ""
 
         #------------------------------                                                                                             
         # establish the path for the working directory                                                                              
@@ -149,7 +151,7 @@ class DOIGeneralUtil:
         # Remove the working directory from the Path&FileName                                                                       
         #   --- residual is either just a filename or child subdirectories and a filename                                           
         #------------------------------                                                                                             
-        a = pathName.replace(rootPath, "")
+        a = i_pathname.replace(i_root_path, "")
 
         #------------------------------                                                                                             
         # Check is there are 1 or more child directories                                                                            
@@ -161,48 +163,48 @@ class DOIGeneralUtil:
             iFields = len(fields)
 
             if (iFields == 2):
-                RelPath = ""
-                FileName = fields[1]
+                o_rel_path = ""
+                o_filename = fields[1]
             elif (iFields == 3):
-                RelPath = fields[1]
-                FileName = fields[2]
+                o_rel_path = fields[1]
+                o_filename = fields[2]
             elif (iFields > 3):
-                FileName = fields[iFields-1]
-                RelPath = fields[1] + chr_92
+                o_filename = fields[iFields-1]
+                o_rel_path = fields[1] + chr_92
 
                 iCount  = 0
 
                 for eachField in fields:
                     if (iCount > 1) and (iCount < iFields-1):
-                        RelPath += fields[iCount]
+                        o_rel_path += fields[iCount]
 
                         util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.iCount: " + str(iCount) + "\n")  
-                        util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.RelPath: " + RelPath + "\n")     
+                        util.WriteDebugInfo(f_debug,debug_flag,"Append","ReturnRelativePathAndFileName.o_rel_path: " + o_rel_path + "\n")     
 
                         #------------------------------                                                                             
                         # No trailing file delimiter                                                                                
                         #------------------------------                                                                             
                         if (iCount < (iFields-2)):
-                            RelPath += chr_92
+                            o_rel_path += chr_92
 
                     iCount += 1
 
             else:                                                                                                                       
-                RelPath = ""                                                                                                            
-                FileName = a                                                                                                            
+                o_rel_path = ""                                                                                                            
+                o_filename = a                                                                                                            
 
-        logger.debug("RelPath %s" % RelPath)
-        logger.debug("FileName %s" % FileName)
+        logger.debug("o_rel_path %s" % o_rel_path)
+        logger.debug("o_filename %s" % o_filename)
 
-        return RelPath, FileName
+        return o_rel_path, o_filename
 
-    def decode_bytes_to_string(self,xmlContent):
+    def decode_bytes_to_string(self,i_xml_content):
         o_string = None
-        o_xmlContent_as_string = xmlContent
-        if isinstance(xmlContent,bytes):
-            o_xmlContent_as_string = xmlContent.decode()
+        o_xml_content_as_string = i_xml_content
+        if isinstance(i_xml_content,bytes):
+            o_xml_content_as_string = i_xml_content.decode()
 
-        return(o_xmlContent_as_string)
+        return(o_xml_content_as_string)
 
 if __name__ == '__main__':
     from pds_doi_core.input.input_util import DOIInputUtil
@@ -216,9 +218,9 @@ if __name__ == '__main__':
     doiConfigUtil = DOIConfigUtil()
     doiGeneralUtil = DOIGeneralUtil()
 
-    rootPath = './'
-    pathName ='./zzz'
-    (RelPath,FileName) = doiGeneralUtil.return_relative_path_and_filename(rootPath, pathName)
+    i_root_path = './'
+    i_pathname ='./zzz'
+    (o_rel_path,o_filename) = doiGeneralUtil.return_relative_path_and_filename(i_root_path, i_pathname)
 
     # Get the default configuration from external file.  Location may have to be absolute.
     xmlConfigFile = os.path.join('.','config','default_config.xml')

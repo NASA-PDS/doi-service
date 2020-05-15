@@ -16,7 +16,7 @@ from pds_doi_core.util.const import *
 
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.outputs.output_util import DOIOutputUtil
-from pds_doi_core.util.file_dir_util import FileDirUtil
+#from pds_doi_core.util.file_dir_util import FileDirUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 
 # Get the common logger and set the level for this file.
@@ -33,7 +33,7 @@ class DOIInputUtil:
     m_doiConfigUtil = DOIConfigUtil()
     m_doiOutputUtil = DOIOutputUtil()
 
-    def aggregate_reserve_doi(self,DOI_directory_PathName,i_filelist):
+    def aggregate_reserve_doi(self,i_doi_directory_pathname,i_filelist):
 
         #------------------------------
         # Create a file that groups each DOI record into a single file -- that can singly be submitted
@@ -51,7 +51,7 @@ class DOIInputUtil:
         o_aggregated_DOI_content = b""
 
         sString = "aaa_DOI_aggregate_reserved.xml"
-        DOI_aggregate_filepath = os.path.join(DOI_directory_PathName,sString)
+        DOI_aggregate_filepath = os.path.join(i_doi_directory_pathname,sString)
 
         try:
             f_DOI_aggregate_file = open(DOI_aggregate_filepath, mode='w')
@@ -119,7 +119,7 @@ class DOIInputUtil:
 
         return(1)
 
-    def parse_sxls_file(self,appBasePath,i_filepath,dict_fixedList=None, dict_configList=None, dict_ConditionData=None):
+    def parse_sxls_file(self,i_app_basepath,i_filepath,dict_fixedlist=None, dict_config_list=None, dict_condition_data=None):
         # Function receives a URI containing SXLS format and create one external file per row to output directory.
         global f_log
         o_doi_label = None
@@ -128,14 +128,14 @@ class DOIInputUtil:
         EXPECTED_NUM_COLUMNS = 7
         i_filelist = [] 
 
-        logger.info("appBasePath" + " " + appBasePath)
+        logger.info("i_app_basepath" + " " + i_app_basepath)
         logger.info("i_filepath" + " " + i_filepath)
 
         dbl_quote = chr(34)
         parent_xpath = "/records/record/"
 
-        DOI_directory_PathName = os.path.join('.','output')
-        os.makedirs(DOI_directory_PathName, exists_ok=True)
+        doi_directory_pathname = os.path.join('.','output')
+        os.makedirs(doi_directory_pathname, exist_ok=True)
 
         #------------------------------
         # Open the DOI reserved XML label
@@ -143,7 +143,7 @@ class DOIInputUtil:
         #   -- etree doesn't support designation of instances
         #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
         #------------------------------
-        res_pathName = dict_configList.get("DOI_reserve_template")
+        res_pathName = dict_config_list.get("DOI_reserve_template")
         logger.info("res_pathName" + " " + res_pathName)
         try:
             tree = etree.parse(res_pathName)
@@ -223,12 +223,12 @@ class DOIInputUtil:
 
                 logger.info(" -- processing Product label file: " + FileName)
 
-                dict_ConditionData[FileName] = {}
+                dict_condition_data[FileName] = {}
 
                 if use_panda_flag:
-                    dict_ConditionData[FileName]["title"] = xl_sheet.iloc[actual_index, 1]
+                    dict_condition_data[FileName]["title"] = xl_sheet.iloc[actual_index, 1]
                 else:
-                    dict_ConditionData[FileName]["title"] = xl_sheet.cell(row_idx, 1).value
+                    dict_condition_data[FileName]["title"] = xl_sheet.cell(row_idx, 1).value
                 #--
                 # Eventhough cell is shown to be 'text / unicode' value is actually stored as datetime
                 #    -- test for unicode else datetime
@@ -241,9 +241,9 @@ class DOIInputUtil:
                 logger.debug("type_date_column" + " " + type_date_column)
                 if 'unicode' in type_date_column or 'str' in type_date_column:
                     if use_panda_flag:
-                        dict_ConditionData[FileName]["publication_date"] = xl_sheet.iloc[actual_index, 2]
+                        dict_condition_data[FileName]["publication_date"] = xl_sheet.iloc[actual_index, 2]
                     else:
-                        dict_ConditionData[FileName]["publication_date"] = xl_sheet.cell(row_idx, 2).value
+                        dict_condition_data[FileName]["publication_date"] = xl_sheet.cell(row_idx, 2).value
                 else:
                     if use_panda_flag:
                         pb_int = xl_sheet.iloc[actual_index,2]
@@ -251,19 +251,19 @@ class DOIInputUtil:
                     else:
                         pb_int = xl_sheet.cell(row_idx, 2).value
                         pb_datetime = datetime(*xlrd.xldate_as_tuple(pb_int, xl_wb.datemode))
-                        dict_ConditionData[FileName]["publication_date"] = pb_datetime.strftime("%Y-%m-%d")
+                        dict_condition_data[FileName]["publication_date"] = pb_datetime.strftime("%Y-%m-%d")
 
-                dict_ConditionData[FileName]["product_type"] ="Collection"
+                dict_condition_data[FileName]["product_type"] ="Collection"
                 if use_panda_flag:
-                    dict_ConditionData[FileName]["product_type_specific"]     = xl_sheet.iloc[actual_index,3]
-                    dict_ConditionData[FileName]["authors/author/last_name"]  = xl_sheet.iloc[actual_index,4]
-                    dict_ConditionData[FileName]["authors/author/first_name"] = xl_sheet.iloc[actual_index,5]
-                    dict_ConditionData[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.iloc[actual_index,6]
+                    dict_condition_data[FileName]["product_type_specific"]     = xl_sheet.iloc[actual_index,3]
+                    dict_condition_data[FileName]["authors/author/last_name"]  = xl_sheet.iloc[actual_index,4]
+                    dict_condition_data[FileName]["authors/author/first_name"] = xl_sheet.iloc[actual_index,5]
+                    dict_condition_data[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.iloc[actual_index,6]
                 else:
-                    dict_ConditionData[FileName]["product_type_specific"]     = xl_sheet.cell(row_idx, 3).value
-                    dict_ConditionData[FileName]["authors/author/last_name"]  = xl_sheet.cell(row_idx, 4).value
-                    dict_ConditionData[FileName]["authors/author/first_name"] = xl_sheet.cell(row_idx, 5).value
-                    dict_ConditionData[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.cell(row_idx, 6).value
+                    dict_condition_data[FileName]["product_type_specific"]     = xl_sheet.cell(row_idx, 3).value
+                    dict_condition_data[FileName]["authors/author/last_name"]  = xl_sheet.cell(row_idx, 4).value
+                    dict_condition_data[FileName]["authors/author/first_name"] = xl_sheet.cell(row_idx, 5).value
+                    dict_condition_data[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.cell(row_idx, 6).value
 
                 #------------------------------
                 #------------------------------
@@ -283,19 +283,19 @@ class DOIInputUtil:
                 #------------------------------
                 # For each key/value in dictionary (that contains the values for the DOI label)
                 #------------------------------
-                dict_value = dict_ConditionData.get(FileName)
+                dict_value = dict_condition_data.get(FileName)
 
                 for key, value in dict_value.items():
                     attr_xpath = parent_xpath + key
 
-                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixedList, xmlDOI_Text, attr_xpath, value)
+                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixedlist, xmlDOI_Text, attr_xpath, value)
 
                 #------------------------------
                 # Write the replacement metadata to the DOI file
                 #------------------------------
                 sString = "DOI_reserved_" + FileName + ".xml"
                 sString = sString.replace(":", "_")
-                DOI_filepath = os.path.join(DOI_directory_PathName,sString)
+                DOI_filepath = os.path.join(doi_directory_pathname,sString)
 
                 logger.info("FILE_WRITE" + " " + DOI_filepath);
 
@@ -312,11 +312,11 @@ class DOIInputUtil:
             logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))
             logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
-            o_aggregated_DOI_content = self.aggregate_reserve_doi(DOI_directory_PathName,i_filelist)
+            o_aggregated_DOI_content = self.aggregate_reserve_doi(doi_directory_pathname,i_filelist)
 
         return(o_num_files_created,o_aggregated_DOI_content)
 
-    def parse_csv_file(self,appBasePath,i_filepath,dict_fixedList=None, dict_configList=None, dict_ConditionData=None):
+    def parse_csv_file(self,i_app_basepath,i_filepath,dict_fixedlist=None, dict_config_list=None, dict_condition_data=None):
         # Function receives a URI containing CSV format and create one external file per row to output directory.
         global f_log
         o_doi_label = None
@@ -325,14 +325,14 @@ class DOIInputUtil:
         EXPECTED_NUM_COLUMNS = 7
         i_filelist = [] 
 
-        logger.info("appBasePath" + " " + appBasePath)
+        logger.info("i_app_basepath" + " " + i_app_basepath)
         logger.info("i_filepath" + " " + i_filepath)
 
         dbl_quote = chr(34)
         parent_xpath = "/records/record/"
 
-        DOI_directory_PathName = os.path.join('.','output')
-        os.makedirs(DOI_directory_PathName, exists_ok=True)
+        doi_directory_pathname = os.path.join('.','output')
+        os.makedirs(doi_directory_pathname, exist_ok=True)
 
         #------------------------------
         # Open the DOI reserved XML label
@@ -340,7 +340,7 @@ class DOIInputUtil:
         #   -- etree doesn't support designation of instances
         #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
         #------------------------------
-        res_pathName = dict_configList.get("DOI_reserve_template")
+        res_pathName = dict_config_list.get("DOI_reserve_template")
         logger.info("res_pathName" + " " + res_pathName)
 
         try:
@@ -417,12 +417,12 @@ class DOIInputUtil:
 
                 logger.info(" -- processing Product label file: " + FileName)
 
-                dict_ConditionData[FileName] = {}
+                dict_condition_data[FileName] = {}
 
                 if use_panda_flag:
-                    dict_ConditionData[FileName]["title"] = xl_sheet.iloc[actual_index, 1]
+                    dict_condition_data[FileName]["title"] = xl_sheet.iloc[actual_index, 1]
                 else:
-                    dict_ConditionData[FileName]["title"] = xl_sheet.cell(row_idx, 1).value
+                    dict_condition_data[FileName]["title"] = xl_sheet.cell(row_idx, 1).value
                 #--
                 # Eventhough cell is shown to be 'text / unicode' value is actually stored as datetime
                 #    -- test for unicode else datetime
@@ -435,9 +435,9 @@ class DOIInputUtil:
                 logger.debug("type_date_column" + " " + type_date_column)
                 if 'unicode' in type_date_column or 'str' in type_date_column:
                     if use_panda_flag:
-                        dict_ConditionData[FileName]["publication_date"] = xl_sheet.iloc[actual_index, 2]
+                        dict_condition_data[FileName]["publication_date"] = xl_sheet.iloc[actual_index, 2]
                     else:
-                        dict_ConditionData[FileName]["publication_date"] = xl_sheet.cell(row_idx, 2).value
+                        dict_condition_data[FileName]["publication_date"] = xl_sheet.cell(row_idx, 2).value
                 else:
                     if use_panda_flag:
                         pb_int = xl_sheet.iloc[actual_index,2]
@@ -445,19 +445,19 @@ class DOIInputUtil:
                     else:
                         pb_int = xl_sheet.cell(row_idx, 2).value
                         pb_datetime = datetime(*xlrd.xldate_as_tuple(pb_int, xl_wb.datemode))
-                        dict_ConditionData[FileName]["publication_date"] = pb_datetime.strftime("%Y-%m-%d")
+                        dict_condition_data[FileName]["publication_date"] = pb_datetime.strftime("%Y-%m-%d")
 
-                dict_ConditionData[FileName]["product_type"] ="Collection"
+                dict_condition_data[FileName]["product_type"] ="Collection"
                 if use_panda_flag:
-                    dict_ConditionData[FileName]["product_type_specific"]     = xl_sheet.iloc[actual_index,3]
-                    dict_ConditionData[FileName]["authors/author/last_name"]  = xl_sheet.iloc[actual_index,4]
-                    dict_ConditionData[FileName]["authors/author/first_name"] = xl_sheet.iloc[actual_index,5]
-                    dict_ConditionData[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.iloc[actual_index,6]
+                    dict_condition_data[FileName]["product_type_specific"]     = xl_sheet.iloc[actual_index,3]
+                    dict_condition_data[FileName]["authors/author/last_name"]  = xl_sheet.iloc[actual_index,4]
+                    dict_condition_data[FileName]["authors/author/first_name"] = xl_sheet.iloc[actual_index,5]
+                    dict_condition_data[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.iloc[actual_index,6]
                 else:
-                    dict_ConditionData[FileName]["product_type_specific"]     = xl_sheet.cell(row_idx, 3).value
-                    dict_ConditionData[FileName]["authors/author/last_name"]  = xl_sheet.cell(row_idx, 4).value
-                    dict_ConditionData[FileName]["authors/author/first_name"] = xl_sheet.cell(row_idx, 5).value
-                    dict_ConditionData[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.cell(row_idx, 6).value
+                    dict_condition_data[FileName]["product_type_specific"]     = xl_sheet.cell(row_idx, 3).value
+                    dict_condition_data[FileName]["authors/author/last_name"]  = xl_sheet.cell(row_idx, 4).value
+                    dict_condition_data[FileName]["authors/author/first_name"] = xl_sheet.cell(row_idx, 5).value
+                    dict_condition_data[FileName]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.cell(row_idx, 6).value
 
                 #------------------------------
                 #------------------------------
@@ -476,19 +476,19 @@ class DOIInputUtil:
                 #------------------------------
                 # For each key/value in dictionary (that contains the values for the DOI label)
                 #------------------------------
-                dict_value = dict_ConditionData.get(FileName)
+                dict_value = dict_condition_data.get(FileName)
 
                 for key, value in dict_value.items():
                     attr_xpath = parent_xpath + key
 
-                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixedList, xmlDOI_Text, attr_xpath, value)
+                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixedlist, xmlDOI_Text, attr_xpath, value)
 
                 #------------------------------
                 # Write the replacement metadata to the DOI file
                 #------------------------------
                 sString = "DOI_reserved_" + FileName + ".xml"
                 sString = sString.replace(":", "_")
-                DOI_filepath = os.path.join(DOI_directory_PathName,sString)
+                DOI_filepath = os.path.join(doi_directory_pathname,sString)
                 logger.info("sString,DOI_filepath" + " " + sString + " " + DOI_filepath)
 
                 logger.info("FILE_WRITE" + " " + DOI_filepath);
@@ -506,7 +506,7 @@ class DOIInputUtil:
             logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))
             logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
-            o_aggregated_DOI_content = self.aggregate_reserve_doi(DOI_directory_PathName,i_filelist)
+            o_aggregated_DOI_content = self.aggregate_reserve_doi(doi_directory_pathname,i_filelist)
 
         return(o_num_files_created,o_aggregated_DOI_content)
 
@@ -521,27 +521,24 @@ if __name__ == '__main__':
     # Get the default configuration from external file.  Location may have to be absolute.
     xmlConfigFile = os.path.join('.','config','default_config.xml')
 
-    dict_configList = {}
-    dict_fixedList  = {}
-    (dict_configList, dict_fixedList) = doiConfigUtil.get_config_file_metadata(xmlConfigFile)
+    dict_config_list = {}
+    dict_fixedlist  = {}
+    (dict_config_list, dict_fixedlist) = doiConfigUtil.get_config_file_metadata(xmlConfigFile)
 
-    appBasePath = os.path.abspath(os.path.curdir)
+    app_basepath = os.path.abspath(os.path.curdir)
     #------------------------------
     # Set the values for the common parameters
     #------------------------
-    root_path = dict_configList.get("root_path")
-    pds_uri   = dict_fixedList.get("pds_uri")
+    root_path = dict_config_list.get("root_path")
+    pds_uri   = dict_fixedlist.get("pds_uri")
    
-    dict_fileName_matched_status = {}
-    dict_siteURL = {}
-    dict_ConditionData = {}
-    dict_LIDVID_submitted = {}
+    dict_condition_data = {}
 
-    i_filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.xlsx')
-    o_num_files_created = doiInputUtil.ParseSXLSFile(appBasePath,i_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData)
+    filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.xlsx')
+    o_num_files_created = doiInputUtil.parse_sxls_file(app_basepath,filepath,dict_fixedlist,dict_config_list,dict_condition_data)
     print(function_name,"o_num_files_created",o_num_files_created)
 
 
-    i_filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.csv')
-    o_num_files_created = doiInputUtil.ParseCSVFile(appBasePath,i_filepath,dict_fixedList=dict_fixedList,dict_configList=dict_configList,dict_ConditionData=dict_ConditionData)
+    filepath = os.path.join('.','input','DOI_Reserved_GEO_200318.csv')
+    o_num_files_created = doiInputUtil.parse_csv_file(app_basepath,filepath,dict_fixedlist,dict_config_list,dict_condition_data)
     print(function_name,"o_num_files_created",o_num_files_created)

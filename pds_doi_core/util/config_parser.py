@@ -23,20 +23,20 @@ class DOIConfigUtil:
     #m_debug_mode = False
     m_DOIOutputUtil = DOIOutputUtil()
 
-    def get_config_file_metadata(self,filename):
+    def get_config_file_metadata(self,i_filename):
     #------------------------------
     #------------------------------
         function_name = self.m_module_name + 'get_config_file_metadata:'
 
-        if (not os.path.exists(filename)):
-            print("exiting: configuration file not found - " + filename)
+        if (not os.path.exists(i_filename)):
+            print("exiting: configuration file not found - " + i_filename)
             sys.exit(1)
 
         else:
             #------------------------------
             # Read the metadata in the configuration file
             #------------------------------
-            with open(filename, 'rt') as f:
+            with open(i_filename, 'rt') as f:
                 tree = ElementTree.parse(f)
                 doc  = tree.getroot()
 

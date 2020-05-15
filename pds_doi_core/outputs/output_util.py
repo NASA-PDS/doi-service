@@ -151,22 +151,22 @@ class DOIOutputUtil:
             num_children_total = len(list(my_parent[0])) # Check to see how many children have been added to the parent.
         return(i_doc)
 
-    def populate_doi_xml_with_values(self,dict_fixedList, xmlText, attr_xpath, i_value):                                      
-        # Given an XML object xmlText, this function will update the attr_xpath in xmlText with the new input i_value.
-        # Since we don't know the type of xmlText (bytes or text), we may have to encode xmlText from string to bytes.
+    def populate_doi_xml_with_values(self,dict_fixedlist, xml_text, attr_xpath, i_value):                                      
+        # Given an XML object xml_text, this function will update the attr_xpath in xml_text with the new input i_value.
+        # Since we don't know the type of xml_text (bytes or text), we may have to encode xml_text from string to bytes.
         elm = None # Set to None so the value can be checked before printing.
 
-        logger.debug("len(xmlText) %s",len(xmlText))
-        logger.debug("type(xmlText) %s",type(xmlText))
+        logger.debug("len(xml_text) %s",len(xml_text))
+        logger.debug("type(xml_text) %s",type(xml_text))
 
         #------------------------------                                                                                             
         # Populate the xml attribute with the specified value                                                                       
         #------------------------------                                                                                             
 
-        if isinstance(xmlText,bytes):
-            doc = etree.fromstring(xmlText)
+        if isinstance(xml_text,bytes):
+            doc = etree.fromstring(xml_text)
         else:
-            doc = etree.fromstring(xmlText.encode()) # Have to change the text to bytes then encode it to get it to work.
+            doc = etree.fromstring(xml_text.encode()) # Have to change the text to bytes then encode it to get it to work.
 
         if len(doc.xpath(attr_xpath)) == 0:
             # Because the document tree 'doc' does not have the xpath already, will attempt to populate the 'first_name' and 'last_name' tags.
