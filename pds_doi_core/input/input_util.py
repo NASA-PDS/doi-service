@@ -16,7 +16,6 @@ from pds_doi_core.util.const import *
 
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.outputs.output_util import DOIOutputUtil
-#from pds_doi_core.util.file_dir_util import FileDirUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 
 # Get the common logger and set the level for this file.
@@ -519,11 +518,11 @@ if __name__ == '__main__':
     doiConfigUtil = DOIConfigUtil()
 
     # Get the default configuration from external file.  Location may have to be absolute.
-    xmlConfigFile = os.path.join('.','config','default_config.xml')
+    xml_config_file = os.path.join('.','config','default_config.xml')
 
     dict_config_list = {}
     dict_fixedlist  = {}
-    (dict_config_list, dict_fixedlist) = doiConfigUtil.get_config_file_metadata(xmlConfigFile)
+    (dict_config_list, dict_fixedlist) = doiConfigUtil.get_config_file_metadata(xml_config_file)
 
     app_basepath = os.path.abspath(os.path.curdir)
     #------------------------------
