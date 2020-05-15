@@ -913,7 +913,7 @@ class DOIPDS4LabelUtil:
         o_doi_label = self.process_doi_metadata(dict_configList, dict_fixedlist, dict_condition_data, key, list_keyword_values, DOI_filepath,publisher_value,contributor_value)
 
         logger.debug(f"o_doi_label {o_doi_label}")
-        return(o_doi_label)
+        return o_doi_label
 
 if __name__ == '__main__':
     global f_debug

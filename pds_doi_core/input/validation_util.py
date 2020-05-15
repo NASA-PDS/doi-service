@@ -26,13 +26,10 @@ logger.setLevel(logging.INFO)  # Comment this line once happy with the level of 
 
 class DOIValidatorUtil:
     # This class DOIValidatorUtil provides functions to validate various values.
-
-    m_module_name = 'DOIValidatorUtil:'
-    m_module_name = 'DOIValidatorUtil:'
     m_doiContributorUtil = DOIContributorUtil()
 
     def validate_contributor_value(self,target_url,i_contributor):
-        # Function ValidateContributorValue validates the given contributor for correctness by extracting valid values from 
+        # Function ValidateContributorValue validates the given contributor for corrxxfectness by extracting valid values from
         # DOI_CORE_CONST_PUBLISHER_URL variable defined in const.py. The match has to be exact.
         PDS_NODE_IDENTIFIER = '0001_NASA_PDS_1.pds.Node.pds.name'
 
