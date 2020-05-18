@@ -413,7 +413,7 @@ class DOIPDS4LabelUtil:
                         if (parentNode.tag == objCitationInfo_uri):                   
                             editor_list = element.text
                      
-                            items = editor_list.split("")
+                            items = editor_list.split(";")
                             items2 = items[0].split(",")
 
                         dict_condition_data[file_name]["contributors/contributor/last_name"] =  items2[0]

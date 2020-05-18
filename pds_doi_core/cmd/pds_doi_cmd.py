@@ -16,7 +16,7 @@ from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 from pds_doi_core.input.input_util import DOIInputUtil
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
-from pds_doi_core.input.validation_util import DOIValidatorUtil
+from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.cmd.DOIWebClient import DOIWebClient
 
 # Get the common logger and set the level for this file.
@@ -27,13 +27,16 @@ logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 # Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
 # to INFO if we don't want debug statements.
 
+
 class DOICoreServices:
     m_doiConfigUtil = DOIConfigUtil()
     m_doiGeneralUtil = DOIGeneralUtil()
     m_doiInputUtil = DOIInputUtil()
     m_doiPDS4LabelUtil = DOIPDS4LabelUtil()
-    m_doiValidatorUtil = DOIValidatorUtil()
     m_doiWebClient = DOIWebClient()
+
+    def __init__(self):
+        self._config = self.m_doiConfigUtil.get_config()
 
     def reserve_doi_label(self, target_url, publisher_value, contributor_value):
         """
@@ -171,17 +174,11 @@ class DOICoreServices:
 
         action_type = 'create_osti_label'
         publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE  # There is only one publisher of these DOI.
-        o_contributor_is_valid_flag = False
 
-        # Make sure the contributor is valid before proceeding.
-        (o_contributor_is_valid_flag,
-        o_permissible_contributor_list) = self.m_doiValidatorUtil.validate_contributor_value(
-        DOI_CORE_CONST_PUBLISHER_URL, contributor_value)
-
-        logger.info(f"o_contributor_is_valid_flag: {o_contributor_is_valid_flag}")
-        logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
-
-        if not o_contributor_is_valid_flag:
+        doi_contributor_util = DOIContributorUtil(self._config.get('PDS4_DICTIONARY', 'url'),
+                                                  self._config.get('PDS4_DICTIONARY', 'pds_node_identifier'))
+        o_permissible_contributor_list = doi_contributor_util.get_permissible_values()
+        if contributor_value not in o_permissible_contributor_list:
             logger.error(f"The value of given contributor is not valid: {contributor_value}")
             logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
             exit(0)
@@ -201,7 +198,7 @@ class DOICoreServices:
             exit(0)
 
         logger.debug(f"o_doi_label {o_doi_label.decode()}")
-        logger.debug(f"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY {target_url}")
+        logger.info(f"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY {target_url}")
 
         return o_doi_label
 
