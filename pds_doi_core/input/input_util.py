@@ -195,7 +195,7 @@ class DOIInputUtil:
 
         return 1
 
-    def parse_csv_file(self,i_app_basepath,i_filepath,dict_fixedlist=None, dict_config_list=None, dict_condition_data=None):
+    def parse_csv_file(self, i_app_basepath, i_filepath, dict_fixed_list=None, dict_config_list=None, dict_condition_data=None):
         '''Function receives a URI containing CSV format and create one external file per row to output directory.'''
         o_doi_label = None
         o_num_files_created = 0
@@ -236,7 +236,7 @@ class DOIInputUtil:
             sys.exit(1)
         else:
 
-            (dict_condition_data,o_created_filelist,o_aggregated_tree) = self._parse_rows_to_osti_meta(doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist)
+            (dict_condition_data,o_created_filelist,o_aggregated_tree) = self._parse_rows_to_osti_meta(doi_directory_pathname, xl_sheet, num_rows, reserve_template_pathname, dict_condition_data, dict_fixed_list)
 
             o_num_files_created = len(o_created_filelist)
             logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))

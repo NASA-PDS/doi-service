@@ -19,8 +19,7 @@ def get_logger(module_name=''):
     else:
         logger =logging.getLogger(__name__)
     my_format = "%(levelname)s %(name)s:%(funcName)s %(message)s"
-    logging.basicConfig(filename="pds_doi_core.log",
-                        format=my_format,
+    logging.basicConfig(format=my_format,
                         filemode='a')
 
     logger.setLevel(logging.DEBUG)

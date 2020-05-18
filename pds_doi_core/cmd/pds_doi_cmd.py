@@ -8,6 +8,7 @@
 # ------------------------------
 
 from lxml import etree
+import requests
 
 from pds_doi_core.util.cmd_parser import create_cmd_parser
 from pds_doi_core.util.const import *
@@ -15,8 +16,9 @@ from pds_doi_core.util.const import *
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.input_util import DOIInputUtil
+from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
-from pds_doi_core.input.validation_util import DOIValidatorUtil
+from pds_doi_core.outputs.osti import create_osti_doi_record
 
 # Get the common logger and set the level for this file.
 import logging
@@ -26,11 +28,17 @@ logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 # Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
 # to INFO if we don't want debug statements.
 
+
 class DOICoreServices:
     m_doi_config_util = DOIConfigUtil()
     m_doi_input_util = DOIInputUtil()
     m_doi_pds4_label = DOIPDS4LabelUtil()
-    m_doi_validator_util = DOIValidatorUtil()
+
+
+    def __init__(self):
+        self._config = self.m_doi_config_util.get_config()
+
+
 
     def _verify_osti_reserved_status(self,i_doi_label):
         # Function verify that all the status attribute in all records are indeed 'Reserved' as expected.
@@ -88,7 +96,7 @@ class DOICoreServices:
         logger.debug(f'o_out_text {o_out_text}')
         logger.debug(f'doc {doc}')
 
-        return o_reserved_flag,o_out_text 
+        return o_reserved_flag,o_out_text
 
     def _process_reserve_action_csv(self, target_url, publisher_value, contributor_value):
         # Function process a reserve action based on .csv ending.
@@ -245,47 +253,39 @@ class DOICoreServices:
 
         action_type = 'create_osti_label'
         publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE  # There is only one publisher of these DOI.
-        o_contributor_is_valid_flag = False
 
-        # Make sure the contributor is valid before proceeding.
-        (o_contributor_is_valid_flag,
-        o_permissible_contributor_list) = self.m_doi_validator_util.validate_contributor_value(
-        DOI_CORE_CONST_PUBLISHER_URL, contributor_value)
-
-        logger.info(f"o_contributor_is_valid_flag: {o_contributor_is_valid_flag}")
-        logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
-
-        if not o_contributor_is_valid_flag:
+        doi_contributor_util = DOIContributorUtil(self._config.get('PDS4_DICTIONARY', 'url'),
+                                                  self._config.get('PDS4_DICTIONARY', 'pds_node_identifier'))
+        o_permissible_contributor_list = doi_contributor_util.get_permissible_values()
+        if contributor_value not in o_permissible_contributor_list:
             logger.error(f"The value of given contributor is not valid: {contributor_value}")
             logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
-            exit(0)
+            exit(1)
 
-        o_doi_label = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value,
-                                                                       contributor_value)
-        logger.debug(f"o_doi_label {o_doi_label.decode()}")
-        logger.debug(f"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY {target_url}")
-        if isinstance(o_doi_label,bytes):
-            xml_text = o_doi_label.decode()
+        # parse input
+        if not target_url.startswith('http'):
+            xml_tree = etree.parse(target_url)
         else:
-            xml_text = o_doi_label.tostring()
+            response = requests.get(target_url)
+            xml_tree = etree.fromstring(response.content)
 
-        return o_doi_label
+        doi_fields = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
+        doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
+        doi_fields['contributor'] = contributor_value
+
+        # generate output
+        return create_osti_doi_record(doi_fields)
+
 
 def main():
-    default_run_dir = os.path.join('.')
-
-    run_dir = default_run_dir
-
-    publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE
-
     parser = create_cmd_parser()
     arguments = parser.parse_args()
     action_type = arguments.action
     contributor_value = arguments.contributor.rstrip()  # Remove any leading and trailing blanks.
     input_location = arguments.input
 
-    logger.info(f"run_dir {run_dir}")
-    logger.info(f"publisher_value {publisher_value}")
+    logger.info(f"run_dir {os.getcwd()}")
+    logger.info(f"publisher_value {DOI_CORE_CONST_PUBLISHER_VALUE}")
     logger.info(f"input_location {input_location}")
     logger.info(f"contributor_value['{contributor_value}']")
 
@@ -293,15 +293,16 @@ def main():
 
     if action_type == 'draft':
         o_doi_label = doi_core_services.create_doi_label(input_location, contributor_value)
-        logger.info(o_doi_label.decode())
+        logger.info(o_doi_label)
 
     elif action_type == 'reserve':
-        o_doi_label = doi_core_services.reserve_doi_label(input_location, publisher_value, contributor_value)
+        o_doi_label = doi_core_services.reserve_doi_label(input_location, DOI_CORE_CONST_PUBLISHER_VALUE,
+                                                        contributor_value)
         logger.info(o_doi_label.decode())
-
     else:
         logger.error(f"Action {action_type} is not supported yet.")
         exit(1)
+
 
 if __name__ == '__main__':
     main()

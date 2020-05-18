@@ -10,18 +10,33 @@
 #import unicodedata
 
 from xml.etree import ElementTree
-
+import configparser
 from pds_doi_core.util.const import *
-
+from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.outputs.output_util import DOIOutputUtil
+
+logger = get_logger(__name__)
+
 
 class DOIConfigUtil:
     global m_debug_mode
     m_module_name = 'DOIConfigUtil:'
     m_debug_mode = False
-    #m_debug_mode = True
-    #m_debug_mode = False
+
     m_DOIOutputUtil = DOIOutputUtil()
+
+    def get_config(self):
+        parser = configparser.ConfigParser()
+        candidates = ['conf.ini.default',
+                      'conf.ini', ]
+        candidates_full_path = [os.path.join(os.getcwd(), "config", f) for f in
+                                candidates]  # for development deployment
+        candidates_full_path.extend(
+            [os.path.join(sys.prefix, "pds_doi_core", f) for f in candidates])  # for real deployment
+        logger.info(f"search configuration files in {candidates_full_path}")
+        found = parser.read(candidates_full_path)
+        logger.info(f"used configuration following files {found}")
+        return parser
 
     def get_config_file_metadata(self,i_filename):
     #------------------------------

@@ -2,21 +2,16 @@ import sys
 import os
 import requests
 import logging
-import configparser
 from requests.auth import HTTPBasicAuth
 import time
+
+from pds_doi_core.util.config_parser import DOIConfigUtil
+
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-parser = configparser.ConfigParser()
-candidates = ['conf.ini.default',
-              'conf.ini',]
-candidates_full_path = [os.path.join(os.getcwd(), "config", f) for f in candidates] # for development deployment
-candidates_full_path.extend([os.path.join(sys.prefix, "pds_doi_core", f) for f in candidates]) # for real deployment
-logger.info(f"search configuration files in {candidates_full_path}")
-found = parser.read(candidates_full_path)
-logger.info(f"used configuration following files {found}")
+parser = DOIConfigUtil().get_config()
 
 osti_url = parser.get("OSTI", "url")
 osti_user = parser.get("OSTI", "user")
