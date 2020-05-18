@@ -18,6 +18,7 @@ from pds_doi_core.util.const import *
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+from pds_doi_core.input.exeptions import InputFormatException
 
 # Get the common logger and set the level for this file if desire.
 import logging
@@ -68,7 +69,7 @@ class DOIInputUtil:
             logger.error("expecting" + " " + str(self.m_EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (num_cols))
             logger.error("i_filepath" + " " + i_filepath)
             logger.error("columns " + " " + str(list(xl_sheet.columns)))
-            sys.exit(1)
+            raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
         else:
           (dict_condition_data,o_created_filelist,o_aggregated_tree) = self._parse_rows_to_osti_meta(doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist)
 
@@ -103,7 +104,7 @@ class DOIInputUtil:
             #     -- replace "::" with "-"
             #------------------------------
 
-            # Extra processing if any fields starts with single or double quotes. 
+            # Extra processing if any fields starts with single or double quotes.
 
             actual_index = row_idx - 1 # Because of how pandas data frame is structure, we subtract 1.
             related_resource = xl_sheet.iloc[actual_index,6]

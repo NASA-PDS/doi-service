@@ -1,0 +1,5 @@
+
+
+class InputFormatException(Exception):
+    pass
+

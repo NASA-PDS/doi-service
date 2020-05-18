@@ -16,6 +16,8 @@ from pds_doi_core.util.const import *
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.input_util import DOIInputUtil
+from pds_doi_core.input.exeptions import InputFormatException
+from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.outputs.osti import create_osti_doi_record
@@ -161,25 +163,29 @@ class DOICoreServices:
         # Function process a reserve action based on .xlsx ending.
         # Get the default configuration from external file.  Location may have to be absolute.
         xml_config_file = os.path.join('.','config','default_config.xml')
-
         logger.debug(f"xml_config_file {xml_config_file}")
         (dict_configlist, dict_fixedlist) = self.m_doi_config_util.get_config_file_metadata(xml_config_file)
 
-        app_base_path = os.path.abspath(os.path.curdir)
+        try:
+            app_base_path = os.path.abspath(os.path.curdir)
 
-        dict_condition_data = {}
+            dict_condition_data = {}
 
-        (o_num_files_created,
-         o_aggregated_DOI_content) = self.m_doi_input_util.parse_sxls_file(app_base_path,
-                                                                       target_url,
-                                                                       dict_fixedlist,
-                                                                       dict_configlist,
-                                                                       dict_condition_data)
-        o_doi_label = o_aggregated_DOI_content
-        logger.debug(f"o_num_files_created {o_num_files_created}")
-        logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
+            (o_num_files_created,
+             o_aggregated_DOI_content) = self.m_doi_input_util.parse_sxls_file(app_base_path,
+                                                                           target_url,
+                                                                           dict_fixedlist,
+                                                                           dict_configlist,
+                                                                           dict_condition_data)
+            o_doi_label = o_aggregated_DOI_content
+            logger.debug(f"o_num_files_created {o_num_files_created}")
+            logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
 
-        return o_num_files_created,o_aggregated_DOI_content
+            return o_num_files_created,o_aggregated_DOI_content
+
+        except InputFormatException as e:
+            logger.error(e)
+            exit(1)
 
     def _process_reserve_action_csv(self, target_url, publisher_value, contributor_value):
         # Function process a reserve action based on .csv ending.
