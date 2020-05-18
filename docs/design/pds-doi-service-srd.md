@@ -115,7 +115,7 @@ The DOI summary must manage the following information:
 Per <b>DOI</b>:
 
 | name | type | comment |
-| +---+ | +---+ | +---+
+| --- | --- | --- |
 | status | TEXT | current status, among: pending, draft, reserved, released, deactivated) |
 | latest update | INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC. |
 | submitter | TEXT | name of the submitter of the DOI |
