@@ -15,6 +15,7 @@ from pds_doi_core.util.const import *
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 from pds_doi_core.input.input_util import DOIInputUtil
+from pds_doi_core.input.exeptions import InputFormatException
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.cmd.DOIWebClient import DOIWebClient
@@ -71,16 +72,21 @@ class DOICoreServices:
 
             dict_condition_data = {}
 
-            (o_num_files_created,
-             o_aggregated_DOI_content) = self.m_doiInputUtil.parse_sxls_file(app_base_path,
-                                                                           xls_filepath,
-                                                                           dict_fixedList=dict_fixedList,
-                                                                           dict_configList=dict_configList,
-                                                                           dict_ConditionData=dict_condition_data)
-            o_doi_label = o_aggregated_DOI_content
-            file_is_parsed_flag = True
-            logger.debug(f"o_num_files_created {o_num_files_created}")
-            logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
+            try:
+                (o_num_files_created,
+                 o_aggregated_DOI_content) = self.m_doiInputUtil.parse_sxls_file(app_base_path,
+                                                                               xls_filepath,
+                                                                               dict_fixed_list=dict_fixedList,
+                                                                               dict_config_list=dict_configList,
+                                                                               dict_condition_data=dict_condition_data)
+                o_doi_label = o_aggregated_DOI_content
+                file_is_parsed_flag = True
+                logger.debug(f"o_num_files_created {o_num_files_created}")
+                logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
+            except InputFormatException as e:
+                logger.error(e)
+                exit(1)
+
 
         if target_url.endswith('.csv'):
             xls_filepath = target_url
@@ -96,7 +102,7 @@ class DOICoreServices:
             (o_num_files_created,
              o_aggregated_DOI_content) = self.m_doiInputUtil.parse_csv_file(app_base_path,
                                                                           xls_filepath,
-                                                                          dict_fixedList=dict_fixedList,
+                                                                          dict_fixed_list=dict_fixedList,
                                                                           dict_configList=dict_configList,
                                                                           dict_ConditionData=dict_condition_data)
             o_doi_label = o_aggregated_DOI_content
@@ -204,22 +210,14 @@ class DOICoreServices:
 
 
 def main():
-    default_run_dir = os.path.join('.');
-    default_target_url = 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
-
-    # default_publisher_url  = 'https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON'
-    run_dir = default_run_dir
-
-    publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE
-
     parser = create_cmd_parser()
     arguments = parser.parse_args()
     action_type = arguments.action
     contributor_value = arguments.contributor.rstrip()  # Remove any leading and trailing blanks.
     input_location = arguments.input
 
-    logger.info(f"run_dir {run_dir}")
-    logger.info(f"publisher_value {publisher_value}")
+    logger.info(f"run_dir {os.getcwd()}")
+    logger.info(f"publisher_value {DOI_CORE_CONST_PUBLISHER_VALUE}")
     logger.info(f"input_location {input_location}")
     logger.info(f"contributor_value['{contributor_value}']")
 
@@ -230,7 +228,7 @@ def main():
         logger.info(o_doi_label.decode())
 
     if action_type == 'reserve':
-        o_doi_label = doiCoreServices.reserve_doi_label(input_location, publisher_value, contributor_value)
+        o_doi_label = doiCoreServices.reserve_doi_label(input_location, DOI_CORE_CONST_PUBLISHER_VALUE, contributor_value)
         type_is_valid = True
         logger.info(o_doi_label.decode())
 

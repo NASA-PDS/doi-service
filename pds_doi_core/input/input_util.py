@@ -16,6 +16,7 @@ from pds_doi_core.util.const import *
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+from pds_doi_core.input.exeptions import InputFormatException
 
 # Get the common logger and set the level for this file.
 import logging
@@ -52,9 +53,9 @@ class DOIInputUtil:
 
         try:
             f_DOI_aggregate_file = open(DOI_aggregate_filepath, mode='w')
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             logger.error("Cannot open file %s for writing." % DOI_aggregate_filepath)
-            sys.exit(1)
+            raise e
 
         try:
             f_DOI_aggregate_file.writelines("<?xml version='1.0' encoding='UTF-8'?>\n")
@@ -116,7 +117,7 @@ class DOIInputUtil:
 
         return(1)
 
-    def parse_sxls_file(self,i_app_basepath,i_filepath,dict_fixedlist=None, dict_config_list=None, dict_condition_data=None):
+    def parse_sxls_file(self,i_app_basepath,i_filepath, dict_fixed_list=None, dict_config_list=None, dict_condition_data=None):
         # Function receives a URI containing SXLS format and create one external file per row to output directory.
         global f_log
         o_doi_label = None
@@ -155,7 +156,7 @@ class DOIInputUtil:
             pass
 
         use_panda_flag = True
-        use_panda_flag = False
+        #use_panda_flag = False
 
         #
         # Depending on value of use_panda_flag, import different module.
@@ -184,10 +185,11 @@ class DOIInputUtil:
             logger.error("expecting" + " " + str(EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (num_cols))
             logger.error("i_filepath" + " " + i_filepath)
             if use_panda_flag:
-                logger.error("columns " + " " + str(list(xl_sheet.columns)));
+                logger.error("columns " + " " + str(list(xl_sheet.columns)))
+                raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
             else:
                 self.show_column_names_in_xls(xl_sheet)
-            sys.exit(1)
+            raise InputFormatException("")
         else:
             if use_panda_flag:
                 start_row = 0 # Module pandas read in the column header differently, which make the row 0 the first actual data.
@@ -285,7 +287,7 @@ class DOIInputUtil:
                 for key, value in dict_value.items():
                     attr_xpath = parent_xpath + key
 
-                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixedlist, xmlDOI_Text, attr_xpath, value)
+                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixed_list, xmlDOI_Text, attr_xpath, value)
 
                 #------------------------------
                 # Write the replacement metadata to the DOI file
@@ -313,7 +315,7 @@ class DOIInputUtil:
 
         return(o_num_files_created,o_aggregated_DOI_content)
 
-    def parse_csv_file(self,i_app_basepath,i_filepath,dict_fixedlist=None, dict_config_list=None, dict_condition_data=None):
+    def parse_csv_file(self, i_app_basepath, i_filepath, dict_fixed_list=None, dict_config_list=None, dict_condition_data=None):
         # Function receives a URI containing CSV format and create one external file per row to output directory.
         global f_log
         o_doi_label = None
@@ -466,9 +468,9 @@ class DOIInputUtil:
                     xmlDOI_Text = f_DOI_file.read()
                     f_DOI_file.close()
 
-                except:
+                except FileNotFoundError as e:
                     logger.error("DOI template file (%s) not found for edit\n" % (res_pathName))
-                    sys.exit(1)
+                    raise e
 
                 #------------------------------
                 # For each key/value in dictionary (that contains the values for the DOI label)
@@ -478,7 +480,7 @@ class DOIInputUtil:
                 for key, value in dict_value.items():
                     attr_xpath = parent_xpath + key
 
-                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixedlist, xmlDOI_Text, attr_xpath, value)
+                    xmlDOI_Text = self.m_doiOutputUtil.populate_doi_xml_with_values(dict_fixed_list, xmlDOI_Text, attr_xpath, value)
 
                 #------------------------------
                 # Write the replacement metadata to the DOI file
