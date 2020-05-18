@@ -113,16 +113,21 @@ TBD
 The DOI summary must manage the following information:
 
 Per <b>DOI</b>:
-- current status (among: pending, draft, reserved, released, deactivated)
-- latest update
-- submitter
-- title
-- product type
-- steward discipline node ID
-- lid/vid
-- doi (may be null if pending or draft)
-- release date
-- latest transaction (key is submitter/datetime)
+
+| name | type | comment |
+| +---+ | +---+ | +---+
+| status | TEXT | current status, among: pending, draft, reserved, released, deactivated) |
+| latest update | INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC. |
+| submitter | TEXT | name of the submitter of the DOI |
+| title | TEXT | title used for the DOI |
+| type | TEXT | product type |
+| subtype | TEXT | subtype of the product |
+| node_id | TEXT | steward discipline node ID |
+| lid/vid | TEXT | |
+| doi | TEXT | DOI provided by the provider (may be null if pending or draft) |
+| release date |INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.  |
+| latest_transaction | TEXT | latest transaction (key is submitter or node id /datetime) |
+
 
 Per <b>transaction</b>:
 - submitting discipline node ID
