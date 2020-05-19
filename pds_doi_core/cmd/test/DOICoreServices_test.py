@@ -142,35 +142,3 @@ if __name__ == '__main__':
 
     exit(0);
 
-    #status = main()
-    #status = DOI_IAD2_label_creation();
-    #sys.exit(status)
-
-
-# First time:
-# cd ~/sandbox/pds-doi-service
-# pip install virtualenv
-# pip install -r requirements.txt
-# python3 -m venv venv
-# source venv/bin/activate
-# python3 doi_core.py "./" -f aaaConfig_IAD2_IMG_InSight_20191216.xml
-# python3 doi_core.py create_osti_label ./ 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml' 
-
-# Second time:
-# python3 doi_core.py create_osti_label 'PDS Cartography and Imaging Sciences Discipline (IMG) Node' 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
-
-# Unit test
-# python3 DOICoreServices_test.py 
-#    publisher = 'PDS Cartography and Imaging Sciences Discipline (IMG) Node';
-
-
-
-#Some details on the use case we want to implement for this sprint (from Jordan's inputs):
-#
-#A) Input test datasets from these PDS4 Collection and Bundle label via URLs
-#
-#    Bundle - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml
-#    Data Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml
-#    Browse Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml
-#    Calibration Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml
-#    Document Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml

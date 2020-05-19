@@ -1,4 +1,3 @@
-#!/bin/python
 #
 #  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
@@ -33,20 +32,19 @@ class DOIInputUtil:
     m_doiOutputUtil = DOIOutputUtil()
 
     def aggregate_reserve_doi(self,i_doi_directory_pathname,i_filelist):
+        """
+        Create a file that groups each DOI record into a single file -- that can singly be submitted
 
-        #------------------------------
-        # Create a file that groups each DOI record into a single file -- that can singly be submitted
-        #
-        # <?xml version="1.0" encoding="UTF-8"?>
-        # <records>
-        #   <record status="Reserved">
-        #          ...
-        #    </record>
-        #   <record status="Reserved">
-        #          ...
-        #    </record>
-        # </records>
-        #------------------------------
+        <?xml version="1.0" encoding="UTF-8"?>
+         <records>
+           <record status="Reserved">
+                  ...
+            </record>
+           <record status="Reserved">
+                  ...
+            </record>
+        </records>
+        """
         o_aggregated_DOI_content = b""
 
         sString = "aaa_DOI_aggregate_reserved.xml"
@@ -54,8 +52,8 @@ class DOIInputUtil:
 
         try:
             f_DOI_aggregate_file = open(DOI_aggregate_filepath, mode='w')
-        except:
-            logger.error("ERROR: Cannot open file %s for writing." % DOI_aggregate_filepath)
+        except FileNotFoundError:
+            logger.error("Cannot open file %s for writing." % DOI_aggregate_filepath)
             sys.exit(1)
 
         try:
