@@ -34,7 +34,8 @@ setuptools.setup(
     install_requires=[
         "Flask==1.1.2",
         "flask-restplus==0.13.0",
-        "Werkzeug==0.16.0"
+        "Werkzeug==0.16.0",
+        "pystache"
     ],
     scripts=[],
     entry_points={

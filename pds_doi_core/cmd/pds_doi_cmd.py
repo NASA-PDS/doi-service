@@ -255,11 +255,7 @@ class DOICoreServices:
         :param contributor_value:
         :return: o_doi_label:
         """
-        o_doi_label = None
-
-        action_type = 'create_osti_label'
-        publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE  # There is only one publisher of these DOI.
-
+        # check contributor
         doi_contributor_util = DOIContributorUtil(self._config.get('PDS4_DICTIONARY', 'url'),
                                                   self._config.get('PDS4_DICTIONARY', 'pds_node_identifier'))
         o_permissible_contributor_list = doi_contributor_util.get_permissible_values()
