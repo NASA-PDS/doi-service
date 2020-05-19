@@ -8,6 +8,8 @@
 # ------------------------------
 
 from lxml import etree
+import requests
+
 
 from pds_doi_core.util.cmd_parser import create_cmd_parser
 from pds_doi_core.util.const import *
@@ -19,6 +21,7 @@ from pds_doi_core.input.exeptions import InputFormatException
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.cmd.DOIWebClient import DOIWebClient
+from pds_doi_core.outputs.osti import create_osti_doi_record
 
 # Get the common logger and set the level for this file.
 import logging
@@ -176,11 +179,7 @@ class DOICoreServices:
         :param contributor_value:
         :return: o_doi_label:
         """
-        o_doi_label = None
-
-        action_type = 'create_osti_label'
-        publisher_value = DOI_CORE_CONST_PUBLISHER_VALUE  # There is only one publisher of these DOI.
-
+        # check contributor
         doi_contributor_util = DOIContributorUtil(self._config.get('PDS4_DICTIONARY', 'url'),
                                                   self._config.get('PDS4_DICTIONARY', 'pds_node_identifier'))
         o_permissible_contributor_list = doi_contributor_util.get_permissible_values()
@@ -189,24 +188,19 @@ class DOICoreServices:
             logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
             exit(0)
 
-        type_is_valid = False
-        o_doi_label = 'invalid action type:action_type ' + action_type
+        # parse input
+        if not target_url.startswith('http'):
+            xml_tree = etree.parse(target_url)
+        else:
+            response = requests.get(target_url)
+            xml_tree = etree.fromstring(response.content)
 
-        if action_type == 'create_osti_label':
-            o_doi_label = self.m_doiPDS4LabelUtil.parse_pds4_label_via_uri(target_url, publisher_value,
-                                                                        contributor_value)
-            type_is_valid = True
+        doi_fields = self.m_doiPDS4LabelUtil.get_doi_fields_from_pds4(xml_tree)
+        doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
+        doi_fields['contributor'] = contributor_value
 
-        if not type_is_valid:
-            logger.error(o_doi_label)
-            logger.info(f"action_type {action_type}")
-            logger.info(f"target_url {target_url}")
-            exit(0)
-
-        logger.debug(f"o_doi_label {o_doi_label.decode()}")
-        logger.info(f"target_url,DOI_OBJECT_CREATED_SUCCESSFULLY {target_url}")
-
-        return o_doi_label
+        # generate output
+        return create_osti_doi_record(doi_fields)
 
 
 def main():
@@ -225,7 +219,7 @@ def main():
 
     if action_type == 'draft':
         o_doi_label = doiCoreServices.create_doi_label(input_location, contributor_value)
-        logger.info(o_doi_label.decode())
+        logger.info(o_doi_label)
 
     if action_type == 'reserve':
         o_doi_label = doiCoreServices.reserve_doi_label(input_location, DOI_CORE_CONST_PUBLISHER_VALUE, contributor_value)

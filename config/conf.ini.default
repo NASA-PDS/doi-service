@@ -6,3 +6,6 @@ password = secret
 [PDS4_DICTIONARY]
 url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
 pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
+
+[OTHER]
+doi_publisher = NASA Planetary Data System

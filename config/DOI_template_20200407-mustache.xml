@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    <record>
+        <title>{{title}}</title>
+        <creators></creators>
+        <authors>
+            {{#authors}}
+             <author>
+                <first_name>{{first_name}}</first_name>
+                <last_name>{{last_name}}</last_name>
+            </author>
+            {{/authors}}
+        </authors>
+        <publisher>{{publisher}}</publisher>
+        <publication_date>{{publication_date}}</publication_date>
+        <site_url>{{site_url}}</site_url>
+        <!-- Collection definition:
+                a Collection product may refer to an aggregation of resources and research objects. 
+                A Collection probably has items in it which have or will receive their own DOIs and thus be
+                retrievable independently. Therefore the Collection record is a high-level description of
+                the overall group of items.
+        -->
+        <product_type>{{product_type}}</product_type>
+        <product_type_specific>{{product_type_specific}}</product_type_specific>
+        <!-- Product Numbers: insert LIDVID here -->     
+        <product_nos>{{identifier}}</product_nos>
+            
+        <description>{{description}}
+        </description>
+        <keywords>PDS; {{keywords}}</keywords>
+        
+        <related_resource></related_resource>
+        <contributor_organizations></contributor_organizations>
+        <sponsor_org>National Aeronautics and Space Administration (NASA)</sponsor_org>
+        <contract_nos></contract_nos>
+        <other_identifying_nos></other_identifying_nos>
+        <file_extension></file_extension>
+        <availability>NSSDCA</availability>
+        <contact_name>PDS OPERATOR</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+        <contributors>
+            {{#editors}}
+            <contributor>
+                    <email/>
+                    <first_name>{{first_name}}</first_name>
+                    <last_name>{{Williamslast_name}}</last_name>
+                    <contributor_type>Editor</contributor_type>
+                    <affiliations/>
+            </contributor>
+            {{/editors}}
+            <contributor>
+                <full_name>PDS {{contributor}}</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+    </record>
+</records>
+

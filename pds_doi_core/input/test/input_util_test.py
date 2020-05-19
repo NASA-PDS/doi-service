@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
 
         dict_configList = {}
         dict_fixedList = {}
-        (dict_configList, dict_fixedList) = doi_config_util.GetConfigFileMetaData(xml_config_file)
+        (dict_configList, dict_fixedList) = doi_config_util.get_config_file_metadata(xml_config_file)
 
         appBasePath = os.path.abspath(os.path.curdir)
         # ------------------------------
@@ -40,9 +40,10 @@ class MyTestCase(unittest.TestCase):
         # print(function_name,"o_num_files_created",o_num_files_created);
 
         i_filepath = os.path.join(os.getcwd(), 'input','DOI_Reserved_GEO_200318.csv')
-        o_num_files_created = doi_input_util.ParseCSVFile(appBasePath, i_filepath, dict_fixedList=dict_fixedList,
-                                                        dict_configList=dict_configList,
-                                                        dict_ConditionData=dict_ConditionData)
+        o_num_files_created = doi_input_util.parse_csv_file(appBasePath, i_filepath,
+                                                            dict_fixed_list=dict_fixedList,
+                                                            dict_config_list=dict_configList,
+                                                            dict_condition_data=dict_ConditionData)
         logger.info(f"o_num_files_created {o_num_files_created}")
 
 

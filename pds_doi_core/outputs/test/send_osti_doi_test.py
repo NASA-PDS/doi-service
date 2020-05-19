@@ -6,11 +6,13 @@ import configparser
 from requests.auth import HTTPBasicAuth
 import time
 
+from pds_doi_core.util.config_parser import DOIConfigUtil
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-
+parser = DOIConfigUtil().get_config()
 osti_url = parser.get("OSTI", "url")
 osti_user = parser.get("OSTI", "user")
 osti_password = parser.get("OSTI", "password")
