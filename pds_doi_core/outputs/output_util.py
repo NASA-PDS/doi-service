@@ -7,6 +7,7 @@
 #
 #------------------------------                                                                                                 
 
+import os
 from lxml import etree
 
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
@@ -22,6 +23,142 @@ class DOIOutputUtil:
     # This class DOIOutputUtil provide convenient functions to update a DOI object already in memory.
     # The structure of DOI object is a document tree.
     m_house_keeping_dict     = {'authors': 0, 'contributors': 0}
+
+    def write_replacement_osti_metadata(self,i_doi_directory_pathname,FileName,xmlDOI_Text):
+        '''Write the replacement metadata to the DOI file.'''
+
+        sString = "DOI_reserved_" + FileName + ".xml"
+        sString = sString.replace(":", "_")
+        DOI_filepath = os.path.join(i_doi_directory_pathname,sString)
+        logger.info("sString,DOI_filepath" + " " + sString + " " + DOI_filepath)
+
+        logger.info("FILE_WRITE" + " " + DOI_filepath);
+
+        f_DOI_file = open(DOI_filepath, mode='w')
+        f_DOI_file.write(xmlDOI_Text.decode())
+        f_DOI_file.close()
+
+        return DOI_filepath
+
+    def aggregate_reserve_osti_doi_from_dict(self,dict_config_list,dict_fixedlist,i_doi_directory_pathname,dict_condition_data):
+        """
+        Create a file that groups each DOI record into a single file -- that can singly be submitted
+
+        <?xml version="1.0" encoding="UTF-8"?>
+         <records>
+           <record status="Reserved">
+                  ...
+            </record>
+           <record status="Reserved">
+                  ...
+            </record>
+        </records>
+        """
+        aggregated_root = etree.XML('''<?xml version="1.0"?>
+                                      <records>
+                                      </records>''')
+        o_aggregated_tree = etree.ElementTree(aggregated_root);
+
+        parent_xpath = "/records/record/"
+
+        reserve_template_pathname = dict_config_list.get("DOI_reserve_template")
+        logger.info("reserve_template_pathname" + " " + reserve_template_pathname)
+
+        for product_label_filename, dict_value in dict_condition_data.items():
+            try:
+                f_doi_file = open(reserve_template_pathname, mode='r')
+                xml_doi_text = f_doi_file.read()
+                f_doi_file.close()
+            except:
+                logger.error("DOI template file (%s) not found for edit\n" % (reserve_template_pathname))
+                sys.exit(1)
+
+            for key, value in dict_value.items():
+                attr_xpath = parent_xpath + key
+
+                xml_doi_text = self.populate_doi_xml_with_values(dict_fixedlist, xml_doi_text, attr_xpath, value)
+
+            # The type of xml_doi_text is bytes and content is of XML format.
+            # Find the element with 'record' tag, extract it and insert it into our o_aggregated_tree to return.
+            my_root = etree.fromstring(xml_doi_text);
+            my_tree = etree.ElementTree(my_root);
+            find_me = my_root.find('record')
+            o_aggregated_tree.getroot().insert(0,find_me)
+
+        print("aggregate_reserve_osti_doi_from_dict:dict_condition_data",dict_condition_data);
+        print("o_aggregated_tree",etree.tostring(o_aggregated_tree))
+        exit(0);
+        return 1
+
+    def aggregate_reserve_osti_doi(self,i_doi_directory_pathname,i_filelist):
+        """
+        Create a file that groups each DOI record into a single file -- that can singly be submitted
+
+        <?xml version="1.0" encoding="UTF-8"?>
+         <records>
+           <record status="Reserved">
+                  ...
+            </record>
+           <record status="Reserved">
+                  ...
+            </record>
+        </records>
+        """
+        o_aggregated_DOI_content = b""
+
+        sString = "aaa_DOI_aggregate_reserved.xml"
+        DOI_aggregate_filepath = os.path.join(i_doi_directory_pathname,sString)
+
+        try:
+            f_DOI_aggregate_file = open(DOI_aggregate_filepath, mode='w')
+        except FileNotFoundError:
+            logger.error("Cannot open file %s for writing." % DOI_aggregate_filepath)
+            sys.exit(1)
+
+        try:
+            f_DOI_aggregate_file.writelines("<?xml version='1.0' encoding='UTF-8'?>\n")
+            f_DOI_aggregate_file.writelines("<records>\n")
+            o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,"<?xml version='1.0' encoding='UTF-8'?>\n".encode()])
+            o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,"<records>\n".encode()])
+        except:
+            logger.error("Cannot write to file %s" % DOI_aggregate_filepath)
+            sys.exit(1)
+
+        for doi_filename in i_filelist:
+            try:
+                f_DOI_file = open(doi_filename,mode='r')
+                xmlDOI_Text = f_DOI_file.readlines()
+                # Remove the first and last lines and leave everything in between:
+                #     <records>
+                #     </records>
+            except:
+                logger.error("Cannot read from DOI file %s" % doi_filename)
+                sys.exit(1)
+            # Write everything except first and last line:
+            #     <records>
+            #     </records>
+            try:
+                for ii in range(1,len(xmlDOI_Text)-1):
+                    f_DOI_aggregate_file.writelines(xmlDOI_Text[ii])
+                    o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,xmlDOI_Text[ii].encode()])
+
+            except:
+                logger.error("Cannot write to file %s" % DOI_aggregate_filepath)
+                sys.exit(1)
+        # end for doi_filename in i_filelist)
+
+        # At this point, all the records have been written.
+        # We can write the last tag.
+        try:
+            f_DOI_aggregate_file.writelines("</records>\n")
+            o_aggregated_DOI_content = b"".join([o_aggregated_DOI_content,"</records>\n".encode()])
+            # add code here to write aggregate files
+            f_DOI_aggregate_file.close()
+        except:
+            logger.error("Cannot write to file %s" % DOI_aggregate_filepath)
+            sys.exit(1);
+
+        return(o_aggregated_DOI_content)
 
     def _count_existing_children_with_same_tag(self,name_index,num_existing_authors,my_parent,last_token):
         # Given a node my_parent, find the number of children with the same tag as last_token.
