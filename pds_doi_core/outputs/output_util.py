@@ -40,7 +40,7 @@ class DOIOutputUtil:
 
         return DOI_filepath
 
-    def aggregate_reserve_osti_doi_from_dict(self,dict_config_list,dict_fixedlist,i_doi_directory_pathname,dict_condition_data):
+    def aggregate_reserve_osti_doi_from_dict(self,dict_config_list,dict_fixedlist,i_doi_directory_pathname,dict_condition_data,write_to_file_flag=False):
         """
         Create a file that groups each DOI record into a single file -- that can singly be submitted
 
@@ -58,6 +58,11 @@ class DOIOutputUtil:
                                       <records>
                                       </records>''')
         o_aggregated_tree = etree.ElementTree(aggregated_root);
+        o_created_filelist = []
+        o_doi_aggregate_filepath = '';
+
+        doi_directory_pathname = os.path.join('.','output')
+        os.makedirs(doi_directory_pathname, exist_ok=True)
 
         parent_xpath = "/records/record/"
 
@@ -85,10 +90,23 @@ class DOIOutputUtil:
             find_me = my_root.find('record')
             o_aggregated_tree.getroot().insert(0,find_me)
 
-        print("aggregate_reserve_osti_doi_from_dict:dict_condition_data",dict_condition_data);
-        print("o_aggregated_tree",etree.tostring(o_aggregated_tree))
-        exit(0);
-        return 1
+            # Write the replacement metadata to the DOI file
+
+            if write_to_file_flag:
+               doi_filepath = self.write_replacement_osti_metadata(doi_directory_pathname,product_label_filename,xml_doi_text)
+
+               # Add the new name created to so we can agggregate them all into one file.
+               o_created_filelist.append(doi_filepath)
+
+        # Write the entire tree (the aggregated content) to file with nice format.
+        if write_to_file_flag:
+            aggregated_reserve_filename = "aaa_DOI_aggregate_reserved.xml"
+            o_doi_aggregate_filepath = os.path.join(doi_directory_pathname,aggregated_reserve_filename)
+            f = open(o_doi_aggregate_filepath, "w")
+            f.write(etree.tostring(o_aggregated_tree).decode()) # Convert bytes to string before writing.
+            f.close()
+
+        return (o_aggregated_tree,o_doi_aggregate_filepath,o_created_filelist)
 
     def aggregate_reserve_osti_doi(self,i_doi_directory_pathname,i_filelist):
         """

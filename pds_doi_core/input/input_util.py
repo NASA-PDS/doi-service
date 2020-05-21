@@ -71,23 +71,14 @@ class DOIInputUtil:
             logger.error("columns " + " " + str(list(xl_sheet.columns)))
             raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
         else:
-          (dict_condition_data,o_created_filelist,o_aggregated_tree) = self._parse_rows_to_osti_meta(doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist)
+          dict_condition_data = self._parse_rows_to_osti_meta(doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist)
 
-          o_num_files_created = len(o_created_filelist)
-          logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))
           logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
-          o_aggregated_DOI_content = self.m_doi_output_util.aggregate_reserve_osti_doi(doi_directory_pathname,o_created_filelist)
-
-        return(o_num_files_created,o_aggregated_DOI_content)
+        return(dict_condition_data)
 
     def _parse_rows_to_osti_meta(self,doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist):
         '''Given all rows in input file, parse each row and return the aggregated XML of all records in OSTI format'''
-        o_created_filelist = []
-        aggregated_root = etree.XML('''<?xml version="1.0"?>
-                                      <records>
-                                      </records>''')
-        o_aggregated_tree = etree.ElementTree(aggregated_root);
 
         parent_xpath = "/records/record/"
 
@@ -149,9 +140,12 @@ class DOIInputUtil:
                 xml_doi_text = f_doi_file.read()
                 f_doi_file.close()
 
-            except:
+            except FileNotFoundError as err:
                 logger.error("DOI template file (%s) not found for edit\n" % (reserve_template_pathname))
-                sys.exit(1)
+                raise Exception("DOI template file (%s) not found for edit\n" % (reserve_template_pathname)) from None
+            except Exception as err:
+                logger.error("DOI template file (%s) cannot be read for edit\n" % (reserve_template_pathname))
+                raise Exception("DOI template file (%s) cannot be read for edit\n" % (reserve_template_pathname)) from None
 
             #------------------------------
             # For each key/value in dictionary (that contains the values for the DOI label)
@@ -163,23 +157,10 @@ class DOIInputUtil:
 
                 xml_doi_text = self.m_doi_output_util.populate_doi_xml_with_values(dict_fixedlist, xml_doi_text, attr_xpath, value)
 
-            # The type of xml_doi_text is bytes and content is of XML format.
-            # Find the element with 'record' tag, extract it and insert it into our o_aggregated_tree to return.
-            my_root = etree.fromstring(xml_doi_text);
-            my_tree = etree.ElementTree(my_root);
-            find_me = my_root.find('record')
-            o_aggregated_tree.getroot().insert(0,find_me)
-
-            # Write the replacement metadata to the DOI file
-
-            doi_filepath = self.m_doi_output_util.write_replacement_osti_metadata(doi_directory_pathname,product_label_filename,xml_doi_text)
-
-            # Add the new name created to so we can agggregate them all into one file.
-            o_created_filelist.append(doi_filepath)
-
         # end for row_idx in range(start_row,num_rows):    # Iterate through rows ignore 1st row
 
-        return (dict_condition_data,o_created_filelist,o_aggregated_tree)
+        #return (dict_condition_data,o_created_filelist,o_aggregated_tree)
+        return dict_condition_data
 
     def _validate_reserve_doi_template_structure(self,reserve_template_pathname):
         # Do a sanity check on the structure of the DOI template structure.
@@ -187,10 +168,10 @@ class DOIInputUtil:
             tree = etree.parse(reserve_template_pathname)
         except OSError as err:
             logger.error("ABORT: the xml 'Reserved template label file (%s) could not be read" % (reserve_template_pathname) )
-            sys.exit(1)
+            raise Exception("ABORT: the xml 'Reserved template label file (%s) could not be read" % (reserve_template_pathname) ) from None
         except etree.ParseError as err:
             logger.error("ABORT: the xml 'Reserved template label file (%s) could not be parsed" % (reserve_template_pathname) )
-            sys.exit(1)
+            raise Exception("ABORT: the xml 'Reserved template label file (%s) could not be read" % (reserve_template_pathname) ) from None
         else:
             pass
 
@@ -234,17 +215,11 @@ class DOIInputUtil:
             logger.error("expecting" + " " + str(self.m_EXPECTED_NUM_COLUMNS) + " columns in CSV file has %i columns." % (num_cols))
             logger.error("i_filepath" + " " + i_filepath)
             logger.error("data columns " + " " + str(list(xl_sheet.columns)))
-            sys.exit(1)
+            raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
         else:
 
-            (dict_condition_data,o_created_filelist,o_aggregated_tree) = self._parse_rows_to_osti_meta(doi_directory_pathname, xl_sheet, num_rows, reserve_template_pathname, dict_condition_data, dict_fixed_list)
+            dict_condition_data = self._parse_rows_to_osti_meta(doi_directory_pathname, xl_sheet, num_rows, reserve_template_pathname, dict_condition_data, dict_fixed_list)
 
-            o_num_files_created = len(o_created_filelist)
-            logger.info("FILE_WRITE_SUMMARY:o_num_files_created" + " " + str(o_num_files_created))
             logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
-            o_aggregated_DOI_content = self.m_doi_output_util.aggregate_reserve_osti_doi(doi_directory_pathname,o_created_filelist)
-        #print("o_aggregated_DOI_content",o_aggregated_DOI_content,type(o_aggregated_DOI_content));
-        #exit(0)
-
-        return(o_num_files_created,dict_condition_data,o_aggregated_DOI_content,o_aggregated_tree)
+        return dict_condition_data

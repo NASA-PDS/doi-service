@@ -21,6 +21,7 @@ from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.outputs.osti import create_osti_doi_record
+from pds_doi_core.outputs.output_util import DOIOutputUtil
 
 # Get the common logger and set the level for this file.
 import logging
@@ -34,6 +35,7 @@ logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 class DOICoreServices:
     m_doi_config_util = DOIConfigUtil()
     m_doi_input_util = DOIInputUtil()
+    m_doi_output_util = DOIOutputUtil()
     m_doi_pds4_label = DOIPDS4LabelUtil()
 
 
@@ -100,94 +102,40 @@ class DOICoreServices:
 
         return o_reserved_flag,o_out_text
 
-    def _process_reserve_action_csv(self, target_url, publisher_value, contributor_value):
-        # Function process a reserve action based on .csv ending.
-
-        # Get the default configuration from external file.  Location may have to be absolute.
-        xml_config_file = os.path.join('.','config','default_config.xml')
-
-        (dict_configlist, dict_fixedlist) = self.m_doi_config_util.get_config_file_metadata(xml_config_file)
-
-        app_base_path = os.path.abspath(os.path.curdir)
-
-        dict_condition_data = {}
-
-        (o_num_files_created,
-         o_aggregated_DOI_content) = self.m_doi_input_util.parse_csv_file(app_base_path,
-                                                                      target_url,
-                                                                      dict_fixedlist,
-                                                                      dict_configlist,
-                                                                      dict_condition_data)
-        o_doi_label = o_aggregated_DOI_content
-        logger.debug(f"o_num_files_created {o_num_files_created}")
-        logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
-        return o_num_files_created,o_aggregated_DOI_content
-
-    def reserve_doi_label(self, target_url, publisher_value, contributor_value):
-        """
-        Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
-        :param target_url:
-        :param publisher_value:
-        :param contributor_value:
-        :return:
-        """
-
-        action_type = 'reserve_osti_label'
-        o_doi_label = 'invalid action type:action_type ' + action_type
-
-        logger.debug(f"target_url,action_type {target_url} {action_type}")
-
-        if target_url.endswith('.xml'):
-            o_doi_label = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
-
-        elif target_url.endswith('.xlsx'):
-            (o_num_files_created, o_aggregated_DOI_content) = self._process_reserve_action_xlsx(target_url, publisher_value, contributor_value)
-            o_doi_label = o_aggregated_DOI_content
-
-        elif target_url.endswith('.csv'):
-            (o_num_files_created, o_aggregated_DOI_content) = self._process_reserve_action_csv(target_url, publisher_value, contributor_value)
-            o_doi_label = o_aggregated_DOI_content
-
-        # Check to see if the given file has an attempt to process.
-        else:
-            logger.error(f"File type has not been implemented:target_url {target_url}")
-            exit(1)
-
-        if o_doi_label is None:
-            logger.error(f"The value of o_doi_label is none.  Will not continue.")
-            exit(1)
-
-        (o_reserved_flag, o_out_text) = self._verify_osti_reserved_status(o_doi_label)
-
-    def _process_reserve_action_xlsx(self, target_url, publisher_value, contributor_value):
+    def _process_reserve_action_xlsx(self, target_url, publisher_value, contributor_value, write_to_file_flag=True):
         # Function process a reserve action based on .xlsx ending.
         # Get the default configuration from external file.  Location may have to be absolute.
         xml_config_file = os.path.join('.','config','default_config.xml')
         logger.debug(f"xml_config_file {xml_config_file}")
         (dict_configlist, dict_fixedlist) = self.m_doi_config_util.get_config_file_metadata(xml_config_file)
 
+        doi_directory_pathname = os.path.join('.','output')
+        os.makedirs(doi_directory_pathname, exist_ok=True)
+
         try:
             app_base_path = os.path.abspath(os.path.curdir)
-
             dict_condition_data = {}
 
-            (o_num_files_created,
-             o_aggregated_DOI_content) = self.m_doi_input_util.parse_sxls_file(app_base_path,
-                                                                           target_url,
-                                                                           dict_fixedlist,
-                                                                           dict_configlist,
-                                                                           dict_condition_data)
-            o_doi_label = o_aggregated_DOI_content
+            dict_condition_data = self.m_doi_input_util.parse_sxls_file(app_base_path,
+                                                                        target_url,
+                                                                        dict_fixedlist,
+                                                                        dict_configlist,
+                                                                        dict_condition_data)
+
+            (o_aggregated_tree,o_aggregated_filename,o_created_filelist) = self.m_doi_output_util.aggregate_reserve_osti_doi_from_dict(dict_configlist,dict_fixedlist,doi_directory_pathname,dict_condition_data,write_to_file_flag)
+
+            o_doi_label = etree.tostring(o_aggregated_tree) 
+            o_aggregated_DOI_content = o_doi_label.decode()
+            o_num_files_created = len(o_created_filelist)
             logger.debug(f"o_num_files_created {o_num_files_created}")
             logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
-
-            return o_num_files_created,o_aggregated_DOI_content
-
         except InputFormatException as e:
             logger.error(e)
             exit(1)
 
-    def _process_reserve_action_csv(self, target_url, publisher_value, contributor_value):
+        return (o_num_files_created,etree.tostring(o_aggregated_tree))
+
+    def _process_reserve_action_csv(self, target_url, publisher_value, contributor_value, write_to_file_flag=True):
         # Function process a reserve action based on .csv ending.
 
         # Get the default configuration from external file.  Location may have to be absolute.
@@ -195,22 +143,34 @@ class DOICoreServices:
 
         (dict_configlist, dict_fixedlist) = self.m_doi_config_util.get_config_file_metadata(xml_config_file)
 
-        app_base_path = os.path.abspath(os.path.curdir)
 
-        dict_condition_data = {}
+        doi_directory_pathname = os.path.join('.','output')
+        os.makedirs(doi_directory_pathname, exist_ok=True)
 
-        (o_num_files_created,
-         o_aggregated_DOI_content) = self.m_doi_input_util.parse_csv_file(app_base_path,
-                                                                      target_url,
-                                                                      dict_fixedlist,
-                                                                      dict_configlist,
-                                                                      dict_condition_data)
-        o_doi_label = o_aggregated_DOI_content
-        logger.debug(f"o_num_files_created {o_num_files_created}")
-        logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
-        return o_num_files_created,o_aggregated_DOI_content
+        try:
+            app_base_path = os.path.abspath(os.path.curdir)
+            dict_condition_data = {}
 
-    def reserve_doi_label(self, target_url, publisher_value, contributor_value):
+            dict_condition_data = self.m_doi_input_util.parse_csv_file(app_base_path,
+                                                                       target_url,
+                                                                       dict_fixedlist,
+                                                                       dict_configlist,
+                                                                       dict_condition_data)
+
+            (o_aggregated_tree,o_aggregated_filename,o_created_filelist) = self.m_doi_output_util.aggregate_reserve_osti_doi_from_dict(dict_configlist,dict_fixedlist,doi_directory_pathname,dict_condition_data,write_to_file_flag)
+
+            o_doi_label = etree.tostring(o_aggregated_tree)  # The content of o_doi_label is now a series of bytes.
+            o_aggregated_DOI_content = o_doi_label.decode()  # The content of o_aggregated_DOI_content is now text.
+            o_num_files_created = len(o_created_filelist)
+            logger.debug(f"o_num_files_created {o_num_files_created}")
+            logger.debug(f"o_aggregated_DOI_content {o_aggregated_DOI_content}")
+        except InputFormatException as e:
+            logger.error(e)
+            exit(1)
+
+        return (o_num_files_created,etree.tostring(o_aggregated_tree))
+
+    def reserve_doi_label(self, target_url, publisher_value, contributor_value, submit_label_flag=True, write_to_file_flag=True):
         """
         Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
         :param target_url:
@@ -228,11 +188,11 @@ class DOICoreServices:
             o_doi_label = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
 
         elif target_url.endswith('.xlsx'):
-            (o_num_files_created, o_aggregated_DOI_content) = self._process_reserve_action_xlsx(target_url, publisher_value, contributor_value)
+            (o_num_files_created, o_aggregated_DOI_content) = self._process_reserve_action_xlsx(target_url, publisher_value, contributor_value, write_to_file_flag)
             o_doi_label = o_aggregated_DOI_content
 
         elif target_url.endswith('.csv'):
-            (o_num_files_created, o_aggregated_DOI_content) = self._process_reserve_action_csv(target_url, publisher_value, contributor_value)
+            (o_num_files_created, o_aggregated_DOI_content) = self._process_reserve_action_csv(target_url, publisher_value, contributor_value, write_to_file_flag)
             o_doi_label = o_aggregated_DOI_content
 
         # Check to see if the given file has an attempt to process.
@@ -240,12 +200,19 @@ class DOICoreServices:
             logger.error(f"File type has not been implemented:target_url {target_url}")
             exit(1)
 
-
         (o_reserved_flag, o_out_text) = self._verify_osti_reserved_status(o_doi_label)
 
-        # The content would have been submitted already, we don't need to send it.
+        # We can submit the content to OSTI if we wish.
+        logger.debug(f"submit_label_flag {submit_label_flag}")
+        if submit_label_flag:
+            from pds_doi_core.cmd.pds_doi_client import DOIWebClient
+            doi_web_client = DOIWebClient()
+            doi_web_client.webclient_submit_existing_content(o_doi_label)
 
         # At this point, the o_out_text would contain tag "status = 'Reserved'" in each record tags.
+        print("reserve_doi_label:","o_doi_label",o_doi_label)
+        print("reserve_doi_label:","o_out_text",o_out_text)
+        #exit(0)
         return o_out_text
 
     def create_doi_label(self, target_url, contributor_value):
@@ -283,7 +250,7 @@ def main():
     parser = create_cmd_parser()
     arguments = parser.parse_args()
     action_type = arguments.action
-    contributor_value = arguments.contributor.rstrip()  # Remove any leading and trailing blanks.
+    contributor_value = arguments.contributor.lstrip().rstrip()  # Remove any leading and trailing blanks.
     input_location = arguments.input
 
     logger.info(f"run_dir {os.getcwd()}")
@@ -299,7 +266,9 @@ def main():
 
     elif action_type == 'reserve':
         o_doi_label = doi_core_services.reserve_doi_label(input_location, DOI_CORE_CONST_PUBLISHER_VALUE,
-                                                        contributor_value)
+                                                        contributor_value, submit_label_flag=True)
+        # By default, submit_label_flag=True if not specified.
+        # By default, write_to_file_flag=True if not specified.
         logger.info(o_doi_label.decode())
     else:
         logger.error(f"Action {action_type} is not supported yet.")
