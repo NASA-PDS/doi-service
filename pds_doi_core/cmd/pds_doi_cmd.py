@@ -94,7 +94,7 @@ class DOICoreServices:
         if num_record_records != num_reserved_statuses:
             logger.error(f"num_record_records is not the same as "
                          f"num_reserved_statuses {num_record_records} {num_reserved_statuses}")
-            exit(0)
+            exit(1)
 
         o_out_text = etree.tostring(doc, pretty_print=True)
         logger.debug(f'o_out_text {o_out_text}')
