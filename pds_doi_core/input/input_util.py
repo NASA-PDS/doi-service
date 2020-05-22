@@ -15,7 +15,6 @@ from datetime import datetime
 
 from pds_doi_core.util.const import *
 
-from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 from pds_doi_core.input.exeptions import InputFormatException
@@ -26,7 +25,6 @@ logger = get_logger('pds_doi_core.input.input_util')
 
 class DOIInputUtil:
 
-    m_doi_config_util = DOIConfigUtil()
     m_doi_output_util = DOIOutputUtil()
 
     m_EXPECTED_NUM_COLUMNS = 7
@@ -159,11 +157,10 @@ class DOIInputUtil:
 
         # end for row_idx in range(start_row,num_rows):    # Iterate through rows ignore 1st row
 
-        #return (dict_condition_data,o_created_filelist,o_aggregated_tree)
         return dict_condition_data
 
     def _validate_reserve_doi_template_structure(self,reserve_template_pathname):
-        # Do a sanity check on the structure of the DOI template structure.
+        '''Do a sanity check on the structure of the DOI template structure.'''
         try:
             tree = etree.parse(reserve_template_pathname)
         except OSError as err:

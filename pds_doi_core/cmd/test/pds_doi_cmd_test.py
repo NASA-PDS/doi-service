@@ -50,7 +50,30 @@ class MyTestCase(unittest.TestCase):
             'Cartography and Imaging Sciences Discipline')
         logger.info(osti_doi)
 
+    # The two tests below only build the reserve DOI and return the reserve label.
+    # The parameter submit_label_flag  is set to False to not send the DOI to OTSI.
+    # The parameter write_to_file_flag is set to False to not create individual external file for each record in the XML or CSV file.
+    # Inorder to actually the submit the DOI, the ~/.netrc file must have been set up previously.
 
+    def test_reserve_xlsx(self):
+        logger.info("test reserve xlsx file format")
+        osti_doi = self._doi_code_service.reserve_doi_label(
+            'input/DOI_Reserved_GEO_200318.xlsx',
+            'Cartography and Imaging Sciences Discipline',
+            'NASA Planetary Data System',
+            submit_label_flag=False,
+            write_to_file_flag=False)
+        logger.info(osti_doi)
+
+    def test_reserve_csv(self):
+        logger.info("test reserve csv file format")
+        osti_doi = self._doi_code_service.reserve_doi_label(
+            'input/DOI_Reserved_GEO_200318.csv',
+            'Cartography and Imaging Sciences Discipline',
+            'NASA Planetary Data System',
+            submit_label_flag=False,
+            write_to_file_flag=False)
+        logger.info(osti_doi)
 
 if __name__ == '__main__':
     unittest.main()

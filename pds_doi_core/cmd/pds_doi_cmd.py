@@ -26,11 +26,6 @@ from pds_doi_core.outputs.output_util import DOIOutputUtil
 # Get the common logger and set the level for this file.
 import logging
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
-#logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
-#logger.setLevel(logging.DEBUG)  # Comment this line once happy with the level of logging set in get_logger() function.
-# Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
-# to INFO if we don't want debug statements.
-
 
 class DOICoreServices:
     m_doi_config_util = DOIConfigUtil()
@@ -38,14 +33,11 @@ class DOICoreServices:
     m_doi_output_util = DOIOutputUtil()
     m_doi_pds4_label = DOIPDS4LabelUtil()
 
-
     def __init__(self):
         self._config = self.m_doi_config_util.get_config()
 
-
-
     def _verify_osti_reserved_status(self,i_doi_label):
-        # Function verify that all the status attribute in all records are indeed 'Reserved' as expected.
+        '''Function verify that all the status attribute in all records are indeed 'Reserved' as expected.'''
         o_reserved_flag = True
         o_out_text = None
 
@@ -102,12 +94,29 @@ class DOICoreServices:
 
         return o_reserved_flag,o_out_text
 
+    def _get_default_configurations(self):
+        '''Function returns two dictionaries containing the default configuration from conf.ini.default or conf.ini files'''
+
+        dict_configlist = {}
+        dict_configlist['global_keyword_values'] = self._config.get('OTHER','global_keyword_values')
+        dict_configlist['DOI_template'         ] = self._config.get('OTHER','DOI_template')
+        dict_configlist['DOI_reserve_template' ] = self._config.get('OTHER','DOI_reserve_template')
+
+        dict_fixedlist = {}
+
+        dict_fixedlist['pds_uri'] =  self._config.get('OTHER','pds_uri')
+
+        return (dict_configlist,dict_fixedlist)
+
+
     def _process_reserve_action_xlsx(self, target_url, publisher_value, contributor_value, write_to_file_flag=True):
-        # Function process a reserve action based on .xlsx ending.
-        # Get the default configuration from external file.  Location may have to be absolute.
-        xml_config_file = os.path.join('.','config','default_config.xml')
-        logger.debug(f"xml_config_file {xml_config_file}")
-        (dict_configlist, dict_fixedlist) = self.m_doi_config_util.get_config_file_metadata(xml_config_file)
+        '''Function process a reserve action based on .xlsx ending.'''
+
+        # It is much more preferable to get the default configurations from conf.ini.default or conf.ini
+        (dict_configlist,dict_fixedlist) = self._get_default_configurations()
+
+        logger.debug(f"dict_configlist {dict_configlist}")
+        logger.debug(f"dict_fixedlist  {dict_fixedlist}")
 
         doi_directory_pathname = os.path.join('.','output')
         os.makedirs(doi_directory_pathname, exist_ok=True)
@@ -136,13 +145,10 @@ class DOICoreServices:
         return (o_num_files_created,etree.tostring(o_aggregated_tree))
 
     def _process_reserve_action_csv(self, target_url, publisher_value, contributor_value, write_to_file_flag=True):
-        # Function process a reserve action based on .csv ending.
+        '''Function process a reserve action based on .csv ending.'''
 
-        # Get the default configuration from external file.  Location may have to be absolute.
-        xml_config_file = os.path.join('.','config','default_config.xml')
-
-        (dict_configlist, dict_fixedlist) = self.m_doi_config_util.get_config_file_metadata(xml_config_file)
-
+        # It is much more preferable to get the default configurations from conf.ini.default or conf.ini
+        (dict_configlist,dict_fixedlist) = self._get_default_configurations()
 
         doi_directory_pathname = os.path.join('.','output')
         os.makedirs(doi_directory_pathname, exist_ok=True)

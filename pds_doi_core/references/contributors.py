@@ -14,10 +14,6 @@ from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
 # Get the common logger and set the level for this file.
 import logging
 logger = get_logger('pds_doi_core.references.contributor')
-#logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
-# Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
-# to INFO if we don't want debug statements.
-
 
 class DOIContributorUtil:
     def __init__(self, dictionnary_url, pds_node_identifier):
@@ -26,7 +22,7 @@ class DOIContributorUtil:
 
 
     def get_permissible_values(self):
-
+        '''Return a list of permissible values for contributors.'''
         response = requests.get(self._url, stream=False, headers={'Connection': 'close'})
         json_data = response.json()
 

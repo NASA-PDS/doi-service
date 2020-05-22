@@ -96,21 +96,3 @@ class DOIConfigUtil:
             sys.exit(1)
 
         return(dict_configList, dict_fixedList)
-
-if __name__ == '__main__':
-    global m_debug_mode
-    function_name = 'main:'
-    #print(function_name,'entering')
-    m_debug_mode = True
-    m_debug_mode = False
-
-    doiConfigUtil = DOIConfigUtil()
-
-    # Get the default configuration from external file.  Location may have to be absolute.
-    xmlConfigFile = os.path.join('.','config','default_config.xml')
-
-    dict_configList = {}
-    dict_fixedList  = {}
-    (dict_configList, dict_fixedList) = doiConfigUtil.get_config_file_metadata(xmlConfigFile)
-    print(function_name,"dict_configList",dict_configList)
-    print(function_name,"dict_fixedList",dict_fixedList)

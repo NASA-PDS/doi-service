@@ -29,13 +29,10 @@ from requests.auth import HTTPBasicAuth
 # Get the common logger and set the level for this file.
 import logging
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
-#logger.setLevel(logging.INFO)  # Comment this line once happy with the level of logging set in get_logger() function.
-#logger.setLevel(logging.DEBUG)  # Comment this line once happy with the level of logging set in get_logger() function.
-# Note that the get_logger() function may already set the level higher (e.g. DEBUG).  Here, we may reset
-# to INFO if we don't want debug statements.
 
 class DOIWebClient:
     def webclient_draft_doi(self,target_url,contributor_value):
+        '''Function draft a DOI from input by making a request to the server.'''
         target_url_query_str = 'target_url="' + target_url + '"'
         # Replace all spaces with '%20' since cannot have spaces in query string.
         # Replace all double quotes '' since cannot have double quotes in contributor value.
@@ -52,6 +49,7 @@ class DOIWebClient:
         return response.text
 
     def webclient_reserve_doi(self,target_url,contributor_value,get_url):
+        '''Function reserve  a DOI from input by making a request to the server.'''
         target_url_query_str = 'target_url="' + target_url + '"'
         contributor_query_str= 'contributor=' + contributor_value.replace(' ','%20').replace('%22','') # Replace all spaces with '%20' since cannot have spaces in query string.
 
@@ -65,7 +63,7 @@ class DOIWebClient:
         return response.text
 
     def webclient_submit_existing_content(self,payload,i_username=None,i_password=None):
-        # Function submit the content (payload already in memory).
+        '''Function submit the content (payload already in memory).'''
         o_status = 'DEFAULT_STATUS'
 
         iad_url         = "https://www.osti.gov/iad2test/api/records"  # This should really come from config file.
@@ -121,6 +119,7 @@ class DOIWebClient:
         return o_status
 
     def webclient_submit_doi(self,payload_filename,i_username=None,i_password=None):
+        '''Function submit the content external file as a DOI to server.'''
         o_status = 'DEFAULT_STATUS'
 
         # Do a sanity check first for file existence.

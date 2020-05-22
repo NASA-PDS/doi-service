@@ -91,15 +91,23 @@ class DOIPDS4LabelUtil:
                   first_last_name_order=[0, 1],
                   first_last_name_separator=' '):
         persons = []
+        logger.debug(f"name_list {name_list}")
+        logger.debug(f"first_last_name_order {first_last_name_order}")
+
         for full_name in name_list:
+            logger.debug(f"full_name {full_name}")
             split_full_name = full_name.strip().split(first_last_name_separator)
             if len(split_full_name) == 2:
                 persons.append({'first_name': split_full_name[first_last_name_order[0]].strip(),
                                 'last_name': split_full_name[first_last_name_order[1]].strip()})
             else:
-                logger.warning("author first name not found for {full_name}")
+                logger.warning(f"author first name not found for [{full_name}]")
+                # Since we cannot determine the first name and last name from splitting, we assume the first name is blank
+                # and last_name as full_name.
                 persons.append({'first_name': '',
-                                'last_name': full_name})
+                                'last_name': full_name.lstrip().rstrip()})
+                logger.debug(f"persons {persons}")
+                
         return persons
 
     def get_author_names(self, name_list):
