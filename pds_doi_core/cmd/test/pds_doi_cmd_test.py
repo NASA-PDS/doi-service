@@ -60,7 +60,6 @@ class MyTestCase(unittest.TestCase):
         osti_doi = self._doi_code_service.reserve_doi_label(
             'input/DOI_Reserved_GEO_200318.xlsx',
             'Cartography and Imaging Sciences Discipline',
-            'NASA Planetary Data System',
             submit_label_flag=False,
             write_to_file_flag=False)
         logger.info(osti_doi)
@@ -70,7 +69,6 @@ class MyTestCase(unittest.TestCase):
         osti_doi = self._doi_code_service.reserve_doi_label(
             'input/DOI_Reserved_GEO_200318.csv',
             'Cartography and Imaging Sciences Discipline',
-            'NASA Planetary Data System',
             submit_label_flag=False,
             write_to_file_flag=False)
         logger.info(osti_doi)

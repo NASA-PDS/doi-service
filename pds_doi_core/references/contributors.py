@@ -8,7 +8,7 @@
 #------------------------------                                                                                                 
 
 import requests
-from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+from pds_doi_core.util.general_util import get_logger
 
 
 # Get the common logger and set the level for this file.

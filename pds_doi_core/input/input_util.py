@@ -1,22 +1,9 @@
-#
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
-#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
-#  use must be negotiated with the Office of Technology Transfer at the
-#  California Institute of Technology.
-#
-#------------------------------                                                                                                 
-
-from lxml import etree
-import copy
+import os
 import pandas as pd
-import xlrd
-
 from datetime import datetime
 
-from pds_doi_core.util.const import *
-
 from pds_doi_core.outputs.output_util import DOIOutputUtil
-from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.exeptions import InputFormatException
 
 # Get the common logger and set the level for this file if desire.
@@ -29,32 +16,17 @@ class DOIInputUtil:
 
     m_EXPECTED_NUM_COLUMNS = 7
 
-    def parse_sxls_file(self,i_app_basepath,i_filepath,dict_fixedlist=None, dict_config_list=None, dict_condition_data=None):
-        '''Function receives a URI containing SXLS format and create one external file per row to output directory.'''
-        o_doi_label = None
-        o_num_files_created = 0
+    def parse_sxls_file(self, i_filepath):
+        """Function receives a URI containing SXLS format and create one external file per row to output directory."""
 
-        logger.info("i_app_basepath" + " " + i_app_basepath)
         logger.info("i_filepath" + " " + i_filepath)
+        dict_condition_data = {}
 
         doi_directory_pathname = os.path.join('.','output')
         os.makedirs(doi_directory_pathname, exist_ok=True)
 
-        #------------------------------
-        # Open the DOI reserved XML label
-        #   -- ElementTree supports 'findall' using dict_namespaces and designation of instances
-        #   -- etree doesn't support designation of instances
-        #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
-        #------------------------------
-        reserve_template_pathname = dict_config_list.get("DOI_reserve_template")
-        logger.info("reserve_template_pathname" + " " + reserve_template_pathname)
-
-        # Do a sanity check on the structure of the DOI template structure.
-        self._validate_reserve_doi_template_structure(reserve_template_pathname)
-
-        xl_wb    = pd.ExcelFile(i_filepath)
+        xl_wb = pd.ExcelFile(i_filepath)
         actual_sheet_name = xl_wb.sheet_names[0] # We only want the first sheet.
-        xl_wb    = pd.read_excel(i_filepath)
         xl_sheet = pd.read_excel(i_filepath,actual_sheet_name)
         num_cols = len(xl_sheet.columns)
         num_rows = len(xl_sheet.index)
@@ -63,143 +35,57 @@ class DOIInputUtil:
         logger.info("num_rows" + " " + str(num_rows))
         logger.debug("data columns " + " " + str(list(xl_sheet.columns)))
 
+        # rename columns in a more simple way
+        xl_sheet = xl_sheet.rename(columns={'publication_date (yyyy-mm-dd)': 'publication_date',
+                                'product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)': 'product_type_specific',
+                                'related_resource\nLIDVID': 'related_resource'})
+
         if (num_cols < self.m_EXPECTED_NUM_COLUMNS):
             logger.error("expecting" + " " + str(self.m_EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (num_cols))
             logger.error("i_filepath" + " " + i_filepath)
             logger.error("columns " + " " + str(list(xl_sheet.columns)))
             raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
         else:
-          dict_condition_data = self._parse_rows_to_osti_meta(doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist)
+            dict_condition_data = self._parse_rows_to_doi_meta(xl_sheet)
+            logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
-          logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 
-        return(dict_condition_data)
-
-    def _parse_rows_to_osti_meta(self,doi_directory_pathname,xl_sheet,num_rows,reserve_template_pathname,dict_condition_data,dict_fixedlist):
-        '''Given all rows in input file, parse each row and return the aggregated XML of all records in OSTI format'''
-
-        parent_xpath = "/records/record/"
-
-        start_row = 0 # Module pandas read in the column header differently, which make the row 0 the first actual data.
-
-        for row_idx in range(start_row,num_rows):    # Iterate through rows ignore 1st row
-            #------------------------------
-            # extract metadata from Columns and populate row-content
-            #  -- ignore 1st column 'state' which is used for validation
-            #------------------------------
-            #------------------------------
-            # Generate the product_label_filename using the LIDVID
-            #    -- remove "urn:nasa:pds"
-            #     -- replace "::" with "-"
-            #------------------------------
-
-            # Extra processing if any fields starts with single or double quotes.
-
-            actual_index = row_idx - 1 # Because of how pandas data frame is structure, we subtract 1.
-            related_resource = xl_sheet.iloc[actual_index,6]
-
-            logger.debug("row_idx,related_resource" + " " + str(row_idx) + " " + str(related_resource))
-
-            product_label_filename = related_resource.replace("urn:nasa:pds:", "")
-            product_label_filename = product_label_filename.replace("::", "_")
-
-            logger.info("related_resource,product_label_filename" + " " + related_resource + " " + product_label_filename)
-
-            logger.info(" -- processing Product label file: " + product_label_filename)
-
-            dict_condition_data[product_label_filename] = {}
-
-            dict_condition_data[product_label_filename]["title"] = xl_sheet.iloc[actual_index, 1]
-            #--
-            # Eventhough cell is shown to be 'text / unicode' value is actually stored as datetime
-            #    -- test for unicode else datetime
-            #--
-            type_date_column = str(type(xl_sheet.iloc[actual_index, 2]))
-
-            logger.debug("type_date_column" + " " + type_date_column)
-            if 'unicode' in type_date_column or 'str' in type_date_column:
-                dict_condition_data[product_label_filename]["publication_date"] = xl_sheet.iloc[actual_index, 2]
-            else:
-                pb_int = xl_sheet.iloc[actual_index,2]
-                pb_datetime = pb_int
-
-            dict_condition_data[product_label_filename]["product_type"] ="Collection"
-            dict_condition_data[product_label_filename]["product_type_specific"]     = xl_sheet.iloc[actual_index,3]
-            dict_condition_data[product_label_filename]["authors/author/last_name"]  = xl_sheet.iloc[actual_index,4]
-            dict_condition_data[product_label_filename]["authors/author/first_name"] = xl_sheet.iloc[actual_index,5]
-            dict_condition_data[product_label_filename]["related_identifiers/related_identifier/identifier_value"] = xl_sheet.iloc[actual_index,6]
-            #------------------------------
-            #------------------------------
-            # Begin replacing the metadata in the DOI template file with that in Product Label
-            #------------------------------
-            try:
-                #f_doi_file = open(reserve_template_pathname, mode='r+')
-                f_doi_file = open(reserve_template_pathname, mode='r')
-                xml_doi_text = f_doi_file.read()
-                f_doi_file.close()
-
-            except FileNotFoundError as err:
-                logger.error("DOI template file (%s) not found for edit\n" % (reserve_template_pathname))
-                raise Exception("DOI template file (%s) not found for edit\n" % (reserve_template_pathname)) from None
-            except Exception as err:
-                logger.error("DOI template file (%s) cannot be read for edit\n" % (reserve_template_pathname))
-                raise Exception("DOI template file (%s) cannot be read for edit\n" % (reserve_template_pathname)) from None
-
-            #------------------------------
-            # For each key/value in dictionary (that contains the values for the DOI label)
-            #------------------------------
-            dict_value = dict_condition_data.get(product_label_filename)
-
-            for key, value in dict_value.items():
-                attr_xpath = parent_xpath + key
-
-                xml_doi_text = self.m_doi_output_util.populate_doi_xml_with_values(dict_fixedlist, xml_doi_text, attr_xpath, value)
-
-        # end for row_idx in range(start_row,num_rows):    # Iterate through rows ignore 1st row
 
         return dict_condition_data
 
-    def _validate_reserve_doi_template_structure(self,reserve_template_pathname):
-        '''Do a sanity check on the structure of the DOI template structure.'''
-        try:
-            tree = etree.parse(reserve_template_pathname)
-        except OSError as err:
-            logger.error("ABORT: the xml 'Reserved template label file (%s) could not be read" % (reserve_template_pathname) )
-            raise Exception("ABORT: the xml 'Reserved template label file (%s) could not be read" % (reserve_template_pathname) ) from None
-        except etree.ParseError as err:
-            logger.error("ABORT: the xml 'Reserved template label file (%s) could not be parsed" % (reserve_template_pathname) )
-            raise Exception("ABORT: the xml 'Reserved template label file (%s) could not be read" % (reserve_template_pathname) ) from None
-        else:
-            pass
+    def _parse_rows_to_doi_meta(self, xl_sheet):
+        """Given all rows in input file, parse each row and return the aggregated XML of all records in OSTI format"""
 
-        return 1
+        doi_records = []
 
-    def parse_csv_file(self, i_app_basepath, i_filepath, dict_fixed_list=None, dict_config_list=None, dict_condition_data=None):
-        '''Function receives a URI containing CSV format and create one external file per row to output directory.'''
-        o_doi_label = None
-        o_num_files_created = 0
+        for index, row in xl_sheet.iterrows():
+            doi_record = {}
+            doi_record['title'] = row['title']
+            doi_record['authors'] = [{'first_name': row['author_first_name'],
+                                     'last_name': row['author_last_name']}]
+            doi_record['publication_date'] = row['publication_date']
+            doi_record['product_type'] = 'Collection'
+            doi_record['product_type_specific'] = row['product_type_specific']
+            doi_record['related_identifier'] = row['related_resource']
+            logger.debug(f'getting doi metadata {doi_record}')
+            doi_records.append(doi_record)
 
-        logger.info("i_app_basepath" + " " + i_app_basepath)
+        return {'dois': doi_records}
+
+
+    def parse_csv_file(self, i_filepath):
+        """Function receives a URI containing CSV format and create one external file per row to output directory."""
+
         logger.info("i_filepath" + " " + i_filepath)
 
         doi_directory_pathname = os.path.join('.','output')
         os.makedirs(doi_directory_pathname, exist_ok=True)
 
-        #------------------------------
-        # Open the DOI reserved XML label
-        #   -- ElementTree supports 'findall' using dict_namespaces and designation of instances
-        #   -- etree doesn't support designation of instances
-        #         -- eg: ".//pds:File_Area_Observational[1]/pds:Table_Delimited[1]/pds:Record_Delimited/pds:maximum_record_length"
-        #------------------------------
-        reserve_template_pathname = dict_config_list.get("DOI_reserve_template")
-        logger.info("reserve_template_pathname" + " " + reserve_template_pathname)
-
-        # Do a sanity check on the structure of the DOI template structure.
-        self._validate_reserve_doi_template_structure(reserve_template_pathname)
-
         # Read the CSV file into memory.
 
-        xl_sheet = pd.read_csv(i_filepath)
+        xl_sheet = pd.read_csv(i_filepath,
+                               parse_dates=['publication_date'],
+                               date_parser=lambda d: datetime.strptime(d, '%Y-%m-%d'))
         num_cols = len(xl_sheet.columns)
         num_rows = len(xl_sheet.index)
 
@@ -208,14 +94,14 @@ class DOIInputUtil:
         logger.info("num_rows" + " " + str(num_rows))
         logger.debug("data columns" + str(list(xl_sheet.columns)))
 
-        if (num_cols < self.m_EXPECTED_NUM_COLUMNS):
+        if num_cols < self.m_EXPECTED_NUM_COLUMNS:
             logger.error("expecting" + " " + str(self.m_EXPECTED_NUM_COLUMNS) + " columns in CSV file has %i columns." % (num_cols))
             logger.error("i_filepath" + " " + i_filepath)
             logger.error("data columns " + " " + str(list(xl_sheet.columns)))
             raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
         else:
 
-            dict_condition_data = self._parse_rows_to_osti_meta(doi_directory_pathname, xl_sheet, num_rows, reserve_template_pathname, dict_condition_data, dict_fixed_list)
+            dict_condition_data = self._parse_rows_to_doi_meta(xl_sheet)
 
             logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
 

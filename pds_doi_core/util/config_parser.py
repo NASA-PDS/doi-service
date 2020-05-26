@@ -7,11 +7,10 @@
 #
 #------------------------------                                                                                                 
 
-#import unicodedata
-
+import os
+import sys
 from xml.etree import ElementTree
 import configparser
-from pds_doi_core.util.const import *
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 

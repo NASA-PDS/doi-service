@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    {{#dois}}
+    <record status="Reserved"> 
+        <title>{{title}}</title>
+        <creators></creators>
+        <authors>
+            {{#authors}}
+             <author>
+                <first_name>{{first_name}}</first_name>
+                <last_name>{{last_name}}</last_name>
+            </author>
+            {{/authors}}
+        </authors>
+        <publication_date>{{publication_date}}</publication_date>
+        <product_type>{{product_type}}</product_type>
+        <product_type_specific>{{product_type_specific}}</product_type_specific>
+
+        <related_identifiers>
+            <related_identifier>
+                <identifier_type>URL</identifier_type>
+                <identifier_value>{{related_identifier}}</identifier_value>
+                <relation_type>Cites</relation_type>
+            </related_identifier>
+        </related_identifiers>        
+    </record>
+    {{/dois}}
+</records>
+
+

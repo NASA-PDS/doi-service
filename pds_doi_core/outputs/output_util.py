@@ -8,9 +8,10 @@
 #------------------------------                                                                                                 
 
 import os
+import sys
 from lxml import etree
 
-from pds_doi_core.util.general_util import DOIGeneralUtil, get_logger
+from pds_doi_core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
 import logging
@@ -70,7 +71,7 @@ class DOIOutputUtil:
                 f_doi_file = open(reserve_template_pathname, mode='r')
                 xml_doi_text = f_doi_file.read()
                 f_doi_file.close()
-            except:
+            except FileNotFoundError:
                 logger.error("DOI template file (%s) not found for edit\n" % (reserve_template_pathname))
                 sys.exit(1)
 
