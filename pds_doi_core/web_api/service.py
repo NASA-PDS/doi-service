@@ -1,5 +1,9 @@
 from flask import Flask
+from flask import request
 from flask_restplus import Api, Resource, fields
+from pds_doi_core.util.general_util import get_logger
+
+logger = get_logger()
 
 flask_app = Flask(__name__)
 app = Api(app=flask_app)

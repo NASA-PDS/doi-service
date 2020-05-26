@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records> 
+    <record status="Reserved"> 
+        <title>Unpublished Data Set #001</title> 
+        <authors> 
+            <author> 
+               <first_name>Guy</first_name> 
+               <last_name>Sample</last_name> 
+            </author> 
+        </authors> 
+        <publication_date>2018-12-15</publication_date> 
+        <product_type>Dataset</product_type> 
+        <product_type_specific>Dataset</product_type_specific>
+        <related_identifiers>
+            <related_identifier>
+                <identifier_type>URL</identifier_type>
+                <identifier_value></identifier_value>
+                <relation_type>Cites</relation_type>
+            </related_identifier>
+        </related_identifiers>        
+    </record> 
+</records>
+
+
