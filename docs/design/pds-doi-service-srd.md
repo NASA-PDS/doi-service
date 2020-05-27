@@ -118,16 +118,18 @@ Per <b>DOI</b>:
 | --- | --- | --- |
 | status | TEXT | current status, among: pending, draft, reserved, released, deactivated) |
 | latest update | INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC. |
-| submitter | TEXT | name of the submitter of the DOI |
+| submitter | TEXT | email of the submitter of the DOI |
 | title | TEXT | title used for the DOI |
 | type | TEXT | product type |
 | subtype | TEXT | subtype of the product |
 | node_id | TEXT | steward discipline node ID |
-| lid/vid | TEXT | |
-| doi | TEXT | DOI provided by the provider (may be null if pending or draft) |
+| lid* | TEXT | |
+| vid* | TEXT | |
+| doi* | TEXT | DOI provided by the provider (may be null if pending or draft) |
 | release date |INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.  |
-| latest_transaction | TEXT | latest transaction (key is submitter or node id /datetime) |
-
+| transaction_key* | TEXT | transaction (key is node id /datetime) |
+| is_latest*  | BOOLEAN | when the transaction is the latest |
+(* composite unique key)
 
 Per <b>transaction</b>:
 - submitting discipline node ID
@@ -137,13 +139,17 @@ Per <b>transaction</b>:
 - comment on operation
 
 The information are archived in 2 databases:
-- DOIs: a local SQLite database (https://www.sqlite.org), single table
+- DOIs: a local SQLite database (https://www.sqlite.org): a single table with the column listed above. 
+For traceability purpose, when we save a new record we update the previous latest with same lid:vid (To Be confirmed) to is_latest=False and add a new record.
+
+ 
 - Transactions: a file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
     - input
     - output
     - comment (optional)
+   
     
-These databases will be handle locally and later synchronized with the tracking service.
+These databases will be handled locally and later synchronized with the tracking service.
 
 Every command line operation will interact and feed these databases locally.
 
