@@ -138,7 +138,7 @@ Per <b>transaction</b>:
 
 The information are archived in 2 databases:
 - DOIs: a local SQLite database (https://www.sqlite.org), single table
-- Transactions: a file directory structure <submitting discipline node ID>/<transaction datetime start>/ with 3 files:
+- Transactions: a file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
     - input
     - output
     - comment (optional)
