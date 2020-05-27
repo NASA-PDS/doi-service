@@ -125,10 +125,11 @@ Per <b>DOI</b>:
 | node_id | TEXT | steward discipline node ID |
 | lid* | TEXT | |
 | vid* | TEXT | |
-| doi* | TEXT | DOI provided by the provider (may be null if pending or draft) |
+| doi | TEXT | DOI provided by the provider (may be null if pending or draft) |
 | release date |INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.  |
 | transaction_key* | TEXT | transaction (key is node id /datetime) |
-| is_latest*  | BOOLEAN | when the transaction is the latest |
+| is_latest  | BOOLEAN | when the transaction is the latest |
+
 (* composite unique key)
 
 Per <b>transaction</b>:
