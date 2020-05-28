@@ -45,7 +45,7 @@
             <contributor>
                     <email/>
                     <first_name>{{first_name}}</first_name>
-                    <last_name>{{Williamslast_name}}</last_name>
+                    <last_name>{{last_name}}</last_name>
                     <contributor_type>Editor</contributor_type>
                     <affiliations/>
             </contributor>
