@@ -14,11 +14,13 @@ from pds_doi_core.util.cmd_parser import create_cmd_parser
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.input_util import DOIInputUtil
+from pds_doi_core.input.node_util import NodeUtil
 from pds_doi_core.input.exeptions import InputFormatException
 from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.outputs.osti import DOIOutputOsti
 from pds_doi_core.outputs.output_util import DOIOutputUtil
+from pds_doi_core.outputs.transaction import Transaction 
 
 # Get the common logger and set the level for this file.
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
@@ -29,6 +31,8 @@ class DOICoreServices:
     m_doi_output_util = DOIOutputUtil()
     m_doi_pds4_label = DOIPDS4LabelUtil()
     m_doi_output_osti = DOIOutputOsti()
+    m_transaction = Transaction()
+    m_node_util = NodeUtil()
 
     def __init__(self):
         self._config = self.m_doi_config_util.get_config()
@@ -84,9 +88,26 @@ class DOICoreServices:
             logger.error(e)
             exit(1)
 
+    def _build_log_dictionary(self, target_url, node_id, action_type, input_content=None):
+        '''Build a dictionary so we write a transaction to log.'''
+        o_log_dict = {}
+        o_log_dict['discipline_node'] = node_id 
+        o_log_dict['action_type']     = action_type 
+        o_log_dict['input_content']   = target_url
+        if input_content:
+            o_log_dict['input_content'] = input_content # If content is provided, use it.
+        if target_url.endswith('.xml'):
+            o_log_dict['content_type'] = 'xml'
+        elif target_url.endswith('.xlsx'):
+            o_log_dict['content_type'] = 'xlsx'
+        elif target_url.endswith('.csv'):
+            o_log_dict['content_type'] = 'csv'
+        return o_log_dict
+
     def reserve_doi_label(self,
                           target_url,
                           contributor_value,
+                          node_id,
                           submit_label_flag=True):
         """
         Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
@@ -115,6 +136,20 @@ class DOICoreServices:
             logger.error(f"File type has not been implemented:target_url {target_url}")
             exit(1)
 
+        # Build a dictionary so we write a transaction.
+        log_dict = self._build_log_dictionary(target_url, node_id, 'reserve')
+
+#        log_dict['discipline_node'] = node_id 
+#        log_dict['action_type']     = 'reserve'
+#        log_dict['input_content']   = target_url
+#        if target_url.endswith('.xml'):
+#            log_dict['content_type'] = 'xml'
+#        elif target_url.endswith('.xlsx'):
+#            log_dict['content_type'] = 'xlsx'
+#        elif target_url.endswith('.csv'):
+#            log_dict['content_type'] = 'csv'
+
+
         # We can submit the content to OSTI if we wish.
         print("reserve_doi_label:","o_doi_label",o_doi_label)
         logger.debug(f"submit_label_flag {submit_label_flag}")
@@ -126,11 +161,24 @@ class DOICoreServices:
                                                              i_username=self._config.get('OSTI', 'user'),
                                                              i_password=self._config.get('OSTI', 'password'))
             (o_reserved_flag, o_out_text) = doi_web_client._verify_osti_reserved_status(o_doi_label)
+
+             # Write a transaction for the 'reserve' action.
+            log_dict['output_content'] = o_out_text
+            log_dict['submitter']      = self._config.get('OTHER','submitter_email')
+            log_dict['status'] = 'Reserved'.lower()
+            self.m_transaction.log_transaction(log_dict)
+
             return o_out_text
         else:
+            # Write a transaction for the 'reserve' action.
+            log_dict['output_content'] = o_doi_label
+            log_dict['submitter']      = self._config.get('OTHER','submitter_email')
+            log_dict['status'] = 'Reserved'.lower()
+            self.m_transaction.log_transaction(log_dict)
+
             return o_doi_label
 
-    def create_doi_label(self, target_url, contributor_value):
+    def create_doi_label(self, target_url, contributor_value, node_id):
         """
         Function receives a URI containing either XML or a local file and draft a Data Object Identifier (DOI).  
         :param target_url:
@@ -147,40 +195,64 @@ class DOICoreServices:
             exit(1)
 
         # parse input
+        input_content = None;
         if not target_url.startswith('http'):
             xml_tree = etree.parse(target_url)
         else:
             response = requests.get(target_url)
             xml_tree = etree.fromstring(response.content)
+            input_content = response.content 
 
         doi_fields = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
         doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
         doi_fields['contributor'] = contributor_value
 
+        # Build a dictionary so we write a transaction.
+        log_dict = self._build_log_dictionary(target_url, node_id, 'draft', input_content.decode())
+
         # generate output
-        return self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
+        o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
+
+        # Write a transaction for the 'reserve' action.
+        log_dict['output_content'] = o_doi_label
+        log_dict['status'] = 'Pending'.lower()
+        log_dict['submitter']      = self._config.get('OTHER','submitter_email')
+        self.m_transaction.log_transaction(log_dict)
+
+        #print(f"create_doi_label: o_doi_label) {o_doi_label}")
+        #print(f"create_doi_label: type(o_doi_label) {type(o_doi_label)}")
+        #exit(1)
+
+        return o_doi_label 
 
 
 def main():
     parser = create_cmd_parser()
     arguments = parser.parse_args()
     action_type = arguments.action
-    contributor_value = arguments.contributor.lstrip().rstrip()  # Remove any leading and trailing blanks.
+    #contributor_value = arguments.contributor.lstrip().rstrip()  # Remove any leading and trailing blanks.
+    node_id = arguments.contributor.lstrip().rstrip()  # Remove any leading and trailing blanks.
     input_location = arguments.input
 
     logger.info(f"run_dir {os.getcwd()}")
     logger.info(f"input_location {input_location}")
     logger.info(f"contributor_value['{contributor_value}']")
 
+    self.m_node_util.validate_node_id(node_id)
+    contributor_value = self.m_node_util.get_node_long_name(contributor_value)
+    #print(f"pds_doi_cmd:contributor_value {contributor_value}")
+    #exit(0)
+
     doi_core_services = DOICoreServices()
 
     if action_type == 'draft':
-        o_doi_label = doi_core_services.create_doi_label(input_location, contributor_value)
+        o_doi_label = doi_core_services.create_doi_label(input_location, contributor_value, node_id)
         logger.info(o_doi_label)
 
     elif action_type == 'reserve':
         o_doi_label = doi_core_services.reserve_doi_label(input_location,
                                                           contributor_value,
+                                                          node_id,
                                                           submit_label_flag=True)
         # By default, submit_label_flag=True if not specified.
         # By default, write_to_file_flag=True if not specified.
