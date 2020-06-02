@@ -35,20 +35,20 @@ class Transaction:
         self._config = self.m_doi_config_util.get_config()
 
     def write_transaction_to_disk(self,log_dict):
-        '''Write a transaction from 'reserve' or 'draft' to disk.'''
+        '''Write a transaction from 'reserve' or 'draft' to disk. The dictionary log_dict will be updated and returned.'''
 
         transaction_dir = self._config.get('OTHER','transaction_dir')
         logger.debug(f"transaction_dir {transaction_dir}")
 
         # Get the current time.
-        current_time = datetime.now();
+        current_time = datetime.now()
         epoch_time = int(time.time())
         now_is = current_time.isoformat()
         logger.debug(f"now_is {now_is}")
 
         # Get the fields from dictionary.
 
-        discipline_node = log_dict['discipline_node'].upper()  # The discipline node can be lowercase, make it uppercase.
+        discipline_node = log_dict['discipline_node'].lower()  # The discipline node can be lowercase, make it uppercase.
         action_type     = log_dict['action_type'].upper()      # The value of action_type can be lowercase, make it uppercase.
         input_content   = log_dict['input_content']
         content_type    = log_dict['content_type']
@@ -57,22 +57,17 @@ class Transaction:
         logger.debug(f"discipline_node,action_type,content_type {discipline_node},{action_type},{content_type}")
 
         # Make sure the value of discipline_node is valid.
-        self.m_node_util.validate_node_id(discipline_node)
+        self.m_node_util.validate_node_id(discipline_node.upper())  # Because the node_id being validated is upppercase, we use upper()
 
         # Create directories if they don't exist already.
         os.makedirs(transaction_dir,exist_ok=True)
         os.makedirs(os.path.join(transaction_dir,discipline_node),exist_ok=True)
-        os.makedirs(os.path.join(transaction_dir,discipline_node,action_type),exist_ok=True)
-        os.makedirs(os.path.join(transaction_dir,discipline_node,action_type,now_is),exist_ok=True)
-
-        final_output_dir = os.path.join(transaction_dir,discipline_node,action_type,now_is)
+        final_output_dir = os.path.join(transaction_dir,discipline_node,now_is)
+        os.makedirs(final_output_dir,exist_ok=True)
 
         # Write input file with provided content.
         # Note that the file name is always 'input' plus the extension based on the content_type
         full_input_name = os.path.join(final_output_dir,'input' + '.' + content_type)  # input.xml or input.csv or input.xlsx
-
-        # Add field to log_dict to return. 
-        log_dict['submitted_input_link'] = full_input_name
 
         # If the provided content is actually a file name, we copy it, otherwise write it to external file using full_input_name as name.
         if os.path.isfile(input_content):
@@ -89,11 +84,11 @@ class Transaction:
         full_output_name = os.path.join(final_output_dir,'output.xml')
 
         # Add fields to log_dict to return. 
+        log_dict['submitted_input_link'] = full_input_name
         log_dict['submitted_output_link'] = full_output_name 
-        log_dict['transaction_key']       = discipline_node + "_" + now_is
+        log_dict['transaction_key']       = os.path.join(discipline_node,now_is)
         log_dict['latest_update']         = epoch_time
         log_dict['submitter']      = self._config.get('OTHER','submitter_email')
-        log_dict['status'] = 'Pending'.lower()
 
         file_ptr = open(full_output_name,"w") 
 
@@ -107,18 +102,15 @@ class Transaction:
 
         logger.debug(f"TRANSACTION_INFO:data_tuple ({log_dict['status']},{log_dict['submitter']},{epoch_time},{discipline_node},{log_dict['transaction_key']})")
 
-        #return 1
         return log_dict
 
     def write_transaction_to_database(self,log_dict):
         '''Write a DOI transaction from 'reserve' or 'draft' to database.'''
-        logger.debug("Hello world")
         self.m_doi_database.write_transaction_to_database(log_dict)
         return 1
 
     def log_transaction(self,log_dict):
         '''Log a DOI transaction from 'reserve' or 'draft' to disk and to database.'''
-        logger.debug("Hello world")
         log_dict = self.write_transaction_to_disk(log_dict)
         self.write_transaction_to_database(log_dict)
         return 1

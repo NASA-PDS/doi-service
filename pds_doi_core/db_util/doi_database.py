@@ -21,12 +21,11 @@ logger = get_logger('pds_doi_core.db_util.doi_database')
 
 class DOIDataBase:
     # This DOIDataBase class provides mechanism to write a row, update a row into sqlite database.
-    #m_database_name = ''
     m_database_name = None
     m_my_conn = None
-    m_NUM_COLS = 13    # We are only expecting 13 colums in the doi_table.  If table structure, this value needs updated.
-    m_default_table_name = 'doi_table' # Default name of table.
-    m_default_db_file    = 'pythonsqlite.db' # Default nameof database.
+    m_NUM_COLS = 13    # We are only expecting 13 colums in the doi table.  If table structure, this value needs updated.
+    m_default_table_name = 'doi' # Default name of table.
+    m_default_db_file    = 'doi.db' # Default name of database.
 
     def get_database_name(self):
         ''' Returns the name of the SQLite database. '''
@@ -262,7 +261,7 @@ class DOIDataBase:
         status          = dict_row['status'].lower()
         latest_update   = dict_row['latest_update']
         submitter       = dict_row['submitter']
-        discipline_node = dict_row['discipline_node'].upper()
+        discipline_node = dict_row['discipline_node'].lower()
         transaction_key = dict_row['transaction_key']
         action_type     = dict_row['action_type'].upper()
         input_content   = dict_row['input_content']
@@ -272,7 +271,6 @@ class DOIDataBase:
         submitted_output_link = dict_row['submitted_output_link']
 
         logger.debug(f"submitted_input_link,submitted_output_link {submitted_input_link},{submitted_output_link}")
-
 
         # Note that the order of items in data_tuple must match the columns in query in the same order.
         # TODO: More columns should be written to represent a transaction.
@@ -297,12 +295,6 @@ class DOIDataBase:
             self.m_my_conn = self.doi_create_connection(db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
-
-#       if o_table_exist_flag:
-#            logger.warn(f"Table {table_name} already exist")
-#            if (drop_exist_table_flag):
-#                logger.debug(f"drop_exist_table_flag is True for table {table_name}")
-#                self.doi_drop_table(db_name,table_name)
 
         query_string = 'SELECT * FROM ' + table_name
         if len(query_criterias) > 0:
@@ -338,12 +330,6 @@ class DOIDataBase:
             self.m_my_conn = self.doi_create_connection(db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
-
-#       if o_table_exist_flag:
-#            logger.warn(f"Table {table_name} already exist")
-#            if (drop_exist_table_flag):
-#                logger.debug(f"drop_exist_table_flag is True for table {table_name}")
-#                self.doi_drop_table(db_name,table_name)
 
         query_string = 'SELECT * FROM ' + table_name + ';   '
         logger.debug(f"doi_select_rows_all:query_string {query_string}")

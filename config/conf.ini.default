@@ -13,5 +13,5 @@ global_keyword_values = PDS; PDS4; Maven; Mars
 DOI_template = ./config/DOI_template_20200407.xml
 DOI_reserve_template = ./config/DOI_IAD2_reserved_template_20200205.xml
 pds_uri = http://pds.nasa.gov/pds4/pds/v1
-transaction_dir = ./transaction_dir
+transaction_dir = ./transaction_history
 submitter_email = put_your_email_address_here

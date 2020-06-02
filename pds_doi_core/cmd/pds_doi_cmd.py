@@ -102,6 +102,9 @@ class DOICoreServices:
             o_log_dict['content_type'] = 'xlsx'
         elif target_url.endswith('.csv'):
             o_log_dict['content_type'] = 'csv'
+
+        o_log_dict['submitter']  = self._config.get('OTHER','submitter_email')
+
         return o_log_dict
 
     def reserve_doi_label(self,
@@ -138,21 +141,12 @@ class DOICoreServices:
 
         # Build a dictionary so we write a transaction.
         log_dict = self._build_log_dictionary(target_url, node_id, 'reserve')
-
-#        log_dict['discipline_node'] = node_id 
-#        log_dict['action_type']     = 'reserve'
-#        log_dict['input_content']   = target_url
-#        if target_url.endswith('.xml'):
-#            log_dict['content_type'] = 'xml'
-#        elif target_url.endswith('.xlsx'):
-#            log_dict['content_type'] = 'xlsx'
-#        elif target_url.endswith('.csv'):
-#            log_dict['content_type'] = 'csv'
-
+        log_dict['status']  = 'Reserved'.lower()
 
         # We can submit the content to OSTI if we wish.
-        print("reserve_doi_label:","o_doi_label",o_doi_label)
+
         logger.debug(f"submit_label_flag {submit_label_flag}")
+
         if submit_label_flag:
             from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
             doi_web_client = DOIOstiWebClient()
@@ -164,16 +158,12 @@ class DOICoreServices:
 
              # Write a transaction for the 'reserve' action.
             log_dict['output_content'] = o_out_text
-            log_dict['submitter']      = self._config.get('OTHER','submitter_email')
-            log_dict['status'] = 'Reserved'.lower()
             self.m_transaction.log_transaction(log_dict)
 
             return o_out_text
         else:
             # Write a transaction for the 'reserve' action.
             log_dict['output_content'] = o_doi_label
-            log_dict['submitter']      = self._config.get('OTHER','submitter_email')
-            log_dict['status'] = 'Reserved'.lower()
             self.m_transaction.log_transaction(log_dict)
 
             return o_doi_label
@@ -209,14 +199,14 @@ class DOICoreServices:
 
         # Build a dictionary so we write a transaction.
         log_dict = self._build_log_dictionary(target_url, node_id, 'draft', input_content.decode())
+        log_dict['status'] = 'Pending'.lower()
 
         # generate output
         o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
 
         # Write a transaction for the 'reserve' action.
         log_dict['output_content'] = o_doi_label
-        log_dict['status'] = 'Pending'.lower()
-        log_dict['submitter']      = self._config.get('OTHER','submitter_email')
+
         self.m_transaction.log_transaction(log_dict)
 
         #print(f"create_doi_label: o_doi_label) {o_doi_label}")
