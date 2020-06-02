@@ -43,11 +43,11 @@ class Transaction:
         # Get the current time.
         current_time = datetime.now();
         epoch_time = int(time.time())
-        #now_is = datetime.now().isoformat()
         now_is = current_time.isoformat()
         logger.debug(f"now_is {now_is}")
 
         # Get the fields from dictionary.
+
         discipline_node = log_dict['discipline_node'].upper()  # The discipline node can be lowercase, make it uppercase.
         action_type     = log_dict['action_type'].upper()      # The value of action_type can be lowercase, make it uppercase.
         input_content   = log_dict['input_content']
@@ -88,10 +88,12 @@ class Transaction:
         # Note that the file name is always 'output.xml'.
         full_output_name = os.path.join(final_output_dir,'output.xml')
 
-        # Add field to log_dict to return. 
-        log_dict['submitted_outout_link'] = full_output_name 
+        # Add fields to log_dict to return. 
+        log_dict['submitted_output_link'] = full_output_name 
         log_dict['transaction_key']       = discipline_node + "_" + now_is
         log_dict['latest_update']         = epoch_time
+        log_dict['submitter']      = self._config.get('OTHER','submitter_email')
+        log_dict['status'] = 'Pending'.lower()
 
         file_ptr = open(full_output_name,"w") 
 
@@ -102,6 +104,8 @@ class Transaction:
             file_ptr.write(output_content) # Write the entire output content to file.
         file_ptr.write("\n")           # Write carriage return for easy reading of file.
         file_ptr.close()
+
+        logger.debug(f"TRANSACTION_INFO:data_tuple ({log_dict['status']},{log_dict['submitter']},{epoch_time},{discipline_node},{log_dict['transaction_key']})")
 
         #return 1
         return log_dict

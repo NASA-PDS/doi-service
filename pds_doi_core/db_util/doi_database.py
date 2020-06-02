@@ -86,14 +86,14 @@ class DOIDataBase:
         return o_table_exist_flag
 
     def doi_drop_table(self,db_name,table_name):
-        ''' Delete the given tabel from the SQLite database. '''
+        ''' Delete the given table from the SQLite database. '''
 
         self.m_my_conn.execute('DROP TABLE ' + table_name)
         logger.debug(f"DROP TABLE {table_name}")
         return 1
 
     def doi_create_q_string_for_create(self,table_name):
-        ''' Build the query string to delete the table in the SQLite database. '''
+        ''' Build the query string to create a table in the SQLite database. '''
 
         # Note that this table structure is defined here so if you need to know the structure.
         o_query_string = 'CREATE TABLE ' + table_name  +  ' '
@@ -186,12 +186,12 @@ class DOIDataBase:
         return 1
 
     def _int_columns_check(self,db_name,table_name,dict_row):
-       ''' Do a sanity check on the types of all the columns.  The ones we need to check are:
+       ''' Do a sanity check on the types of all the date columns.  The ones we need to check are:
 
              latest_update
              release_date
 
-           since they are of type date. '''
+           since they should be of type int. '''
 
        long_int_type_list = ['latest_update', 'release_date']
        for long_int_field in long_int_type_list:
@@ -207,6 +207,7 @@ class DOIDataBase:
        return 1
 
     def doi_insert_row(self,db_name,table_name,dict_row,drop_exist_table_flag=False):
+        '''Insert a row into the table table_name the database db_name. All fields in dict dict_row are expected to be there.'''
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
 
         if self.m_my_conn is None:
@@ -243,7 +244,7 @@ class DOIDataBase:
         return 1
 
     def write_transaction_to_database(self,dict_row):
-        ''' Log a transaction from a 'reserve' or 'draft' action to database. '''
+        ''' Log a transaction from a 'reserve' or 'draft' action to database.  Only selected fields will be written for a transaction.'''
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
@@ -268,10 +269,17 @@ class DOIDataBase:
         content_type    = dict_row['content_type']
         output_content  = dict_row['output_content']
         submitted_input_link  = dict_row['submitted_input_link']
-        submitted_outout_link = dict_row['submitted_outout_link']
+        submitted_output_link = dict_row['submitted_output_link']
+
+        logger.debug(f"submitted_input_link,submitted_output_link {submitted_input_link},{submitted_output_link}")
+
 
         # Note that the order of items in data_tuple must match the columns in query in the same order.
+        # TODO: More columns should be written to represent a transaction.
+
         data_tuple = (status,submitter,latest_update,discipline_node,transaction_key)
+
+        logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
         self.m_my_conn.execute(query_string,data_tuple)
         self.m_my_conn.commit()
