@@ -35,17 +35,12 @@ logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 class DOIOstiWebClient:
     def webclient_draft_doi(self, target_url, contributor_value):
         '''Function draft a DOI from input by making a request to the server.'''
-        target_url_query_str = 'target_url="' + target_url + '"'
-        # Replace all spaces with '%20' since cannot have spaces in query string.
-        # Replace all double quotes '' since cannot have double quotes in contributor value.
-        contributor_query_str = 'contributor=' + contributor_value.replace(' ', '%20').replace('%22',
-                                                                                               '')  # Replace all spaces with '%20' since cannot have spaces in query string.
+        parameters  = {
+                        'target_url': target_url,
+                        'contributor': contributor_value
+                       }
 
-        # Build the actual query string to append request.
-        query_string = '?' + target_url_query_str + '&' + contributor_query_str
-
-        response = requests.get(get_url + query_string)
-        logger.debug(f'query_string {query_string}')
+        response = requests.get(target_url, params=parameters)
         logger.debug(f'response {response}')
 
         # Return the reponse as text and let the user decide what to do with it.
