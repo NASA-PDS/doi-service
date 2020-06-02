@@ -3,7 +3,8 @@ This tools provides services for PDS operators to mint DOIs.
 
 ## Prerequisites
 
-python 3
+- python 3
+- a login to OSTI server
 
 ## Usage 
 
