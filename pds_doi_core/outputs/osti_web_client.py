@@ -58,7 +58,7 @@ class DOIOstiWebClient:
             'target_url': target_url,
             'contributor': contributor_value
         }
-        response = requests.get(get_url, params=params)
+        response = requests.get(target_url, params=params)
         logger.debug(f'reserve doi {response.request}')
 
         return response.text
