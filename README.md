@@ -5,21 +5,6 @@ This tools provides services for PDS operators to mint DOIs.
 
 python 3
 
-## Supported inputs
-
-### PDS4 Label
-- Bundle - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml
-- Data Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml
-- Browse Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml
-- Calibration Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml
-- Document Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml
-
-### XLS spreadsheets
-For reserved dois
-
-### CSV files
-CSV is not supported.  It was a one-time deal from Ron.
-
 ## Usage 
 
     pds-doi-cmd --help
@@ -32,6 +17,17 @@ CSV is not supported.  It was a one-time deal from Ron.
     pds-doi-cmd reserve -c 'Cartography and Imaging Sciences Discipline' -i input/DOI_Reserved_GEO_200318.csv
     pds-doi-cmd reserve -c 'Cartography and Imaging Sciences Discipline' -i input/OSTI_IAD_submitted_records_Reserved-only_20200304.csv 
 
+### Supported inputs
+
+#### PDS4 Label
+- Bundle - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml
+- Data Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml
+- Browse Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml
+- Calibration Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml
+- Document Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml
+
+#### tables
+For reserved dois, `xlsx` and `csv` inputs are supported.
 
 ## Developers
 
