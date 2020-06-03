@@ -34,10 +34,6 @@ class NodeUtil:
 
     def get_node_long_name(self,node_id):
         self.validate_node_id(node_id.upper())
-        #if node_id.upper() not in self.m_node_id_dict:
-        #    raise UnknownNodeException(f"node_id {node_id.upper()} is not found in permissible nodes {self.m_node_id_dict.keys()}")
-        #else:
-        #    return self.m_node_id_dict[node_id.upper()]
         return self.m_node_id_dict[node_id.upper()]
 
     def validate_node_id(self,node_id):

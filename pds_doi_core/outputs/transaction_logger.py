@@ -17,7 +17,7 @@ from datetime import datetime,timezone
 from pds_doi_core.input.node_util import NodeUtil
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
-from pds_doi_core.db_util.doi_database import DOIDataBase
+from pds_doi_core.db.doi_database import DOIDataBase
 from pds_doi_core.outputs.transaction import Transaction
 
 # Get the common logger and set the level for this file.

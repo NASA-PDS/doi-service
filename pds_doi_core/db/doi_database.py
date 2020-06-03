@@ -37,7 +37,7 @@ class DOIDataBase:
 
         return self.m_database_name
 
-    def doi_close_database(self):
+    def close_database(self):
         ''' Close database connection to a SQLite database. '''
 
         logger.debug(f"Closing database {self.m_database_name}") 
@@ -52,7 +52,7 @@ class DOIDataBase:
 
         return
 
-    def doi_create_connection(self,db_file):
+    def create_connection(self, db_file):
         ''' Create a database connection to a SQLite database '''
 
         self.m_my_conn = None
@@ -75,7 +75,7 @@ class DOIDataBase:
         o_table_exist_flag = True
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name}")
-            self.m_my_conn = self.doi_create_connection(self.m_database_name)
+            self.m_my_conn = self.create_connection(self.m_database_name)
         table_pointer = self.m_my_conn.cursor()
             
         # Get the count of tables with the given name.
@@ -89,14 +89,14 @@ class DOIDataBase:
             o_table_exist_flag = False
         return o_table_exist_flag
 
-    def doi_drop_table(self,db_name,table_name):
+    def drop_table(self, db_name, table_name):
         ''' Delete the given table from the SQLite database. '''
 
         self.m_my_conn.execute('DROP TABLE ' + table_name)
         logger.debug(f"DROP TABLE {table_name}")
         return 1
 
-    def doi_create_q_string_for_create(self,table_name):
+    def create_q_string_for_create(self, table_name):
         ''' Build the query string to create a table in the SQLite database. '''
 
         # Note that this table structure is defined here so if you need to know the structure.
@@ -118,7 +118,7 @@ class DOIDataBase:
 
         return o_query_string
 
-    def doi_create_q_string_for_insert(self,table_name):
+    def create_q_string_for_insert(self, table_name):
         ''' Build the query string to insert into the table in the SQLite database. '''
 
         # Note that this table structure is defined here so if you need to know the structure.
@@ -143,7 +143,7 @@ class DOIDataBase:
 
         return o_query_string
 
-    def doi_create_q_string_for_transaction_insert(self,table_name):
+    def create_q_string_for_transaction_insert(self, table_name):
         ''' Build the query string to insert a transaction into the table in the SQLite database. '''
 
         # Note that this table structure is defined here so if you need to know the structure.
@@ -161,13 +161,13 @@ class DOIDataBase:
 
         return o_query_string
 
-    def doi_create_table(self,db_name,table_name):
+    def create_table(self, table_name):
         ''' Create a given table in the SQLite database. '''
 
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(db_file)
+            self.m_my_conn = self.create_connection(db_file)
 
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"o_table_exist_flag {o_table_exist_flag}")
@@ -177,7 +177,7 @@ class DOIDataBase:
 #
 #        # Table does not already exist, we can create it now.
 
-        query_string = self.doi_create_q_string_for_create(table_name)
+        query_string = self.create_q_string_for_create(table_name)
         logger.debug(f'doi_create_table:query_string {query_string}')
         self.m_my_conn.execute(query_string)
 
@@ -206,20 +206,20 @@ class DOIDataBase:
 
        return 1
 
-    def doi_insert_row(self,db_name,table_name,dict_row,drop_exist_table_flag=False):
+    def insert_row(self, db_name, table_name, dict_row, drop_exist_table_flag=False):
         '''Insert a row into the table table_name the database db_name. All fields in dict dict_row are expected to be there.'''
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(db_file)
+            self.m_my_conn = self.create_connection(db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
         # Do a sanity check on the types of all the columns int.
         donotcare = self._int_columns_check(db_name,table_name,dict_row)
 
-        query_string = self.doi_create_q_string_for_insert(table_name)
+        query_string = self.create_q_string_for_insert(table_name)
 
         # Note that the order of items in data_tuple must match the columns in the table in the same order.
         data_tuple = (dict_row['status'],           # 1
@@ -248,19 +248,19 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(self.m_default_db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(self.m_default_table_name)
 
         # Create the table if it does not already exist.
         if not o_table_exist_flag:
-            self.doi_create_table(self.m_default_db_file,self.m_default_table_name)
+            self.create_table(self.m_default_table_name)
 
         logger.debug(f"table_name,o_table_exist_flag {self.m_default_table_name},{o_table_exist_flag}")
 
         # Do a sanity check on the types of all the int columns.
         donotcare = self._int_columns_check(self.m_default_db_file,self.m_default_table_name,dict_row)
 
-        query_string = self.doi_create_q_string_for_transaction_insert(self.m_default_table_name)
+        query_string = self.create_q_string_for_transaction_insert(self.m_default_table_name)
 
         logger.debug(f"query_string {query_string}")
 
@@ -290,7 +290,7 @@ class DOIDataBase:
 
         return 1
 
-    def doi_select_row_one(self,db_name,table_name,query_criterias):
+    def select_row_one(self, db_name, table_name, query_criterias):
         ''' Select rows based on a criteria.'''
 
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
@@ -298,7 +298,7 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(db_file)
+            self.m_my_conn = self.create_connection(db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
@@ -333,7 +333,7 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(db_file)
+            self.m_my_conn = self.create_connection(db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
@@ -352,14 +352,14 @@ class DOIDataBase:
 
         return 1
 
-    def doi_update_row(self,db_name,table_name,update_list,query_criterias):
+    def update_row(self, db_name, table_name, update_list, query_criterias):
         ''' Update all rows and fields (specified in update_list matching query_criterias.'''
 
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(db_file)
+            self.m_my_conn = self.create_connection(db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 

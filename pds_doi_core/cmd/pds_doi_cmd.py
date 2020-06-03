@@ -105,8 +105,8 @@ class DOICoreServices:
         try:
             contributor_value = self.m_node_util.get_node_long_name(node_id)
         except UnknownNodeException as e:
-            logger.error(e)
-            exit(1)
+            raise(e)
+
 
         action_type = 'reserve_osti_label'
         o_doi_label = 'invalid action type:action_type ' + action_type
@@ -168,11 +168,11 @@ class DOICoreServices:
 
         try:
             contributor_value = self.m_node_util.get_node_long_name(node_id)
+            logger.info(f"contributor_value['{contributor_value}']")
         except UnknownNodeException as e:
-            logger.error(e)
-            exit(1)
+            raise(e)
 
-        logger.info(f"contributor_value['{contributor_value}']")
+
 
         # check contributor
         doi_contributor_util = DOIContributorUtil(self._config.get('PDS4_DICTIONARY', 'url'),
@@ -216,43 +216,35 @@ def main():
     parser = create_cmd_parser()
     arguments = parser.parse_args()
     action_type = arguments.action
-    #contributor_value = arguments.contributor.lstrip().rstrip()  # Remove any leading and trailing blanks.
-    #node_id = arguments.contributor.lstrip().rstrip()  # Remove any leading and trailing blanks.
+    submitter_email = arguments.submitter_email
     node_id = arguments.node_id.lstrip().rstrip()  # Remove any leading and trailing blanks.
     input_location = arguments.input
 
     logger.info(f"run_dir {os.getcwd()}")
     logger.info(f"input_location {input_location}")
     logger.info(f"node_id ['{node_id}']")
-    m_node_util = NodeUtil()
 
     try:
-        contributor_value = m_node_util.get_node_long_name(node_id)
+        doi_core_services = DOICoreServices()
+
+        if action_type == 'draft':
+            o_doi_label = doi_core_services.create_doi_label(input_location, node_id, submitter_email)
+            logger.info(o_doi_label)
+
+        elif action_type == 'reserve':
+            o_doi_label = doi_core_services.reserve_doi_label(input_location,
+                                                              node_id, submitter_email,
+                                                              submit_label_flag=True)
+            # By default, submit_label_flag=True if not specified.
+            # By default, write_to_file_flag=True if not specified.
+            logger.info(o_doi_label.decode())
+        else:
+            logger.error(f"Action {action_type} is not supported yet.")
+            exit(1)
     except UnknownNodeException as e:
         logger.error(e)
         exit(1)
 
-    logger.info(f"contributor_value['{contributor_value}']")
-
-    #print(f"pds_doi_cmd:contributor_value {contributor_value}")
-    #exit(0)
-
-    doi_core_services = DOICoreServices()
-
-    if action_type == 'draft':
-        o_doi_label = doi_core_services.create_doi_label(input_location, node_id, submitter_email)
-        logger.info(o_doi_label)
-
-    elif action_type == 'reserve':
-        o_doi_label = doi_core_services.reserve_doi_label(input_location,
-                                                          node_id, submitter_email,
-                                                          submit_label_flag=True)
-        # By default, submit_label_flag=True if not specified.
-        # By default, write_to_file_flag=True if not specified.
-        logger.info(o_doi_label.decode())
-    else:
-        logger.error(f"Action {action_type} is not supported yet.")
-        exit(1)
 
 
 if __name__ == '__main__':
