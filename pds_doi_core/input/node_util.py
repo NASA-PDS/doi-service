@@ -11,6 +11,7 @@ import os
 import sys
 
 from pds_doi_core.util.general_util import get_logger
+from pds_doi_core.input.exeptions import UnknownNodeException
 
 # Get the common logger and set the level for this file.
 import logging
@@ -32,13 +33,13 @@ class NodeUtil:
                                'SBN' :'Small Bodies'}
 
     def get_node_long_name(self,node_id):
-        if node_id not in self.m_node_id_dict:
-            logger.error(f"node_id {node_id} is not found in permissible nodes {self.m_node_id_dict.keys()}")
-            exit(1)
-        else:
-            return self.m_node_id_dict[node_id]
+        self.validate_node_id(node_id.upper())
+        #if node_id.upper() not in self.m_node_id_dict:
+        #    raise UnknownNodeException(f"node_id {node_id.upper()} is not found in permissible nodes {self.m_node_id_dict.keys()}")
+        #else:
+        #    return self.m_node_id_dict[node_id.upper()]
+        return self.m_node_id_dict[node_id.upper()]
 
     def validate_node_id(self,node_id):
-        if node_id not in self.m_node_id_dict:
-            logger.error(f"node_id {node_id} is not found in permissible nodes {self.m_node_id_dict.keys()}")
-            exit(1)
+        if node_id.upper() not in self.m_node_id_dict:
+            raise UnknownNodeException(f"node_id {node_id.upper()} is not found in permissible nodes {self.m_node_id_dict.keys()}")

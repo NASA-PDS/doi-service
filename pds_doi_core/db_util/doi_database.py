@@ -13,6 +13,7 @@ import os
 import sqlite3
 from sqlite3 import Error
 
+from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
@@ -24,8 +25,12 @@ class DOIDataBase:
     m_database_name = None
     m_my_conn = None
     m_NUM_COLS = 13    # We are only expecting 13 colums in the doi table.  If table structure, this value needs updated.
-    m_default_table_name = 'doi' # Default name of table.
-    m_default_db_file    = 'doi.db' # Default name of database.
+    m_doi_config_util = DOIConfigUtil()
+
+    def __init__(self):
+        self._config = self.m_doi_config_util.get_config()
+        self.m_default_table_name = self._config.get('OTHER','db_table')  # Default name of table.
+        self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
 
     def get_database_name(self):
         ''' Returns the name of the SQLite database. '''
@@ -156,7 +161,7 @@ class DOIDataBase:
 
         return o_query_string
 
-    def doi_create_table(self,db_name,table_name,drop_exist_table_flag=False):
+    def doi_create_table(self,db_name,table_name):
         ''' Create a given table in the SQLite database. '''
 
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
@@ -167,14 +172,10 @@ class DOIDataBase:
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"o_table_exist_flag {o_table_exist_flag}")
 
-        if o_table_exist_flag:
-            logger.warn(f"Table {table_name} already exist")
-            if (drop_exist_table_flag):
-                logger.debug(f"drop_exist_table_flag is True for table {table_name}")
-                self.doi_drop_table(db_name,table_name)
-            #return 1
-
-        # Table does not already exist, we can create it now.
+#        if o_table_exist_flag:
+#            logger.warn(f"Table {table_name} already exist")
+#
+#        # Table does not already exist, we can create it now.
 
         query_string = self.doi_create_q_string_for_create(table_name)
         logger.debug(f'doi_create_table:query_string {query_string}')
@@ -242,13 +243,18 @@ class DOIDataBase:
 
         return 1
 
-    def write_transaction_to_database(self,dict_row):
-        ''' Log a transaction from a 'reserve' or 'draft' action to database.  Only selected fields will be written for a transaction.'''
+    def write_doi_info_to_database(self,dict_row):
+        '''Write some DOI info from 'reserve' or 'draft' request to database.'''
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
             self.m_my_conn = self.doi_create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(self.m_default_table_name)
+
+        # Create the table if it does not already exist.
+        if not o_table_exist_flag:
+            self.doi_create_table(self.m_default_db_file,self.m_default_table_name)
+
         logger.debug(f"table_name,o_table_exist_flag {self.m_default_table_name},{o_table_exist_flag}")
 
         # Do a sanity check on the types of all the int columns.
@@ -357,12 +363,6 @@ class DOIDataBase:
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
-#       if o_table_exist_flag:
-#            logger.warn(f"Table {table_name} already exist")
-#            if (drop_exist_table_flag):
-#                logger.debug(f"drop_exist_table_flag is True for table {table_name}")
-#                self.doi_drop_table(db_name,table_name)
-
         query_string = 'UPDATE ' + table_name + ' SET '
         for ii in range(len(update_list)):
             # Build the SET column_1 = new_value_1,
@@ -387,36 +387,4 @@ class DOIDataBase:
 
         return 1
 
-    def doi_delete_row(self,db_name,table_name,query_criterias):
-        ''' Delete all rows matching query_criterias.'''
-
-        logger.debug(f"self.m_my_conn {self.m_my_conn}")
-
-        if self.m_my_conn is None:
-            logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.doi_create_connection(db_file)
-        o_table_exist_flag = self.check_if_table_exist(table_name)
-        logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
-
-#       if o_table_exist_flag:
-#            logger.warn(f"Table {table_name} already exist")
-#            if (drop_exist_table_flag):
-#                logger.debug(f"drop_exist_table_flag is True for table {table_name}")
-#                self.doi_drop_table(db_name,table_name)
-
-        query_string = 'DELETE FROM ' + table_name
-
-        # Add any query_criterias
-        if len(query_criterias) > 0:
-            query_string += ' WHERE '
-        for ii in range(len(query_criterias)):
-            if ii == 0:
-                query_string += query_criterias[ii]
-            else:
-                query_string += ' AND ' + query_criterias[ii]
-        logger.debug(f"query_string {query_string}")
-
-        self.m_my_conn.execute(query_string)
-
-        return 1
 # end of doi_database.py
