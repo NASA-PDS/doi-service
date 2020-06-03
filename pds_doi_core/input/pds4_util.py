@@ -37,7 +37,7 @@ class DOIPDS4LabelUtil:
             'investigation_area': '/*/pds4:Context_Area/pds4:Investigation_Area/*',
             'observing_system_component':
                 '/*/pds4:Context_Area/pds4:Observing_System/pds4:Observing_System_Component/*',
-            'taget_identication': '/*/pds4:Context_Area/pds4:Target_Identification/*',
+            'target_identication': '/*/pds4:Context_Area/pds4:Target_Identification/*',
             'primary_result_summary':  '/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*',
 
         }
@@ -78,7 +78,7 @@ class DOIPDS4LabelUtil:
             return datetime.now()
 
     def get_keywords(self, pds4_fields):
-        keyword_field = {'investigation_area', 'observing_system_component', 'taget_identication', 'primary_result_summary'}
+        keyword_field = {'investigation_area', 'observing_system_component', 'target_identication', 'primary_result_summary'}
         keywords = set()
         for keyword_src in keyword_field:
             if keyword_src in pds4_fields.keys():
