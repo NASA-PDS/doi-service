@@ -146,9 +146,9 @@ Per <b>transaction</b>:
 - submitted output
 - comment (not managed yet)
 
-A file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
-    - input
-    - output
+These records are saved in a file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
+    - input.&lt;[xml|xlsx|csv]&gt;
+    - output.xml
     - comment (optional)
    
     
