@@ -10,24 +10,11 @@
 # with a currently running web server for DOI services.
 #
 
-import json
-import logging
-import netrc
-import os
+
 import requests
-import sys
-import xmltodict
-
-from pds_doi_core.util.cmd_parser import create_cmd_parser
-
 from pds_doi_core.util.general_util import get_logger
-
-from collections import OrderedDict
 from lxml import etree
 from requests.auth import HTTPBasicAuth
-
-# Get the common logger and set the level for this file.
-import logging
 
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 
