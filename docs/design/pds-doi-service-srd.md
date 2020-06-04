@@ -110,14 +110,17 @@ TBD
 
 ![Retrieve DOI Activity Diagram](retrieve_activity.png)
 
-The DOI summary must manage the following information:
+For traceability purpose in respect to the OSTI system and the discipline node's submitters, full records of the transaction made are recorded. The tracked information is divided into:
+- doi_transaction: one record for each operation for each DOI
+- transaction: one record for each transaction (can be multiple DOIs)
 
-Per <b>DOI</b>:
+Per <b>doi_transaction</b>:
+For each transaction, for each doi, one record is saved with the following attributes:
 
 | name | type | comment |
 | --- | --- | --- |
 | status | TEXT | current status, among: pending, draft, reserved, released, deactivated) |
-| latest update | INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC. |
+| update_date* | INTEGER | as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC. |
 | submitter | TEXT | email of the submitter of the DOI |
 | title | TEXT | title used for the DOI |
 | type | TEXT | product type |
@@ -132,19 +135,18 @@ Per <b>DOI</b>:
 
 (* composite unique key)
 
+Only the latest record for one DOI has attribute is_latest = True. This attribute is updated at each insertion.
+
+These records are managed in a sqllite database (https://www.sqlite.org) in a single table.
+
 Per <b>transaction</b>:
 - submitting discipline node ID
-- submitted input (link)
-- submitted output (link)
-- transaction datetime start
-- comment on operation
+- submitting time
+- submitted input
+- submitted output
+- comment (not managed yet)
 
-The information are archived in 2 databases:
-- DOIs: a local SQLite database (https://www.sqlite.org): a single table with the column listed above. 
-For traceability purpose, when we save a new record we update the previous latest with same lid:vid (To Be confirmed) to is_latest=False and add a new record.
-
- 
-- Transactions: a file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
+A file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
     - input
     - output
     - comment (optional)
