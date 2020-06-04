@@ -67,7 +67,15 @@ class DOICoreServices:
 
         try:
             dict_condition_data = self.m_doi_input_util.parse_sxls_file(target_url)
-            return self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data)
+
+            # Do a sanity check on content of dict_condition_data.
+            if len(dict_condition_data['dois']) == 0:
+                raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
+
+            # Get the submitter_email from the first row only.
+            submitter_email = dict_condition_data['dois'][0]['submitter_email']
+
+            return (submitter_email,self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data))
         except InputFormatException as e:
             logger.error(e)
             exit(1)
@@ -84,7 +92,13 @@ class DOICoreServices:
 
         try:
             dict_condition_data = self.m_doi_input_util.parse_csv_file(target_url)
-            return self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data)
+            if len(dict_condition_data['dois']) == 0:
+                raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
+
+            # Get the submitter_email from the first row only.
+            submitter_email = dict_condition_data['dois'][0]['submitter_email']
+
+            return (submitter_email,self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data))
         except InputFormatException as e:
             logger.error(e)
             exit(1)
@@ -92,13 +106,11 @@ class DOICoreServices:
     def reserve_doi_label(self,
                           target_url,
                           node_id,
-                          submitter_email,
                           submit_label_flag=True):
         """
         Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
         :param target_url:
         :param node_id:
-        :param submitter_email:
         :return:
         """
 
@@ -118,10 +130,10 @@ class DOICoreServices:
             o_doi_label = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
 
         elif target_url.endswith('.xlsx'):
-            o_doi_label = self._process_reserve_action_xlsx(target_url)
+            (submitter_email,o_doi_label) = self._process_reserve_action_xlsx(target_url)
 
         elif target_url.endswith('.csv'):
-            o_doi_label = self._process_reserve_action_csv(target_url)
+            (submitter_email,o_doi_label) = self._process_reserve_action_csv(target_url)
 
         # Check to see if the given file has an attempt to process.
         else:
@@ -228,12 +240,18 @@ def main():
         doi_core_services = DOICoreServices()
 
         if action_type == 'draft':
-            o_doi_label = doi_core_services.create_doi_label(input_location, node_id, submitter_email)
-            logger.info(o_doi_label)
+            # For 'draft' action, we expect the email address to be provided.
+            if not submitter_email:
+                logger.error(f"Value of submitter_email must be provided at command line -s option")
+                exit(1)
+            else:
+                o_doi_label = doi_core_services.create_doi_label(input_location, node_id, submitter_email)
+                logger.info(o_doi_label)
 
         elif action_type == 'reserve':
+            # For 'reserve' action, we don't expect the email address to be provided since it would be in the input file.
             o_doi_label = doi_core_services.reserve_doi_label(input_location,
-                                                              node_id, submitter_email,
+                                                              node_id,
                                                               submit_label_flag=True)
             # By default, submit_label_flag=True if not specified.
             # By default, write_to_file_flag=True if not specified.
