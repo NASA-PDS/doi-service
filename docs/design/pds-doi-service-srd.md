@@ -147,9 +147,9 @@ Per <b>transaction</b>:
 - comment (not managed yet)
 
 These records are saved in a file directory structure &lt;submitting discipline node ID&gt;/&lt;transaction datetime start&gt;/ with 3 files:
-    - input.&lt;[xml|xlsx|csv]&gt;
-    - output.xml
-    - comment (optional)
+- input.&lt;[xml|xlsx|csv]&gt;
+- output.xml
+- comment (optional)
    
     
 These databases will be handled locally and later synchronized with the tracking service.
