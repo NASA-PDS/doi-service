@@ -14,7 +14,7 @@ class DOIInputUtil:
 
     m_doi_output_util = DOIOutputUtil()
 
-    m_EXPECTED_NUM_COLUMNS = 7
+    m_EXPECTED_NUM_COLUMNS = 8
 
     def parse_sxls_file(self, i_filepath):
         """Function receives a URI containing SXLS format and create one external file per row to output directory."""
@@ -38,7 +38,7 @@ class DOIInputUtil:
         # rename columns in a more simple way
         xl_sheet = xl_sheet.rename(columns={'publication_date (yyyy-mm-dd)': 'publication_date',
                                 'product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)': 'product_type_specific',
-                                'related_resource\nLIDVID': 'related_resource'})
+                                'related_resource\nLIDVID': 'related_resource','submitter_email':'submitter_email'})
 
         if (num_cols < self.m_EXPECTED_NUM_COLUMNS):
             logger.error("expecting" + " " + str(self.m_EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (num_cols))
@@ -67,6 +67,7 @@ class DOIInputUtil:
             doi_record['product_type'] = 'Collection'
             doi_record['product_type_specific'] = row['product_type_specific']
             doi_record['related_identifier'] = row['related_resource']
+            doi_record['submitter_email'] = row['submitter_email']
             logger.debug(f'getting doi metadata {doi_record}')
             doi_records.append(doi_record)
 

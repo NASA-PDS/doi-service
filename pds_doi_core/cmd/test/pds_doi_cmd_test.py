@@ -58,8 +58,8 @@ class MyTestCase(unittest.TestCase):
     def test_reserve_xlsx(self):
         logger.info("test reserve xlsx file format")
         osti_doi = self._doi_code_service.reserve_doi_label(
-            'input/DOI_Reserved_GEO_200318.xlsx',
-            'img','my_user@my_node.gov',
+            'input/DOI_Reserved_GEO_200318_with_submitter_email.xlsx',
+            'img',
             submit_label_flag=False)
         logger.info(osti_doi)
 
@@ -67,7 +67,7 @@ class MyTestCase(unittest.TestCase):
         logger.info("test reserve csv file format")
         osti_doi = self._doi_code_service.reserve_doi_label(
             'input/DOI_Reserved_GEO_200318.csv',
-            'img','my_user@my_node.gov',
+            'img',
             submit_label_flag=False)
         logger.info(osti_doi)
 
