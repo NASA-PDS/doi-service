@@ -13,7 +13,7 @@ def add_default_action_arguments(_parser):
                          metavar='input/bundle_in_with_contributors.xml')
     _parser.add_argument('-s', '--submitter_email',
                          help='The email address of the user performing the action for these services',
-                         required=False,
+                         required=True,
                          metavar='"my.email@node.gov"')
     _parser.add_argument('-t', '--target',
                          help='the system target to mint the DOI',

@@ -106,13 +106,10 @@ class TransactionLogger:
 
         return log_dict
 
-    def write_doi_info_to_database(self,log_dict):
-        '''Write some DOI info from 'reserve' or 'draft' request to database.'''
-        self.m_doi_database.write_doi_info_to_database(log_dict)
-        return 1
-
     def log_transaction(self,log_dict):
-        '''Log a DOI transaction from 'reserve' or 'draft' to disk and write DOI info to database.'''
+        '''Log a DOI transaction from 'reserve' or 'draft' to disk.'''
         log_dict = self.write_transaction_to_disk(log_dict)
-        self.write_doi_info_to_database(log_dict)
+
+        # The writing to database will be called separately.
+
         return 1

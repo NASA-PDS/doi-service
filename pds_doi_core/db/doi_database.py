@@ -24,7 +24,7 @@ class DOIDataBase:
     # This DOIDataBase class provides mechanism to write a row, update a row into sqlite database.
     m_database_name = None
     m_my_conn = None
-    m_NUM_COLS = 13    # We are only expecting 13 colums in the doi table.  If table structure, this value needs updated.
+    m_NUM_COLS = 13    # We are only expecting 13 colums in the doi table.  If table structure changes, this value needs updated.
     m_doi_config_util = DOIConfigUtil()
 
     def __init__(self):
@@ -102,7 +102,7 @@ class DOIDataBase:
         # Note that this table structure is defined here so if you need to know the structure.
         o_query_string = 'CREATE TABLE ' + table_name  +  ' '
         o_query_string += '(status TEXT NOT NULL'       # current status, among: pending, draft, reserved, released, deactivated)
-        o_query_string += ',latest_update INT NOT NULL' # as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
+        o_query_string += ',update_date INT NOT NULL' # as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
         o_query_string += ',submitter TEXT '    # email of the submitter of the DOI
         o_query_string += ',title TEXT '        # title used for the DOI
         o_query_string += ',type TEXT '         # product type
@@ -112,7 +112,7 @@ class DOIDataBase:
         o_query_string += ',vid TEXT '
         o_query_string += ',doi TEXT'                   # DOI provided by the provider (may be null if pending or draft)
         o_query_string += ',release_date INT '  # as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
-        o_query_string += ',transaction_key TEXT PRIMARY KEY NOT NULL' # transaction (key is node id /datetime) 
+        o_query_string += ',transaction_key TEXT NOT NULL' # transaction (key is node id /datetime) 
         o_query_string += ',is_latest BOOLEAN NULL); ' # when the transaction is the latest 
         logger.debug(f"o_query_string {o_query_string}")
 
@@ -125,7 +125,7 @@ class DOIDataBase:
         o_query_string = 'INSERT INTO ' + table_name + ' '
 
         o_query_string += '(status'
-        o_query_string += ',latest_update'
+        o_query_string += ',update_date'
         o_query_string += ',submitter'
         o_query_string += ',title'
         o_query_string += ',type'
@@ -151,11 +151,38 @@ class DOIDataBase:
         o_query_string = 'INSERT INTO ' + table_name + ' '
 
         o_query_string += '(status'
+        o_query_string += ',type'
+        o_query_string += ',subtype'
+        o_query_string += ',is_latest'
+        o_query_string += ',lid'
+        o_query_string += ',vid'
+        o_query_string += ',doi'
         o_query_string += ',submitter'
-        o_query_string += ',latest_update'
+        o_query_string += ',update_date'
         o_query_string += ',node_id'
+        o_query_string += ',title'
         o_query_string += ',transaction_key) VALUES '
-        o_query_string += '(?,?,?,?,?)'
+        o_query_string += '(?,?,?,?,?,?,?,?,?,?,?,?)'
+
+        logger.debug(f"o_query_string {o_query_string}")
+
+        return o_query_string
+
+    def create_q_string_for_transaction_update(self, table_name, dict_row):
+        ''' Build the query string to update existing rows in the table with the update_date field earlier than the current row in the SQLite database. '''
+
+        # Note that this table structure is defined here so if you need to know the structure.
+        # Also note that we setting column is_latest to 0 to signify that all previous rows are now not the latest.
+        # Note that the key in dict_row is latest_update
+        o_query_string = 'UPDATE ' + table_name + ' '
+
+        o_query_string += 'SET '
+        o_query_string += 'is_latest = 0 '
+        o_query_string += 'WHERE lid = "' + str(dict_row['lid']) + '"'
+        o_query_string += ' AND  vid = "' + str(dict_row['vid']) + '"'
+        o_query_string += ' AND  update_date < ' + str(dict_row['latest_update'])  # We only want record earlier than the one just inserted
+        o_query_string += ';' # Don't forget the last semi-colon for SQL to work.
+
 
         logger.debug(f"o_query_string {o_query_string}")
 
@@ -188,12 +215,12 @@ class DOIDataBase:
     def _int_columns_check(self,db_name,table_name,dict_row):
        ''' Do a sanity check on the types of all the date columns.  The ones we need to check are:
 
-             latest_update
+             update_date
              release_date
 
            since they should be of type int. '''
 
-       long_int_type_list = ['latest_update', 'release_date']
+       long_int_type_list = ['update_date', 'release_date']
        for long_int_field in long_int_type_list:
            if long_int_field in dict_row:
                logger.debug(f"long_int_field,type(dict_row[long_int_field]) {long_int_field},{type(dict_row[long_int_field])}")
@@ -223,7 +250,7 @@ class DOIDataBase:
 
         # Note that the order of items in data_tuple must match the columns in the table in the same order.
         data_tuple = (dict_row['status'],           # 1
-                      dict_row['latest_update'],    # 2
+                      dict_row['update_date'],    # 2
                       dict_row['submitter'],        # 3
                       dict_row['title'],            # 4
                       dict_row['type'],             # 5
@@ -239,6 +266,19 @@ class DOIDataBase:
         logger.debug(f"query_string {query_string}")
 
         self.m_my_conn.execute(query_string,data_tuple)
+        self.m_my_conn.commit()
+
+        return 1
+
+    def update_previous_records(self,dict_row):
+        '''Update all records that share the same lid,vid before the current update_date field in dict_row.'''
+
+        logger.debug(f"dict_row {dict_row}")
+
+        # Create the query string with the criteria for lid, vid and update_date
+        query_string = self.create_q_string_for_transaction_update(self.m_default_table_name, dict_row)
+
+        self.m_my_conn.execute(query_string)
         self.m_my_conn.commit()
 
         return 1
@@ -265,7 +305,38 @@ class DOIDataBase:
         logger.debug(f"query_string {query_string}")
 
         status          = dict_row['status'].lower()
-        latest_update   = dict_row['latest_update']
+        if 'title' in dict_row:
+            title           = dict_row['title']
+        else:
+            logger.warn(f"Field 'title' is missing from dict_row")
+            title           = None 
+        if 'type' in dict_row:
+            product_type    = dict_row['type']    # PYTHON_NOTE: Cannot use 'type' as a variable as it is a keyword.
+        else:
+            logger.warn(f"Field 'type' is missing from dict_row")
+            product_type    = None 
+        if 'subtype' in dict_row:
+            subtype         = dict_row['subtype']
+        else:
+            logger.warn(f"Field 'subtype' is missing from dict_row")
+            subtype         = None 
+        is_latest       = True
+        if 'lid' in dict_row:
+            lid             = dict_row['lid']
+        else:
+            logger.warn(f"Field 'lid' is missing from dict_row")
+            lid             = None 
+        if 'vid' in dict_row:
+            vid             = dict_row['vid']
+        else:
+            logger.warn(f"Field 'vid' is missing from dict_row")
+            vid             = None 
+        if 'doi' in dict_row:
+            doi             = dict_row['doi']
+        else:
+            logger.warn(f"Field 'doi' is missing from dict_row")
+            doi             = None 
+        update_date     = dict_row['latest_update']   # Note that the key is latest_update from translation_logger
         submitter       = dict_row['submitter']
         discipline_node = dict_row['discipline_node'].lower()
         transaction_key = dict_row['transaction_key']
@@ -277,16 +348,19 @@ class DOIDataBase:
         submitted_output_link = dict_row['submitted_output_link']
 
         logger.debug(f"submitted_input_link,submitted_output_link {submitted_input_link},{submitted_output_link}")
+        logger.debug(f"product_type,subtype {product_type,subtype}")
 
         # Note that the order of items in data_tuple must match the columns in query in the same order.
         # TODO: More columns should be written to represent a transaction.
 
-        data_tuple = (status,submitter,latest_update,discipline_node,transaction_key)
+        data_tuple = (status,product_type,subtype,is_latest,lid,vid,doi,submitter,update_date,discipline_node,title,transaction_key)
 
         logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
         self.m_my_conn.execute(query_string,data_tuple)
         self.m_my_conn.commit()
+
+        donotcare = self.update_previous_records(dict_row)
 
         return 1
 

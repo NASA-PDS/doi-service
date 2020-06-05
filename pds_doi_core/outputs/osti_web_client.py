@@ -98,7 +98,8 @@ class DOIOstiWebClient:
 
         logger.info(f"DOI records submitted with status {response.status_code}")
 
-        return o_status
+        #return o_status
+        return doc
 
     def webclient_submit_doi(self, payload_filename, i_username=None, i_password=None):
         """Function submit the content external file as a DOI to server."""
@@ -150,6 +151,27 @@ class DOIOstiWebClient:
 
         return o_reserved_flag, o_out_text
 
+    def set_doi_fields(self, i_doc, i_doi_fields, i_field_index):
+        """Function fetches the id,doi,title fields from i_doc using the i_field_index."""
+        o_doi_fields = i_doi_fields.copy()
+
+        my_root = i_doc.getroottree()
+        element_index = 0
+
+        for element in my_root.iter():
+            if element.tag == 'record':
+                if element_index == i_field_index:
+                    my_record = my_root.xpath(element.tag)[0]
+                    my_id = my_root.xpath('record/id')[element_index]
+                    my_doi = my_root.xpath('record/doi')[element_index]
+                    my_title = my_root.xpath('record/title')[element_index]
+                    o_doi_fields['title']  = my_title.text
+                    o_doi_fields['id']     = my_id.text
+                    o_doi_fields['doi']    = my_doi.text
+
+                element_index += 1
+
+        return o_doi_fields
 
     def WebClientTrackSubmitedDOI(self, submitted_status):
         return 1

@@ -22,6 +22,7 @@ from pds_doi_core.outputs.osti import DOIOutputOsti
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.outputs.transaction import Transaction
 from pds_doi_core.outputs.transaction_logger import TransactionLogger
+from pds_doi_core.db.doi_database import DOIDataBase
 
 # Get the common logger and set the level for this file.
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
@@ -34,6 +35,7 @@ class DOICoreServices:
     m_doi_output_osti = DOIOutputOsti()
     m_transaction_logger = TransactionLogger()
     m_node_util = NodeUtil()
+    m_doi_database = DOIDataBase()
 
     def __init__(self):
         self._config = self.m_doi_config_util.get_config()
@@ -72,10 +74,7 @@ class DOICoreServices:
             if len(dict_condition_data['dois']) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
-            # Get the submitter_email from the first row only.
-            submitter_email = dict_condition_data['dois'][0]['submitter_email']
-
-            return (submitter_email,self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data))
+            return dict_condition_data
         except InputFormatException as e:
             logger.error(e)
             exit(1)
@@ -92,13 +91,13 @@ class DOICoreServices:
 
         try:
             dict_condition_data = self.m_doi_input_util.parse_csv_file(target_url)
+
+            # Do a sanity check on content of dict_condition_data.
             if len(dict_condition_data['dois']) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
-            # Get the submitter_email from the first row only.
-            submitter_email = dict_condition_data['dois'][0]['submitter_email']
-
-            return (submitter_email,self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data))
+            #return self.m_doi_output_osti.create_osti_doi_reserved_record(dict_condition_data)
+            return dict_condition_data
         except InputFormatException as e:
             logger.error(e)
             exit(1)
@@ -106,11 +105,13 @@ class DOICoreServices:
     def reserve_doi_label(self,
                           target_url,
                           node_id,
+                          submitter_email,
                           submit_label_flag=True):
         """
         Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
         :param target_url:
         :param node_id:
+        :param submitter_email:
         :return:
         """
 
@@ -127,13 +128,17 @@ class DOICoreServices:
         logger.debug(f"target_url,action_type {target_url} {action_type}")
 
         if target_url.endswith('.xml'):
-            o_doi_label = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
+            #(submitter_email,doi_fields) = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
+            doi_fields = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
+            o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
 
         elif target_url.endswith('.xlsx'):
-            (submitter_email,o_doi_label) = self._process_reserve_action_xlsx(target_url)
+            doi_fields = self._process_reserve_action_xlsx(target_url)
+            o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
 
         elif target_url.endswith('.csv'):
-            (submitter_email,o_doi_label) = self._process_reserve_action_csv(target_url)
+            doi_fields = self._process_reserve_action_csv(target_url)
+            o_doi_label  = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
 
         # Check to see if the given file has an attempt to process.
         else:
@@ -143,23 +148,39 @@ class DOICoreServices:
         # Build a transaction so we write a transaction.
         doi_transaction = Transaction(target_url, node_id, 'reserve', submitter_email)
         doi_transaction.add_field('status','Reserved'.lower())
-
-        # We can submit the content to OSTI if we wish.
-
         logger.debug(f"submit_label_flag {submit_label_flag}")
 
+        # We can submit the content to OSTI if we wish.
         if submit_label_flag:
             from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
             doi_web_client = DOIOstiWebClient()
-            doi_web_client.webclient_submit_existing_content(o_doi_label,
+            reserve_response = doi_web_client.webclient_submit_existing_content(o_doi_label,
                                                              i_url=self._config.get('OSTI', 'url'),
                                                              i_username=self._config.get('OSTI', 'user'),
                                                              i_password=self._config.get('OSTI', 'password'))
             (o_reserved_flag, o_out_text) = doi_web_client._verify_osti_reserved_status(o_doi_label)
 
-             # Write a transaction for the 'reserve' action.
+            logger.debug(f"reserve_response {reserve_response}")
+            logger.debug(f"type(reserve_response) {type(reserve_response)}")
+
+            # Write a transaction for the 'reserve' action.
             doi_transaction.add_field('output_content',o_out_text)
             self.m_transaction_logger.log_transaction(doi_transaction)
+
+            #m_doi_database = DOIDataBase()
+            for field_index in range(0,len(doi_fields['dois'])):
+                doi_transaction.add_field('subtype',doi_fields['dois'][field_index]['product_type_specific'])
+                # The liv/vid is derived from the related_identifier field 
+                # The field related_resource contains the lid/vid: urn:nasa:pds:insight_cameras::1.0 so we parse it and save the 2 fields.
+                identifier_tokens = doi_fields['dois'][field_index]['related_identifier'].split('::')
+                if len(identifier_tokens) < 2:
+                    logger.error(f"Expecting at least 2 tokens from parsing  {doi_fields['dois'][ii]['related_identifier']}")
+                    exit(1)
+                doi_transaction.add_field('lid',identifier_tokens[0])
+                doi_transaction.add_field('vid',identifier_tokens[1])
+                db_doi_fields = doi_web_client.set_doi_fields(reserve_response,doi_transaction.get_transaction(),field_index)
+
+                self.m_doi_database.write_doi_info_to_database(db_doi_fields)
 
             return o_out_text
         else:
@@ -212,14 +233,28 @@ class DOICoreServices:
         # Build a dictionary so we write a transaction.
         doi_transaction = Transaction(target_url, node_id, 'draft', submitter_email, input_content.decode())
         doi_transaction.add_field('status','Pending'.lower())
+        doi_transaction.add_field('title',doi_fields['title'])
+        doi_transaction.add_field('type',doi_fields['product_type'])
+        doi_transaction.add_field('subtype',doi_fields['product_type_specific'])
+
+        # The field identifier contains the lid/vid: urn:nasa:pds:insight_cameras::1.0 so we parse it and save the 2 fields.
+        identifier_tokens = doi_fields['identifier'].split('::')
+        if len(identifier_tokens) < 2:
+            logger.error(f"Expecting at least 2 tokens from parsing  {doi_fields['identifier']}")
+            exit(1)
+        doi_transaction.add_field('lid',identifier_tokens[0])
+        doi_transaction.add_field('vid',identifier_tokens[1])
 
         # generate output
         o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
 
-        # Write a transaction for the 'reserve' action.
+        # Write a transaction for the 'draft' action.
         doi_transaction.add_field('output_content',o_doi_label)
 
         self.m_transaction_logger.log_transaction(doi_transaction)
+
+        # Also write to database of DOI info.
+        self.m_doi_database.write_doi_info_to_database(doi_transaction.get_transaction())
 
         return o_doi_label 
 
