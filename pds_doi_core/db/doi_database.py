@@ -168,12 +168,15 @@ class DOIDataBase:
 
         return o_query_string
 
-    def create_q_string_for_transaction_update(self, table_name, dict_row):
-        ''' Build the query string to update existing rows in the table with the update_date field earlier than the current row in the SQLite database. '''
+    def create_q_string_for_transaction_update_is_latest_field(self, table_name, dict_row):
+        ''' Build the query string to update existing rows in the table with the update_date field earlier than the current row in the SQLite database.
+            The current row is the row just inserted with the "update_date" value of "latest_update".
+            The comparison criteria is less than, meaning any rows inserted earlier will be updated with column
+            "is_latest" to zero.'''
 
-        # Note that this table structure is defined here so if you need to know the structure.
+        # Note that this table structure is defined here so you need to know the structure.
         # Also note that we setting column is_latest to 0 to signify that all previous rows are now not the latest.
-        # Note that the key in dict_row is latest_update
+        # Note that the key in dict_row is 'latest_update' not 'update_date' (not same as column name).
         o_query_string = 'UPDATE ' + table_name + ' '
 
         o_query_string += 'SET '
@@ -270,13 +273,14 @@ class DOIDataBase:
 
         return 1
 
-    def update_previous_records(self,dict_row):
-        '''Update all records that share the same lid,vid before the current update_date field in dict_row.'''
+    def update_previous_records_is_latest_field(self,dict_row):
+        '''Update all records that share the same lid,vid before the current update_date field in dict_row
+           by setting the is_latest field to False (or 0).'''
 
         logger.debug(f"dict_row {dict_row}")
 
-        # Create the query string with the criteria for lid, vid and update_date
-        query_string = self.create_q_string_for_transaction_update(self.m_default_table_name, dict_row)
+        # Create the query string with the criteria for lid/vid and update_date fields.
+        query_string = self.create_q_string_for_transaction_update_is_latest_field(self.m_default_table_name, dict_row)
 
         self.m_my_conn.execute(query_string)
         self.m_my_conn.commit()
@@ -351,16 +355,29 @@ class DOIDataBase:
         logger.debug(f"product_type,subtype {product_type,subtype}")
 
         # Note that the order of items in data_tuple must match the columns in query in the same order.
-        # TODO: More columns should be written to represent a transaction.
 
         data_tuple = (status,product_type,subtype,is_latest,lid,vid,doi,submitter,update_date,discipline_node,title,transaction_key)
 
         logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
-        self.m_my_conn.execute(query_string,data_tuple)
-        self.m_my_conn.commit()
+        try:
+            self.m_my_conn.execute(query_string,data_tuple)
+            self.m_my_conn.commit()
+        except sqlite3.Error as e:
+            logger.error("Database error: %s" % e)
+            raise Exception("Database error: %s" % e) from None
+        except Exception as e:
+            logger.error("Exception in _query: %s" % e)
+            raise Exception("Exception in _query: %s" % e) from None
 
-        donotcare = self.update_previous_records(dict_row)
+        try:
+            self.update_previous_records_is_latest_field(dict_row)
+        except sqlite3.Error as e:
+            logger.error("Database error: %s" % e)
+            raise Exception("Database error: %s" % e) from None
+        except Exception as e:
+            logger.error("Exception in updating previous records: %s" % e)
+            raise Exception("Exception in _query: %s" % e) from None
 
         return 1
 

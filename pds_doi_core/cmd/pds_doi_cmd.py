@@ -167,7 +167,6 @@ class DOICoreServices:
             doi_transaction.add_field('output_content',o_out_text)
             self.m_transaction_logger.log_transaction(doi_transaction)
 
-            #m_doi_database = DOIDataBase()
             for field_index in range(0,len(doi_fields['dois'])):
                 doi_transaction.add_field('subtype',doi_fields['dois'][field_index]['product_type_specific'])
                 # The liv/vid is derived from the related_identifier field 
@@ -184,9 +183,28 @@ class DOICoreServices:
 
             return o_out_text
         else:
+            # This path is normally used by developer to test the parsing of CSV or XLSX input without submitting the DOI.
             # Write a transaction for the 'reserve' action.
+
             doi_transaction.add_field('output_content',o_doi_label)
             self.m_transaction_logger.log_transaction(doi_transaction)
+
+            # Because the doi is not submitted, there is no field 'doi'.
+            for field_index in range(0,len(doi_fields['dois'])):
+                doi_transaction.add_field('subtype',doi_fields['dois'][field_index]['product_type_specific'])
+                # The liv/vid is derived from the related_identifier field 
+                # The field related_resource contains the lid/vid: urn:nasa:pds:insight_cameras::1.0 so we parse it and save the 2 fields.
+                identifier_tokens = doi_fields['dois'][field_index]['related_identifier'].split('::')
+                if len(identifier_tokens) < 2:
+                    logger.error(f"Expecting at least 2 tokens from parsing  {doi_fields['dois'][ii]['related_identifier']}")
+                    exit(1)
+                doi_transaction.add_field('lid',identifier_tokens[0])
+                doi_transaction.add_field('vid',identifier_tokens[1])
+                doi_transaction.add_field('title',doi_fields['dois'][field_index]['title'])  # The 'title' field is available in doi_fields['dois']
+
+                # No need to call set_doi_fields() since there is no 'doi' field and we don't have access to reserve_response.
+
+                self.m_doi_database.write_doi_info_to_database(doi_transaction.get_transaction())
 
             return o_doi_label
 

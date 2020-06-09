@@ -67,7 +67,9 @@ class DOIInputUtil:
             doi_record['product_type'] = 'Collection'
             doi_record['product_type_specific'] = row['product_type_specific']
             doi_record['related_identifier'] = row['related_resource']
-            doi_record['submitter_email'] = row['submitter_email']
+            # Get 'submitter_email' from row if field can be found in row.
+            if 'submitter_email' in row:
+                doi_record['submitter_email'] = row['submitter_email']
             logger.debug(f'getting doi metadata {doi_record}')
             doi_records.append(doi_record)
 
