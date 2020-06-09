@@ -58,7 +58,7 @@ class MyTestCase(unittest.TestCase):
     def test_reserve_xlsx(self):
         logger.info("test reserve xlsx file format")
         osti_doi = self._doi_code_service.reserve_doi_label(
-            'input/DOI_Reserved_GEO_200318_with_submitter_email.xlsx',
+            'input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             'img','my_user@my_node.gov',
             submit_label_flag=False)
         logger.info(osti_doi)

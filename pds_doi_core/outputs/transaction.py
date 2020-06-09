@@ -56,7 +56,7 @@ class Transaction:
         elif target_extension == 'csv':
             o_log_dict['content_type'] = 'csv'
 
-        #o_log_dict['submitter']  = self._config.get('OTHER','submitter_email')
+        # Get provided submitter_email instead of using configuration value.
         o_log_dict['submitter']  = submitter_email
 
         return o_log_dict
