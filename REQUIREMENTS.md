@@ -4,7 +4,7 @@ Requirements Summary
 
 # DOI management
 
-## The software shall be capable of accepting a request to create a draft DOI. ([#5](https://github.com/NASA-PDS/pds-doi-service/issues/5))
+## The software shall be capable of accepting a request to create a draft DOI. ([#5](https://github.com/NASA-PDS/pds-doi-service/issues/5)) :boom:
 
 
 The version implementing or impacting this requirement is:
