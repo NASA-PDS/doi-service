@@ -212,7 +212,7 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
@@ -298,7 +298,7 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
@@ -333,7 +333,7 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
@@ -359,7 +359,7 @@ class DOIDataBase:
 
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
 
