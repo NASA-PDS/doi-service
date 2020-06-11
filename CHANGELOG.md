@@ -1,11 +1,12 @@
 # Changelog
 
-## [0.0.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1-dev) (2020-06-03)
+## [0.0.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1-dev) (2020-06-11)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...0.0.1-dev)
 
 **Improvements:**
 
+- Develop ability to maintain a transaction log database [\#29](https://github.com/NASA-PDS/pds-doi-service/issues/29)
 - Re-organize and clean-up code to meet coding standards [\#28](https://github.com/NASA-PDS/pds-doi-service/issues/28)
 - Release DOI capability [\#22](https://github.com/NASA-PDS/pds-doi-service/issues/22)
 - Reserve a DOI capability [\#21](https://github.com/NASA-PDS/pds-doi-service/issues/21)
@@ -15,6 +16,7 @@
 
 **Closed issues:**
 
+- document requirements and tests [\#3](https://github.com/NASA-PDS/pds-doi-service/issues/3)
 - Develop initial requirements and design for DOI Service [\#1](https://github.com/NASA-PDS/pds-doi-service/issues/1)
 
 
