@@ -75,13 +75,12 @@ jobs:
         sudo gem install github_changelog_generator
         github_changelog_generator --user NASA-PDS --project pds-doi-service  --token ${{ secrets.GITHUB_TOKEN }} --configure-sections '{"improvements":{"prefix":"**Improvements:**","labels":["enhancement"]},"defects":{"prefix":"**Defects:**","labels":["bug"]},"deprecations":{"prefix":"**Deprecations:**","labels":["deprecation"]}}' --no-pull-requests
     - name: Create requirements report
-      run: |
-        echo ::set-env name=REQUIREMENT_FILE::$(requirement-report --organization NASA-PDS --repository pds-doi-service --token ${{ secrets.GITHUB_TOKEN }} --dev)
-    - name: Commit CHANGELOG.md file
+      run: echo ::set-env name=REQUIREMENT_FILE::$(requirement-report --organization NASA-PDS --repository pds-doi-service --token ${{ secrets.GITHUB_TOKEN }} --dev)
+    - name: Commit CHANGELOG.md and requirement files
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        echo "commit CHANGELOG.md and ${{ env.REQUIREMENT_FILE }} on gh-pages branch"
+        echo "commit CHANGELOG.md and ${{ env.REQUIREMENT_FILE }}on gh-pages branch"
         git add CHANGELOG.md ${{ env.REQUIREMENT_FILE }}
         git commit -m "update changelog and requirements" --allow-empty
     - name: Push changes
