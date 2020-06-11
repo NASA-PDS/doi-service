@@ -167,7 +167,7 @@ class DOIDataBase:
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
 
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"o_table_exist_flag {o_table_exist_flag}")
