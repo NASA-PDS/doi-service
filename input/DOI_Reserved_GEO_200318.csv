@@ -1,4 +1,4 @@
-status,title,publication_date,product_type_specific,author_last_name,author_first_name,related_resource,submitter_email
-Reserved,Laboratory Shocked Feldspars Bundle,2020-03-11,PDS4 Collection,Johnson,J. R.,urn:nasa:pds:lab_shocked_feldspars::1.0,Bill.Green@my_node
-Reserved,Laboratory Shocked Feldspars Collection,2020-03-12,PDS4 Bundle,Johnson_2,J2. R2.,urn:nasa:pds:lab_shocked_feldspars_2::1.0,Bill.Green@my_node
-Reserved,Laboratory Shocked Feldspars Collection,2020-03-12,PDS4 Bundle,Johnson_3,J3. R3.,urn:nasa:pds:lab_shocked_feldspars_3::1.0,Bill.Green@my_node
+status,title,publication_date,product_type_specific,author_last_name,author_first_name,related_resource
+Reserved,Laboratory Shocked Feldspars Bundle,2020-03-11,PDS4 Collection,Johnson,J. R.,urn:nasa:pds:lab_shocked_feldspars::1.0
+Reserved,Laboratory Shocked Feldspars Collection,2020-03-12,PDS4 Bundle,Johnson_2,J2. R2.,urn:nasa:pds:lab_shocked_feldspars_2::1.0
+Reserved,Laboratory Shocked Feldspars Collection,2020-03-12,PDS4 Bundle,Johnson_3,J3. R3.,urn:nasa:pds:lab_shocked_feldspars_3::1.0

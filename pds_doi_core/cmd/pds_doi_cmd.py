@@ -21,8 +21,7 @@ from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_core.outputs.osti import DOIOutputOsti
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.outputs.transaction import Transaction
-from pds_doi_core.outputs.transaction_logger import TransactionLogger
-from pds_doi_core.db.doi_database import DOIDataBase
+from pds_doi_core.outputs.transaction_builder import TransactionBuilder
 
 # Get the common logger and set the level for this file.
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
@@ -33,9 +32,8 @@ class DOICoreServices:
     m_doi_output_util = DOIOutputUtil()
     m_doi_pds4_label = DOIPDS4LabelUtil()
     m_doi_output_osti = DOIOutputOsti()
-    m_transaction_logger = TransactionLogger()
+    m_transaction_builder = TransactionBuilder()
     m_node_util = NodeUtil()
-    m_doi_database = DOIDataBase()
 
     def __init__(self):
         self._config = self.m_doi_config_util.get_config()
@@ -145,10 +143,10 @@ class DOICoreServices:
             logger.error(f"File type has not been implemented:target_url {target_url}")
             exit(1)
 
-        # Build a transaction so we write a transaction.
-        doi_transaction = Transaction(target_url, node_id, 'reserve', submitter_email)
-        doi_transaction.add_field('status','Reserved'.lower())
         logger.debug(f"submit_label_flag {submit_label_flag}")
+        logger.debug(f"doi_fields {doi_fields} {type(doi_fields)}")
+        logger.debug(f"o_doi_label {o_doi_label}")
+        logger.debug(f"submitter_email {submitter_email}")
 
         # We can submit the content to OSTI if we wish.
         if submit_label_flag:
@@ -163,48 +161,26 @@ class DOICoreServices:
             logger.debug(f"reserve_response {reserve_response}")
             logger.debug(f"type(reserve_response) {type(reserve_response)}")
 
+            # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
+            (transaction_logger_obj,transaction_obj) = self.m_transaction_builder.prepare_transaction(target_url,node_id,'reserve',
+                                                                                                      submitter_email,doi_fields,output_content=o_out_text,
+                                                                                                      web_response=reserve_response)
+
             # Write a transaction for the 'reserve' action.
-            doi_transaction.add_field('output_content',o_out_text)
-            self.m_transaction_logger.log_transaction(doi_transaction)
-
-            for field_index in range(0,len(doi_fields['dois'])):
-                doi_transaction.add_field('subtype',doi_fields['dois'][field_index]['product_type_specific'])
-                # The liv/vid is derived from the related_identifier field 
-                # The field related_resource contains the lid/vid: urn:nasa:pds:insight_cameras::1.0 so we parse it and save the 2 fields.
-                identifier_tokens = doi_fields['dois'][field_index]['related_identifier'].split('::')
-                if len(identifier_tokens) < 2:
-                    logger.error(f"Expecting at least 2 tokens from parsing  {doi_fields['dois'][ii]['related_identifier']}")
-                    exit(1)
-                doi_transaction.add_field('lid',identifier_tokens[0])
-                doi_transaction.add_field('vid',identifier_tokens[1])
-                db_doi_fields = doi_web_client.set_doi_fields(reserve_response,doi_transaction.get_transaction(),field_index)
-
-                self.m_doi_database.write_doi_info_to_database(db_doi_fields)
+            transaction_logger_obj.log_transaction(transaction_obj)
 
             return o_out_text
         else:
             # This path is normally used by developer to test the parsing of CSV or XLSX input without submitting the DOI.
             # Write a transaction for the 'reserve' action.
 
-            doi_transaction.add_field('output_content',o_doi_label)
-            self.m_transaction_logger.log_transaction(doi_transaction)
+            # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
+            (transaction_logger_obj,transaction_obj) = self.m_transaction_builder.prepare_transaction(target_url,node_id,'reserve',
+                                                                                                      submitter_email,doi_fields,output_content=o_doi_label,
+                                                                                                      web_response=None)
 
-            # Because the doi is not submitted, there is no field 'doi'.
-            for field_index in range(0,len(doi_fields['dois'])):
-                doi_transaction.add_field('subtype',doi_fields['dois'][field_index]['product_type_specific'])
-                # The liv/vid is derived from the related_identifier field 
-                # The field related_resource contains the lid/vid: urn:nasa:pds:insight_cameras::1.0 so we parse it and save the 2 fields.
-                identifier_tokens = doi_fields['dois'][field_index]['related_identifier'].split('::')
-                if len(identifier_tokens) < 2:
-                    logger.error(f"Expecting at least 2 tokens from parsing  {doi_fields['dois'][ii]['related_identifier']}")
-                    exit(1)
-                doi_transaction.add_field('lid',identifier_tokens[0])
-                doi_transaction.add_field('vid',identifier_tokens[1])
-                doi_transaction.add_field('title',doi_fields['dois'][field_index]['title'])  # The 'title' field is available in doi_fields['dois']
-
-                # No need to call set_doi_fields() since there is no 'doi' field and we don't have access to reserve_response.
-
-                self.m_doi_database.write_doi_info_to_database(doi_transaction.get_transaction())
+            # Write a transaction for the 'reserve' action.
+            transaction_logger_obj.log_transaction(transaction_obj)
 
             return o_doi_label
 
@@ -248,31 +224,16 @@ class DOICoreServices:
         doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
         doi_fields['contributor'] = contributor_value
 
-        # Build a dictionary so we write a transaction.
-        doi_transaction = Transaction(target_url, node_id, 'draft', submitter_email, input_content.decode())
-        doi_transaction.add_field('status','Pending'.lower())
-        doi_transaction.add_field('title',doi_fields['title'])
-        doi_transaction.add_field('type',doi_fields['product_type'])
-        doi_transaction.add_field('subtype',doi_fields['product_type_specific'])
-
-        # The field identifier contains the lid/vid: urn:nasa:pds:insight_cameras::1.0 so we parse it and save the 2 fields.
-        identifier_tokens = doi_fields['identifier'].split('::')
-        if len(identifier_tokens) < 2:
-            logger.error(f"Expecting at least 2 tokens from parsing  {doi_fields['identifier']}")
-            exit(1)
-        doi_transaction.add_field('lid',identifier_tokens[0])
-        doi_transaction.add_field('vid',identifier_tokens[1])
-
         # generate output
         o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
 
-        # Write a transaction for the 'draft' action.
-        doi_transaction.add_field('output_content',o_doi_label)
+        # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
+        (transaction_logger_obj,transaction_obj) = self.m_transaction_builder.prepare_transaction(target_url,node_id,'draft',
+                                                                                                  submitter_email,doi_fields,output_content=o_doi_label,
+                                                                                                  web_response=None)
 
-        self.m_transaction_logger.log_transaction(doi_transaction)
-
-        # Also write to database of DOI info.
-        self.m_doi_database.write_doi_info_to_database(doi_transaction.get_transaction())
+        # Write a transaction for the 'reserve' action.
+        transaction_logger_obj.log_transaction(transaction_obj)
 
         return o_doi_label 
 

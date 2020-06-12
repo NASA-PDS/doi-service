@@ -30,14 +30,16 @@ class TransactionLogger:
 
     m_doi_config_util = DOIConfigUtil()
     m_node_util = NodeUtil()
-    m_doi_database = DOIDataBase()
-    #m_transaction = Transaction()
+    m_doi_database = None
 
-    def __init__(self):
+    def __init__(self,i_doi_database):
         self._config = self.m_doi_config_util.get_config()
+        self.m_doi_database = i_doi_database
 
     def write_transaction_to_disk(self,doi_transaction):
         '''Write a transaction from 'reserve' or 'draft' to disk. The dictionary log_dict will be updated and returned.'''
+
+        o_updated_dicts = None
 
         transaction_dir = self._config.get('OTHER','transaction_dir')
         logger.debug(f"transaction_dir {transaction_dir}")
@@ -49,7 +51,9 @@ class TransactionLogger:
         logger.debug(f"now_is {now_is}")
 
         # Get the transaction info.
-        log_dict = doi_transaction.get_transaction()
+        # We only want the first dictionary.
+        log_dict = doi_transaction.get_transaction()[0]
+        o_updated_dicts = doi_transaction.get_transaction()
 
         # Get the fields from dictionary.
 
@@ -92,6 +96,13 @@ class TransactionLogger:
         log_dict['transaction_key']       = os.path.join(discipline_node,now_is)
         log_dict['latest_update']         = epoch_time
 
+        # Since we want to update all elements in o_updated_dicts, we have to loop through all dictionaries
+        for ii in range(0,len(o_updated_dicts)):
+            o_updated_dicts[ii]['submitted_input_link']  = log_dict['submitted_input_link']
+            o_updated_dicts[ii]['submitted_output_link'] = log_dict['submitted_output_link']
+            o_updated_dicts[ii]['transaction_key']       = log_dict['transaction_key']
+            o_updated_dicts[ii]['latest_update']         = log_dict['latest_update']
+
         file_ptr = open(full_output_name,"w") 
 
         # If the content type is bytes, convert it to string first.
@@ -102,14 +113,18 @@ class TransactionLogger:
         file_ptr.write("\n")           # Write carriage return for easy reading of file.
         file_ptr.close()
 
+        logger.debug(f"TRANSACTION_INFO:log_dict.keys() {log_dict.keys()}")
         logger.debug(f"TRANSACTION_INFO:data_tuple ({log_dict['status']},{log_dict['submitter']},{epoch_time},{discipline_node},{log_dict['transaction_key']})")
 
-        return log_dict
+        #return log_dict
+        return o_updated_dicts
 
-    def log_transaction(self,log_dict):
+    def log_transaction(self,my_transaction):
         '''Log a DOI transaction from 'reserve' or 'draft' to disk.'''
-        log_dict = self.write_transaction_to_disk(log_dict)
+        log_dict = self.write_transaction_to_disk(my_transaction)
+        # After write_transaction_to_disk(), the
 
-        # The writing to database will be called separately.
+        # The writing to database will be called here.
+        self.m_doi_database.write_doi_info_to_database_all(log_dict)
 
-        return 1
+        return log_dict
