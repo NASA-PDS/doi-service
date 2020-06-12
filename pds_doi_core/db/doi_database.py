@@ -174,6 +174,17 @@ class DOIDataBase:
             The comparison criteria is less than, meaning any rows inserted earlier will be updated with column
             "is_latest" to zero.'''
 
+        # Do a sanity check of existence of 'lid' and 'vid' fields:
+        if 'lid' not in dict_row:
+            logger.error(f"Field 'lid' is not in dict_row.")
+            raise Exception("Field 'lid' is not in dict_row") from None
+        if 'vid' not in dict_row:
+            logger.error(f"Field 'vid' is not in dict_row.")
+            raise Exception("Field 'vid' is not in dict_row") from None
+        if 'latest_update' not in dict_row:
+            logger.error(f"Field 'latest_update' is not in dict_row.")
+            raise Exception("Field 'latest_update' is not in dict_row") from None
+
         # Note that this table structure is defined here so you need to know the structure.
         # Also note that we setting column is_latest to 0 to signify that all previous rows are now not the latest.
         # Note that the key in dict_row is 'latest_update' not 'update_date' (not same as column name).
@@ -273,17 +284,9 @@ class DOIDataBase:
 
         return 1
 
-    def update_previous_records_is_latest_field(self,dict_row):
-        '''Update all records that share the same lid,vid before the current update_date field in dict_row
-           by setting the is_latest field to False (or 0).'''
-
-        logger.debug(f"dict_row {dict_row}")
-
-        # Create the query string with the criteria for lid/vid and update_date fields.
-        query_string = self.create_q_string_for_transaction_update_is_latest_field(self.m_default_table_name, dict_row)
-
-        self.m_my_conn.execute(query_string)
-        self.m_my_conn.commit()
+    def write_doi_info_to_database_all(self,doi_fields):
+        for field_index in range(0,len(doi_fields)):
+            self.write_doi_info_to_database(doi_fields[field_index])
 
         return 1
 
@@ -304,9 +307,8 @@ class DOIDataBase:
         # Do a sanity check on the types of all the int columns.
         donotcare = self._int_columns_check(self.m_default_db_file,self.m_default_table_name,dict_row)
 
-        query_string = self.create_q_string_for_transaction_insert(self.m_default_table_name)
-
-        logger.debug(f"query_string {query_string}")
+        #query_string = self.create_q_string_for_transaction_insert(self.m_default_table_name)
+        #logger.debug(f"query_string {query_string}")
 
         status          = dict_row['status'].lower()
         if 'title' in dict_row:
@@ -350,7 +352,7 @@ class DOIDataBase:
         output_content  = dict_row['output_content']
         submitted_input_link  = dict_row['submitted_input_link']
         submitted_output_link = dict_row['submitted_output_link']
-
+     
         logger.debug(f"submitted_input_link,submitted_output_link {submitted_input_link},{submitted_output_link}")
         logger.debug(f"product_type,subtype {product_type,subtype}")
 
@@ -361,22 +363,19 @@ class DOIDataBase:
         logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
         try:
+            # Combine the insert and update here so the commit can be applied to both actions.
+            query_string = self.create_q_string_for_transaction_insert(self.m_default_table_name)
+            logger.debug(f"query_string {query_string}")
             self.m_my_conn.execute(query_string,data_tuple)
+            # Create and execute the query string with the criteria for lid/vid and update_date fields.
+            query_string = self.create_q_string_for_transaction_update_is_latest_field(self.m_default_table_name, dict_row)
+            self.m_my_conn.execute(query_string)
             self.m_my_conn.commit()
         except sqlite3.Error as e:
             logger.error("Database error: %s" % e)
             raise Exception("Database error: %s" % e) from None
         except Exception as e:
             logger.error("Exception in _query: %s" % e)
-            raise Exception("Exception in _query: %s" % e) from None
-
-        try:
-            self.update_previous_records_is_latest_field(dict_row)
-        except sqlite3.Error as e:
-            logger.error("Database error: %s" % e)
-            raise Exception("Database error: %s" % e) from None
-        except Exception as e:
-            logger.error("Exception in updating previous records: %s" % e)
             raise Exception("Exception in _query: %s" % e) from None
 
         return 1
