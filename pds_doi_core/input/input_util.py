@@ -20,7 +20,6 @@ class DOIInputUtil:
         """Function receives a URI containing SXLS format and create one external file per row to output directory."""
 
         logger.info("i_filepath" + " " + i_filepath)
-        dict_condition_data = {}
 
         doi_directory_pathname = os.path.join('.','output')
         os.makedirs(doi_directory_pathname, exist_ok=True)
@@ -73,7 +72,7 @@ class DOIInputUtil:
             logger.debug(f'getting doi metadata {doi_record}')
             doi_records.append(doi_record)
 
-        return {'dois': doi_records}
+        return doi_records
 
 
     def parse_csv_file(self, i_filepath):

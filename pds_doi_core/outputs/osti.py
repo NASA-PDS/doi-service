@@ -14,11 +14,11 @@ class DOIOutputOsti:
 
 
     def create_osti_doi_reserved_record(self, doi_record_list):
-        for doi_record in doi_record_list['dois']:
+        for doi_record in doi_record_list:
             logger.debug(f"convert datetime {doi_record['publication_date']}")
             doi_record['publication_date'] = doi_record['publication_date'].strftime('%m/%d/%Y')
 
         renderer = pystache.Renderer()
-        return renderer.render_path('config/DOI_IAD2_reserved_template_20200205-mustache.xml', doi_record_list)
+        return renderer.render_path('config/DOI_IAD2_reserved_template_20200205-mustache.xml', {'dois': doi_record_list})
 
 

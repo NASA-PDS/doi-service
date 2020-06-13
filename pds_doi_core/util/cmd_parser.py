@@ -2,8 +2,8 @@ import argparse
 
 
 def add_default_action_arguments(_parser):
-    _parser.add_argument('-c', '--node_id',
-                         help='The pds dscipline node in charge of the submission of the DOI',
+    _parser.add_argument('-c', '--node-id',
+                         help='The pds discipline node in charge of the submission of the DOI',
                          required=True,
                          metavar='"img"')
     _parser.add_argument('-i', '--input',
@@ -11,7 +11,7 @@ def add_default_action_arguments(_parser):
                               ' is also supported to reserve a list of doi',
                          required=True,
                          metavar='input/bundle_in_with_contributors.xml')
-    _parser.add_argument('-s', '--submitter_email',
+    _parser.add_argument('-s', '--submitter-email',
                          help='The email address of the user performing the action for these services',
                          required=True,
                          metavar='"my.email@node.gov"')
