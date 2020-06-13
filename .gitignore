@@ -17,5 +17,9 @@ pds_doi_core.egg-info/
 pds_doi_core/.DS_Store
 venv/
 WhereAmI.py
+build/
+doi.db
+output/
+transaction_history/
 
 

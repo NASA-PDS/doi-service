@@ -71,46 +71,33 @@ class DOIOstiWebClient:
                                  data=payload,
                                  headers=headers)
 
-        doc = etree.fromstring(response.text.encode())
+        doc_str = response.text
+        doc = etree.fromstring(doc_str.encode())
 
-        o_status = []
-        # Do a sanity check on the 'status' attribute for each record.  If not equal to 'Reserved' exit.
+        o_status = {}
+        # Get status a returned by OSTI
         my_root = doc.getroottree()
-        num_reserved_statuses = 0
-        num_record_records = 0
-        element_index = 0
 
-        for element in my_root.iter():
-            one_tuple = ()
-            if element.tag == 'record':
-                num_record_records += 1
-                my_record = my_root.xpath(element.tag)[0]
-                if my_record.attrib['status'] == 'Reserved':
-                    num_reserved_statuses += 1
-                my_id = my_root.xpath('record/id')[element_index]
-                my_doi = my_root.xpath('record/doi')[element_index]
-                my_title = my_root.xpath('record/title')[element_index]
+        n_records = 0
+        for record in my_root.xpath('record'):
+            n_records += 1
+            result = {'doi': record.xpath('doi')[0].text,
+                      'status': record.get('status')}
+            o_status[record.xpath('related_identifiers/related_identifier/identifier_value')[0].text] = result
 
-                # Save each tuple we have collected to o_status.  More can be added.
-                one_tuple = (my_id.text, my_doi.text, my_title.text, my_record.attrib['status'])
-                o_status.append(one_tuple)
-                element_index += 1
+        logger.info(f"{n_records} DOI records submitted")
 
-        logger.info(f"DOI records submitted with status {response.status_code}")
-
-        #return o_status
-        return doc
+        return o_status, doc_str
 
     def webclient_submit_doi(self, payload_filename, i_username=None, i_password=None):
         """Function submit the content external file as a DOI to server."""
 
         try:
             with open(payload_filename, 'rb') as payload:
-                o_status = self.webclient_submit_existing_content(payload, i_username=None, i_password=None)
-            return o_status
+                o_status, doc = self.webclient_submit_existing_content(payload, i_username=None, i_password=None)
+            return o_status, doc
         except FileNotFoundError as e:
-            logger.error(e)
-            exit(1)
+            raise e
 
     def _verify_osti_reserved_status(self, i_doi_label):
         """Function verify that all the status attribute in all records are indeed 'Reserved' as expected."""

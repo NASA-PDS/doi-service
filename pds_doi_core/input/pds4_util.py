@@ -58,7 +58,7 @@ class DOIPDS4LabelUtil:
         doi_field_value_dict['description'] = pds4_fields['description']
         doi_field_value_dict["product_type"] = pds4_fields['product_class'].split('_')[1]
         doi_field_value_dict["product_type_specific"] = "PDS4 " + doi_field_value_dict["product_type"]
-        doi_field_value_dict['identifier'] = pds4_fields['lid'] + '::' + pds4_fields['vid']
+        doi_field_value_dict['related_identifier'] = pds4_fields['lid'] + '::' + pds4_fields['vid']
         doi_field_value_dict['site_url'] = landing_page_template.format(doi_field_value_dict["product_type"],
                                                                         requests.utils.quote(pds4_fields['lid']),
                                                                         requests.utils.quote(pds4_fields['vid']))

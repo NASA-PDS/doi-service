@@ -143,12 +143,12 @@ class DOIDataBase:
 
         return o_query_string
 
-    def create_q_string_for_transaction_insert(self, table_name):
+    def create_q_string_for_transaction_insert(self):
         ''' Build the query string to insert a transaction into the table in the SQLite database. '''
 
         # Note that this table structure is defined here so if you need to know the structure.
         # Also note that we are not setting all columns, just the ones related to a transaction.
-        o_query_string = 'INSERT INTO ' + table_name + ' '
+        o_query_string = 'INSERT INTO ' + self.m_default_table_name + ' '
 
         o_query_string += '(status'
         o_query_string += ',type'
@@ -168,35 +168,22 @@ class DOIDataBase:
 
         return o_query_string
 
-    def create_q_string_for_transaction_update_is_latest_field(self, table_name, dict_row):
+    def create_q_string_for_transaction_update_is_latest_field(self):
         ''' Build the query string to update existing rows in the table with the update_date field earlier than the current row in the SQLite database.
             The current row is the row just inserted with the "update_date" value of "latest_update".
             The comparison criteria is less than, meaning any rows inserted earlier will be updated with column
             "is_latest" to zero.'''
 
-        # Do a sanity check of existence of 'lid' and 'vid' fields:
-        if 'lid' not in dict_row:
-            logger.error(f"Field 'lid' is not in dict_row.")
-            raise Exception("Field 'lid' is not in dict_row") from None
-        if 'vid' not in dict_row:
-            logger.error(f"Field 'vid' is not in dict_row.")
-            raise Exception("Field 'vid' is not in dict_row") from None
-        if 'latest_update' not in dict_row:
-            logger.error(f"Field 'latest_update' is not in dict_row.")
-            raise Exception("Field 'latest_update' is not in dict_row") from None
-
         # Note that this table structure is defined here so you need to know the structure.
         # Also note that we setting column is_latest to 0 to signify that all previous rows are now not the latest.
         # Note that the key in dict_row is 'latest_update' not 'update_date' (not same as column name).
-        o_query_string = 'UPDATE ' + table_name + ' '
-
+        o_query_string = 'UPDATE ' + self.m_default_table_name + ' '
         o_query_string += 'SET '
         o_query_string += 'is_latest = 0 '
-        o_query_string += 'WHERE lid = "' + str(dict_row['lid']) + '"'
-        o_query_string += ' AND  vid = "' + str(dict_row['vid']) + '"'
-        o_query_string += ' AND  update_date < ' + str(dict_row['latest_update'])  # We only want record earlier than the one just inserted
+        o_query_string += 'WHERE lid = ?'
+        o_query_string += ' AND  vid = ?'
+        o_query_string += ' AND  (doi = ? or doi is NULL)'
         o_query_string += ';' # Don't forget the last semi-colon for SQL to work.
-
 
         logger.debug(f"o_query_string {o_query_string}")
 
@@ -208,15 +195,10 @@ class DOIDataBase:
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
         if self.m_my_conn is None:
             logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(db_file)
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
 
         o_table_exist_flag = self.check_if_table_exist(table_name)
         logger.debug(f"o_table_exist_flag {o_table_exist_flag}")
-
-#        if o_table_exist_flag:
-#            logger.warn(f"Table {table_name} already exist")
-#
-#        # Table does not already exist, we can create it now.
 
         query_string = self.create_q_string_for_create(table_name)
         logger.debug(f'doi_create_table:query_string {query_string}')
@@ -290,11 +272,12 @@ class DOIDataBase:
 
         return 1
 
-    def write_doi_info_to_database(self,dict_row):
+    def write_doi_info_to_database(self, lid, vid, transaction_key, doi=None, transaction_date=datetime.datetime.now(), status='unknown',
+                                   title='', product_type='', product_type_specific='', submitter='', discipline_node=''):
         '''Write some DOI info from 'reserve' or 'draft' request to database.'''
 
         if self.m_my_conn is None:
-            logger.warn(f"Connection is None in database {self.get_database_name()}")
+            logger.info(f"Connection is None in database {self.get_database_name()}")
             self.m_my_conn = self.create_connection(self.m_default_db_file)
         o_table_exist_flag = self.check_if_table_exist(self.m_default_table_name)
 
@@ -304,72 +287,22 @@ class DOIDataBase:
 
         logger.debug(f"table_name,o_table_exist_flag {self.m_default_table_name},{o_table_exist_flag}")
 
-        # Do a sanity check on the types of all the int columns.
-        donotcare = self._int_columns_check(self.m_default_db_file,self.m_default_table_name,dict_row)
-
-        #query_string = self.create_q_string_for_transaction_insert(self.m_default_table_name)
-        #logger.debug(f"query_string {query_string}")
-
-        status          = dict_row['status'].lower()
-        if 'title' in dict_row:
-            title           = dict_row['title']
-        else:
-            logger.warn(f"Field 'title' is missing from dict_row")
-            title           = None 
-        if 'type' in dict_row:
-            product_type    = dict_row['type']    # PYTHON_NOTE: Cannot use 'type' as a variable as it is a keyword.
-        else:
-            logger.warn(f"Field 'type' is missing from dict_row")
-            product_type    = None 
-        if 'subtype' in dict_row:
-            subtype         = dict_row['subtype']
-        else:
-            logger.warn(f"Field 'subtype' is missing from dict_row")
-            subtype         = None 
-        is_latest       = True
-        if 'lid' in dict_row:
-            lid             = dict_row['lid']
-        else:
-            logger.warn(f"Field 'lid' is missing from dict_row")
-            lid             = None 
-        if 'vid' in dict_row:
-            vid             = dict_row['vid']
-        else:
-            logger.warn(f"Field 'vid' is missing from dict_row")
-            vid             = None 
-        if 'doi' in dict_row:
-            doi             = dict_row['doi']
-        else:
-            logger.warn(f"Field 'doi' is missing from dict_row")
-            doi             = None 
-        update_date     = dict_row['latest_update']   # Note that the key is latest_update from translation_logger
-        submitter       = dict_row['submitter']
-        discipline_node = dict_row['discipline_node'].lower()
-        transaction_key = dict_row['transaction_key']
-        action_type     = dict_row['action_type'].upper()
-        input_content   = dict_row['input_content']
-        content_type    = dict_row['content_type']
-        output_content  = dict_row['output_content']
-        submitted_input_link  = dict_row['submitted_input_link']
-        submitted_output_link = dict_row['submitted_output_link']
-     
-        logger.debug(f"submitted_input_link,submitted_output_link {submitted_input_link},{submitted_output_link}")
-        logger.debug(f"product_type,subtype {product_type,subtype}")
-
         # Note that the order of items in data_tuple must match the columns in query in the same order.
 
-        data_tuple = (status,product_type,subtype,is_latest,lid,vid,doi,submitter,update_date,discipline_node,title,transaction_key)
+        data_tuple = (status, product_type, product_type_specific, True, lid, vid, doi,
+                      submitter, transaction_date.timestamp(), discipline_node, title, transaction_key)
 
         logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
         try:
+            # Create and execute the query to unset latest for record same lid/vid and doi fields.
+            query_string = self.create_q_string_for_transaction_update_is_latest_field()
+            self.m_my_conn.execute(query_string, (lid, vid, doi if doi else 'NULL' ))
+
             # Combine the insert and update here so the commit can be applied to both actions.
-            query_string = self.create_q_string_for_transaction_insert(self.m_default_table_name)
+            query_string = self.create_q_string_for_transaction_insert()
             logger.debug(f"query_string {query_string}")
             self.m_my_conn.execute(query_string,data_tuple)
-            # Create and execute the query string with the criteria for lid/vid and update_date fields.
-            query_string = self.create_q_string_for_transaction_update_is_latest_field(self.m_default_table_name, dict_row)
-            self.m_my_conn.execute(query_string)
             self.m_my_conn.commit()
         except sqlite3.Error as e:
             logger.error("Database error: %s" % e)
