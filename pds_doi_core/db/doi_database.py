@@ -8,6 +8,7 @@
 # ------------------------------
 
 import datetime
+import json 
 import os
 
 import sqlite3
@@ -349,6 +350,70 @@ class DOIDataBase:
              logger.debug("row_index,col,column_names[col],type(row[col]),row[col]",row_index,col,column_names[col],type(row[col]),row[col])
 
         return 1
+
+    def create_q_string_for_latest_rows(self, table_name, query_criterias):
+        ''' Build the query string to select all rows with column is_latest = 1 in ascending order.'''
+
+        query_string = 'SELECT * FROM ' + table_name
+
+        # If there are some criteria provided by user, we start with the ' WHERE ' clause.
+        if len(query_criterias) > 0:
+            query_string += ' WHERE '
+        for ii in range(len(query_criterias)):
+            # Build the WHERE clause
+            if ii == 0:
+                query_string += query_criterias[ii]
+            else:
+                query_string += ' AND '   + query_criterias[ii]
+        if len(query_criterias) > 0:
+            query_string += ' AND is_latest = 1'  # Only fetch rows with is_latest is True
+        else:
+            # If there are no other criterias, use 'WHERE' clause.
+            query_string += ' WHERE is_latest = 1'  # Only fetch rows with is_latest is True
+        query_string += ' ORDER BY update_date ASC'     # Get the rows with update_date from earliest
+
+        query_string += ';' # Don't forget the last semi-colon for SQL to work.
+
+        logger.debug(f"query_string [{query_string}]")
+
+        return query_string
+
+    def select_latest_rows(self, db_name, table_name, query_criterias=[]):
+        ''' Select all rows with column is_latest = 1 in ascending order and return output in JSON format.'''
+        o_query_result = None
+
+        logger.debug(f"self.m_my_conn {self.m_my_conn}")
+        logger.debug(f"query_criterias [{query_criterias}]")
+
+        if self.m_my_conn is None:
+            logger.warn(f"Connection is None in database {self.get_database_name()}")
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
+
+        o_table_exist_flag = self.check_if_table_exist(table_name)
+        logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
+
+        query_string = self.create_q_string_for_latest_rows(table_name, query_criterias)
+
+        cursor = self.m_my_conn.cursor()
+        cursor.execute(query_string)
+        column_names = list(map(lambda x: x[0], cursor.description))
+        records = cursor.fetchall()
+
+        dict_list = []
+        # For each row being returned, parse all columns into a dict object.
+        for row_index, row in enumerate(records):
+            row_dict = {}
+            for col in range(0,self.m_NUM_COLS):
+                # Don't use logger.debug() here because some columns are None.
+                # Save each solumn as a field in row_dict.
+                row_dict[column_names[col]] = row[col]
+            dict_list.append(row_dict)
+
+        o_query_result = json.dumps(dict_list)  # The type of returning o_query_result is now JSON
+        logger.debug(f"o_query_result {o_query_result} {type(o_query_result)}")
+
+        # User should use json.loads(o_query_result) to convert JSON string into a list of dict objects.
+        return o_query_result
 
     def doi_select_rows_all(self,db_name,table_name):
         ''' Select all rows. '''
