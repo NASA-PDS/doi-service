@@ -13,6 +13,7 @@ from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.actions.reserve import DOICoreActionReserve
 from pds_doi_core.actions.draft import DOICoreActionDraft
+from pds_doi_core.actions.list import DOICoreActionList
 
 # Get the common logger and set the level for this file.
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
@@ -34,6 +35,11 @@ def main():
         if action_type == 'draft':
             draft = DOICoreActionDraft()
             o_doi_label = draft.run(input_location, node_id, submitter_email)
+            logger.info(o_doi_label)
+
+        elif action_type == 'list':
+            list_obj = DOICoreActionList() # The token 'list' is a reserved word so we are using list_obj instead.
+            o_doi_label = list_obj.run(input_location, node_id, submitter_email)
             logger.info(o_doi_label)
 
         elif action_type == 'reserve':
