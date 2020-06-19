@@ -7,6 +7,7 @@
 #
 # ------------------------------
 import os
+import datetime
 
 from pds_doi_core.util.cmd_parser import create_cmd_parser
 from pds_doi_core.util.general_util import get_logger
@@ -27,6 +28,31 @@ def main():
     node_id = arguments.node_id.lstrip().rstrip()  # Remove any leading and trailing blanks.
     input_location = arguments.input
 
+    query_criterias = {}
+    # Action 'list' has more arguments to parse.
+    if action_type == 'list':
+        input_doi_token = arguments.doi
+        output_format = arguments.format_output
+        start_update  = arguments.start_update
+        end_update    = arguments.end_update
+        lid           = arguments.lid
+        lidvid        = arguments.lidvid
+
+        if input_doi_token:
+            query_criterias['doi'] = input_doi_token.split(',') 
+        if lid:
+            query_criterias['lid'] = lid.split(',') 
+        if lidvid:
+            query_criterias['lidvid'] = lidvid.split(',') 
+        query_criterias['submitter'] = submitter_email.split(',') 
+        query_criterias['node'] = node_id.split(',') 
+        if start_update:
+            query_criterias['start_update'] = datetime.datetime.strptime(start_update,'%Y-%m-%dT%H:%M:%S.%f');
+        if end_update:
+            query_criterias['end_update']   = datetime.datetime.strptime(end_update,'%Y-%m-%dT%H:%M:%S.%f');
+        logger.debug(f"output_format ['{output_format}']")
+        logger.debug(f"query_criterias ['{query_criterias}']")
+    
     logger.info(f"run_dir {os.getcwd()}")
     logger.info(f"input_location {input_location}")
     logger.info(f"node_id ['{node_id}']")
@@ -39,7 +65,12 @@ def main():
 
         elif action_type == 'list':
             list_obj = DOICoreActionList() # The token 'list' is a reserved word so we are using list_obj instead.
-            o_doi_label = list_obj.run(input_location, node_id, submitter_email)
+            # The variable input_location is the name of the database file.  It should already exist.
+            # The 'list' action does not take node_id as a parameter since it is part of the query_criterias dictionary as a list.
+            o_doi_label = list_obj.run(input_location,
+                                       submitter_email,
+                                       output_format,
+                                       query_criterias)
             logger.info(o_doi_label)
 
         elif action_type == 'reserve':

@@ -9,8 +9,33 @@ logger = get_logger('pds_doi_core.actions.reserve')
 
 
 class DOICoreActionReserve(DOICoreAction):
+    _name = 'reserve'
+    description = ' % pds-doi-cmd reserve -c img -s Qui.T.Chau@jpl.nasa.gov -i input/DOI_Reserved_GEO_200318.csv\n'
+
     def __init__(self):
         super().__init__()
+
+    @classmethod
+    def add_to_subparser(cls, subparsers):
+        action_parser = subparsers.add_parser(cls._name)
+        action_parser.add_argument('-c', '--node-id',
+                                   help='The pds discipline node in charge of the submission of the DOI',
+                                   required=True,
+                                   metavar='"img"')
+        action_parser.add_argument('-i', '--input',
+                                   help='A pds4 label local or on http, a xls spreadsheet, a database file'
+                                        ' is also supported to reserve a list of doi',
+                                   required=True,
+                                   metavar='input/DOI_Reserved_GEO_200318.csv')
+        action_parser.add_argument('-s', '--submitter-email',
+                                   help='The email address of the user performing the action for these services',
+                                   required=True,
+                                   metavar='"my.email@node.gov"')
+#        action_parser.add_argument('-t', '--target',
+#                                   help='the system target to mint the DOI',
+#                                   required=False,
+#                                   default='osti',
+#                                   metavar='osti')
 
     def _process_reserve_action_xlsx(self, target_url):
         '''Function process a reserve action based on .xlsx ending.'''
