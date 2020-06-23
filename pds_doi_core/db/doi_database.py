@@ -28,10 +28,12 @@ class DOIDataBase:
     m_NUM_COLS = 13    # We are only expecting 13 colums in the doi table.  If table structure changes, this value needs updated.
     m_doi_config_util = DOIConfigUtil()
 
-    def __init__(self):
+    def __init__(self, db_file):
         self._config = self.m_doi_config_util.get_config()
-        self.m_default_table_name = self._config.get('OTHER','db_table')  # Default name of table.
-        self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
+        self.m_default_table_name = 'doi'
+        self.m_default_db_file = db_file  # Default name of the database.
+
+
 
     def get_database_name(self):
         ''' Returns the name of the SQLite database. '''
@@ -73,9 +75,12 @@ class DOIDataBase:
     def get_connection(self):
         if not self.m_my_conn:
             self.m_my_conn = self.create_connection(self.m_default_db_file)
+            if not self.check_if_table_exist():
+                self.create_table()
+
         return self.m_my_conn
 
-    def check_if_table_exist(self,table_name):
+    def check_if_table_exist(self):
         ''' Check if the table name does exist in the database.'''
 
         o_table_exist_flag = True
@@ -85,7 +90,7 @@ class DOIDataBase:
         table_pointer = self.m_my_conn.cursor()
             
         # Get the count of tables with the given name.
-        query_string = "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='" + table_name + "'"
+        query_string = "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='" + self.m_default_table_name + "'"
         table_pointer.execute(query_string)
 
         # If the count is 1, then table exists.
@@ -102,11 +107,11 @@ class DOIDataBase:
         logger.debug(f"DROP TABLE {table_name}")
         return 1
 
-    def create_q_string_for_create(self, table_name):
+    def create_q_string_for_create(self):
         ''' Build the query string to create a table in the SQLite database. '''
 
         # Note that this table structure is defined here so if you need to know the structure.
-        o_query_string = 'CREATE TABLE ' + table_name  +  ' '
+        o_query_string = 'CREATE TABLE ' + self.m_default_table_name  +  ' '
         o_query_string += '(status TEXT NOT NULL'       # current status, among: pending, draft, reserved, released, deactivated)
         o_query_string += ',update_date INT NOT NULL' # as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
         o_query_string += ',submitter TEXT '    # email of the submitter of the DOI
@@ -195,18 +200,13 @@ class DOIDataBase:
 
         return o_query_string
 
-    def create_table(self, table_name):
+    def create_table(self):
         ''' Create a given table in the SQLite database. '''
 
         logger.debug(f"self.m_my_conn {self.m_my_conn}")
-        if self.m_my_conn is None:
-            logger.warn(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(self.m_default_db_file)
+        self.m_my_conn = self.get_connection()
 
-        o_table_exist_flag = self.check_if_table_exist(table_name)
-        logger.debug(f"o_table_exist_flag {o_table_exist_flag}")
-
-        query_string = self.create_q_string_for_create(table_name)
+        query_string = self.create_q_string_for_create()
         logger.debug(f'doi_create_table:query_string {query_string}')
         self.m_my_conn.execute(query_string)
 
@@ -282,18 +282,7 @@ class DOIDataBase:
                                    title='', product_type='', product_type_specific='', submitter='', discipline_node=''):
         '''Write some DOI info from 'reserve' or 'draft' request to database.'''
 
-        if self.m_my_conn is None:
-            logger.info(f"Connection is None in database {self.get_database_name()}")
-            self.m_my_conn = self.create_connection(self.m_default_db_file)
-        o_table_exist_flag = self.check_if_table_exist(self.m_default_table_name)
-
-        # Create the table if it does not already exist.
-        if not o_table_exist_flag:
-            self.create_table(self.m_default_table_name)
-
-        logger.debug(f"table_name,o_table_exist_flag {self.m_default_table_name},{o_table_exist_flag}")
-
-        # Note that the order of items in data_tuple must match the columns in query in the same order.
+        self.m_my_conn = self.get_connection()
 
         data_tuple = (status, product_type, product_type_specific, True, lid, vid, doi,
                       submitter, transaction_date.timestamp(), discipline_node, title, transaction_key)
@@ -364,7 +353,7 @@ class DOIDataBase:
         return f' AND {column} IN ({named_parameters})', named_parameter_values
 
     @staticmethod
-    def _get_query_criteria_doi(self, v):
+    def _get_query_criteria_doi(v):
         return DOIDataBase._get_simple_in_criteria(v, 'doi')
 
     @staticmethod

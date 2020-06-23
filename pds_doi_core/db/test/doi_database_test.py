@@ -8,7 +8,7 @@ from pds_doi_core.util.general_util import get_logger
 logger = get_logger(__name__)
 
 class MyTestCase(unittest.TestCase):
-    _doi_database = DOIDataBase()
+
 
     def test_select_latest_rows(self):
         logger.info("test selecting latest rows from database")
@@ -17,9 +17,7 @@ class MyTestCase(unittest.TestCase):
         if os.path.exists("doi_temp.db"):
             os.remove("doi_temp.db")
 
-        # Create a temporary database 'doi_temp.db' and a 'doi' table.
-        self._doi_database.create_connection('doi_temp.db')
-        self._doi_database.create_table('doi')
+        self._doi_database = DOIDataBase('doi_temp.db')
 
         # Set many field values.
 
@@ -40,9 +38,7 @@ class MyTestCase(unittest.TestCase):
                                    title, product_type, product_type_specific, submitter, discipline_node)
 
         # Select the row we just added.  The type of o_query_result should be JSON and a list of 1.
-        o_query_result = self._doi_database.select_latest_rows(
-            'doi_temp.db',
-            'doi')
+        o_query_result = self._doi_database.select_latest_rows( {'doi': [doi]})
 
         logger.info(o_query_result)
 

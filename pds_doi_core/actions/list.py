@@ -24,9 +24,8 @@ class DOICoreActionList(DOICoreAction):
     def __init__(self):
         super().__init__()
         # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
-        self.m_default_table_name = self._config.get('OTHER','db_table')  # Default name of table.
         self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
-        self._database_obj = DOIDataBase()
+        self._database_obj = DOIDataBase(self.m_default_db_file)
 
     @classmethod
     def add_to_subparser(cls, subparsers):
