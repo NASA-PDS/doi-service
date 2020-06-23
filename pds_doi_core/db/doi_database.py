@@ -70,6 +70,11 @@ class DOIDataBase:
         #        self.close_database()
         return self.m_my_conn
 
+    def get_connection(self):
+        if not self.m_my_conn:
+            self.m_my_conn = self.create_connection(self.m_default_db_file)
+        return self.m_my_conn
+
     def check_if_table_exist(self,table_name):
         ''' Check if the table name does exist in the database.'''
 
@@ -352,189 +357,64 @@ class DOIDataBase:
 
         return 1
 
-    def _parse_query_criterias(self, query_criterias):
-        # This function parses the list of query_criterias into their individual tokens of column name and value.
-        #
-        # The format of query_criterias is a dictionary of fields with keys corresponding to columns:
-        # node_id = '10.17189/21259'
-        # title = 'Laboratory Shocked Feldspars Collection
-        # submitter = 'Qui.T.Chau@jpl.nasa.gov'
-        # liv = 'urn:nasa:pds:lab_shocked_feldspars'
-        # vid = '1.0'
-        # node_id = 'img'
-        o_column_names  = []
-        o_column_values = []
+    @staticmethod
+    def _get_simple_in_criteria(v, column):
+        named_parameters = ','.join([':' + column + '_' + str(i) for i in range(len(v))])
+        named_parameter_values = {column + '_' + str(i): v[i].lower() for i in range(len(v))}
+        return f' AND {column} IN ({named_parameters})', named_parameter_values
 
-        if 'doi' in query_criterias:
-            # Save the column name and the column value for each criteria
-            o_column_names.append ('doi')
-            o_column_values.append(query_criterias['doi'])
-        if 'lid' in query_criterias:
-            # Save the column name and the column value for each criteria
-            o_column_names.append ('lid')
-            o_column_values.append(query_criterias['lid'])
-        if 'lidvid' in query_criterias:
-            # If we have existing 'lid' in o_column_names and values, we have to remove them otherwise
-            # we will end up having duplicate columns.
-            if 'lid' in o_column_names:
-                lid_index = o_column_names.index('lid') 
-                del o_column_names[lid_index]
-                del o_column_values[lid_index]
+    @staticmethod
+    def _get_query_criteria_doi(self, v):
+        return DOIDataBase._get_simple_in_criteria(v, 'doi')
 
-            # Because the lidvid contains a combination of two things, we have to parse them
-            # into individual fields of 'lid', and 'vid'
-            lid_values_list = []
-            vid_values_list = []
-            for ii in range(0,len(query_criterias['lidvid'])):
-                tokens = query_criterias['lidvid'][ii].split('::')
-                if len(tokens) == 2:
-                    # Save the column name and the column value for each criteria
-                    lid_values_list.append(tokens[0])
-                    if len(tokens) >= 2:
-                        vid_values_list.append(tokens[1])
-                else:
-                    raise Exception("Expecting at least 2 tokens from parsing lidvid %s" % query_criterias['lidvid'][ii]) from None
+    @staticmethod
+    def _get_query_criteria_lid(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'lid')
 
-            # Now that we have the two lid_values_list, vid_values_list, we can save them.
-            o_column_names.append ('lid')
-            o_column_values.append (lid_values_list)
-            o_column_names.append ('vid')
-            o_column_values.append (vid_values_list)
+    @staticmethod
+    def _get_query_criteria_lidvid(v):
+        named_parameters = ','.join([':lidvid_' + str(i) for i in range(len(v))])
+        named_parameter_values = {'lidvid_' + str(i): v[i] for i in range(len(v))}
+        return f' AND lid || vid IN {named_parameters}', named_parameter_values
 
-        if 'submitter' in query_criterias:
-            o_column_names.append ('submitter')
-            o_column_values.append(query_criterias['submitter'])
-        if 'node' in query_criterias:
-            o_column_names.append ('node_id')
-            o_column_values.append([x.lower() for x in query_criterias['node']])  # Change to lowercase in case user specified upper case.
-        if 'start_update' in query_criterias:
-            o_column_names.append ('start_update')
-            try:
-                o_column_values.append(int(query_criterias['start_update'].timestamp()))
-            except Exception as e:
-                logger.error("Exception in converting start_update to timestamp %s" % query_criterias['start_update'])
-                raise Exception("Exception in converting start_update to timestamp %s" % query_criterias['start_update']) from None
-   
-        if 'end_update' in query_criterias:
-            o_column_names.append ('end_update')
-            try:
-                o_column_values.append(int(query_criterias['end_update'].timestamp()))
-            except Exception as e:
-                logger.error("Exception in converting end_update to timestamp %s" % query_criterias['end_update'])
-                raise Exception("Exception in converting end_update to timestamp %s" % query_criterias['end_update']) from None
+    @staticmethod
+    def _get_query_criteria_submitter(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'submitter')
 
-        logger.debug(f"o_column_names {o_column_names},{len(o_column_names)}")
-        logger.debug(f"o_column_values {o_column_values},{len(o_column_values)}")
+    @staticmethod
+    def _get_query_criteria_node(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'node_id')
 
-        return (o_column_names,o_column_values)
+    @staticmethod
+    def _get_criteria_start_update(v):
+        return ' AND update_date >= :start_update', {'start_update', v.timestamp()}
 
-    def _create_question_marks_tuple(self,column_name,column_values):
-        """ Returns a dynamic string containing (?,...,?) depending on how many elements are in column_values field.  One question mark for each element. """
+    @staticmethod
+    def _get_criteria_end_update(v):
+        return ' AND update_date <= :end_update', {'end_update', v.timestamp()}
 
-        question_marks_tuple = "("  # Start with parenthesis.  An empty list can be possible, will return "()".
-        for ii in range(0,len(column_values)):
-            if ii == 0:
-                question_marks_tuple = question_marks_tuple +  "?"
-            else:
-                question_marks_tuple = question_marks_tuple + ",?"
-        question_marks_tuple = question_marks_tuple + ")" # Add closing parenthesis.
+    @staticmethod
+    def parse_criteria(query_criterias):
+        criterias_str = ''
+        criteria_dict = {}
+        for k, v in query_criterias.items():
+            criteria_str, dict_entry = getattr(DOIDataBase, '_get_query_criteria_' + k)(v)
+            criterias_str += criteria_str
+            criteria_dict.update(dict_entry)
 
-        logger.debug(f"column_name {column_name}, question_marks_tuple {question_marks_tuple}, len(column_values) {len(column_values)}")
+        return criterias_str, criteria_dict
 
-        return question_marks_tuple
+    def select_latest_rows(self, query_criterias):
 
-    def create_q_string_for_latest_rows(self, table_name, query_criterias):
-        """ Build the query string to select all rows with column is_latest = 1 in ascending order."""
-
-        # Parse the query_criterias into column names and values.  The column values will be used to build data_tuple to bind in the execute() function.
-        (column_names,column_values) = self._parse_query_criterias(query_criterias)
-
-        query_string = 'SELECT * FROM ' + table_name
-        if len(query_criterias) > 0:
-            query_string += ' WHERE 2 = 2'   # Add '2 = 2' so we don't have to worry about 'AND' clause.
-        for ii in range(len(query_criterias.keys())):
-            # Build the WHERE clause
-            # Time related fields get special comparison with less than or equal or greater or equal.
-            if column_names[ii] == 'start_update':
-                query_string += ' AND update_date >= ?'
-            elif column_names[ii] == 'end_update':
-                query_string += ' AND update_date <= ?'
-            else:
-                # Only create the ' IN ' clause if there are elements in column_values[ii]
-                # otherwise it doesn't make sense to check for ' IN ' of an empty set.
-                if len(column_values[ii]) > 0:
-                    query_string += ' AND '   + column_names[ii] + ' IN ' + self._create_question_marks_tuple(column_names[ii],column_values[ii])
-
-        if len(query_criterias) > 0:
-            query_string += ' AND is_latest = 1'  # Only fetch rows with is_latest is True
-        else:
-            # If there are no other criterias, use 'WHERE' clause.
-            query_string += ' WHERE is_latest = 1'  # Only fetch rows with is_latest is True
-        query_string += ' ORDER BY update_date'     # Get the rows with update_date from earliest
-
-        query_string += ';  ' # Don't forget the last semi-colon for SQL to work. 
-
-        logger.debug(f"query_string {query_string}")
-        logger.debug(f"query_criterias {query_criterias}")
-
-        return (query_string,column_names,column_values)
-
-    def build_data_tuple(self,column_names,column_values):
-        # Build the data_tuple matching exactly the order of the fields in query_string.
-        o_data_tuple = () 
-        time_related_fields = ['start_update','end_update']
-
-        for ii in range(0,len(column_names)):
-            # Time related fields are scalar.  Other fields are list.
-            if column_names[ii] in time_related_fields:
-                o_data_tuple = o_data_tuple + (column_values[ii],)
-            else:
-                o_data_tuple = o_data_tuple + tuple(column_values[ii])  # Convert list to tuple with tuple() function.
-  
-        logger.debug(f"o_data_tuple {o_data_tuple},{len(o_data_tuple)}")
-        return o_data_tuple
-
-    def select_latest_rows(self, db_name, table_name, query_criterias={}):
-        ''' Select all rows with column is_latest = 1 in ascending order and return output in JSON format.'''
-        o_query_result = []
-
-        logger.debug(f"self.m_my_conn {self.m_my_conn}")
-
-        if self.m_my_conn is None:
-            logger.warn(f"Connection is None in database {self.get_database_name()}")
-            # Check to make sure the database file already has been created otherwise can't make query.
-            if not os.path.exists(db_name):
-                logger.debug(f"Given db_name {db_name} does not exist.")
-                raise Exception("Given db_name %s does not exist." % db_name) from None
-            self.m_my_conn = self.create_connection(db_name)
-
-        o_table_exist_flag = self.check_if_table_exist(table_name)
-        logger.debug(f"table_name,o_table_exist_flag {table_name},{o_table_exist_flag}")
-
-        (query_string,column_names,column_values) = self.create_q_string_for_latest_rows(table_name,query_criterias)
-
-        # Build the data_tuple matching exactly the order of the fields in query_string.
-        data_tuple = self.build_data_tuple(column_names,column_values);
-
-        cursor = self.m_my_conn.cursor()
-        cursor.execute(query_string,data_tuple)
-
+        criterias_str, criteria_dict = DOIDataBase.parse_criteria(query_criterias)
+        query_string = f'SELECT * from {self.m_default_table_name} WHERE is_latest=1 {criterias_str}  ORDER BY update_date'
+        logger.info(f'ready to execute request {query_string}')
+        logger.info(f'with parameters {criteria_dict}')
+        cursor = self.get_connection().cursor()
+        cursor.execute(query_string, criteria_dict)
         column_names = list(map(lambda x: x[0], cursor.description))
-        records = cursor.fetchall()
-
-        # For each row being returned, parse all columns into a dict object.
-        for row_index, row in enumerate(records):
-            row_dict = {}
-            for col in range(0,self.m_NUM_COLS):
-                # Don't use logger.debug() here because some columns are None.
-                # Save each solumn as a field in row_dict.
-                row_dict[column_names[col]] = row[col]
-            o_query_result.append(row_dict)
-
-        logger.debug(f"o_query_result {o_query_result} {type(o_query_result)}")
-
-        # The  return type of o_query_result is a list of dict, which can also be empty.
-        return o_query_result
+        records = [row for row in cursor]
+        return column_names, records
 
     def doi_select_rows_all(self,db_name,table_name):
         ''' Select all rows. '''

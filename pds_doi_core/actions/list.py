@@ -70,7 +70,7 @@ class DOICoreActionList(DOICoreAction):
                                    metavar='"my.email@node.gov"')
 
     def run(self,
-            database_url, submitter_email, output_format, query_criterias=[]):
+            database_url, output_format, query_criterias=[]):
         """
         Function list all the latest records in the named database and return the object either in JSON or XML.
         :param database_url:
@@ -103,14 +103,15 @@ class DOICoreActionList(DOICoreAction):
         if database_url:
             db_name = database_url
         else:
-            db_name = self.m_default_db_file 
+            db_name = self.m_default_db_file
 
+        # Perform the database query and convert a dict object to JSON for returning.
+        columns, rows = self._database_obj.select_latest_rows(query_criterias)
         # generate output
         if output_format == 'JSON':
-            # Perform the database query and convert a dict object to JSON for returning. 
-            o_select_result = self._database_obj.select_latest_rows(db_name,self.m_default_table_name,query_criterias)
-            o_query_result = json.dumps(o_select_result)
-            logger.debug(f"o_select_result {o_select_result} {type(o_select_result)}")
-
-        logger.debug(f"o_query_result {o_query_result} {type(o_query_result)}")
+            result_json = []
+            for row in rows:
+                result_json.append({columns[i]:row[i] for i in range(len(columns))})
+            o_query_result = json.dumps(result_json)
+            logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
         return o_query_result

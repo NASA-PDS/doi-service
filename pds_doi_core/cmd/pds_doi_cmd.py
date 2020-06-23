@@ -61,17 +61,16 @@ def main():
         if action_type == 'draft':
             draft = DOICoreActionDraft()
             o_doi_label = draft.run(input_location, node_id, submitter_email)
-            logger.info(o_doi_label)
+            print(o_doi_label)
 
         elif action_type == 'list':
             list_obj = DOICoreActionList() # The token 'list' is a reserved word so we are using list_obj instead.
             # The variable input_location is the name of the database file.  It should already exist.
             # The 'list' action does not take node_id as a parameter since it is part of the query_criterias dictionary as a list.
-            o_doi_label = list_obj.run(input_location,
-                                       submitter_email,
+            o_doi_list = list_obj.run(input_location,
                                        output_format,
                                        query_criterias)
-            logger.info(o_doi_label)
+            print(o_doi_list)
 
         elif action_type == 'reserve':
             reserve = DOICoreActionReserve()
@@ -81,7 +80,7 @@ def main():
                                       submit_label_flag=True)
             # By default, submit_label_flag=True if not specified.
             # By default, write_to_file_flag=True if not specified.
-            logger.info(o_doi_label)
+            print(o_doi_label)
         else:
             logger.error(f"Action {action_type} is not supported yet.")
             exit(1)
