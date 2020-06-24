@@ -25,20 +25,4 @@ def add_default_action_arguments(_parser,action_type):
                          metavar='osti')
 
 
-def create_cmd_parser():
-    parser = argparse.ArgumentParser(
-        description='PDS code command for DOI management\n'
-                    ' Examples:\n ',
-        formatter_class=argparse.RawTextHelpFormatter)
-    #ArgumentDefaultsHelpFormatter)
 
-    subparsers = parser.add_subparsers(dest='action')
-
-    # create subparsers
-    for cls in DOICoreAction.__subclasses__():
-        parser.description +=  cls.description if 'description' in cls.__dict__ else ''
-        add_to_subparser_method = getattr(cls, "add_to_subparser", None)
-        if callable(add_to_subparser_method):
-            add_to_subparser_method.__call__(subparsers)
-
-    return parser

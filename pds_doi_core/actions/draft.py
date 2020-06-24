@@ -11,9 +11,10 @@ class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     description = ' % pds-doi-cmd draft -n img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
 
-    def __init__(self):
-        super().__init__()
-        self._input_location = self._arguments.input
+    def __init__(self, arguments=None):
+        super().__init__(arguments=arguments)
+        if self._arguments:
+            self._input_location = self._arguments.input
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -37,18 +38,30 @@ class DOICoreActionDraft(DOICoreAction):
                                    default='osti',
                                    metavar='osti')
 
-    def run(self, target_url,
-            node_id, submitter_email):
+    def run(self,
+            input = None,
+            node = None,
+            submitter = None):
         """
         Function receives a URI containing either XML or a local file and draft a Data Object Identifier (DOI).
         :param target_url:
-        :param node_id:
+        :param node:
         :param submitter_email:
         :return: o_doi_label:
         """
+        if input is None:
+            input = self._input_location
+
+        if node is None:
+            node = self._node_id
+
+        if submitter is None:
+            submitter = self._submitter
+
+
 
         try:
-            contributor_value = self.m_node_util.get_node_long_name(node_id)
+            contributor_value = self.m_node_util.get_node_long_name(node)
             logger.info(f"contributor_value['{contributor_value}']")
         except UnknownNodeException as e:
             raise e
@@ -63,11 +76,10 @@ class DOICoreActionDraft(DOICoreAction):
             exit(1)
 
         # parse input
-        input_content = None
-        if not target_url.startswith('http'):
-            xml_tree = etree.parse(target_url)
+        if not input.startswith('http'):
+            xml_tree = etree.parse(input)
         else:
-            response = requests.get(target_url)
+            response = requests.get(input)
             xml_tree = etree.fromstring(response.content)
 
         doi_fields = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
@@ -78,9 +90,9 @@ class DOICoreActionDraft(DOICoreAction):
         o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
 
         # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-        transaction_obj = self.m_transaction_builder.prepare_transaction(target_url,
-                                                                         node_id,
-                                                                         submitter_email,
+        transaction_obj = self.m_transaction_builder.prepare_transaction(input,
+                                                                         node,
+                                                                         submitter,
                                                                          [doi_fields],
                                                                          output_content=o_doi_label)
 

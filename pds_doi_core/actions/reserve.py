@@ -12,11 +12,12 @@ class DOICoreActionReserve(DOICoreAction):
     _name = 'reserve'
     description = ' % pds-doi-cmd reserve -n img -s Qui.T.Chau@jpl.nasa.gov -i input/DOI_Reserved_GEO_200318.csv\n'
 
-    def __init__(self):
-        super().__init__()
-        self._input_location = self._arguments.input
-        self._node_id        = self._arguments.node_id
-        self._submitter      = self._arguments.submitter_email
+    def __init__(self, arguments=None):
+        super().__init__(arguments=arguments)
+        if self._arguments:
+            self._input_location = self._arguments.input
+            self._node_id        = self._arguments.node_id
+            self._submitter      = self._arguments.submitter_email
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -71,10 +72,7 @@ class DOICoreActionReserve(DOICoreAction):
             logger.error(e)
             exit(1)
 
-    def run(self,
-            target_url,
-            node_id,
-            submitter_email,
+    def run(self, input=None, node=None, submitter=None,
             submit_label_flag=True):
         """
         Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
@@ -84,8 +82,17 @@ class DOICoreActionReserve(DOICoreAction):
         :return:
         """
 
+        if input is None:
+            input = self._input_location
+
+        if node is None:
+            node = self._node_id
+
+        if submitter is None:
+            submitter = self._submitter
+
         try:
-            contributor_value = self.m_node_util.get_node_long_name(node_id)
+            contributor_value = self.m_node_util.get_node_long_name(node)
         except UnknownNodeException as e:
             raise e
 
@@ -93,29 +100,31 @@ class DOICoreActionReserve(DOICoreAction):
         o_doi_label = 'invalid action type:action_type ' + action_type
         publisher_value = self._config.get('OTHER', 'doi_publisher')
 
-        logger.debug(f"target_url,action_type {target_url} {action_type}")
+        logger.debug(f"target_url,action_type {input} {action_type}")
 
-        if target_url.endswith('.xml'):
-            doi_fields = self.m_doi_pds4_label.parse_pds4_label_via_uri(target_url, publisher_value, contributor_value)
+        if input.endswith('.xml'):
+            doi_fields = self.m_doi_pds4_label.parse_pds4_label_via_uri(input,
+                                                                        publisher_value,
+                                                                        contributor_value)
             o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
 
-        elif target_url.endswith('.xlsx'):
-            doi_fields = self._process_reserve_action_xlsx(target_url)
+        elif input.endswith('.xlsx'):
+            doi_fields = self._process_reserve_action_xlsx(input)
             o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
 
-        elif target_url.endswith('.csv'):
-            doi_fields = self._process_reserve_action_csv(target_url)
+        elif input.endswith('.csv'):
+            doi_fields = self._process_reserve_action_csv(input)
             o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
 
         # Check to see if the given file has an attempt to process.
         else:
-            logger.error(f"File type has not been implemented:target_url {target_url}")
+            logger.error(f"File type has not been implemented:target_url {input}")
             exit(1)
 
         logger.debug(f"submit_label_flag {submit_label_flag}")
         logger.debug(f"doi_fields {doi_fields} {type(doi_fields)}")
         logger.debug(f"o_doi_label {o_doi_label}")
-        logger.debug(f"submitter_email {submitter_email}")
+        logger.debug(f"submitter_email {submitter}")
 
         # We can submit the content to OSTI if we wish.
         if submit_label_flag:
@@ -135,9 +144,9 @@ class DOICoreActionReserve(DOICoreAction):
             logger.debug(f"type(reserve_response) {type(output_str)}")
 
             # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-            transaction_obj = self.m_transaction_builder.prepare_transaction(target_url,
-                                                                             node_id,
-                                                                             submitter_email,
+            transaction_obj = self.m_transaction_builder.prepare_transaction(input,
+                                                                             node,
+                                                                             submitter,
                                                                              doi_fields,
                                                                              output_content=output_str)
             # Write a transaction for the 'reserve' action.
@@ -150,9 +159,9 @@ class DOICoreActionReserve(DOICoreAction):
             for doi_field in doi_fields:
                 doi_field['status'] = 'reserved_not_submitted'
             # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-            transaction_obj = self.m_transaction_builder.prepare_transaction(target_url,
-                                                                             node_id,
-                                                                             submitter_email,
+            transaction_obj = self.m_transaction_builder.prepare_transaction(input,
+                                                                             node,
+                                                                             submitter,
                                                                              doi_fields,
                                                                              output_content=o_doi_label)
 

@@ -20,18 +20,20 @@ class DOICoreActionList(DOICoreAction):
     _name = 'list'
     description = ' % pds-doi-cmd list -n img -s Qui.T.Chau@jpl.nasa.gov -f JSON -doi 10.17189/21857 -start 2020-01-01T19:02:15.000000 -end 2020-12-13T23:59:59.000000 -lid urn:nasa:pds:lab_shocked_feldspars -lidvid urn:nasa:pds:lab_shocked_feldspars::1.0,urn:nasa:pds:lab_shocked_feldspars_2::1.0,urn:nasa:pds:lab_shocked_feldspars_3::1.0 \n'
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, arguments=None):
+        super().__init__(arguments=arguments)
         # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
         self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
-        self._input_doi_token = self._arguments.doi
-        self._output_format = self._arguments.format_output
-        self._start_update  = self._arguments.start_update
-        self._end_update    = self._arguments.end_update
-        self._lid           = self._arguments.lid
-        self._lidvid        = self._arguments.lidvid
+        if self._arguments:
+            self._input_doi_token = self._arguments.doi
+            self._output_format = self._arguments.format_output
+            self._start_update  = self._arguments.start_update
+            self._end_update    = self._arguments.end_update
+            self._lid           = self._arguments.lid
+            self._lidvid        = self._arguments.lidvid
+
         self._query_criterias = {}
 
         if self._input_doi_token:
@@ -40,8 +42,8 @@ class DOICoreActionList(DOICoreAction):
             self._query_criterias['lid'] = self._lid.split(',')
         if self._lidvid:
             self._query_criterias['lidvid'] = self._lidvid.split(',')
-        if self._submitter_email:
-            self._query_criterias['submitter'] = self._submitter_email.split(',')
+        if self._submitter:
+            self._query_criterias['submitter'] = self._submitter.split(',')
         if self._node_id:
             self._query_criterias['node'] = self._node_id.lstrip().rstrip().split(',')
         if self._start_update:
@@ -86,8 +88,7 @@ class DOICoreActionList(DOICoreAction):
                                    required=False,
                                    metavar='"my.email@node.gov"')
 
-    def run(self,
-            output_format, query_criterias=[]):
+    def run(self):
         """
         Function list all the latest records in the named database and return the object either in JSON or XML.
         :param submitter_email:
@@ -98,10 +99,10 @@ class DOICoreActionList(DOICoreAction):
 
         # For a list operation, the 'node' field is just a series of tokens to pass into database query.
         # We do a verification by converting each to a long name.
-        if (len(query_criterias) > 0) and 'node' in query_criterias:
-            for ii in range(0,len(query_criterias['node'])):
+        if (len(self._query_criterias) > 0) and 'node' in self._query_criterias:
+            for ii in range(0,len(self._query_criterias['node'])):
                 try:
-                    contributor_value = self.m_node_util.get_node_long_name(query_criterias['node'][ii])
+                    contributor_value = self.m_node_util.get_node_long_name(self._query_criterias['node'][ii])
                     logger.info(f"contributor_value['{contributor_value}']")
                 except UnknownNodeException as e:
                     raise e
@@ -109,16 +110,16 @@ class DOICoreActionList(DOICoreAction):
         # No need to check contributor since the short names will be used in data base query.
 
         # Perform the database query and convert a dict object to JSON for returning.
-        columns, rows = self._database_obj.select_latest_rows(query_criterias)
+        columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
         # generate output
 
-        if output_format == 'JSON':
+        if self._output_format == 'JSON':
             result_json = []
             for row in rows:
                 result_json.append({columns[i]:row[i] for i in range(len(columns))})
             o_query_result = json.dumps(result_json)
             logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
         else:
-            logger.error(f"Output format type {output_format} not supported yet")
+            logger.error(f"Output format type {self._output_format} not supported yet")
             exit(1)
         return o_query_result
