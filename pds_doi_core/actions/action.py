@@ -22,4 +22,12 @@ class DOICoreAction:
     def __init__(self):
         self._config = self.m_doi_config_util.get_config()
 
-
+        # Move the import to here so Python won't compaint about:
+        # ImportError: cannot import name 'create_cmd_parser'
+        from pds_doi_core.util.cmd_parser import create_cmd_parser
+        self._parser = create_cmd_parser()
+        self._arguments = self._parser.parse_args()
+        self._action_type = self._arguments.action
+        self._submitter_email = self._arguments.submitter_email
+        self._node_id = self._arguments.node_id
+# end of class DOICoreAction:

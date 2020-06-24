@@ -9,17 +9,16 @@ from pds_doi_core.references.contributors import DOIContributorUtil
 
 class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
-    description = ' % pds-doi-cmd draft -c img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
+    description = ' % pds-doi-cmd draft -n img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
 
     def __init__(self):
         super().__init__()
-
-
+        self._input_location = self._arguments.input
 
     @classmethod
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(cls._name)
-        action_parser.add_argument('-c', '--node-id',
+        action_parser.add_argument('-n', '--node-id',
                                    help='The pds discipline node in charge of the submission of the DOI',
                                    required=True,
                                    metavar='"img"')

@@ -33,8 +33,6 @@ class DOIDataBase:
         self.m_default_table_name = 'doi'
         self.m_default_db_file = db_file  # Default name of the database.
 
-
-
     def get_database_name(self):
         ''' Returns the name of the SQLite database. '''
 
@@ -364,7 +362,8 @@ class DOIDataBase:
     def _get_query_criteria_lidvid(v):
         named_parameters = ','.join([':lidvid_' + str(i) for i in range(len(v))])
         named_parameter_values = {'lidvid_' + str(i): v[i] for i in range(len(v))}
-        return f' AND lid || vid IN {named_parameters}', named_parameter_values
+        # To combine the 'lid' and 'vid' we need to add the '::' to compare to the lidvid values
+        return f" AND lid || '::' || vid IN ({named_parameters})", named_parameter_values
 
     @staticmethod
     def _get_query_criteria_submitter(v):
@@ -375,19 +374,22 @@ class DOIDataBase:
         return DOIDataBase._get_simple_in_criteria(v, 'node_id')
 
     @staticmethod
-    def _get_criteria_start_update(v):
-        return ' AND update_date >= :start_update', {'start_update', v.timestamp()}
+    def _get_query_criteria_start_update(v):
+        return ' AND update_date >= :start_update', {'start_update': v.timestamp()}
 
     @staticmethod
-    def _get_criteria_end_update(v):
-        return ' AND update_date <= :end_update', {'end_update', v.timestamp()}
+    def _get_query_criteria_end_update(v):
+        return ' AND update_date <= :end_update', {'end_update': v.timestamp()}
 
     @staticmethod
     def parse_criteria(query_criterias):
         criterias_str = ''
         criteria_dict = {}
         for k, v in query_criterias.items():
+            logger.debug("CALLING_GET " + '_get_query_criteria_' + k)
             criteria_str, dict_entry = getattr(DOIDataBase, '_get_query_criteria_' + k)(v)
+            logger.debug(f"criteria_str {criteria_str}")
+            logger.debug(f"dict_entry {dict_entry} {type(dict_entry)}")
             criterias_str += criteria_str
             criteria_dict.update(dict_entry)
 
