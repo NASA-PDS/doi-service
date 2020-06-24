@@ -350,7 +350,7 @@ class DOIDataBase:
     def _get_simple_in_criteria(v, column):
         named_parameters = ','.join([':' + column + '_' + str(i) for i in range(len(v))])
         named_parameter_values = {column + '_' + str(i): v[i].lower() for i in range(len(v))}
-        return f' AND {column} IN ({named_parameters})', named_parameter_values
+        return f' AND lower({column}) IN ({named_parameters})', named_parameter_values
 
     @staticmethod
     def _get_query_criteria_doi(v):
