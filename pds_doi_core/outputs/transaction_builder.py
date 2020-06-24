@@ -37,7 +37,7 @@ class TransactionBuilder:
 
     def __init__(self):
         self._config = self.m_doi_config_util.get_config()
-        self.m_doi_database = DOIDataBase()
+        self.m_doi_database = DOIDataBase(self._config.get('OTHER','db_file') )
         self.m_transaction_ondisk_dao = TransactionOnDisk()
 
     def get_transaction(self):

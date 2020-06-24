@@ -12,45 +12,46 @@ class MyTestCase(unittest.TestCase):
 
     def test_local_bundle(self):
         logger.info("test local bundle")
-        osti_doi = self._action.run(
-                                    'input/bundle_in_with_contributors.xml',
-                                    'img', 'my_user@my_node.gov')
+        osti_doi = self._action.run(input='input/bundle_in_with_contributors.xml',
+                              node='img',
+                              submitter='my_user@my_node.gov')
         logger.info(osti_doi)
 
     def test_remote_bundle(self):
         logger.info("test remote bundle")
         osti_doi = self._action.run(
-                                    'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml',
-                                    'img', 'my_user@my_node.gov')
+                                    input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml',
+                                    node='img',
+                                    submitter='my_user@my_node.gov')
         logger.info(osti_doi)
 
     def test_remote_collection(self):
         logger.info("test remote collection")
         osti_doi = self._action.run(
-                                    'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml',
-                                    'img', 'my_user@my_node.gov')
+                                    input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml',
+                                    node='img', submitter='my_user@my_node.gov')
         logger.info(osti_doi)
 
 
     def test_remote_browse_collection(self):
         logger.info("test remote browse collection")
         osti_doi = self._action.run(
-                                    'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml',
-                                    'img', 'my_user@my_node.gov')
+                                    input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml',
+                                    node='img', submitter='my_user@my_node.gov')
         logger.info(osti_doi)
 
     def test_remote_calibration_collection(self):
         logger.info("test remote calibration collection")
         osti_doi = self._action.run(
-                                    'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml',
-                                    'img', 'my_user@my_node.gov')
+                                    input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml',
+                                    node='img', submitter='my_user@my_node.gov')
         logger.info(osti_doi)
 
     def test_remote_document_collection(self):
         logger.info("test remote document collection")
         osti_doi = self._action.run(
-                                    'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml',
-                                    'img', 'my_user@my_node.gov')
+                                    input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml',
+                                    node='img', submitter='my_user@my_node.gov')
         logger.info(osti_doi)
 
 

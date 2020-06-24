@@ -1,13 +1,16 @@
 import argparse
+import pyclbr
+from pds_doi_core.actions import DOICoreAction
+from pds_doi_core.actions import *
 
 
-def add_default_action_arguments(_parser):
+def add_default_action_arguments(_parser,action_type):
     _parser.add_argument('-c', '--node-id',
                          help='The pds discipline node in charge of the submission of the DOI',
                          required=True,
                          metavar='"img"')
     _parser.add_argument('-i', '--input',
-                         help='A pds4 label local or on http, a xls spreadsheet'
+                         help='A pds4 label local or on http, a xls spreadsheet, a database file'
                               ' is also supported to reserve a list of doi',
                          required=True,
                          metavar='input/bundle_in_with_contributors.xml')
@@ -22,18 +25,4 @@ def add_default_action_arguments(_parser):
                          metavar='osti')
 
 
-def create_cmd_parser():
-    parser = argparse.ArgumentParser(
-        description='Reserve or draft a DOI\n'
-                    ' Examples:\n '
-                    ' % pds-doi-cmd draft -c img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
-                    ' % pds-doi-cmd reserve -c img -i input/DOI_Reserved_GEO_200318.xlsx\n',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    subparsers = parser.add_subparsers(dest='action')
-    # create subparsers
-    for action_type in ['draft', 'reserve']:
-        action_parser = subparsers.add_parser(action_type)
-        add_default_action_arguments(action_parser)
-
-    return parser
