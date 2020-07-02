@@ -18,38 +18,66 @@ from pds_doi_core.references.contributors import DOIContributorUtil
 
 class DOICoreActionList(DOICoreAction):
     _name = 'list'
-    description = ' % pds-doi-cmd list -n img -s Qui.T.Chau@jpl.nasa.gov -f JSON -doi 10.17189/21857 -start 2020-01-01T19:02:15.000000 -end 2020-12-13T23:59:59.000000 -lid urn:nasa:pds:lab_shocked_feldspars -lidvid urn:nasa:pds:lab_shocked_feldspars::1.0,urn:nasa:pds:lab_shocked_feldspars_2::1.0,urn:nasa:pds:lab_shocked_feldspars_3::1.0 \n'
+    description = ' % pds-doi-cmd list \n'
 
-    def __init__(self, arguments=None):
-        super().__init__(arguments=arguments)
+    def __init__(self, db_name=None):
+        super().__init__(db_name=None)
         # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
-        self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
+        if db_name:
+            self.m_default_db_file    = db_name # If database name is specified from user, use it.
+        else:
+            self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
-        if self._arguments:
-            self._input_doi_token = self._arguments.doi
-            self._output_format = self._arguments.format_output
-            self._start_update  = self._arguments.start_update
-            self._end_update    = self._arguments.end_update
-            self._lid           = self._arguments.lid
-            self._lidvid        = self._arguments.lidvid
-
         self._query_criterias = {}
+        self._output_format = 'JSON'
 
-        if self._input_doi_token:
-            self._query_criterias['doi'] = self._input_doi_token.split(',')
-        if self._lid:
-            self._query_criterias['lid'] = self._lid.split(',')
-        if self._lidvid:
-            self._query_criterias['lidvid'] = self._lidvid.split(',')
-        if self._submitter:
-            self._query_criterias['submitter'] = self._submitter.split(',')
-        if self._node_id:
-            self._query_criterias['node'] = self._node_id.lstrip().rstrip().split(',')
-        if self._start_update:
-            self._query_criterias['start_update'] = datetime.datetime.strptime(self._start_update,'%Y-%m-%dT%H:%M:%S.%f');
-        if self._end_update:
-            self._query_criterias['end_update']   = datetime.datetime.strptime(self._end_update,'%Y-%m-%dT%H:%M:%S.%f');
+    def parse_arguments_from_cmd(self, arguments):
+        criteria = {}
+        for k,v in arguments._get_kwargs():
+            if k != 'action':
+                criteria[k] = v
+
+        self.set_criterias(**criteria)
+
+
+    def set_criterias(self,
+                       format_output='JSON',
+                       doi=None,
+                       lid=None,
+                       lidvid=None,
+                       node_id=None,
+                       status=None,
+                       start_update=None,
+                       end_update=None,
+                       submitter_email=None):
+
+        self._output_format = format_output
+
+        if doi:
+            self._query_criterias['doi'] = doi.split(',')
+
+        if lid:
+            self._query_criterias['lid'] = lid.split(',')
+
+        if lidvid:
+            self._query_criterias['lidvid'] = lidvid.split(',')
+
+        if submitter_email:
+            self._query_criterias['submitter'] = submitter_email.split(',')
+
+        if node_id:
+            self._query_criterias['node'] = node_id.lstrip().rstrip().split(',')
+
+        if status:
+            self._query_criterias['status'] = status.lstrip().rstrip().split(',')
+
+        if start_update:
+            self._query_criterias['start_update'] = datetime.datetime.strptime(start_update,'%Y-%m-%dT%H:%M:%S.%f');
+
+        if end_update:
+            self._query_criterias['end_update']   = datetime.datetime.strptime(end_update,'%Y-%m-%dT%H:%M:%S.%f');
+
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -92,7 +120,6 @@ class DOICoreActionList(DOICoreAction):
         """
         Function list all the latest records in the named database and return the object either in JSON or XML.
         :param submitter_email:
-        :param output_format:
         :param query_criterias:
         :return: o_list_result:
         """
@@ -107,12 +134,9 @@ class DOICoreActionList(DOICoreAction):
                 except UnknownNodeException as e:
                     raise e
 
-        # No need to check contributor since the short names will be used in data base query.
-
-        # Perform the database query and convert a dict object to JSON for returning.
         columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
-        # generate output
 
+        # generate output
         if self._output_format == 'JSON':
             result_json = []
             for row in rows:

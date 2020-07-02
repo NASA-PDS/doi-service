@@ -11,10 +11,24 @@ class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     description = ' % pds-doi-cmd draft -n img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
 
-    def __init__(self, arguments=None):
-        super().__init__(arguments=arguments)
+    def __init__(self):
+        super().__init__()
+        self._parse_arguments_from_cmd() # Parse arguments from command line if there are any.
+
+    def _parse_arguments_from_cmd(self):
+        parser = DOICoreAction.create_cmd_parser()
+        self._arguments = parser.parse_args()
+        self._input_location = None
+        self._node_id        = None
+        self._submitter      = None
+
         if self._arguments:
-            self._input_location = self._arguments.input
+            if hasattr(self._arguments, 'input'):
+                self._input_location = self._arguments.input
+            if hasattr(self._arguments, 'node_id'):
+                self._node_id = self._arguments.node_id
+            if hasattr(self._arguments, 'submitter_email'):
+                self._submitter       = self._arguments.submitter_email
 
     @classmethod
     def add_to_subparser(cls, subparsers):

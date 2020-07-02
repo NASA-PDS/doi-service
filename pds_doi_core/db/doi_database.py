@@ -36,7 +36,7 @@ class DOIDataBase:
     def get_database_name(self):
         ''' Returns the name of the SQLite database. '''
 
-        return self.m_database_name
+        return self.m_default_db_file
 
     def close_database(self):
         ''' Close database connection to a SQLite database. '''
@@ -281,6 +281,7 @@ class DOIDataBase:
         '''Write some DOI info from 'reserve' or 'draft' request to database.'''
 
         self.m_my_conn = self.get_connection()
+        logger.debug(f"DEFAULT_DB_NAME {self.get_database_name()}")
 
         data_tuple = (status, product_type, product_type_specific, True, lid, vid, doi,
                       submitter, transaction_date.timestamp(), discipline_node, title, transaction_key)
@@ -374,6 +375,10 @@ class DOIDataBase:
         return DOIDataBase._get_simple_in_criteria(v, 'node_id')
 
     @staticmethod
+    def _get_query_criteria_status(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'status')
+
+    @staticmethod
     def _get_query_criteria_start_update(v):
         return ' AND update_date >= :start_update', {'start_update': v.timestamp()}
 
@@ -397,6 +402,7 @@ class DOIDataBase:
 
     def select_latest_rows(self, query_criterias):
 
+        logger.debug(f"DEFAULT_DB_NAME {self.get_database_name()}")
         criterias_str, criteria_dict = DOIDataBase.parse_criteria(query_criterias)
         query_string = f'SELECT * from {self.m_default_table_name} WHERE is_latest=1 {criterias_str}  ORDER BY update_date'
         logger.info(f'ready to execute request {query_string}')

@@ -12,6 +12,7 @@ import os
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.actions.action import DOICoreAction
+from pds_doi_core.actions.check import DOICoreActionCheck
 from pds_doi_core.actions.reserve import DOICoreActionReserve
 from pds_doi_core.actions.draft import DOICoreActionDraft
 from pds_doi_core.actions.list import DOICoreActionList
@@ -30,18 +31,24 @@ def main():
 
     try:
         if action_type == 'draft':
-            draft = DOICoreActionDraft(arguments=arguments)
+            draft = DOICoreActionDraft()
             o_doi_label = draft.run()
             print(o_doi_label)
 
+        elif action_type == 'check':
+            check = DOICoreActionCheck()
+            o_doi_check = check.run()
+            print(o_doi_check)
+
         elif action_type == 'list':
-            list_obj = DOICoreActionList(arguments=arguments) # The token 'list' is a reserved word so we are using list_obj instead.
+            list_action = DOICoreActionList() # The token 'list' is a reserved word so we are using list_action instead.
+            list_action.parse_arguments_from_cmd(arguments)
             # The 'list' action does not take node_id as a parameter since it is part of the query_criterias dictionary as a list.
-            o_doi_list = list_obj.run()
+            o_doi_list = list_action.run()
             print(o_doi_list)
 
         elif action_type == 'reserve':
-            reserve = DOICoreActionReserve(arguments=arguments)
+            reserve = DOICoreActionReserve()
             o_doi_label = reserve.run(submit_label_flag=True)
             # By default, submit_label_flag=True if not specified.
             # By default, write_to_file_flag=True if not specified.
