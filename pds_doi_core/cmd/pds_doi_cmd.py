@@ -12,6 +12,7 @@ import os
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.actions.action import DOICoreAction
+from pds_doi_core.actions.check import DOICoreActionCheck
 from pds_doi_core.actions.reserve import DOICoreActionReserve
 from pds_doi_core.actions.draft import DOICoreActionDraft
 from pds_doi_core.actions.list import DOICoreActionList
@@ -33,6 +34,11 @@ def main():
             draft = DOICoreActionDraft(arguments=arguments)
             o_doi_label = draft.run()
             print(o_doi_label)
+
+        elif action_type == 'check':
+            check = DOICoreActionCheck(arguments=arguments)
+            o_doi_check = check.run()
+            print(o_doi_check)
 
         elif action_type == 'list':
             list_obj = DOICoreActionList(arguments=arguments) # The token 'list' is a reserved word so we are using list_obj instead.

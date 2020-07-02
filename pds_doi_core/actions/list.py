@@ -20,10 +20,13 @@ class DOICoreActionList(DOICoreAction):
     _name = 'list'
     description = ' % pds-doi-cmd list -n img -s Qui.T.Chau@jpl.nasa.gov -f JSON -doi 10.17189/21857 -start 2020-01-01T19:02:15.000000 -end 2020-12-13T23:59:59.000000 -lid urn:nasa:pds:lab_shocked_feldspars -lidvid urn:nasa:pds:lab_shocked_feldspars::1.0,urn:nasa:pds:lab_shocked_feldspars_2::1.0,urn:nasa:pds:lab_shocked_feldspars_3::1.0 \n'
 
-    def __init__(self, arguments=None):
-        super().__init__(arguments=arguments)
+    def __init__(self, arguments=None,db_name=None):
+        super().__init__(arguments=arguments,db_name=None)
         # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
-        self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
+        if db_name:
+            self.m_default_db_file    = db_name # If database name is specified from user, use it.
+        else:
+            self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
         if self._arguments:
@@ -88,7 +91,7 @@ class DOICoreActionList(DOICoreAction):
                                    required=False,
                                    metavar='"my.email@node.gov"')
 
-    def run(self):
+    def run(self,output_format='JSON',query_criterias=[]):
         """
         Function list all the latest records in the named database and return the object either in JSON or XML.
         :param submitter_email:
@@ -110,16 +113,20 @@ class DOICoreActionList(DOICoreAction):
         # No need to check contributor since the short names will be used in data base query.
 
         # Perform the database query and convert a dict object to JSON for returning.
-        columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
+        # Use query_criterias if user passed in something to query.
+        if len(query_criterias) > 0:
+            columns, rows = self._database_obj.select_latest_rows(query_criterias)
+        else:
+            columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
         # generate output
 
-        if self._output_format == 'JSON':
+        if output_format == 'JSON':
             result_json = []
             for row in rows:
                 result_json.append({columns[i]:row[i] for i in range(len(columns))})
             o_query_result = json.dumps(result_json)
             logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
         else:
-            logger.error(f"Output format type {self._output_format} not supported yet")
+            logger.error(f"Output format type {output_format} not supported yet")
             exit(1)
         return o_query_result

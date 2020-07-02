@@ -35,9 +35,12 @@ class TransactionBuilder:
     m_transaction_ondisk_dao = None  # A logger to write transacton to disk and to database.
     m_transaction = None  # A transaction contains list of dictionaries containing fields to write to disk and database.
 
-    def __init__(self):
+    def __init__(self,db_name=None):
         self._config = self.m_doi_config_util.get_config()
-        self.m_doi_database = DOIDataBase(self._config.get('OTHER','db_file') )
+        if db_name:
+            self.m_doi_database = DOIDataBase(db_name)
+        else:
+            self.m_doi_database = DOIDataBase(self._config.get('OTHER','db_file') )
         self.m_transaction_ondisk_dao = TransactionOnDisk()
 
     def get_transaction(self):

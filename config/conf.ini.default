@@ -16,3 +16,7 @@ pds_uri = http://pds.nasa.gov/pds4/pds/v1
 transaction_dir = ./transaction_history
 db_file = doi.db
 db_table = doi
+emailer_local_host = localhost
+emailer_port       = 25
+emailer_sender     = pds_operator_email
+emailer_receivers  = comma_separated_emails

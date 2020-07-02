@@ -17,15 +17,16 @@ class DOICoreAction:
     m_doi_output_util = DOIOutputUtil()
     m_doi_pds4_label = DOIPDS4LabelUtil()
     m_doi_output_osti = DOIOutputOsti()
-    m_transaction_builder = TransactionBuilder()
+    # Delay constructing TransactionBuilder() to allow db_name to be passed in the constructor for DOICoreAction class.
     m_node_util = NodeUtil()
 
-    def __init__(self, arguments=None):
+    def __init__(self, arguments=None,db_name=None):
         self._config = self.m_doi_config_util.get_config()
         self._arguments = arguments
         if self._arguments:
             self._submitter = self._arguments.submitter_email
             self._node_id = self._arguments.node_id
+        self.m_transaction_builder = TransactionBuilder(db_name)
 
     @staticmethod
     def create_cmd_parser():
