@@ -1,5 +1,5 @@
 #  Id     Title                                  DOI           Initial_Status   Status
     {{#dois}}
-{{my_index}}  {{id}}  {{title}}  {{doi}}  {{initial_status}}  {{status}}
+{{record_index}}  {{id}}  {{title}}  {{doi}}  {{initial_status}}  {{status}}
     {{/dois}}
 

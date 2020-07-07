@@ -7,7 +7,6 @@
 #
 # ------------------------------
 
-import base64
 import datetime
 import json
 import os
@@ -72,12 +71,10 @@ class DOICoreActionCheck(DOICoreAction):
             # It is important to save the self._start_update here since it retains the string format
             namespace_start_update                = self._start_update
             self._query_criterias['start_update'] = datetime.datetime.strptime(self._start_update,'%Y-%m-%dT%H:%M:%S.%f')
-            #namespace_start_update                = datetime.datetime.strptime(self._start_update,'%Y-%m-%dT%H:%M:%S.%f')
         if self._end_update:
             # It is important to save the self._end_update here since it retains the string format
             namespace_end_update                  = self._end_update
             self._query_criterias['end_update']   = datetime.datetime.strptime(self._end_update,'%Y-%m-%dT%H:%M:%S.%f')
-            #namespace_end_update                  = datetime.datetime.strptime(self._end_update,'%Y-%m-%dT%H:%M:%S.%f')
 
         # We have to set all namespaces otherwise Python will attempt to access these fields and fail.
         self._list_obj = DOICoreActionList(SimpleNamespace(submitter_email=namespace_submitter,node_id=namespace_node_id,\
@@ -144,9 +141,10 @@ class DOICoreActionCheck(DOICoreAction):
             if pending_state_list[index_found]['status'].lower() != check_result_dict['status'].lower():
                 logger.debug(f"STATUS_YES_CHANGED:{check_result_dict['doi'],pending_state_list[index_found]['status'],check_result_dict['status']}")
                 # Write a small file to disk and pass this filename to prepare_transaction() function as input parameter.
-                temporary_file_name = "OSTI_status_check.xml"
-                temporary_file_ptr = open(temporary_file_name,"w") 
-                temporary_file_ptr.write("OSTI_status_check_at " + datetime.datetime.now().isoformat()+ "\n")
+                now_is = datetime.datetime.now().isoformat()
+                temporary_file_name = "OSTI_status_check_on_" + now_is + ".xml"
+                temporary_file_ptr = open(temporary_file_name,"w+") 
+                temporary_file_ptr.write("OSTI_status_check_at " + now_is + "\n")
                 temporary_file_ptr.close()
 
                 # Update the 'status' field and massage the dict pending_state_list[index_found] into a structure that prepare_transaction() would recognize.
@@ -205,37 +203,41 @@ class DOICoreActionCheck(DOICoreAction):
     def _prepare_attachment(self, i_dicts_per_submitter):
         """Prepare an attachment by converting i_dicts_per_submitter to a JSON text and return the o_attachment_part as MIMEMultipart object."""
 
+        # Only do the import if sending an attachment file along with the email.
         from email.mime.multipart import MIMEMultipart
         from email.mime.base import MIMEBase
 
         # Convert a list of dict to JSON text to make it human readable.
         attachment_text = json.dumps(i_dicts_per_submitter,indent=4)  # Make human read-able output with indentation of each key.
-        attachment_filename = 'doi_status_attachment.txt'
+
+        now_is = datetime.datetime.now().isoformat()
+        o_attachment_filename = 'doi_status_attachment_on_' + now_is + '.txt'  # Add current time to make file unique
 
         # Write the attachment_text to disk so the file can be sent as an attachment.
-        file_ptr = open(attachment_filename,"w")
+        file_ptr = open(o_attachment_filename,"w+")
         file_ptr.write(attachment_text)
         file_ptr.close()
 
         o_attachment_part = MIMEMultipart()
         part = MIMEBase('application', 'text')
-        part.add_header('Content-Disposition', "attachment; filename= %s" % attachment_filename)
+        part.add_header('Content-Disposition', "attachment; filename= %s" % o_attachment_filename)
         part.set_payload(attachment_text)
         o_attachment_part.attach(part)
 
-        return o_attachment_part
+        # Must return the attachment filename so it can be deleted after the email has been successfully sent.
+        return (o_attachment_filename,o_attachment_part)
 
     def _prepare_email_entire_message(self, i_dicts_per_submitter):
         renderer = pystache.Renderer()
         today = date.today()
 
         # There is an 'Id' column in the email content so that field needs to be built.
-        # The field 'my_index' is to allow Pystache to print the record number on the left most column.
-        my_index = 0
+        # The field 'record_index' is to allow Pystache to print the record number on the left most column.
+        record_index = 0
         for doi_record in i_dicts_per_submitter:
             doi_record['id'] = doi_record['doi'].split('/')[1]   # Split '10.17189/21940' to get to 21940
-            doi_record['my_index'] = my_index + 1
-            my_index += 1
+            doi_record['record_index'] = record_index + 1
+            record_index += 1
 
         # Build the email first part containing: Date: 07/01/2020\n 3 records.
         header_dict = {'my_date':today.strftime("%m/%d/%Y"),'my_records_count':len(i_dicts_per_submitter)}
@@ -293,9 +295,6 @@ class DOICoreActionCheck(DOICoreAction):
             o_dicts_per_submitter = self._get_status_per_submitter(i_check_result,distinct_submitters[ii])
 
             # Convert a list of dict to JSON text to make it human readable.
-
-            mail_message = json.dumps(o_dicts_per_submitter,indent=4)  # Make human read-able output with indentation of each key.
-
             dois_per_submitter = [element['doi'] for element in o_dicts_per_submitter]
             logger.debug(f"SUBMITTER_AND_NUM_RECORDS_PER_SUBMITTER {distinct_submitters[ii],len(o_dicts_per_submitter),dois_per_submitter}")
 
@@ -304,11 +303,11 @@ class DOICoreActionCheck(DOICoreAction):
 
             # Finally send the email with all statuses per submitter.
             if to_send_mail_flag:
-                #self._emailer.sendmail(email_sender, final_receivers, subject_field, mail_message)  # This send the JSON format of all dictionaries.
                 if not to_send_attachment_flag:
                     self._emailer.sendmail(email_sender, final_receivers, subject_field, email_entire_message) # This send a brief email message.
                 else:
                     # Try an alternative way to send the email so the attachment will be view as an attachment in the email reader.
+                    # Only do the import if sending an attachment file along with the email.
                     from email.message import EmailMessage
                     msg = EmailMessage()
                     msg["From"]     = email_sender 
@@ -317,11 +316,15 @@ class DOICoreActionCheck(DOICoreAction):
 
                     msg.set_content(email_entire_message)
 
-                    attachment_part = self._prepare_attachment(o_dicts_per_submitter)
-                    msg.add_attachment(attachment_part)  # The attachment is not 'attached' in the msg object.
+                    (attachment_filename,attachment_part) = self._prepare_attachment(o_dicts_per_submitter)
+                    msg.add_attachment(attachment_part)  # The attachment is now 'attached' in the msg object.
 
-                    # Send the email with attachment.
+                    # Send the email with attachment file.
                     self._emailer.send_message(msg)
+
+                    # Delete the temporary attached file.
+                    if os.path.isfile(attachment_filename):
+                        os.remove(attachment_filename) # Remove temporary file.
         return 1
 
     def run(self,

@@ -33,31 +33,19 @@ class Emailer:
 
         # An example email: 
         # 
-        # Subject: DOI Submission Status Report On 2020-06-30T17:03:46.867456
+        # Subject: DOI Submission Status Report On 2020-07-01T22:47:16.056184
         # From: Qui.T.Chau@jpl.nasa.gov
-        # Tue 6/30/2020 10:04 AM
+        # Date: Wed 7/1/2020 3:47 PM
         # To: Chau, Qui T (US 398F);pdsen-doi-test
-        # [
-        #     {
-        #         "status": "Reserved",
-        #         "update_date": 1593561822.747553,
-        #         "submitter": "Qui.T.Chau@jpl.nasa.gov",
-        #         "title": "Laboratory Shocked Feldspars Bundle",
-        #         "type": "Collection",
-        #         "subtype": "PDS4 Collection",
-        #         "node_id": "img",
-        #         "lid": "urn:nasa:pds:lab_shocked_feldspars",
-        #         "vid": "1.0",
-        #         "doi": "10.17189/21940",
-        #         "release_date": null,
-        #         "transaction_key": "./transaction_history/img/2020-06-15T18:42:45.653317",
-        #         "is_latest": 1,
-        #         "related_identifier": "urn:nasa:pds:lab_shocked_feldspars::1.0",
-        #         "product_type": "Collection",
-        #         "product_type_specific": "PDS4 Collection",
-        #         "initial_status": "Pending"
-        #     },
-        #
+        # Date: 07/01/2020
+        # 3 records.
+        # 
+        # 
+        # #  Id     Title                                  DOI           Initial_Status   Status
+        # 1  21940  Laboratory Shocked Feldspars Bundle  10.17189/21940  Pending  Reserved
+        # 2  21939  Laboratory Shocked Feldspars Bundle  10.17189/21939  Pending  Reserved
+        # 3  21938  Laboratory Shocked Feldspars Bundle  10.17189/21938  Pending  Reserved
+
         # Build the output message using all parameters.
         # Note that this format below allows the email recipient to see the subject, sender, recipient(s) clearly as in the example email above:
 
@@ -84,14 +72,25 @@ class Emailer:
 
         # An example email: 
         # 
-        # Subject: DOI Submission Status Report On 2020-06-30T17:03:46.867456
+        # Subject: DOI Submission Status Report On 2020-07-01T22:47:16.056184
         # From: Qui.T.Chau@jpl.nasa.gov
-        # Tue 6/30/2020 10:04 AM
+        # Date: Wed 7/1/2020 3:47 PM
         # To: Chau, Qui T (US 398F);pdsen-doi-test
+        # Date: 07/01/2020
+        # 3 records.
+        # 
+        # 
+        # #  Id     Title                                  DOI           Initial_Status   Status
+        # 1  21940  Laboratory Shocked Feldspars Bundle  10.17189/21940  Pending  Reserved
+        # 2  21939  Laboratory Shocked Feldspars Bundle  10.17189/21939  Pending  Reserved
+        # 3  21938  Laboratory Shocked Feldspars Bundle  10.17189/21938  Pending  Reserved
+        # 
+        # with attachment as a clickable link.
+        # 
         # [
         #     {
         #         "status": "Reserved",
-        #         "update_date": 1593561822.747553,
+        #         "update_date": 1593668833.016585,
         #         "submitter": "Qui.T.Chau@jpl.nasa.gov",
         #         "title": "Laboratory Shocked Feldspars Bundle",
         #         "type": "Collection",
@@ -106,7 +105,9 @@ class Emailer:
         #         "related_identifier": "urn:nasa:pds:lab_shocked_feldspars::1.0",
         #         "product_type": "Collection",
         #         "product_type_specific": "PDS4 Collection",
-        #         "initial_status": "Pending"
+        #         "initial_status": "Pending",
+        #         "id": "21940",
+        #         "record_index": 1
         #     },
         #
         # The value message is already a Message object with the 'From' and 'To:' and 'Subject' already filled in.
