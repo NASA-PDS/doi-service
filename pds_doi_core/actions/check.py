@@ -26,90 +26,26 @@ from pds_doi_core.references.contributors import DOIContributorUtil
 
 class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
-    description = ' % pds-doi-cmd check -n img -s Qui.T.Chau@jpl.nasa.gov -f JSON -doi 10.17189/21259,10.17189/21260,10.17189/21261 -start 2020-01-01T19:02:15.000000 -end 2020-12-13T23:59:59.000000 \n'
-    # -n     is optional, used by developer to query certain node
-    # -f     is optional, default to JSON
-    # -doi   is optional, used by developer to query certain known doi with 'Pending' status
-    # -start is optional, used by developer to query certain time start range from database
-    # -end   is optional, used by developer to query certain time end range from database
+    description = ' % pds-doi-cmd check \n' 
 
-    def __init__(self, arguments=None, db_name=None):
-        super().__init__(arguments=arguments, db_name=db_name)
+    def __init__(self, db_name=None):
+        super().__init__(db_name=db_name)
         # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
         self._doi_web_client = DOIOstiWebClient()
         self._emailer = Emailer()
 
-        # The following namespace fields are required otherwise the constructor of DOICoreActionList() will fail.
-        namespace_doi       = None
-        namespace_submitter = None
-        namespace_node_id   = None
-        namespace_start_update = None
-        namespace_end_update   = None
+        self._set_criterias()            # Set any search query criteria if there are any.
 
-        # Get any arguments optional provided.  Generally, they are not needed but useful for development.
-        logger.debug(f"self._arguments {self._arguments}")
-        if self._arguments:
-            self._input_doi_token = self._arguments.doi
-            self._output_format = self._arguments.format_output
-            self._start_update  = self._arguments.start_update
-            self._end_update    = self._arguments.end_update
+        self._list_obj = DOICoreActionList(db_name=db_name)
 
+    def _set_criterias(self):
         self._query_criterias = {}
         # Add the 'Pending' status to get only rows with 'Pending' status only.
         self._query_criterias['status'] = 'Pending'
 
-        if self._input_doi_token:
-            self._query_criterias['doi'] = self._input_doi_token.split(',')
-            namespace_doi                = self._input_doi_token.split(',')[0] # Get just one doi from command line.
-        if self._submitter:
-            self._query_criterias['submitter'] = self._submitter.split(',')
-            namespace_submitter                = self._submitter.split(',')[0] # Get just one submitter email from command line.
-        if self._node_id:
-            self._query_criterias['node'] = self._node_id.lstrip().rstrip().split(',')
-            namespace_node_id             = self._node_id.lstrip().rstrip().split(',')[0]  # Get just one node_id from command line.
-        if self._start_update:
-            # It is important to save the self._start_update here since it retains the string format
-            namespace_start_update                = self._start_update
-            self._query_criterias['start_update'] = datetime.datetime.strptime(self._start_update,'%Y-%m-%dT%H:%M:%S.%f')
-        if self._end_update:
-            # It is important to save the self._end_update here since it retains the string format
-            namespace_end_update                  = self._end_update
-            self._query_criterias['end_update']   = datetime.datetime.strptime(self._end_update,'%Y-%m-%dT%H:%M:%S.%f')
-
-        # We have to set all namespaces otherwise Python will attempt to access these fields and fail.
-        self._list_obj = DOICoreActionList(SimpleNamespace(submitter_email=namespace_submitter,node_id=namespace_node_id,\
-                                           doi=namespace_doi,format_output='JSON',start_update=namespace_start_update,\
-                                           end_update=namespace_end_update,status='Pending',lid=None,lidvid=None),
-                                           db_name=db_name)
-
     @classmethod
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(cls._name)
-        action_parser.add_argument('-n', '--node-id',
-                                   help='The pds discipline node in charge of the submission of the DOI',
-                                   required=False,
-                                   metavar='"img"')
-        action_parser.add_argument('-f', '--format-output',
-                                   help='The format of the output from the check query.  Default is JSON if not specified',
-                                   default='JSON',
-                                   required=False,
-                                   metavar='JSON')
-        action_parser.add_argument('-doi', '--doi',
-                                   help='A list of DOIs comma separated to pass as input to the check query.',
-                                   required=False,
-                                   metavar='10.17189/21734')
-        action_parser.add_argument('-start', '--start-update',
-                                   help='The start time for record update to pass as input to the check query.',
-                                   required=False,
-                                   metavar='2020-01-01T19:02:15.000000')
-        action_parser.add_argument('-end', '--end-update',
-                                   help='The end time for record update time to pass as input to the check query.',
-                                   required=False,
-                                   metavar='2020-12-311T23:59:00.000000')
-        action_parser.add_argument('-s', '--submitter-email',
-                                   help='The email address of the user performing the action for these services.',
-                                   required=False,
-                                   metavar='"my.email@node.gov"')
 
     def _process_one_query_result(self, pending_state_list, check_result_dict, output_content='', web_response=None):
         """
@@ -200,6 +136,22 @@ class DOICoreActionCheck(DOICoreAction):
 
         return o_dicts_per_submitter 
 
+
+    def _get_status_per_submitter_per_node(self, i_check_result, i_submitter):
+        """Function return a dictionary of lists for different nodes for a particular submitter."""
+        o_dicts_per_submitter_per_node = {} 
+
+        for ii in range(0,len(i_check_result)):
+            if i_check_result[ii]['submitter'].lower() == i_submitter:
+               node_key = i_check_result[ii]['node_id'].lower()
+               if node_key not in o_dicts_per_submitter_per_node:
+                   o_dicts_per_submitter_per_node[node_key] = [] # Start with an empty list.
+               o_dicts_per_submitter_per_node[node_key].append(i_check_result[ii])
+                  
+        # end for ii in range(0,len(i_check_result)):
+
+        return o_dicts_per_submitter_per_node
+
     def _prepare_attachment(self, i_dicts_per_submitter):
         """Prepare an attachment by converting i_dicts_per_submitter to a JSON text and return the o_attachment_part as MIMEMultipart object."""
 
@@ -251,6 +203,34 @@ class DOICoreActionCheck(DOICoreAction):
 
         return o_email_entire_message
 
+    def _send_email(self,to_send_attachment_flag,email_sender,final_receivers,subject_field,email_entire_message,o_dicts_per_submitter_per_node,node_key): 
+
+        if not to_send_attachment_flag:
+            self._emailer.sendmail(email_sender, final_receivers, subject_field, email_entire_message) # This send a brief email message.
+        else:
+            # Try an alternative way to send the email so the attachment will be view as an attachment in the email reader.
+            # Only do the import if sending an attachment file along with the email.
+            from email.message import EmailMessage
+            msg = EmailMessage()
+            msg["From"]     = email_sender 
+            msg["Subject"]  = subject_field
+            msg["To"]       = final_receivers
+
+            msg.set_content(email_entire_message)
+
+            (attachment_filename,attachment_part) = self._prepare_attachment(o_dicts_per_submitter_per_node[node_key])
+            msg.add_attachment(attachment_part)  # The attachment is now 'attached' in the msg object.
+
+            # Send the email with attachment file.
+            self._emailer.send_message(msg)
+
+            # Delete the temporary attached file.
+            if os.path.isfile(attachment_filename):
+                os.remove(attachment_filename) # Remove temporary file.
+
+        return 1
+
+
     def _process_dois_updated_records(self, i_check_result, to_send_mail_flag=False, to_send_attachment_flag=False):
         """From all records in i_check_result, group a list of records per submitter and send an email
            of the status of metadata of DOIs with status changed to receivers."""
@@ -264,9 +244,9 @@ class DOICoreActionCheck(DOICoreAction):
         email_receivers = []
 
         # Get a distint list of email addresses from email_receivers_field in case they have duplicates.
-        for ii in range(0,len(email_receivers_tokens)):
-            if email_receivers_tokens[ii].lstrip().rstrip().lower() not in email_receivers:
-                email_receivers.append(email_receivers_tokens[ii].lstrip().rstrip().lower())
+        for email_receiver_token in email_receivers_tokens:
+            if email_receiver_token.lstrip().rstrip().lower() not in email_receivers:
+                email_receivers.append(email_receiver_token.lstrip().rstrip().lower())
 
         # Get distinct submitter from i_check_result
         distinct_submitters = self._get_distinct_submitters(i_check_result)
@@ -275,60 +255,46 @@ class DOICoreActionCheck(DOICoreAction):
         distinct_receivers = []
         distinct_receivers.extend(email_receivers)
 
-        for ii in range(0,len(distinct_submitters)):
-            if distinct_submitters[ii] not in distinct_receivers:
-                distinct_receivers.append(distinct_submitters[ii])
+        for distinct_submitter in distinct_submitters:
+            if distinct_submitter not in distinct_receivers:
+                distinct_receivers.append(distinct_submitter)
 
         now_is = datetime.datetime.now().isoformat()
         subject_field = "DOI Submission Status Report On " + now_is
 
         # For each distinct submitter found in all dictionary i_check_result, send email to that submitter
         # of all records that have changed from 'Pending' to something else.
-        for ii in range(0,len(distinct_submitters)):
+        for distinct_submitter in distinct_submitters:
             # Build a list of unique recipients for the emailer.
             final_receivers = deepcopy(distinct_receivers) 
-            if distinct_submitters[ii] not in final_receivers:
-                final_receivers.append(distinct_submitters[ii])
+            if distinct_submitter not in final_receivers:
+                final_receivers.append(distinct_submitter)
 
             # Loop through i_check_result and get all records submitted by that submitter.
 
-            o_dicts_per_submitter = self._get_status_per_submitter(i_check_result,distinct_submitters[ii])
+            o_dicts_per_submitter = self._get_status_per_submitter(i_check_result,distinct_submitter)
 
-            # Convert a list of dict to JSON text to make it human readable.
-            dois_per_submitter = [element['doi'] for element in o_dicts_per_submitter]
-            logger.debug(f"SUBMITTER_AND_NUM_RECORDS_PER_SUBMITTER {distinct_submitters[ii],len(o_dicts_per_submitter),dois_per_submitter}")
+            # It may be that for each submitter, there may be more than one node.
+            o_dicts_per_submitter_per_node = self._get_status_per_submitter_per_node(o_dicts_per_submitter,distinct_submitter) 
 
-            # Prepare the email message using all the dictionaries.
-            email_entire_message = self._prepare_email_entire_message(o_dicts_per_submitter)
+            for node_key in list(o_dicts_per_submitter_per_node.keys()):
+                subject_field = "DOI Submission Status Report For Node '" + node_key + "'  On " + now_is
 
-            # Finally send the email with all statuses per submitter.
-            if to_send_mail_flag:
-                if not to_send_attachment_flag:
-                    self._emailer.sendmail(email_sender, final_receivers, subject_field, email_entire_message) # This send a brief email message.
-                else:
-                    # Try an alternative way to send the email so the attachment will be view as an attachment in the email reader.
-                    # Only do the import if sending an attachment file along with the email.
-                    from email.message import EmailMessage
-                    msg = EmailMessage()
-                    msg["From"]     = email_sender 
-                    msg["Subject"]  = subject_field
-                    msg["To"]       = final_receivers
+                # Convert a list of dict to JSON text to make it human readable.
+                dois_per_submitter = [element['doi'] for element in o_dicts_per_submitter_per_node[node_key]]
+                logger.debug(f"SUBMITTER_AND_NUM_RECORDS_PER_SUBMITTER {distinct_submitter,node_key,len(o_dicts_per_submitter_per_node[node_key]),dois_per_submitter}")
 
-                    msg.set_content(email_entire_message)
+                # Prepare the email message using all the dictionaries.
+                email_entire_message = self._prepare_email_entire_message(o_dicts_per_submitter_per_node[node_key])
 
-                    (attachment_filename,attachment_part) = self._prepare_attachment(o_dicts_per_submitter)
-                    msg.add_attachment(attachment_part)  # The attachment is now 'attached' in the msg object.
+                # Finally send the email with all statuses per submitter per node.
+                if to_send_mail_flag:
+                    self._send_email(to_send_attachment_flag,email_sender,final_receivers,subject_field,email_entire_message,o_dicts_per_submitter_per_node,node_key)
 
-                    # Send the email with attachment file.
-                    self._emailer.send_message(msg)
-
-                    # Delete the temporary attached file.
-                    if os.path.isfile(attachment_filename):
-                        os.remove(attachment_filename) # Remove temporary file.
         return 1
 
     def run(self,
-            output_format='JSON', query_criterias=[], to_send_mail_flag=True, to_send_attachment_flag=True):
+            query_criterias=[], to_send_mail_flag=True, to_send_attachment_flag=True):
         """
         Function query the local database for latest records for pending state and check OSTI server all the records with criteria specified in query_criterias return the object either in JSON or XML.
         Once the query is returned every record will be checked for initial status and status returned from OSTI.
@@ -341,16 +307,16 @@ class DOICoreActionCheck(DOICoreAction):
         :return: o_check_result:
         """
 
-        logger.debug(f"to_send_mail_flag,output_format {to_send_mail_flag,output_format}")
+        logger.debug(f"to_send_mail_flag {to_send_mail_flag}")
         o_check_result = []
 
         # Get the list of latest rows in database with status = 'Pending'.
         if len(query_criterias) > 0: 
             # Use query_criterias if provided from user.
-            o_doi_list = self._list_obj.run(output_format=output_format,query_criterias=query_criterias)
+            o_doi_list = self._list_obj.run(query_criterias=query_criterias)
         else:
             # Get the list of latest rows in database with status = 'Pending' using the private self._query_criterias.
-            o_doi_list = self._list_obj.run(output_format=output_format,query_criterias=self._query_criterias)
+            o_doi_list = self._list_obj.run(query_criterias=self._query_criterias)
 
         # Convert from JSON into a list.
         pending_state_list = []
@@ -369,11 +335,6 @@ class DOICoreActionCheck(DOICoreAction):
             logger.debug(f"pending_record {pending_record}")
             doi_value = pending_record['doi']
             query_dict = {'doi':doi_value}
-            if 'start_update' in self._query_criterias:
-                query_dict['updated_after'] = self._query_criterias['start_update'] 
-            if 'end_update' in self._query_criterias:
-                query_dict['updated_before'] = self._query_criterias['end_update']
-
             o_response_dict = self._doi_web_client.webclient_query_doi(i_url,
                                                                        query_dict,
                                                                        i_username=self._config.get('OSTI', 'user'),
@@ -392,9 +353,10 @@ class DOICoreActionCheck(DOICoreAction):
             if len(result_as_list) > 0:
                 doi_updated_dict = self._process_one_query_result(pending_state_list,result_as_list[0],output_content='')
                 # Keep track of a list of DOIs updated in the database by adding two new fields to pending_record dict.
-                pending_record['initial_status'] = doi_updated_dict['initial_status'] 
-                pending_record['status']         = doi_updated_dict['status']    # This is now the new state of the previously 'Pending'
-                o_check_result.append(pending_record)
+                if 'initial_status' in doi_updated_dict and 'status' in doi_updated_dict:
+                    pending_record['initial_status'] = doi_updated_dict['initial_status'] 
+                    pending_record['status']         = doi_updated_dict['status']    # This is now the new state of the previously 'Pending'
+                    o_check_result.append(pending_record)
         # end for pending_record in pending_state_list:
 
         # If there are list of DOIs with status changed, process them.

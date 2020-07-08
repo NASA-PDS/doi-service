@@ -18,5 +18,5 @@ db_file = doi.db
 db_table = doi
 emailer_local_host = localhost
 emailer_port       = 25
-emailer_sender     = pds_operator_email
-emailer_receivers  = comma_separated_emails
+emailer_sender     = pdsen-doi-test@jpl.nasa.gov 
+emailer_receivers  = pdsen-doi-test@jpl.nasa.gov 

@@ -2,8 +2,6 @@ import datetime
 import unittest
 import os
 
-from types import SimpleNamespace
-
 from pds_doi_core.db.doi_database import DOIDataBase
 from pds_doi_core.actions.check import DOICoreActionCheck
 
@@ -51,11 +49,8 @@ class MyTestCase(unittest.TestCase):
     _database_obj.write_doi_info_to_database(lid, vid, transaction_key, doi, transaction_date, status,
                                              title, product_type, product_type_specific, submitter, discipline_node)
 
-
-    # We have to set all namespaces to None, except for format_output otherwise Python will attempt to access these fields and fail.
-    # _action = DOICoreActionCheck(arguments=None,db_name=db_name)  # This constructor does not work because unit test has no command line arguments.
-
-    _action = DOICoreActionCheck(SimpleNamespace(submitter_email=None,node_id=None,doi=None,format_output='JSON',start_update=None,end_update=None,lid=None,lidvid=None),db_name)
+    # Check for 'Pending' records
+    _action = DOICoreActionCheck(db_name)
 
     def test_1(self):
         logger.info("test making a query to database and update any status changed from 'Pending' to something else .  This test would only work if the authentication for OSTI has been set up.")
@@ -64,8 +59,8 @@ class MyTestCase(unittest.TestCase):
         # The parameter to_send_mail_flag is set to True by default if not specified.  We don't want to send out emails needlessly.
         # If desire to get the email, the parameter to_send_mail_flag can be set to True
         result_list = []
-        result_list = self._action.run(output_format='JSON', query_criterias=[], to_send_mail_flag=False) # Don't send email with this line.
-        #result_list = self._action.run(output_format='JSON', query_criterias=[], to_send_mail_flag=True) # Uncomment this line to get an email.
+        #result_list = self._action.run(query_criterias=[], to_send_mail_flag=False) # Don't send email with this line.
+        result_list = self._action.run(query_criterias=[], to_send_mail_flag=True) # Uncomment this line to get an email.
 
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
