@@ -59,8 +59,8 @@ class MyTestCase(unittest.TestCase):
         # The parameter to_send_mail_flag is set to True by default if not specified.  We don't want to send out emails needlessly.
         # If desire to get the email, the parameter to_send_mail_flag can be set to True
         result_list = []
-        #result_list = self._action.run(query_criterias=[], to_send_mail_flag=False) # Don't send email with this line.
-        result_list = self._action.run(query_criterias=[], to_send_mail_flag=True) # Uncomment this line to get an email.
+        result_list = self._action.run(query_criterias=[], to_send_mail_flag=False) # Don't send email with this line.
+        #result_list = self._action.run(query_criterias=[], to_send_mail_flag=True) # Uncomment this line to get an email.
 
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
