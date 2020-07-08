@@ -47,12 +47,11 @@ def main():
             print(o_doi_list)
 
         elif action_type == 'reserve':
-            reserve = DOICoreActionReserve(arguments=arguments)
+            reserve = DOICoreActionReserve()
             o_doi_label = reserve.run(submit_label_flag=True)
             # By default, submit_label_flag=True if not specified.
             # By default, write_to_file_flag=True if not specified.
             print(o_doi_label)
-
         else:
             logger.error(f"Action {action_type} is not supported yet.")
             exit(1)
