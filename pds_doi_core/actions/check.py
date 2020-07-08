@@ -34,14 +34,7 @@ class DOICoreActionCheck(DOICoreAction):
         self._doi_web_client = DOIOstiWebClient()
         self._emailer = Emailer()
 
-        self._set_criterias()            # Set any search query criteria if there are any.
-
         self._list_obj = DOICoreActionList(db_name=db_name)
-
-    def _set_criterias(self):
-        self._query_criterias = {}
-        # Add the 'Pending' status to get only rows with 'Pending' status only.
-        self._query_criterias['status'] = 'Pending'
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -311,12 +304,9 @@ class DOICoreActionCheck(DOICoreAction):
         o_check_result = []
 
         # Get the list of latest rows in database with status = 'Pending'.
-        if len(query_criterias) > 0: 
-            # Use query_criterias if provided from user.
-            o_doi_list = self._list_obj.run(query_criterias=query_criterias)
-        else:
-            # Get the list of latest rows in database with status = 'Pending' using the private self._query_criterias.
-            o_doi_list = self._list_obj.run(query_criterias=self._query_criterias)
+        # Use query_criterias if provided from user.
+        self._list_obj.set_criterias(status='Pending')
+        o_doi_list = self._list_obj.run()
 
         # Convert from JSON into a list.
         pending_state_list = []
@@ -324,7 +314,6 @@ class DOICoreActionCheck(DOICoreAction):
             pending_state_list = json.loads(o_doi_list)
 
         # Variable pending_state_list is now list of records with 'Pending status.
-
         logger.debug(f"pending_state_list {pending_state_list,len(pending_state_list)}")
 
         # For every doi_value in doi_list, make a query to the server for the status and update the state in the database.

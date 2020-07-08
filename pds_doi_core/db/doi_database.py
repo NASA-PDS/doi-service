@@ -376,7 +376,7 @@ class DOIDataBase:
 
     @staticmethod
     def _get_query_criteria_status(v):
-        return ' AND status = :status', {'status':v}
+        return DOIDataBase._get_simple_in_criteria(v, 'status')
 
     @staticmethod
     def _get_query_criteria_start_update(v):

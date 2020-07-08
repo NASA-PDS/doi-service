@@ -29,57 +29,54 @@ class DOICoreActionList(DOICoreAction):
             self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
-        self._parse_arguments_from_cmd() # Parse arguments from command line if there are any.
-        self._set_criterias()            # Set any search query criteria if there are any.
-
-    def _parse_arguments_from_cmd(self):
-        parser = DOICoreAction.create_cmd_parser()
-        self._arguments = parser.parse_args()
-        self._submitter       = None
-        self._node_id         = None 
-        self._input_doi_token = None
-        self._output_format = 'JSON' # Set default format of output
-        self._start_update  = None
-        self._end_update    = None
-        self._lid           = None
-        self._lidvid        = None
-
-        if self._arguments:
-            if hasattr(self._arguments, 'submitter_email'):
-                self._submitter       = self._arguments.submitter_email
-            if hasattr(self._arguments, 'node_id'):
-                self._node_id         = self._arguments.node_id
-            if hasattr(self._arguments, 'doi'):
-                self._input_doi_token = self._arguments.doi
-            if hasattr(self._arguments, 'format_output'):
-                self._output_format = self._arguments.format_output
-            if hasattr(self._arguments, 'start_update'):
-                self._start_update  = self._arguments.start_update
-            if hasattr(self._arguments, '_end_update'):
-                self._end_update    = self._arguments.end_update
-            if hasattr(self._arguments, 'lid'):
-                self._lid           = self._arguments.lid
-            if hasattr(self._arguments, 'lidvid'):
-                self._lidvid        = self._arguments.lidvid
-
-    def _set_criterias(self):
-
         self._query_criterias = {}
+        self._output_format = 'JSON'
 
-        if self._input_doi_token:
-            self._query_criterias['doi'] = self._input_doi_token.split(',')
-        if self._lid:
-            self._query_criterias['lid'] = self._lid.split(',')
-        if self._lidvid:
-            self._query_criterias['lidvid'] = self._lidvid.split(',')
-        if self._submitter:
-            self._query_criterias['submitter'] = self._submitter.split(',')
-        if self._node_id:
-            self._query_criterias['node'] = self._node_id.lstrip().rstrip().split(',')
-        if self._start_update:
-            self._query_criterias['start_update'] = datetime.datetime.strptime(self._start_update,'%Y-%m-%dT%H:%M:%S.%f');
-        if self._end_update:
-            self._query_criterias['end_update']   = datetime.datetime.strptime(self._end_update,'%Y-%m-%dT%H:%M:%S.%f');
+    def parse_arguments_from_cmd(self, arguments):
+        criteria = {}
+        for k,v in arguments._get_kwargs():
+            if k != 'action':
+                criteria[k] = v
+
+        self.set_criterias(**criteria)
+
+
+    def set_criterias(self,
+                       format_output='JSON',
+                       doi=None,
+                       lid=None,
+                       lidvid=None,
+                       node_id=None,
+                       status=None,
+                       start_update=None,
+                       end_update=None,
+                       submitter_email=None):
+
+        self._output_format = format_output
+
+        if doi:
+            self._query_criterias['doi'] = doi.split(',')
+
+        if lid:
+            self._query_criterias['lid'] = lid.split(',')
+
+        if lidvid:
+            self._query_criterias['lidvid'] = lidvid.split(',')
+
+        if submitter_email:
+            self._query_criterias['submitter'] = submitter_email.split(',')
+
+        if node_id:
+            self._query_criterias['node'] = node_id.lstrip().rstrip().split(',')
+
+        if status:
+            self._query_criterias['status'] = status.lstrip().rstrip().split(',')
+
+        if start_update:
+            self._query_criterias['start_update'] = datetime.datetime.strptime(start_update,'%Y-%m-%dT%H:%M:%S.%f');
+
+        if end_update:
+            self._query_criterias['end_update']   = datetime.datetime.strptime(end_update,'%Y-%m-%dT%H:%M:%S.%f');
 
 
     @classmethod
@@ -119,7 +116,7 @@ class DOICoreActionList(DOICoreAction):
                                    required=False,
                                    metavar='"my.email@node.gov"')
 
-    def run(self,query_criterias=[]):
+    def run(self):
         """
         Function list all the latest records in the named database and return the object either in JSON or XML.
         :param submitter_email:
@@ -137,16 +134,9 @@ class DOICoreActionList(DOICoreAction):
                 except UnknownNodeException as e:
                     raise e
 
-        # No need to check contributor since the short names will be used in data base query.
+        columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
 
-        # Perform the database query and convert a dict object to JSON for returning.
-        # Use query_criterias if user passed in something to query.
-        if len(query_criterias) > 0:
-            columns, rows = self._database_obj.select_latest_rows(query_criterias)
-        else:
-            columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
         # generate output
-
         if self._output_format == 'JSON':
             result_json = []
             for row in rows:
@@ -154,7 +144,6 @@ class DOICoreActionList(DOICoreAction):
             o_query_result = json.dumps(result_json)
             logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
         else:
-            #logger.error(f"Output format type {output_format} not supported yet")
             logger.error(f"Output format type {self._output_format} not supported yet")
             exit(1)
         return o_query_result

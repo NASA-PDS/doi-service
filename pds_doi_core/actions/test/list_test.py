@@ -11,6 +11,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_1(self):
         logger.info("test making a query to database")
+        self._action.set_criterias(node_id='img')
         result_list = self._action.run()
         logger.info(result_list)
 

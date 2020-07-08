@@ -42,6 +42,7 @@ def main():
 
         elif action_type == 'list':
             list_action = DOICoreActionList() # The token 'list' is a reserved word so we are using list_action instead.
+            list_action.parse_arguments_from_cmd(arguments)
             # The 'list' action does not take node_id as a parameter since it is part of the query_criterias dictionary as a list.
             o_doi_list = list_action.run()
             print(o_doi_list)
