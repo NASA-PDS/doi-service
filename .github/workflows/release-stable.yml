@@ -101,7 +101,8 @@ jobs:
       uses: pypa/gh-action-pypi-publish@master
       with:
         user: ${{ secrets.pypi_username }}
-        password: ${{ secrets.pypi_password }}    # the changelog will be available on https://nasa-pds.github.io/<your repo>/CHANGELOG
+        password: ${{ secrets.pypi_password }}
+    # the changelog will be available on https://nasa-pds.github.io/<your repo>/pdesen-corral/CHANGELOG
     - uses: actions/checkout@v2
       with:
         ref: gh-pages
