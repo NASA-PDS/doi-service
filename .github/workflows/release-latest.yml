@@ -91,6 +91,6 @@ jobs:
     - name: Ping pdsen-corral
       run: |
         pip install pds-github-util
-        git-ping --repo nasa-pds/pdsen-corral --token ${{ secrets.ADMIN_GITHUB_TOKEN }} --branch master --message 'test harvest has been upgrade to ${{ github.ref }}'
+        git-ping --repo nasa-pds/pdsen-corral --token ${{ secrets.ADMIN_GITHUB_TOKEN }} --branch master --message 'ds-doi-service has been upgrade to ${{ github.ref }}'
 
 
