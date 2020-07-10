@@ -88,3 +88,9 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
+    - name: Ping pdsen-corral
+        run: |
+          pip install pds-github-util
+          git-ping --repo nasa-pds/pdsen-corral --token ${{ secrets.ADMIN_GITHUB_TOKEN }} --branch master --message 'test harvest has been upgrade to ${{ github.ref }}'
+
+
