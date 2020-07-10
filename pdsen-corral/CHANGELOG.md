@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/NASA-PDS/pds-doi-service/tree/HEAD)
+## [0.0.0](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.0) (2020-07-10)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...HEAD)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.1-dev...0.0.0)
 
 **Improvements:**
 
@@ -13,6 +13,17 @@
 - Re-organize and clean-up code to meet coding standards [\#28](https://github.com/NASA-PDS/pds-doi-service/issues/28)
 - Implement initial DOI database and management [\#26](https://github.com/NASA-PDS/pds-doi-service/issues/26)
 - Release DOI capability [\#22](https://github.com/NASA-PDS/pds-doi-service/issues/22)
+
+**Closed issues:**
+
+- document requirements and tests [\#3](https://github.com/NASA-PDS/pds-doi-service/issues/3)
+
+## [0.0.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1-dev) (2020-05-08)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...0.0.1-dev)
+
+**Improvements:**
+
 - Reserve a DOI capability [\#21](https://github.com/NASA-PDS/pds-doi-service/issues/21)
 - Develop draft PDS Policy for Assigning DOIs [\#20](https://github.com/NASA-PDS/pds-doi-service/issues/20)
 - Design REST API and JSON response [\#19](https://github.com/NASA-PDS/pds-doi-service/issues/19)
@@ -20,7 +31,6 @@
 
 **Closed issues:**
 
-- document requirements and tests [\#3](https://github.com/NASA-PDS/pds-doi-service/issues/3)
 - Develop initial requirements and design for DOI Service [\#1](https://github.com/NASA-PDS/pds-doi-service/issues/1)
 
 
