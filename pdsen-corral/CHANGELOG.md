@@ -1,8 +1,12 @@
 # Changelog
 
-## [Unreleased](https://github.com/NASA-PDS/pds-doi-service/tree/HEAD)
+## [0.0.1](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1) (2020-07-10)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...HEAD)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.0...0.0.1)
+
+## [0.0.0](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.0) (2020-07-10)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...0.0.0)
 
 **Improvements:**
 
