@@ -1,14 +1,17 @@
 # Changelog
 
-## [0.0.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1-dev) (2020-06-24)
+## [0.0.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1-dev) (2020-07-10)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...0.0.1-dev)
 
 **Improvements:**
 
+- Develop Pending DOI Handler component for iteratively querying OSTI for DOI status until status change [\#33](https://github.com/NASA-PDS/pds-doi-service/issues/33)
+- Develop Status / Query capability for querying database and return JSON [\#32](https://github.com/NASA-PDS/pds-doi-service/issues/32)
 - Develop maintain internal database of DOI requests [\#31](https://github.com/NASA-PDS/pds-doi-service/issues/31)
 - Develop ability to maintain a transaction log database [\#29](https://github.com/NASA-PDS/pds-doi-service/issues/29)
 - Re-organize and clean-up code to meet coding standards [\#28](https://github.com/NASA-PDS/pds-doi-service/issues/28)
+- Implement initial DOI database and management [\#26](https://github.com/NASA-PDS/pds-doi-service/issues/26)
 - Release DOI capability [\#22](https://github.com/NASA-PDS/pds-doi-service/issues/22)
 - Reserve a DOI capability [\#21](https://github.com/NASA-PDS/pds-doi-service/issues/21)
 - Develop draft PDS Policy for Assigning DOIs [\#20](https://github.com/NASA-PDS/pds-doi-service/issues/20)
