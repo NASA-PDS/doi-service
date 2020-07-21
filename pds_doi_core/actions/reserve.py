@@ -1,6 +1,5 @@
 import os
 
-
 from pds_doi_core.actions.action import DOICoreAction
 from pds_doi_core.input.exeptions import InputFormatException, UnknownNodeException
 from pds_doi_core.util.general_util import get_logger
@@ -12,24 +11,19 @@ class DOICoreActionReserve(DOICoreAction):
     _name = 'reserve'
     description = ' % pds-doi-cmd reserve -n img -s Qui.T.Chau@jpl.nasa.gov -i input/DOI_Reserved_GEO_200318.csv\n'
 
-    def __init__(self):
-        super().__init__()
-        self._parse_arguments_from_cmd() # Parse arguments from command line if there are any.
+    def parse_arguments_from_cmd(self, arguments):
 
-    def _parse_arguments_from_cmd(self):
-        parser = DOICoreAction.create_cmd_parser()
-        self._arguments = parser.parse_args()
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
 
-        if self._arguments:
-            if hasattr(self._arguments, 'input'):
-                self._input_location = self._arguments.input
-            if hasattr(self._arguments, 'node_id'):
-                self._node_id = self._arguments.node_id
-            if hasattr(self._arguments, 'submitter_email'):
-                self._submitter       = self._arguments.submitter_email
+        if arguments:
+            if hasattr(arguments, 'input'):
+                self._input_location = arguments.input
+            if hasattr(arguments, 'node_id'):
+                self._node_id = arguments.node_id
+            if hasattr(arguments, 'submitter_email'):
+                self._submitter       = arguments.submitter_email
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -148,9 +142,16 @@ class DOICoreActionReserve(DOICoreAction):
                 i_username=self._config.get('OSTI', 'user'),
                 i_password=self._config.get('OSTI', 'password'))
 
+            logger.debug(f"response [{response}")
+            logger.debug(f"doi_fields {doi_fields},{len(doi_fields)}")
+
+            # Due to how the response list of dictionary is structure, use the doi_index to get access to 'status' and 'doi' fields
+
+            doi_index = 0
             for doi_field in doi_fields:
-                doi_field['status'] = response[doi_field['related_identifier']]['status'].lower()
-                doi_field['doi'] = response[doi_field['related_identifier']]['doi']
+                doi_field['status'] = response[doi_index]['status'].lower()
+                doi_field['doi']    = response[doi_index]['doi']
+                doi_index += 1
 
             logger.debug(f"reserve_response {output_str}")
             logger.debug(f"type(reserve_response) {type(output_str)}")

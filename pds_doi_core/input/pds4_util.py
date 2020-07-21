@@ -70,6 +70,10 @@ class DOIPDS4LabelUtil:
         return doi_field_value_dict
 
     def get_publication_date(self, pds4_fields):
+        print("get_publication_date:pds4_fields",pds4_fields)
+        print('get_publication_date:publication_year' in pds4_fields.keys())
+        print('get_publication_date:modification_date' in pds4_fields.keys())
+        #exit(0)
         if 'publication_year' in pds4_fields.keys():
             return datetime.strptime(pds4_fields['publication_year'], '%Y')
         elif 'modification_date' in pds4_fields.keys():
@@ -89,29 +93,31 @@ class DOIPDS4LabelUtil:
 
     def get_names(self, name_list,
                   first_last_name_order=[0, 1],
-                  first_last_name_separator=' '):
+                  first_last_name_separator=[' ', '.']):
         persons = []
         logger.debug(f"name_list {name_list}")
         logger.debug(f"first_last_name_order {first_last_name_order}")
 
         for full_name in name_list:
             logger.debug(f"full_name {full_name}")
-            split_full_name = full_name.strip().split(first_last_name_separator)
+            split_full_name = []
+            separator_index = 0
+            while len(split_full_name)<2 and separator_index<len(first_last_name_separator):
+                split_full_name = full_name.strip().split(first_last_name_separator[separator_index])
+                separator_index += 1
+
             if len(split_full_name) == 2:
                 persons.append({'first_name': split_full_name[first_last_name_order[0]].strip(),
                                 'last_name': split_full_name[first_last_name_order[1]].strip()})
             else:
                 logger.warning(f"author first name not found for [{full_name}]")
-                # Since we cannot determine the first name and last name from splitting, we assume the first name is blank
-                # and last_name as full_name.
                 persons.append({'first_name': '',
-                                'last_name': full_name.lstrip().rstrip()})
-                logger.debug(f"persons {persons}")
-                
+                                'last_name': full_name.strip()})
+
         return persons
 
     def get_author_names(self, name_list):
-        return self.get_names(name_list, first_last_name_order=[0, 1], first_last_name_separator=' ')
+        return self.get_names(name_list, first_last_name_order=[0, 1], first_last_name_separator=[' ', '.'])
 
     def get_editor_names(self, name_list):
         return self.get_names(name_list, first_last_name_order=[1, 0], first_last_name_separator=',')

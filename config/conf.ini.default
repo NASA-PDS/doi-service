@@ -2,10 +2,14 @@
 url = https://www.osti.gov/iad2test/api/records
 user = username
 password = secret
+release_input_schematron = config/osti_release_input_schematron.xml
 
 [PDS4_DICTIONARY]
 url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
 pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
+
+[LANDING_PAGES]
+url = https://pds.jpl.nasa.gov/ds-view/pds/viewCollection.jsp
 
 [OTHER]
 doi_publisher = NASA Planetary Data System

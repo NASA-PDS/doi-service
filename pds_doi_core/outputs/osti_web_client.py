@@ -61,23 +61,12 @@ class DOIOstiWebClient:
                                  data=payload,
                                  headers=headers)
 
-        doc_str = response.text
-        doc = etree.fromstring(doc_str.encode())
+        # Re-use the parse function response_get_parse_osti_xml() from DOIOstiWebParser class instead of duplicating code.
+        o_status = self._web_parser.response_get_parse_osti_xml(response.text)
 
-        o_status = {}
-        # Get status a returned by OSTI
-        my_root = doc.getroottree()
+        logger.debug(f"o_status {o_status}")
 
-        n_records = 0
-        for record in my_root.xpath('record'):
-            n_records += 1
-            result = {'doi': record.xpath('doi')[0].text,
-                      'status': record.get('status')}
-            o_status[record.xpath('related_identifiers/related_identifier/identifier_value')[0].text] = result
-
-        logger.info(f"{n_records} DOI records submitted")
-
-        return o_status, doc_str
+        return o_status, response.text
 
     def webclient_submit_doi(self, payload_filename, i_username=None, i_password=None):
         """Function submit the content external file as a DOI to server."""

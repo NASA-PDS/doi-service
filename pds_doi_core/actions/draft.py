@@ -1,34 +1,28 @@
 import requests
 from lxml import etree
-import argparse
 
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.references.contributors import DOIContributorUtil
 
 
+
 class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     description = ' % pds-doi-cmd draft -n img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
 
-    def __init__(self):
-        super().__init__()
-        self._parse_arguments_from_cmd() # Parse arguments from command line if there are any.
-
-    def _parse_arguments_from_cmd(self):
-        parser = DOICoreAction.create_cmd_parser()
-        self._arguments = parser.parse_args()
+    def parse_arguments_from_cmd(self,arguments):
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
 
-        if self._arguments:
-            if hasattr(self._arguments, 'input'):
-                self._input_location = self._arguments.input
-            if hasattr(self._arguments, 'node_id'):
-                self._node_id = self._arguments.node_id
-            if hasattr(self._arguments, 'submitter_email'):
-                self._submitter       = self._arguments.submitter_email
+        if arguments:
+            if hasattr(arguments, 'input'):
+                self._input_location = arguments.input
+            if hasattr(arguments, 'node_id'):
+                self._node_id = arguments.node_id
+            if hasattr(arguments, 'submitter_email'):
+                self._submitter       = arguments.submitter_email
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -100,6 +94,7 @@ class DOICoreActionDraft(DOICoreAction):
         doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
         doi_fields['contributor'] = contributor_value
 
+
         # generate output
         o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
 
@@ -114,3 +109,4 @@ class DOICoreActionDraft(DOICoreAction):
         transaction_obj.log()
 
         return o_doi_label
+

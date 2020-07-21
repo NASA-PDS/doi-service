@@ -1,0 +1,133 @@
+<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+    <pattern>
+        <title>OSTI input document schema for 'release' action.</title>
+        <rule context="records">
+            <assert test="count(*) >= 1 and count(record) &gt;= 1">
+            Element records should have at least one 'record' tag.
+            </assert>
+        </rule>
+        <!-- Check for multiple tags in records/record
+           1. Required  'site_url'
+           2. Optional product_type, product_type_specific, doi and should only have 0 or 1
+        -->
+        <rule context="records/record">
+            <!-- and count(id) = 1 -->
+            <assert test="count(*) >= 1 and count(site_url) = 1">
+            Element record should have one 'site_url' tag.
+            </assert>
+            <assert test="count(*) >= 1 and count(product_type) &lt;= 1">
+            Element record if contains 'product_type' should have one 'product_type' tag only.
+            </assert>
+            <assert test="count(*) >= 1 and count(product_type_specific) &lt;= 1">
+            Element record if contains 'product_type_specific' should have one 'product_type_specific' tag only.
+            </assert>
+            <assert test="count(*) >= 1 and count(doi) &lt;= 1">
+            Element record if contains 'doi' should have one 'doi' tag only.
+            </assert>
+        </rule>
+        <rule context="title">
+            <assert test="text()">
+            If exist, title field may not be empty.
+            </assert>
+        </rule>
+        <rule context="id">
+            <assert test="text()">
+            If exist, id field may not be empty.
+            </assert>
+            <assert test="string-length(normalize-space(.)) = 5">
+                Field 'id' must be exactly 5 characters long.
+            </assert>
+            <assert test="number(.)">
+                Field 'id' must a number and not letters.
+            </assert>
+        </rule>
+        <rule context="doi">
+            <assert test="text()">
+            If exist, doi field may not be empty.
+            </assert>
+<!-- 10.17189/25901 
+     12345678901234567
+-->
+            <assert test="string-length(normalize-space(.)) = 14">
+                Field 'doi' must be exactly 14 characters long.
+            </assert>
+            <assert test="number(substring(normalize-space(.),1,2))">
+                Field 'doi' must has start with 2 digits.
+            </assert>
+            <assert test="substring(normalize-space(.),3,1) = '.'">
+                Field 'doi' must has the dot following 2 digits.
+            </assert>
+            <assert test="number(substring(normalize-space(.),4,5))">
+                Field 'doi' must has with 5 digits follow the dot '.' follow 2 digits.
+            </assert>
+            <assert test="substring(normalize-space(.),9,1) = '/'">
+                Field 'doi' must has the slash following 5 digits.
+            </assert>
+            <assert test="number(substring(normalize-space(.),10,5))">
+                Field 'doi' must has with 5 digits follow the slash '/'.
+            </assert>
+        </rule>
+        <rule context="site_url">
+            <assert test="text()">
+            If exist, site_url field may not be empty.
+            </assert>
+        </rule>
+        <rule context="publication_date">
+            <assert test="text()">
+            If exist, publication_date field may not be empty.
+            </assert>
+        </rule>
+        <rule context="product_type">
+            <let name="product_type_value" value="text()"/>
+            <assert test="text()">
+            If exist, product_type field may not be empty.
+            </assert>
+            <assert test="$product_type_value = 'Bundle' or $product_type_value = 'Collection' or $product_type_value = 'Dataset'">
+            If exist, product_type field should be either 'Bundle' or 'Collection' or 'Dataset'.
+            </assert>
+        </rule>
+        <rule context="record/product_type">
+            <assert test="count(*) = 1">
+            Element record should have one 'product_type' tag only.
+            </assert>
+        </rule>
+        <rule context="product_type_specific">
+            <assert test="text()">
+            If exist, product_type_specific field may not be empty.
+            </assert>
+        </rule>
+        <rule context="authors">
+            <assert test="text()">
+            If exist, authors field may not be empty.
+            </assert>
+            <assert test="count(*) >= 1 and count(author) >= 1">The element authors should have 'author'.</assert>
+        </rule>
+        <rule context="authors/author">
+            <assert test="text()">
+            If exist, authors field may not be empty.
+            </assert>
+            <assert test="count(*) >= 1 and count(first_name) = 1 and count(last_name) = 1">The element author should have 'first_name' and 'last_name' tags.</assert>
+        </rule>
+        <rule context="authors/author/first_name">
+            <assert test="string-length(normalize-space(.)) &gt;= 1">
+            If exist, authors field containing 'first_name' must not be empty.
+            </assert>
+        </rule>
+        <rule context="authors/author/last_name">
+            <assert test="string-length(normalize-space(.)) &gt;= 1">
+            If exist, authors field containing 'last_name' must not be empty.
+            </assert>
+        </rule>
+        <rule context="related_identifiers">
+            <assert test="count(*) >= 1 and count(related_identifier) = 1">The element related_identifiers should have 'related_identifier' tag.</assert>
+        </rule>
+        <rule context="related_identifiers/related_identifier">
+            <assert test="count(*) >= 1 and count(identifier_type) = 1 and count(identifier_value) = 1 and count(relation_type) = 1">The element related_identifiers should have the 'identifier_type', 'identifier_value', and 'relation_type' tags.</assert>
+        </rule>
+        <rule context="related_identifiers/related_identifier/identifier_value">
+            <assert test="string-length(normalize-space(.)) &gt;= 1">
+            If exist, related_identifiers/related_identifier field containing 'identifier_value' must not be empty.
+            </assert>
+        </rule>
+    </pattern>
+</schema>

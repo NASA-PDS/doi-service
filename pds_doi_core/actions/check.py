@@ -11,18 +11,14 @@ import datetime
 import json
 import os
 import pystache
-
 from copy import deepcopy
 from datetime import date
-from types import SimpleNamespace
 
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.actions.list import DOICoreActionList
-from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
-from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.emailer import Emailer
-from pds_doi_core.references.contributors import DOIContributorUtil
+
 
 class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
@@ -35,6 +31,7 @@ class DOICoreActionCheck(DOICoreAction):
         self._emailer = Emailer()
 
         self._list_obj = DOICoreActionList(db_name=db_name)
+
 
     @classmethod
     def add_to_subparser(cls, subparsers):

@@ -13,8 +13,7 @@ import json
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.db.doi_database import DOIDataBase
 from pds_doi_core.input.exeptions import UnknownNodeException
-from pds_doi_core.util.config_parser import DOIConfigUtil
-from pds_doi_core.references.contributors import DOIContributorUtil
+
 
 class DOICoreActionList(DOICoreAction):
     _name = 'list'
@@ -39,7 +38,6 @@ class DOICoreActionList(DOICoreAction):
                 criteria[k] = v
 
         self.set_criterias(**criteria)
-
 
     def set_criterias(self,
                        format_output='JSON',
