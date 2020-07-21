@@ -148,9 +148,16 @@ class DOICoreActionReserve(DOICoreAction):
                 i_username=self._config.get('OSTI', 'user'),
                 i_password=self._config.get('OSTI', 'password'))
 
+            logger.debug(f"response [{response}")
+            logger.debug(f"doi_fields {doi_fields},{len(doi_fields)}")
+
+            # Due to how the response list of dictionary is structure, use the doi_index to get access to 'status' and 'doi' fields
+
+            doi_index = 0
             for doi_field in doi_fields:
-                doi_field['status'] = response[doi_field['related_identifier']]['status'].lower()
-                doi_field['doi'] = response[doi_field['related_identifier']]['doi']
+                doi_field['status'] = response[doi_index]['status'].lower()
+                doi_field['doi']    = response[doi_index]['doi']
+                doi_index += 1
 
             logger.debug(f"reserve_response {output_str}")
             logger.debug(f"type(reserve_response) {type(output_str)}")

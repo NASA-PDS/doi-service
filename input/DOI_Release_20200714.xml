@@ -1,0 +1,16 @@
+<records>
+    <record> 
+        <id>22831</id>
+        <site_url>http://mysite.example.com/link/to/my-dataset-id-22831.html</site_url>
+    </record>
+    <record> 
+        <id>22832</id>
+        <site_url>http://mysite.example.com/link/to/my-dataset-id-22832.html</site_url>
+    </record>
+    <record> 
+        <id>22833</id>
+        <site_url>http://mysite.example.com/link/to/my-dataset-id-22833.html</site_url>
+    </record>
+</records>
+
+

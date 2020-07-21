@@ -58,6 +58,46 @@ class DOIOstiWebParser:
 
         return o_response_dict
 
+    def response_get_parse_osti_xml_multiple_records(self,osti_response_text):
+        """Function parse a response from a GET (query) or a PUT to the OSTI server (in XML query format) and return a list of dictionaries.
+           Specific fields are extracted from input.  Not all fields in XML are used."""
+
+        o_response_dicts = []
+
+        doc     = etree.fromstring(osti_response_text)
+        my_root = doc.getroottree()
+
+        # Trim down input to just fields we want.
+        element_record = 0
+        for element in my_root.iter():
+            if element.tag == 'record':
+                my_record = my_root.xpath(element.tag)[0]
+
+                response_dict = {}  # This dictionary will be added to o_response_dicts when all fields have been extracted below.
+
+                response_dict['status']              = my_record.attrib['status']
+                response_dict['title']               = my_root.xpath('record/title')[element_record].text
+                response_dict['id']                  = my_root.xpath('record/id')   [element_record].text
+                response_dict['doi']                 = my_root.xpath('record/doi')  [element_record].text
+                response_dict['date_record_added']   = my_root.xpath('record/date_record_added')      [element_record].text
+                response_dict['date_record_updated'] = my_root.xpath('record/date_record_updated')    [element_record].text
+                response_dict['publication_date']      = my_root.xpath('record/publication_date')     [element_record].text
+                response_dict['product_type']          = my_root.xpath('record/product_type')         [element_record].text
+                response_dict['product_type_specific'] = my_root.xpath('record/product_type_specific')[element_record].text
+    
+                # Not all responses have the 'doi_message' field.
+                if len(my_root.xpath('record/doi_message')) > 0:
+                    response_dict['doi_message']     = my_root.xpath('record/doi_message')[element_record].text
+
+                if len(my_root.xpath('record/related_identifiers/related_identifier/identifier_value')) > 0: 
+                    response_dict['related_identifier']  = my_root.xpath('record/related_identifiers/related_identifier/identifier_value')[element_record].text
+
+                o_response_dicts.append(response_dict)
+
+                element_record += 1
+
+        return o_response_dicts
+
     def response_get_parse_osti_json(self,osti_response,query_dict=None):
         """Function parse a response from a query to the OSTI server (in JSON format) and return a JSON object.
            Specific fields are extracted from input.  Not all fields in JSON are used."""

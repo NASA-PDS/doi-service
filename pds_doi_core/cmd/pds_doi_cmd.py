@@ -16,6 +16,7 @@ from pds_doi_core.actions.check import DOICoreActionCheck
 from pds_doi_core.actions.reserve import DOICoreActionReserve
 from pds_doi_core.actions.draft import DOICoreActionDraft
 from pds_doi_core.actions.list import DOICoreActionList
+from pds_doi_core.actions.release import DOICoreActionRelease
 
 # Get the common logger and set the level for this file.
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
@@ -45,6 +46,13 @@ def main():
             list_action.parse_arguments_from_cmd(arguments)
             # The 'list' action does not take node_id as a parameter since it is part of the query_criterias dictionary as a list.
             o_doi_list = list_action.run()
+            print(o_doi_list)
+
+        elif action_type == 'release':
+            print("pds_doi_cmd:afor:release init call")
+            db_name = 'doi_temp.db'
+            release = DOICoreActionRelease(db_name=db_name)
+            o_doi_list = release.run()
             print(o_doi_list)
 
         elif action_type == 'reserve':

@@ -1,0 +1,94 @@
+<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+    <pattern>
+        <title>OSTI input document schema for 'release' action.</title>
+        <rule context="records">
+            <assert test="count(*) >= 1 and count(record) &gt;= 1">
+            Element records should have at least one 'record' tag.
+            </assert>
+        </rule>
+        <!-- Check for multiple tags in records/record
+           1. Required 'id' and 'site_url'
+           2. Optional product_type, product_type_specific, doi and should only have 0 or 1
+        -->
+        <rule context="records/record">
+            <assert test="count(*) >= 1 and count(id) = 1 and count(site_url) = 1">
+            Element record should have one 'id' and one 'site_url' tag.
+            </assert>
+            <assert test="count(*) >= 1 and count(product_type) &lt;= 1">
+            Element record if contains 'product_type' should have one 'product_type' tag only.
+            </assert>
+            <assert test="count(*) >= 1 and count(product_type_specific) &lt;= 1">
+            Element record if contains 'product_type_specific' should have one 'product_type_specific' tag only.
+            </assert>
+            <assert test="count(*) >= 1 and count(doi) &lt;= 1">
+            Element record if contains 'doi' should have one 'doi' tag only.
+            </assert>
+        </rule>
+        <rule context="title">
+            <assert test="text()">
+            If exist, title field may not be empty.
+            </assert>
+        </rule>
+        <rule context="id">
+            <assert test="text()">
+            If exist, id field may not be empty.
+            </assert>
+        </rule>
+        <rule context="doi">
+            <assert test="text()">
+            If exist, doi field may not be empty.
+            </assert>
+            <!--assert test="count(*) = 1">
+            Element record should have one 'doi' tag only #0002.
+            </assert-->
+        </rule>
+        <rule context="site_url">
+            <assert test="text()">
+            If exist, site_url field may not be empty.
+            </assert>
+        </rule>
+        <rule context="publication_date">
+            <assert test="text()">
+            If exist, publication_date field may not be empty.
+            </assert>
+        </rule>
+        <rule context="product_type">
+            <let name="product_type_values" value="text()"/>
+            <assert test="text()">
+            If exist, product_type field may not be empty.
+            </assert>
+            <assert test="$product_type_values = 'Bundle' or $product_type_values = 'Collection'">
+            If exist, product_type field should be either 'Bundle' or 'Collection'.
+            </assert>
+        </rule>
+        <rule context="record/product_type">
+            <assert test="count(*) = 1">
+            Element record should have one 'product_type' tag only #0045.
+            </assert>
+        </rule>
+        <rule context="product_type_specific">
+            <assert test="text()">
+            If exist, product_type_specific field may not be empty.
+            </assert>
+        </rule>
+        <rule context="authors">
+            <assert test="text()">
+            If exist, authors field may not be empty.
+            </assert>
+            <assert test="count(*) = 1 and count(author) >= 1">The element authors should have 'author'.</assert>
+        </rule>
+        <rule context="authors/author">
+            <assert test="text()">
+            If exist, authors field may not be empty.
+            </assert>
+            <assert test="count(*) >= 1 and count(first_name) = 1 and count(last_name) = 1">The element author should have 'first_name' and 'last_name' tags.</assert>
+        </rule>
+
+        <rule context="related_identifiers">
+            <assert test="count(*) >= 1 and count(related_identifier) = 1">The element related_identifiers should have 'related_identifier' tag.</assert>
+        </rule>
+        <rule context="related_identifiers/related_identifier">
+            <assert test="count(*) >= 1 and count(identifier_type) = 1 and count(identifier_value) = 1 and count(relation_type) = 1">The element related_identifiers should have the 'identifier_type', 'identifier_value', and 'relation_type' tags.</assert>
+        </rule>
+    </pattern>
+</schema>
