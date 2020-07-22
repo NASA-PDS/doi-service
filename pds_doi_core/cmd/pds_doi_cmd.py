@@ -50,8 +50,7 @@ def main():
 
         elif action_type == 'release':
             print("pds_doi_cmd:afor:release init call")
-            db_name = 'doi_temp.db'
-            release = DOICoreActionRelease(db_name=db_name)
+            release = DOICoreActionRelease()
             o_doi_list = release.run()
             print(o_doi_list)
 
