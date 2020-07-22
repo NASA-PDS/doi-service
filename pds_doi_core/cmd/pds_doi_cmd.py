@@ -49,7 +49,6 @@ def main():
             print(o_doi_list)
 
         elif action_type == 'release':
-            print("pds_doi_cmd:afor:release init call")
             release = DOICoreActionRelease()
             o_doi_list = release.run()
             print(o_doi_list)
