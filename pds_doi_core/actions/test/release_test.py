@@ -17,7 +17,6 @@ class MyTestCase(unittest.TestCase):
 
     db_name = 'doi_temp.db'
     logger.info("Creating test artifact database file {self.db_name}")
-    _database_obj = DOIDataBase('doi_temp.db')
 
     # Release some DOIs.
     _action = DOICoreActionRelease(db_name=db_name)
@@ -25,7 +24,7 @@ class MyTestCase(unittest.TestCase):
     def test_1(self):
         logger.info("test release some DOIs.  This test would only work if the authentication for OSTI has been set up and DOIs exist.")
         result_list = []
-        result_list = self._action.run(input='input/DOI_Release_20200714.xml',node='img',submitter='Qui.T.Chau@jpl.nasa.gov')
+        result_list = self._action.run(input='input/DOI_Release_20200723.xml',node='img',submitter='Qui.T.Chau@jpl.nasa.gov')
 
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)

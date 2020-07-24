@@ -61,34 +61,12 @@ class DOIOstiWebClient:
                                  data=payload,
                                  headers=headers)
 
-        doc_str = response.text
-        doc = etree.fromstring(doc_str.encode())
+        # Re-use the parse function response_get_parse_osti_xml() from DOIOstiWebParser class instead of duplicating code.
+        o_status = self._web_parser.response_get_parse_osti_xml(response.text)
 
-        o_status = [] # The return status is a list of dictionaries.
-        # Get status a returned by OSTI
-        my_root = doc.getroottree()
+        logger.debug(f"o_status {o_status}")
 
-        n_records = 0
-        for record in my_root.xpath('record'):
-            n_records += 1
-            result = {'doi': record.xpath('doi')[0].text,
-                      'status': record.get('status')}
-
-            # Some response from OSTI includes the 'doi_message' tag, fetch it.
-            # <doi_message>'Registration update failed: {"errors":[{"source":"publisher","title":"[facet \'minLength\'] The value has a length of \'0\'; this underruns the allowed minimum length of \'1\'. at line 14, column 0"}]}</doi_message>
-            if len(record.xpath('doi_message')) > 0:
-                result['doi_message'] = record.xpath('doi_message')[0].text
-
-            #o_status[record.xpath('related_identifiers/related_identifier/identifier_value')[0].text] = result
-            # Something doesn't seem to look right with the previous line.  It was modified on June 12, 2020 in master branch
-            #     https://github.com/NASA-PDS/pds-doi-service/commit/188e76ca70463bdfedc83cf811689b284d87297e#diff-4296c71934f020a4275acff358f6604d
-            # Comment out bad line and write a better line.
-
-            o_status.append(result)  # Add result dictionary to o_status list
-
-        logger.info(f"{n_records} DOI records submitted")
-
-        return o_status, doc_str
+        return o_status, response.text
 
     def webclient_submit_doi(self, payload_filename, i_username=None, i_password=None):
         """Function submit the content external file as a DOI to server."""

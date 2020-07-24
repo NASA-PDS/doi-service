@@ -23,3 +23,11 @@ def get_logger(module_name=''):
     logger.setLevel(logging.DEBUG)
     return logger
 
+def read_text_file(input_filename=''):
+
+    # Read the input file into a string.
+    f_file = open(input_filename, mode='rb')
+    o_file_content = f_file.read()
+    f_file.close()
+
+    return o_file_content

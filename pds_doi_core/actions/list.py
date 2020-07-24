@@ -40,7 +40,6 @@ class DOICoreActionList(DOICoreAction):
 
         self.set_criterias(**criteria)
 
-
     def set_criterias(self,
                        format_output='JSON',
                        doi=None,

@@ -2,6 +2,7 @@
 url = https://www.osti.gov/iad2test/api/records
 user = username
 password = secret
+release_input_schematron = config/osti_release_input_schematron.xml
 
 [PDS4_DICTIONARY]
 url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON

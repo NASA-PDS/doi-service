@@ -33,14 +33,38 @@
             <assert test="text()">
             If exist, id field may not be empty.
             </assert>
+            <assert test="string-length(normalize-space(.)) = 5">
+                Field 'id' must be exactly 5 characters long.
+            </assert>
+            <assert test="number(.)">
+                Field 'id' must a number and not letters.
+            </assert>
         </rule>
         <rule context="doi">
             <assert test="text()">
             If exist, doi field may not be empty.
             </assert>
-            <!--assert test="count(*) = 1">
-            Element record should have one 'doi' tag only #0002.
-            </assert-->
+<!-- 10.17189/25901 
+     12345678901234567
+-->
+            <assert test="string-length(normalize-space(.)) = 14">
+                Field 'doi' must be exactly 14 characters long.
+            </assert>
+            <assert test="number(substring(normalize-space(.),1,2))">
+                Field 'doi' must has start with 2 digits.
+            </assert>
+            <assert test="substring(normalize-space(.),3,1) = '.'">
+                Field 'doi' must has the dot following 2 digits.
+            </assert>
+            <assert test="number(substring(normalize-space(.),4,5))">
+                Field 'doi' must has with 5 digits follow the dot '.' follow 2 digits.
+            </assert>
+            <assert test="substring(normalize-space(.),9,1) = '/'">
+                Field 'doi' must has the slash following 5 digits.
+            </assert>
+            <assert test="number(substring(normalize-space(.),10,5))">
+                Field 'doi' must has with 5 digits follow the slash '/'.
+            </assert>
         </rule>
         <rule context="site_url">
             <assert test="text()">
@@ -53,17 +77,17 @@
             </assert>
         </rule>
         <rule context="product_type">
-            <let name="product_type_values" value="text()"/>
+            <let name="product_type_value" value="text()"/>
             <assert test="text()">
             If exist, product_type field may not be empty.
             </assert>
-            <assert test="$product_type_values = 'Bundle' or $product_type_values = 'Collection'">
-            If exist, product_type field should be either 'Bundle' or 'Collection'.
+            <assert test="$product_type_value = 'Bundle' or $product_type_value = 'Collection' or $product_type_value = 'Dataset'">
+            If exist, product_type field should be either 'Bundle' or 'Collection' or 'Dataset'.
             </assert>
         </rule>
         <rule context="record/product_type">
             <assert test="count(*) = 1">
-            Element record should have one 'product_type' tag only #0045.
+            Element record should have one 'product_type' tag only.
             </assert>
         </rule>
         <rule context="product_type_specific">
@@ -75,7 +99,7 @@
             <assert test="text()">
             If exist, authors field may not be empty.
             </assert>
-            <assert test="count(*) = 1 and count(author) >= 1">The element authors should have 'author'.</assert>
+            <assert test="count(*) >= 1 and count(author) >= 1">The element authors should have 'author'.</assert>
         </rule>
         <rule context="authors/author">
             <assert test="text()">

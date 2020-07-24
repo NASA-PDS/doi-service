@@ -53,6 +53,7 @@ class MyTestCase(unittest.TestCase):
     _action = DOICoreActionCheck(db_name)
 
     def test_1(self):
+        # Note that if the status return 'Error', is OK depending on what the server has for the following 3 dois: ['10.17189/21938','10.17189/21939','10.17189/21940']
         logger.info("test making a query to database and update any status changed from 'Pending' to something else .  This test would only work if the authentication for OSTI has been set up.")
         # By default, the DOICoreActionCheck will query for status = 'Pending' in database record.  The parameter query_criterias is for query
         # criteria that are different than the default ones.

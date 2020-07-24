@@ -36,30 +36,9 @@ class DOIOstiWebParser:
 
         return o_validated_dict
 
-    def response_get_parse_osti_xml(self,osti_response_text):
-        """Function parse a response from a query to the OSTI server (in XML query format) and return a JSON object.
-           Specific fields are extracted from input.  Not all fields in XML are used."""
-
-        o_response_dict = {}
-
-        doc = etree.fromstring(osti_response_text)
-        my_root = doc.getroottree()
-
-        # Trim down input to just fields we want.
-        for element in my_root.iter():
-            if element.tag == 'record':
-                my_record = my_root.xpath(element.tag)[0]
-
-                o_response_dict['status'] = my_record.attrib['status']
-                o_response_dict['id']                  = my_root.xpath('record/id')[0].text 
-                o_response_dict['doi']                 = my_root.xpath('record/doi')[0].text 
-                o_response_dict['date_record_added']   = my_root.xpath('record/date_record_added')[0].text 
-                o_response_dict['date_record_updated'] = my_root.xpath('record/date_record_updated')[0].text 
-
-        return o_response_dict
-
-    def response_get_parse_osti_xml_multiple_records(self,osti_response_text):
+    def response_get_parse_osti_xml(self,osti_response_text,interested_fields=['status','doi','id','title','date_record_added','date_record_updated','publication_date','product_type','product_type_specific','doi_message','related_identifier']):
         """Function parse a response from a GET (query) or a PUT to the OSTI server (in XML query format) and return a list of dictionaries.
+           By default, all possible fields are extracted.  If desire to only extract smaller set of fields, they should be specified accordingly.
            Specific fields are extracted from input.  Not all fields in XML are used."""
 
         o_response_dicts = []
@@ -71,30 +50,52 @@ class DOIOstiWebParser:
         element_record = 0
         for element in my_root.iter():
             if element.tag == 'record':
-                my_record = my_root.xpath(element.tag)[0]
+                if element.get('status').lower() == 'error':
+                    # The 'error' record is parsed differently and does not have all the attributes we desire.
+                    # Get the entire text and save it in 'error' key.  Print a WARN only since it is not related to any particular 'doi' or 'id' action.
+                    logger.warn(f"ERROR_RECORD {element.text}")
+                    #error_record = {} # Save any error messages in this dictionary.
+                    #error_record['error'] = etree.tostring(element)
+                    continue
 
                 response_dict = {}  # This dictionary will be added to o_response_dicts when all fields have been extracted below.
 
-                response_dict['status']              = my_record.attrib['status']
-                response_dict['title']               = my_root.xpath('record/title')[element_record].text
-                response_dict['id']                  = my_root.xpath('record/id')   [element_record].text
-                response_dict['doi']                 = my_root.xpath('record/doi')  [element_record].text
-                response_dict['date_record_added']   = my_root.xpath('record/date_record_added')      [element_record].text
-                response_dict['date_record_updated'] = my_root.xpath('record/date_record_updated')    [element_record].text
-                response_dict['publication_date']      = my_root.xpath('record/publication_date')     [element_record].text
-                response_dict['product_type']          = my_root.xpath('record/product_type')         [element_record].text
-                response_dict['product_type_specific'] = my_root.xpath('record/product_type_specific')[element_record].text
-    
-                # Not all responses have the 'doi_message' field.
-                if len(my_root.xpath('record/doi_message')) > 0:
-                    response_dict['doi_message']     = my_root.xpath('record/doi_message')[element_record].text
+                if 'status' in interested_fields:
+                    response_dict['status']              = element.attrib['status']  # Becareful to get the 'status' from 'record' tag instead of 'records'
 
-                if len(my_root.xpath('record/related_identifiers/related_identifier/identifier_value')) > 0: 
+                # The xpath has to be checked for each field since it may not exist and cause Python to fail.
+                if 'title' in interested_fields and element.xpath('title'):
+                    response_dict['title']               = element.xpath('title')[0].text
+                if 'id' in interested_fields and element.xpath('id'):
+                    response_dict['id']                  = element.xpath('id')[0].text
+                if 'doi' in interested_fields and element.xpath('doi'):
+                    response_dict['doi']                 = element.xpath('doi')[0].text
+                if 'date_record_added' in interested_fields and element.xpath('date_record_added'):
+                    response_dict['date_record_added']   = element.xpath('date_record_added')[0].text
+                if 'date_record_updated' in interested_fields and element.xpath('date_record_updated'):
+                    response_dict['date_record_updated'] = element.xpath('date_record_updated')[0].text
+                if 'publication_date' in interested_fields and element.xpath('publication_date'):
+                    response_dict['publication_date']      = element.xpath('publication_date')[0].text
+                if 'product_type' in interested_fields and element.xpath('product_type'):
+                    response_dict['product_type']          = element.xpath('product_type')[0].text
+                if 'product_type_specific' in interested_fields and element.xpath('product_type_specific'):
+                    response_dict['product_type_specific'] = element.xpath('product_type_specific')[0].text
+
+                # Not all responses have the 'doi_message' field.
+                if element.xpath('doi_message'):
+                    response_dict['doi_message']     = element.xpath('doi_message')[0].text
+
+                if 'related_identifier' in interested_fields and len(my_root.xpath('record/related_identifiers/related_identifier/identifier_value')) > 0: 
                     response_dict['related_identifier']  = my_root.xpath('record/related_identifiers/related_identifier/identifier_value')[element_record].text
 
                 o_response_dicts.append(response_dict)
 
                 element_record += 1
+
+        # Append the error_record if there is something in it.
+        # If desire, add error_record to o_response_dicts.  For now, commented out.
+        #if bool(error_record):
+        #    o_response_dicts.append(error_record)
 
         return o_response_dicts
 

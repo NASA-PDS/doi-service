@@ -6,7 +6,7 @@ from pds_doi_core.util.general_util import get_logger
 logger = get_logger('pds_doi_core.input.osti_input_util')
 
 class OSTIInputUtil:
-    def read_osti_xml(self, osti_response_text):
+    def read_xml(self, osti_response_text):
         """
         Function parses XML content possibly from output from OSTI.
         The format has <records> tags with iteration of <record> tags for each record.
