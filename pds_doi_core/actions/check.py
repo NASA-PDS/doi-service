@@ -36,9 +36,6 @@ class DOICoreActionCheck(DOICoreAction):
 
         self._list_obj = DOICoreActionList(db_name=db_name)
 
-    def parse_arguments_from_cmd(self, arguments):
-        # The 'check' action has no arguments.  This empty function is needed though.
-        return 1
 
     @classmethod
     def add_to_subparser(cls, subparsers):

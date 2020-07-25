@@ -67,8 +67,7 @@ class DOICoreActionRelease(DOICoreAction):
                                    required=True,
                                    metavar='"my.email@node.gov"')
 
-    def run(self, input=None, node=None, submitter=None,
-            submit_label_flag=True):
+    def run(self, input=None, node=None, submitter=None):
         """
         Function performs a release of a DOI that has been previously reserved.  The input is a
         XML text file contains previously return output from a 'reserved' action.  The only

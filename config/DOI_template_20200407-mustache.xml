@@ -55,6 +55,13 @@
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>
+        <related_identifiers>
+            <related_identifier>
+                <identifier_type>URL</identifier_type>
+                <identifier_value>{{related_identifier}}</identifier_value>
+                <relation_type>Cites</relation_type>
+            </related_identifier>
+        </related_identifiers>
     </record>
 </records>
 

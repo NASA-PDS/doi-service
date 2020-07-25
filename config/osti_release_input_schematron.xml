@@ -11,7 +11,8 @@
            2. Optional product_type, product_type_specific, doi and should only have 0 or 1
         -->
         <rule context="records/record">
-            <assert test="count(*) >= 1 and count(id) = 1 and count(site_url) = 1">
+            <!-- and count(id) = 1 -->
+            <assert test="count(*) >= 1 and count(site_url) = 1">
             Element record should have one 'id' and one 'site_url' tag.
             </assert>
             <assert test="count(*) >= 1 and count(product_type) &lt;= 1">

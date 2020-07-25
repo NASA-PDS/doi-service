@@ -14,22 +14,20 @@ class DOICoreActionReserve(DOICoreAction):
 
     def __init__(self):
         super().__init__()
-        self._parse_arguments_from_cmd() # Parse arguments from command line if there are any.
 
-    def _parse_arguments_from_cmd(self):
-        parser = DOICoreAction.create_cmd_parser()
-        self._arguments = parser.parse_args()
+    def parse_arguments_from_cmd(self, arguments):
+
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
 
-        if self._arguments:
-            if hasattr(self._arguments, 'input'):
-                self._input_location = self._arguments.input
-            if hasattr(self._arguments, 'node_id'):
-                self._node_id = self._arguments.node_id
-            if hasattr(self._arguments, 'submitter_email'):
-                self._submitter       = self._arguments.submitter_email
+        if arguments:
+            if hasattr(arguments, 'input'):
+                self._input_location = arguments.input
+            if hasattr(arguments, 'node_id'):
+                self._node_id = arguments.node_id
+            if hasattr(arguments, 'submitter_email'):
+                self._submitter       = arguments.submitter_email
 
     @classmethod
     def add_to_subparser(cls, subparsers):

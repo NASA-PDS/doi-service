@@ -24,6 +24,10 @@ class DOICoreAction:
         # Let each class derived from DOICoreAction parse its own arguments.
         self.m_transaction_builder = TransactionBuilder(db_name)
 
+    def parse_arguments_from_cmd(self, arguments):
+        # The 'check' action has no arguments.  This empty function is needed though.
+        return 1
+
     @staticmethod
     def create_cmd_parser():
         parser = argparse.ArgumentParser(
