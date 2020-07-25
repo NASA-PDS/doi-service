@@ -1,6 +1,5 @@
 import os
 
-
 from pds_doi_core.actions.action import DOICoreAction
 from pds_doi_core.input.exeptions import InputFormatException, UnknownNodeException
 from pds_doi_core.util.general_util import get_logger
@@ -11,9 +10,6 @@ logger = get_logger('pds_doi_core.actions.reserve')
 class DOICoreActionReserve(DOICoreAction):
     _name = 'reserve'
     description = ' % pds-doi-cmd reserve -n img -s Qui.T.Chau@jpl.nasa.gov -i input/DOI_Reserved_GEO_200318.csv\n'
-
-    def __init__(self):
-        super().__init__()
 
     def parse_arguments_from_cmd(self, arguments):
 

@@ -1,6 +1,5 @@
 import requests
 from lxml import etree
-import argparse
 
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.input.exeptions import UnknownNodeException
@@ -10,12 +9,6 @@ from pds_doi_core.references.contributors import DOIContributorUtil
 class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     description = ' % pds-doi-cmd draft -n img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
-
-    def __init__(self):
-        super().__init__()
-        parser = DOICoreAction.create_cmd_parser()
-        self._arguments = parser.parse_args()
-        self.parse_arguments_from_cmd(self._arguments) # Parse arguments from command line if there are any.
 
     def parse_arguments_from_cmd(self,arguments):
         self._input_location = None

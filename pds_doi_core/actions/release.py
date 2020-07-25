@@ -7,17 +7,11 @@
 #
 # ------------------------------
 
-import os
-
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_core.input.osti_input_util import OSTIInputUtil
-from pds_doi_core.util.general_util import read_text_file
 from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_core.references.contributors import DOIContributorUtil
-from pds_doi_core.util.config_parser import DOIConfigUtil
 
 class DOICoreActionRelease(DOICoreAction):
     _name = 'release'
@@ -30,14 +24,12 @@ class DOICoreActionRelease(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
-        parser = DOICoreAction.create_cmd_parser()
-        self._arguments = parser.parse_args()
         self._doi_web_client = DOIOstiWebClient()
         self._web_parser = DOIOstiWebParser()
         self._validator = OSTIInputValidator()
-        self._input_util = OSTIInputUtil()
 
-    def parse_arguments_from_cmd(self,arguments):
+
+    def parse_arguments_from_cmd(self, arguments):
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
@@ -106,15 +98,9 @@ class DOICoreActionRelease(DOICoreAction):
             logger.error(f"Validation failed for {input} using schematron {default_schematron}, with report {validation_report}")
             exit(1)
 
-
-        # The type of doi_fields is a dictionary of fields extracted (parsed) from input file.
-        # The type of o_doi_label is a string that can be used to submit to OSTI.
         if input.endswith('.xml'):
-            # Per recommended, will use the input directly for the release action. 
-            o_doi_label = read_text_file(input)
-        elif input.endswith('.xlsx'):
-            logger.error(f"Input file {input} type not supported yet.")
-            exit(1)
+            with open(input, mode='rb') as f:
+                o_doi_label = f.read()
         else:
             logger.error(f"Input file {input} type not supported yet.")
             exit(1)
