@@ -1,8 +1,16 @@
 # Changelog
 
-## [0.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.2-dev) (2020-07-16)
+## [0.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.2-dev) (2020-07-28)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.2...0.0.2-dev)
+
+**Improvements:**
+
+- Develop DOI Status / Query component [\#27](https://github.com/NASA-PDS/pds-doi-service/issues/27)
+
+**Other closed issues:**
+
+- Develop Status / Query API and component for OSTI status of a DOI [\#4](https://github.com/NASA-PDS/pds-doi-service/issues/4)
 
 ## [0.0.2](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.2) (2020-07-10)
 
