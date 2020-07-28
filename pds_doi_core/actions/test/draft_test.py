@@ -10,6 +10,20 @@ logger = get_logger(__name__)
 class MyTestCase(unittest.TestCase):
     _action = DOICoreActionDraft()
 
+    def test_local_dir_one_file(self):
+        logger.info("test local dir with one file")
+        osti_doi = self._action.run(input='input/draft_dir_one_file',
+                              node='img',
+                              submitter='my_user@my_node.gov')
+        logger.info(osti_doi)
+
+    def test_local_dir_two_files(self):
+        logger.info("test local dir with two files")
+        osti_doi = self._action.run(input='input/draft_dir_two_files',
+                              node='img',
+                              submitter='my_user@my_node.gov')
+        logger.info(osti_doi)
+
     def test_local_bundle(self):
         logger.info("test local bundle")
         osti_doi = self._action.run(input='input/bundle_in_with_contributors.xml',

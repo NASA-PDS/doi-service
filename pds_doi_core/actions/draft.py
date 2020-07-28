@@ -1,3 +1,7 @@
+import os
+#from os import listdir
+#from os.path import isfile, join
+import copy 
 import requests
 from lxml import etree
 
@@ -46,6 +50,72 @@ class DOICoreActionDraft(DOICoreAction):
                                    default='osti',
                                    metavar='osti')
 
+    def _resolve_input_into_list_of_names(self, input):
+        """Function receives an input which can be one name or a list of names separated by a comma or a directory.  Function will return a list of names.
+        """
+        o_list_of_names = []
+
+        # Split the input using a comma, then inspect each token to check if it is a directory, a filename or a URL.
+        split_tokens = input.split(',')
+        for token in split_tokens:
+            # Only save the file name if it is not an empty string as in the case of a comma being the last character:
+            #    -i https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml,
+            # or no name provided with just a comma:
+            #    -i ,
+            if len(token) > 0:
+                if os.path.isdir(token):
+                    # Get all file names in a directory.
+                    # Note that the top level directory needs to precede the file name in the for loop.
+                    list_of_names_from_token = [os.path.join(token,f) for f in os.listdir(token) if os.path.isfile(os.path.join(token, f))]
+
+                    o_list_of_names.extend(list_of_names_from_token)
+                elif os.path.isfile(token):
+                    # The token is the name of a file, add it.
+                    o_list_of_names.append(token)
+                else:
+                    # The token is a URL, add it.
+                    o_list_of_names.append(token)
+
+        return o_list_of_names
+
+    def _transform_pds4_label_into_osti_record(self, input_file, node, submitter, contributor_value):
+        """Function receives an XML input file and transform it into an OSTI record.
+        """
+
+        o_transformed_label = etree.Element("records")  # If the file cannot be transformed, an XML text of an empty tree will be returned.
+
+        # parse input_file
+        if not input_file.startswith('http'):
+            # Only process .xml files and print WARNING for any other files, then continue.
+            if input_file.endswith('.xml'):
+               xml_tree = etree.parse(input_file)
+            else:
+                logger.warn(f"Expecting .xml files only, encountering {input_file}")
+                return etree.tostring(o_transformed_label).decode()
+        else:
+            # A URL gets read into memory.
+            response = requests.get(input_file)
+            xml_tree = etree.fromstring(response.content)
+
+        doi_fields = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
+        doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
+        doi_fields['contributor'] = contributor_value
+
+        # generate output
+        o_transformed_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
+
+        # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
+        transaction_obj = self.m_transaction_builder.prepare_transaction(input_file,
+                                                                         node,
+                                                                         submitter,
+                                                                         [doi_fields],
+                                                                         output_content=o_transformed_label)
+
+        # Write a transaction for the 'draft' action.
+        transaction_obj.log()
+
+        return o_transformed_label
+
     def run(self,
             input = None,
             node = None,
@@ -66,8 +136,6 @@ class DOICoreActionDraft(DOICoreAction):
         if submitter is None:
             submitter = self._submitter
 
-
-
         try:
             contributor_value = self.m_node_util.get_node_long_name(node)
             logger.info(f"contributor_value['{contributor_value}']")
@@ -83,30 +151,30 @@ class DOICoreActionDraft(DOICoreAction):
             logger.info(f"permissible_contributor_list {o_permissible_contributor_list}")
             exit(1)
 
-        # parse input
-        if not input.startswith('http'):
-            xml_tree = etree.parse(input)
-        else:
-            response = requests.get(input)
-            xml_tree = etree.fromstring(response.content)
+        # The value of input can be a list of names, or a directory.  Resolve that to a list of names.
+        list_of_names = self._resolve_input_into_list_of_names(input)
 
-        doi_fields = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
-        doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
-        doi_fields['contributor'] = contributor_value
+        # Create an empty tree with 'records' as the root tag.
+        # An element will be added from the output of each file parsed.
+        o_doi_labels = etree.Element("records") # OSTI uses 'records' as the root tag.
 
+        # Batch processing logic:
+        # For each name found, transform the PDS4 label to an OSTI record, then concatenate that record to o_doi_label to return. 
 
-        # generate output
-        o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
+        for input_file in list_of_names:
 
-        # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-        transaction_obj = self.m_transaction_builder.prepare_transaction(input,
-                                                                         node,
-                                                                         submitter,
-                                                                         [doi_fields],
-                                                                         output_content=o_doi_label)
+            # Transform the PDS4 label to an OSTI record.
+            doi_label = self._transform_pds4_label_into_osti_record(input_file,node,submitter,contributor_value)
 
-        # Write a transaction for the 'reserve' action.
-        transaction_obj.log()
+            # Concatenate each label to o_doi_labels to return.
+            doc = etree.fromstring(doi_label.encode())
+            for element in doc.iter():
+                if element.tag == 'record':  # OSTI uses 'record' tag for each record.
+                    o_doi_labels.append(copy.copy(element))  # Add the 'record' element to an empty tree the first time.
 
-        return o_doi_label
+        # end for input_file in list_of_names:
+
+        etree.indent(o_doi_labels)  # Make the output nice by indenting it.
+
+        return etree.tostring(o_doi_labels,pretty_print=True).decode()
 

@@ -102,12 +102,19 @@ class DOIPDS4LabelUtil:
             logger.debug(f"full_name {full_name}")
             split_full_name = []
             separator_index = 0
+            use_dot_split_flag = False
             while len(split_full_name)<2 and separator_index<len(first_last_name_separator):
+                if first_last_name_separator[separator_index] == '.':
+                    use_dot_split_flag = True
                 split_full_name = full_name.strip().split(first_last_name_separator[separator_index])
                 separator_index += 1
 
             if len(split_full_name) == 2:
-                persons.append({'first_name': split_full_name[first_last_name_order[0]].strip(),
+                # If the dot '.' was used to split the full_name, the dot need to be add back to the first name.
+                corrected_first_name = split_full_name[first_last_name_order[0]].strip()
+                if use_dot_split_flag:
+                    corrected_first_name = corrected_first_name + "."
+                persons.append({'first_name': corrected_first_name,
                                 'last_name': split_full_name[first_last_name_order[1]].strip()})
             else:
                 logger.warning(f"author first name not found for [{full_name}]")
