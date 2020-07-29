@@ -117,15 +117,15 @@ class DOICoreActionRelease(DOICoreAction):
 
         # At this point, the response from the OSTI server contains the latest metadata of all the DOIs.
         # Parse the response and get a new list of dictionaries doi_fields in preparation for writing a transaction.
-        doi_fields = self._web_parser.response_get_parse_osti_xml(osti_response_str)
+        dois = self._web_parser.response_get_parse_osti_xml(osti_response_str)
         logger.debug(f"osti_response_str {osti_response_str}")
-        logger.debug(f"doi_fields {doi_fields}")
+        logger.debug(f"doi_fields {dois}")
 
         # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-        transaction_obj = self.m_transaction_builder.prepare_transaction(input,
-                                                                         node,
+        transaction_obj = self.m_transaction_builder.prepare_transaction(node,
                                                                          submitter,
-                                                                         doi_fields,
+                                                                         dois,
+                                                                         input_path=input,
                                                                          output_content=osti_response_str)
         # Write a transaction for the 'release' action.
         transaction_obj.log()

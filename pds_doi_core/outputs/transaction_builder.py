@@ -17,6 +17,7 @@ from lxml import etree
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.db.doi_database import DOIDataBase
+from pds_doi_core.entities.doi import Doi
 from pds_doi_core.outputs.transaction import Transaction
 from pds_doi_core.outputs.transaction_on_disk import TransactionOnDisk
 
@@ -52,7 +53,9 @@ class TransactionBuilder:
     def get_doi_database_writer(self):
         return self.m_doi_database
 
-    def set_doi_fields_osti(self, i_doc, io_doi_fields):
+
+
+    def set_doi_fields_osti(self, i_doc, dois):
         """Function fetches the status,title,id and doi fields from i_doc and updates the io_doi_fields."""
 
         # If i_doc is string, we expect it to be in XML format, otherwise an Element object from lxml module.
@@ -64,22 +67,23 @@ class TransactionBuilder:
 
         for element in my_root.iter():
             if element.tag == 'record':
+                # TO DO: this is not safe to rely on the order of the response from OSTI
                 my_record = my_root.xpath(element.tag)[element_index]
                 my_id = my_root.xpath('record/id')[element_index]
                 my_doi = my_root.xpath('record/doi')[element_index]
                 my_title = my_root.xpath('record/title')[element_index]
 
                 # Add these new fields to io_doi_fields were not there before.
-                io_doi_fields['dois'][element_index]['status'] = my_record.attrib['status'].lower()
-                io_doi_fields['dois'][element_index]['title'] = my_title.text
-                io_doi_fields['dois'][element_index]['id'] = my_id.text
-                io_doi_fields['dois'][element_index]['doi'] = my_doi.text
+                dois[element_index].status = my_record.attrib['status'].lower()
+                dois[element_index].title = my_title.text
+                dois[element_index].id = my_id.text
+                dois[element_index].doi = my_doi.text
 
                 element_index += 1
 
-        return io_doi_fields
+        return dois
 
-    def prepare_transaction(self, target_url, node_id, submitter_email, doi_fields, output_content=None,
+    def prepare_transaction(self, node_id, submitter_email, dois: list, input_path=None, output_content=None,
                             web_response=None):
         """Build a transaction from 'reserve' or 'draft' action. The transaction object and transaction logger will be returned.
            The field output_content is used for writing the content to disk.
@@ -95,18 +99,18 @@ class TransactionBuilder:
         logger.debug(f"now_is {now_is}")
 
         logger.debug(f"web_response {web_response}")
-        logger.debug(f"doi_fields {doi_fields}")
+        logger.debug(f"doi_fields {dois}")
         if web_response:
-            doi_fields = self.set_doi_fields_osti(web_response, doi_fields)
+            doi_fields = self.set_doi_fields_osti(web_response, dois)
             logger.debug(f"doi_fields {doi_fields}")
         logger.debug(f"submitter_email {submitter_email}")
 
-        return Transaction(target_url,
-                           output_content,
+        return Transaction(output_content,
                            node_id,
                            submitter_email,
-                           doi_fields,
+                           dois,
                            self.m_transaction_ondisk_dao,
-                           self.m_doi_database)
+                           self.m_doi_database,
+                           input_path=input_path)
 
 # end class TransactionBuilder:

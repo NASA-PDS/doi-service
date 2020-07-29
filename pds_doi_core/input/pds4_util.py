@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 
 from pds_doi_core.util.general_util import get_logger
-
+from pds_doi_core.entities.doi import Doi
 logger = get_logger('pds_doi_core.input.pds4_util')
 
 
@@ -51,23 +51,28 @@ class DOIPDS4LabelUtil:
 
     def process_pds4_fields(self, pds4_fields):
         doi_field_value_dict = {}
+
+        product_type = pds4_fields['product_class'].split('_')[1]
         landing_page_template = 'https://pds.jpl.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}'
 
-        doi_field_value_dict['title'] = pds4_fields['title']
-        doi_field_value_dict['publication_date'] = self.get_publication_date(pds4_fields)  # datetime object
-        doi_field_value_dict['description'] = pds4_fields['description']
-        doi_field_value_dict["product_type"] = pds4_fields['product_class'].split('_')[1]
-        doi_field_value_dict["product_type_specific"] = "PDS4 " + doi_field_value_dict["product_type"]
-        doi_field_value_dict['related_identifier'] = pds4_fields['lid'] + '::' + pds4_fields['vid']
-        doi_field_value_dict['site_url'] = landing_page_template.format(doi_field_value_dict["product_type"],
-                                                                        requests.utils.quote(pds4_fields['lid']),
-                                                                        requests.utils.quote(pds4_fields['vid']))
-        doi_field_value_dict['authors'] = self.get_author_names(pds4_fields['authors'].split(','))
-        if 'editors' in pds4_fields.keys():
-            doi_field_value_dict['editors'] = self.get_editor_names(pds4_fields['editors'].split(';'))
-        doi_field_value_dict['keywords'] = self.get_keywords(pds4_fields)
+        site_url = landing_page_template.format(product_type,
+                                                requests.utils.quote(pds4_fields['lid']),
+                                                requests.utils.quote(pds4_fields['vid']))
+        editors = self.get_editor_names(pds4_fields['editors'].split(';')) if 'editors' in pds4_fields.keys() else None
 
-        return doi_field_value_dict
+        doi = Doi(title=pds4_fields['title'],
+                  description=pds4_fields['description'],
+                  publication_date=self.get_publication_date(pds4_fields),
+                  product_type=product_type,
+                  product_type_specific= "PDS4 " + product_type,
+                  related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
+                  site_url=site_url,
+                  authors=self.get_author_names(pds4_fields['authors'].split(',')),
+                  editors=editors,
+                  keywords=self.get_keywords(pds4_fields)
+                  )
+
+        return doi
 
     def get_publication_date(self, pds4_fields):
         print("get_publication_date:pds4_fields",pds4_fields)

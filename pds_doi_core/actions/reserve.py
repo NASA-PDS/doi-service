@@ -1,8 +1,11 @@
 import os
+import requests
+from lxml import etree
 
 from pds_doi_core.actions.action import DOICoreAction
 from pds_doi_core.input.exeptions import InputFormatException, UnknownNodeException
 from pds_doi_core.util.general_util import get_logger
+from pds_doi_core.actions.release import DOICoreActionRelease
 
 logger = get_logger('pds_doi_core.actions.reserve')
 
@@ -42,6 +45,19 @@ class DOICoreActionReserve(DOICoreAction):
                                    required=True,
                                    metavar='"my.email@node.gov"')
 
+
+    def _process_reserve_action_pdf4(self, target_url):
+        # parse input
+        if not target_url.startswith('http'):
+            xml_tree = etree.parse(target_url)
+        else:
+            response = requests.get(target_url)
+            xml_tree = etree.fromstring(response.content)
+
+        doi = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
+
+        return [doi]
+
     def _process_reserve_action_xlsx(self, target_url):
         '''Function process a reserve action based on .xlsx ending.'''
 
@@ -49,13 +65,13 @@ class DOICoreActionReserve(DOICoreAction):
         os.makedirs(doi_directory_pathname, exist_ok=True)
 
         try:
-            dict_condition_data = self.m_doi_input_util.parse_sxls_file(target_url)
+            dois = self.m_doi_input_util.parse_sxls_file(target_url)
 
             # Do a sanity check on content of dict_condition_data.
-            if len(dict_condition_data) == 0:
+            if len(dois) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
-            return dict_condition_data
+            return dois
         except InputFormatException as e:
             logger.error(e)
             exit(1)
@@ -67,13 +83,13 @@ class DOICoreActionReserve(DOICoreAction):
         os.makedirs(doi_directory_pathname, exist_ok=True)
 
         try:
-            dict_condition_data = self.m_doi_input_util.parse_csv_file(target_url)
+            dois = self.m_doi_input_util.parse_csv_file(target_url)
 
             # Do a sanity check on content of dict_condition_data.
-            if len(dict_condition_data) == 0:
+            if len(dois) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
-            return dict_condition_data
+            return dois
         except InputFormatException as e:
             logger.error(e)
             exit(1)
@@ -103,32 +119,31 @@ class DOICoreActionReserve(DOICoreAction):
             raise e
 
         action_type = 'reserve_osti_label'
-        o_doi_label = 'invalid action type:action_type ' + action_type
         publisher_value = self._config.get('OTHER', 'doi_publisher')
 
         logger.debug(f"target_url,action_type {input} {action_type}")
 
         if input.endswith('.xml'):
-            doi_fields = self.m_doi_pds4_label.parse_pds4_label_via_uri(input,
-                                                                        publisher_value,
-                                                                        contributor_value)
-            o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
+            dois = self._process_reserve_action_pds4(input)
 
         elif input.endswith('.xlsx'):
-            doi_fields = self._process_reserve_action_xlsx(input)
-            o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
+            dois = self._process_reserve_action_xlsx(input)
 
         elif input.endswith('.csv'):
-            doi_fields = self._process_reserve_action_csv(input)
-            o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(doi_fields)
-
+            dois = self._process_reserve_action_csv(input)
         # Check to see if the given file has an attempt to process.
         else:
             logger.error(f"File type has not been implemented:target_url {input}")
             exit(1)
 
+        for doi in dois:
+            doi.contributor = contributor_value
+            doi.publisher = publisher_value
+
+        o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(dois)
+
         logger.debug(f"submit_label_flag {submit_label_flag}")
-        logger.debug(f"doi_fields {doi_fields} {type(doi_fields)}")
+        logger.debug(f"doi_fields {dois}")
         logger.debug(f"o_doi_label {o_doi_label}")
         logger.debug(f"submitter_email {submitter}")
 
@@ -136,49 +151,31 @@ class DOICoreActionReserve(DOICoreAction):
         if submit_label_flag:
             from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
             doi_web_client = DOIOstiWebClient()
-            response, output_str = doi_web_client.webclient_submit_existing_content(
+            dois, output_str = doi_web_client.webclient_submit_existing_content(
                 o_doi_label,
                 i_url=self._config.get('OSTI', 'url'),
                 i_username=self._config.get('OSTI', 'user'),
                 i_password=self._config.get('OSTI', 'password'))
 
-            logger.debug(f"response [{response}")
-            logger.debug(f"doi_fields {doi_fields},{len(doi_fields)}")
-
-            # Due to how the response list of dictionary is structure, use the doi_index to get access to 'status' and 'doi' fields
-
-            doi_index = 0
-            for doi_field in doi_fields:
-                doi_field['status'] = response[doi_index]['status'].lower()
-                doi_field['doi']    = response[doi_index]['doi']
-                doi_index += 1
+            logger.debug(f"doi_fields {dois},{len(dois)}")
 
             logger.debug(f"reserve_response {output_str}")
             logger.debug(f"type(reserve_response) {type(output_str)}")
 
-            # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-            transaction_obj = self.m_transaction_builder.prepare_transaction(input,
-                                                                             node,
-                                                                             submitter,
-                                                                             doi_fields,
-                                                                             output_content=output_str)
-            # Write a transaction for the 'reserve' action.
-            transaction_obj.log()
-
-            return output_str
         else:
             # This path is normally used by developer to test the parsing of CSV or XLSX input without submitting the DOI.
             # Write a transaction for the 'reserve' action.
-            for doi_field in doi_fields:
-                doi_field['status'] = 'reserved_not_submitted'
-            # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-            transaction_obj = self.m_transaction_builder.prepare_transaction(input,
-                                                                             node,
-                                                                             submitter,
-                                                                             doi_fields,
-                                                                             output_content=o_doi_label)
+            for doi in dois:
+                doi.status = 'reserved_not_submitted'
+            output_str = o_doi_label
 
-            # Write a transaction for the 'reserve' action.
-            transaction_obj.log()
+        # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
+        transaction_obj = self.m_transaction_builder.prepare_transaction(node,
+                                                                         submitter,
+                                                                         dois,
+                                                                         input_path=input,
+                                                                         output_content=output_str)
+        # Write a transaction for the 'reserve' action.
+        transaction_obj.log()
 
-            return o_doi_label
+        return output_str

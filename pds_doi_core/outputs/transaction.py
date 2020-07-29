@@ -29,29 +29,32 @@ class Transaction:
     m_doi_config_util = DOIConfigUtil()
     m_log_dict = None
 
-    def __init__(self, target_url,
+    def __init__(self,
                  output_content,
                  node_id,
                  submitter_email,
-                 doi_fields,
+                 dois,
                  transaction_disk_dao,
-                 transaction_db_dao):
+                 transaction_db_dao,
+                 input_path = None):
         self._config = self.m_doi_config_util.get_config()
         self._node_id = node_id.lower()
         self._submitter_email = submitter_email
-        self._input_ref = target_url
+        self._input_ref = input_path
         self._output_content = output_content
         self._transaction_time = datetime.now()
-        self._doi_fields = doi_fields
+        self._dois = dois
         self._transaction_disk_dao = transaction_disk_dao
         self._transaction_db_dao = transaction_db_dao
 
     def log(self):
-        transaction_io_dir = self._transaction_disk_dao.write(self._node_id, self._transaction_time, self._input_ref,
-                                                              self._output_content)
+        transaction_io_dir = self._transaction_disk_dao.write(self._node_id, self._transaction_time,
+                                                              input_ref=self._input_ref,
+                                                              output_content=self._output_content)
 
-        for doi_field in self._doi_fields:
-            lidvid = doi_field['related_identifier'].split('::')
+        for doi in self._dois:
+            lidvid = doi.related_identifier.split('::')
+            doi_field = doi.__dict__
             k_doi_params = dict((k, doi_field[k]) for k in
                  doi_field.keys() & {'doi', 'status', 'title', 'product_type', 'product_type_specific'})
 

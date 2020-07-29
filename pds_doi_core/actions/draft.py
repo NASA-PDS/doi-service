@@ -1,7 +1,5 @@
 import os
-#from os import listdir
-#from os.path import isfile, join
-import copy 
+import copy
 import requests
 from lxml import etree
 
@@ -97,24 +95,23 @@ class DOICoreActionDraft(DOICoreAction):
             response = requests.get(input_file)
             xml_tree = etree.fromstring(response.content)
 
-        doi_fields = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
-        doi_fields['publisher'] = self._config.get('OTHER', 'doi_publisher')
-        doi_fields['contributor'] = contributor_value
+        doi = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
+        doi.publisher = self._config.get('OTHER', 'doi_publisher')
+        doi.contributor = contributor_value
 
         # generate output
-        o_transformed_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi_fields)
+        o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi)
 
         # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-        transaction_obj = self.m_transaction_builder.prepare_transaction(input_file,
-                                                                         node,
+        doi.status = 'draft'
+        transaction_obj = self.m_transaction_builder.prepare_transaction(node,
                                                                          submitter,
-                                                                         [doi_fields],
+                                                                         [doi],
                                                                          output_content=o_transformed_label)
-
         # Write a transaction for the 'draft' action.
         transaction_obj.log()
 
-        return o_transformed_label
+        return o_doi_label
 
     def run(self,
             input = None,
@@ -159,7 +156,7 @@ class DOICoreActionDraft(DOICoreAction):
         o_doi_labels = etree.Element("records") # OSTI uses 'records' as the root tag.
 
         # Batch processing logic:
-        # For each name found, transform the PDS4 label to an OSTI record, then concatenate that record to o_doi_label to return. 
+        # For each name found, transform the PDS4 label to an OSTI record, then concatenate that record to o_doi_label to return.
 
         for input_file in list_of_names:
 

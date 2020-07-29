@@ -5,10 +5,11 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
+from lxml import etree
+from datetime import datetime
 
 from pds_doi_core.util.general_util import get_logger
-from lxml import etree
-
+from pds_doi_core.entities.doi import Doi
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 
 class DOIOstiWebParser:
@@ -36,12 +37,13 @@ class DOIOstiWebParser:
 
         return o_validated_dict
 
-    def response_get_parse_osti_xml(self,osti_response_text,interested_fields=['status','doi','id','title','date_record_added','date_record_updated','publication_date','product_type','product_type_specific','doi_message','related_identifier']):
+    @staticmethod
+    def response_get_parse_osti_xml(osti_response_text,interested_fields=['status','doi','id','title','date_record_added','date_record_updated','publication_date','product_type','product_type_specific','doi_message','related_identifier']):
         """Function parse a response from a GET (query) or a PUT to the OSTI server (in XML query format) and return a list of dictionaries.
            By default, all possible fields are extracted.  If desire to only extract smaller set of fields, they should be specified accordingly.
            Specific fields are extracted from input.  Not all fields in XML are used."""
 
-        o_response_dicts = []
+        dois = []
 
         doc     = etree.fromstring(osti_response_text)
         my_root = doc.getroottree()
@@ -53,57 +55,36 @@ class DOIOstiWebParser:
                 if element.get('status').lower() == 'error':
                     # The 'error' record is parsed differently and does not have all the attributes we desire.
                     # Get the entire text and save it in 'error' key.  Print a WARN only since it is not related to any particular 'doi' or 'id' action.
-                    logger.warn(f"ERROR_RECORD {element.text}")
-                    #error_record = {} # Save any error messages in this dictionary.
-                    #error_record['error'] = etree.tostring(element)
+                    logger.error(f"ERROR OSTI RECORD {element.text}")
                     continue
+                else:
+                    doi = Doi(title=element.xpath('title')[0].text,
+                              publication_date=element.xpath('publication_date')[0].text,
+                              product_type=element.xpath('product_type')[0].text,
+                              product_type_specific=element.xpath('product_type_specific')[0].text,
+                              related_identifier=element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text,
+                              id=element.xpath('id')[0].text,
+                              doi=element.xpath('doi')[0].text,
+                              status=element.attrib['status'].lower(),
+                              date_record_added=datetime.strptime(element.xpath('date_record_added')[0].text, '%Y-%m-%d'),
+                              date_record_updated=datetime.strptime(element.xpath('date_record_updated')[0].text, '%Y-%m-%d'),
+                              )
 
-                response_dict = {}  # This dictionary will be added to o_response_dicts when all fields have been extracted below.
+                    # Not all responses have the 'doi_message' field.
+                    if element.xpath('doi_message'):
+                        doi.message = element.xpath('doi_message')[0].text
 
-                if 'status' in interested_fields:
-                    response_dict['status']              = element.attrib['status']  # Becareful to get the 'status' from 'record' tag instead of 'records'
+                    dois.append(doi)
 
-                # The xpath has to be checked for each field since it may not exist and cause Python to fail.
-                if 'title' in interested_fields and element.xpath('title'):
-                    response_dict['title']               = element.xpath('title')[0].text
-                if 'id' in interested_fields and element.xpath('id'):
-                    response_dict['id']                  = element.xpath('id')[0].text
-                if 'doi' in interested_fields and element.xpath('doi'):
-                    response_dict['doi']                 = element.xpath('doi')[0].text
-                if 'date_record_added' in interested_fields and element.xpath('date_record_added'):
-                    response_dict['date_record_added']   = element.xpath('date_record_added')[0].text
-                if 'date_record_updated' in interested_fields and element.xpath('date_record_updated'):
-                    response_dict['date_record_updated'] = element.xpath('date_record_updated')[0].text
-                if 'publication_date' in interested_fields and element.xpath('publication_date'):
-                    response_dict['publication_date']      = element.xpath('publication_date')[0].text
-                if 'product_type' in interested_fields and element.xpath('product_type'):
-                    response_dict['product_type']          = element.xpath('product_type')[0].text
-                if 'product_type_specific' in interested_fields and element.xpath('product_type_specific'):
-                    response_dict['product_type_specific'] = element.xpath('product_type_specific')[0].text
+                    element_record += 1
 
-                # Not all responses have the 'doi_message' field.
-                if element.xpath('doi_message'):
-                    response_dict['doi_message']     = element.xpath('doi_message')[0].text
+        return dois
 
-                if 'related_identifier' in interested_fields and len(my_root.xpath('record/related_identifiers/related_identifier/identifier_value')) > 0: 
-                    response_dict['related_identifier']  = my_root.xpath('record/related_identifiers/related_identifier/identifier_value')[element_record].text
-
-                o_response_dicts.append(response_dict)
-
-                element_record += 1
-
-        # Append the error_record if there is something in it.
-        # If desire, add error_record to o_response_dicts.  For now, commented out.
-        #if bool(error_record):
-        #    o_response_dicts.append(error_record)
-
-        return o_response_dicts
-
-    def response_get_parse_osti_json(self,osti_response,query_dict=None):
+    def response_get_parse_osti_json(self,osti_response):
         """Function parse a response from a query to the OSTI server (in JSON format) and return a JSON object.
            Specific fields are extracted from input.  Not all fields in JSON are used."""
 
-        o_response_dicts = []  # It is possible that the query resulted in no rows.
+        dois = []  # It is possible that the query resulted in no rows.
 
         # These are the fields in a record returned by OSTI
         # fields_returned_from_osti = \
@@ -113,27 +94,45 @@ class DOIOstiWebParser:
         #     'related_identifiers', 'date_record_added', 'date_record_updated',\
         #     'keywords', 'doi_message']
 
-        query_dict_keys_list = list(query_dict.keys())
-        for ii in range(0,len(osti_response['records'])):
-            response_dict = {}
-            for jj in range(0,len(query_dict_keys_list)):
-                # Skip 'rows' field since it was used to require server to return many rows
-                # instead of the default 25 rows.
-                if query_dict_keys_list[jj] == 'rows':
-                   continue
-                # If the value matches from server, we retrieve the record.
-                if query_dict[query_dict_keys_list[jj]] == osti_response['records'][ii][query_dict_keys_list[jj]]:
+        for record in osti_response['records']:
+            doi = Doi(title=record['title'],
+                      publication_date=record['publication_date'],
+                      product_type=record['product_type'],
+                      product_type_specific=record['product_type_specific'],
+                      related_identifier=record['related_identifiers'][0]['identifier_value'],
+                      status=record['status'],
+                      id=record['id'],
+                      doi=record['doi'],
+                      date_record_added=record['date_record_added'],
+                      date_record_updated=record['date_record_updated'])
+            if 'doi_message' in record:
+                doi.message = record['doi_message']
 
-                    if 'doi_message' in osti_response['records'][ii]:
-                        response_dict['doi_message']  = osti_response['records'][ii]['doi_message']
-                    response_dict['title']  = osti_response['records'][ii]['title']
-                    response_dict['status'] = osti_response['records'][ii]['status']
-                    response_dict['id']                  = osti_response['records'][ii]['id']
-                    response_dict['doi']                 = osti_response['records'][ii]['doi']
-                    response_dict['date_record_added']   = osti_response['records'][ii]['date_record_added']
-                    response_dict['date_record_updated'] = osti_response['records'][ii]['date_record_updated']
-                    o_response_dicts.append(response_dict)
-                    break
+            dois.append(doi)
 
-        return o_response_dicts
+        return dois
+
+        # query_dict_keys_list = list(query_dict.keys())
+        # for ii in range(0,len(osti_response['records'])):
+        #     response_dict = {}
+        #     for jj in range(0,len(query_dict_keys_list)):
+        #         # Skip 'rows' field since it was used to require server to return many rows
+        #         # instead of the default 25 rows.
+        #         if query_dict_keys_list[jj] == 'rows':
+        #            continue
+        #         # If the value matches from server, we retrieve the record.
+        #         if query_dict[query_dict_keys_list[jj]] == osti_response['records'][ii][query_dict_keys_list[jj]]:
+        #
+        #             if 'doi_message' in osti_response['records'][ii]:
+        #                 response_dict['doi_message']  = osti_response['records'][ii]['doi_message']
+        #             response_dict['title']  = osti_response['records'][ii]['title']
+        #             response_dict['status'] = osti_response['records'][ii]['status']
+        #             response_dict['id']                  = osti_response['records'][ii]['id']
+        #             response_dict['doi']                 = osti_response['records'][ii]['doi']
+        #             response_dict['date_record_added']   = osti_response['records'][ii]['date_record_added']
+        #             response_dict['date_record_updated'] = osti_response['records'][ii]['date_record_updated']
+        #             o_response_dicts.append(response_dict)
+        #             break
+
+        #return o_response_dicts
 # end class DOIOstiWebParser
