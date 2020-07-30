@@ -76,6 +76,7 @@ jobs:
         #sudo gem install github_changelog_generator
         git clone https://github.com/github-changelog-generator/github-changelog-generator.git
         cd github-changelog-generator
+        gem sources --add https://rubygems.org/
         gem build github_changelog_generator.gemspec
         gem install --local github_changelog_generator-1.15.2.gem
         echo ::set-env name=REQUIREMENT_FILE::$(requirement-report --organization NASA-PDS --repository pds-doi-service  --output pdsen-corral --token ${{ secrets.GITHUB_TOKEN }} --dev)
