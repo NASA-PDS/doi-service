@@ -36,8 +36,8 @@
         <contract_nos></contract_nos>
         <other_identifying_nos></other_identifying_nos>
         <file_extension></file_extension>
-        <availability>NSSDCA</availability>
-        <contact_name>PDS OPERATOR</contact_name>
+        <availability>NASA Planetary Data System</availability>
+        <contact_name>PDS Operator</contact_name>
         <contact_org>PDS</contact_org>
         <contact_email>pds-operator@jpl.nasa.gov</contact_email>
         <contact_phone>818.393.7165</contact_phone>
@@ -58,9 +58,9 @@
         </contributors>
         <related_identifiers>
             <related_identifier>
-                <identifier_type>URL</identifier_type>
+                <identifier_type>URN</identifier_type>
                 <identifier_value>{{related_identifier}}</identifier_value>
-                <relation_type>Cites</relation_type>
+                <relation_type>IsIdenticalTo</relation_type>
             </related_identifier>
         </related_identifiers>
     </record>
