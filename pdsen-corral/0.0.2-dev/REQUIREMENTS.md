@@ -8,45 +8,26 @@ Requirements Summary
 
 
 This requirement is not impacted by the current version
-## The software shall be capable of accepting a request to reserve a DOI. ([#6](https://github.com/NASA-PDS/pds-doi-service/issues/6)) :boom:
+## The software shall be capable of accepting a request to reserve a DOI. ([#6](https://github.com/NASA-PDS/pds-doi-service/issues/6)) 
 
 
-The enhancements which impact this requirements are:
-- DOI Batch Processing capability ([#25](https://github.com/NASA-PDS/pds-doi-service/issues/25))
-- Design REST API and JSON response ([#19](https://github.com/NASA-PDS/pds-doi-service/issues/19))
-- Reserve a DOI capability ([#21](https://github.com/NASA-PDS/pds-doi-service/issues/21))
-
-## The software shall be capable of accepting a request to release a DOI. ([#7](https://github.com/NASA-PDS/pds-doi-service/issues/7)) :boom:
+This requirement is not impacted by the current version
+## The software shall be capable of accepting a request to release a DOI. ([#7](https://github.com/NASA-PDS/pds-doi-service/issues/7)) 
 
 
-The enhancements which impact this requirements are:
-- Implement the command line and parser to release a doi ([#46](https://github.com/NASA-PDS/pds-doi-service/issues/46))
-- DOI Batch Processing capability ([#25](https://github.com/NASA-PDS/pds-doi-service/issues/25))
-- Design REST API and JSON response ([#19](https://github.com/NASA-PDS/pds-doi-service/issues/19))
-- Release DOI capability ([#22](https://github.com/NASA-PDS/pds-doi-service/issues/22))
-
-## The software shall be capable of accepting a request to deactivate a DOI. ([#8](https://github.com/NASA-PDS/pds-doi-service/issues/8)) :boom:
+This requirement is not impacted by the current version
+## The software shall be capable of accepting a request to deactivate a DOI. ([#8](https://github.com/NASA-PDS/pds-doi-service/issues/8)) 
 
 
-The enhancements which impact this requirements are:
-- DOI Batch Processing capability ([#25](https://github.com/NASA-PDS/pds-doi-service/issues/25))
-- Design REST API and JSON response ([#19](https://github.com/NASA-PDS/pds-doi-service/issues/19))
-
-## The software shall be capable of accepting a request to update DOI metadata. ([#9](https://github.com/NASA-PDS/pds-doi-service/issues/9)) :boom:
+This requirement is not impacted by the current version
+## The software shall be capable of accepting a request to update DOI metadata. ([#9](https://github.com/NASA-PDS/pds-doi-service/issues/9)) 
 
 
-The enhancements which impact this requirements are:
-- Update Released DOI capability ([#24](https://github.com/NASA-PDS/pds-doi-service/issues/24))
-- DOI Batch Processing capability ([#25](https://github.com/NASA-PDS/pds-doi-service/issues/25))
-- Design REST API and JSON response ([#19](https://github.com/NASA-PDS/pds-doi-service/issues/19))
-
-## The software shall be capable of batch processing >1 DOI requests.	 ([#10](https://github.com/NASA-PDS/pds-doi-service/issues/10)) :boom:
+This requirement is not impacted by the current version
+## The software shall be capable of batch processing >1 DOI requests.	 ([#10](https://github.com/NASA-PDS/pds-doi-service/issues/10)) 
 
 
-The enhancements which impact this requirements are:
-- DOI Batch Processing capability ([#25](https://github.com/NASA-PDS/pds-doi-service/issues/25))
-- Design REST API and JSON response ([#19](https://github.com/NASA-PDS/pds-doi-service/issues/19))
-
+This requirement is not impacted by the current version
 # DOI metadata
 
 ## The software shall be capable of autonomously generating the minimum set of DOI metadata from PDS4 Collection, Bundle, Document products. ([#11](https://github.com/NASA-PDS/pds-doi-service/issues/11)) 
@@ -77,12 +58,10 @@ This requirement is not impacted by the current version
 This requirement is not impacted by the current version
 # DOI-management
 
-## The software shall provide a Status capability that will allow a user to query for the current status of a DOI ([#30](https://github.com/NASA-PDS/pds-doi-service/issues/30)) :boom:
+## The software shall provide a Status capability that will allow a user to query for the current status of a DOI ([#30](https://github.com/NASA-PDS/pds-doi-service/issues/30)) 
 
 
-The enhancements which impact this requirements are:
-- Develop DOI Status / Query component ([#27](https://github.com/NASA-PDS/pds-doi-service/issues/27))
-
+This requirement is not impacted by the current version
 ## The software shall provide the capability of producing a DOI Status Report based upon a user-specified query ([#35](https://github.com/NASA-PDS/pds-doi-service/issues/35)) 
 
 
