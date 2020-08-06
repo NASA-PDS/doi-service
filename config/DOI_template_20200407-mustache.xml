@@ -14,12 +14,6 @@
         <publisher>{{publisher}}</publisher>
         <publication_date>{{publication_date}}</publication_date>
         <site_url>{{site_url}}</site_url>
-        <!-- Collection definition:
-                a Collection product may refer to an aggregation of resources and research objects.
-                A Collection probably has items in it which have or will receive their own DOIs and thus be
-                retrievable independently. Therefore the Collection record is a high-level description of
-                the overall group of items.
-        -->
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
         <!-- Product Numbers: insert LIDVID here -->
