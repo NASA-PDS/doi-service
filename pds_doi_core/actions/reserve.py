@@ -6,6 +6,8 @@ from pds_doi_core.actions.action import DOICoreAction
 from pds_doi_core.input.input_util import DOIInputUtil
 from pds_doi_core.input.exeptions import InputFormatException, UnknownNodeException
 from pds_doi_core.input.node_util import NodeUtil
+from pds_doi_core.input.exeptions import DuplicatedTitleDOIException, InvalidDOIException, IllegalDOIActionException, UnexpectedDOIActionException
+from pds_doi_core.util.doi_validator import DOIValidator
 from pds_doi_core.util.general_util import get_logger
 
 logger = get_logger('pds_doi_core.actions.reserve')
@@ -16,11 +18,16 @@ class DOICoreActionReserve(DOICoreAction):
     _description = 'create or update a DOI before the data is published'
     _order = 0
 
+    def __init__(self, db_name=None):
+        super().__init__(db_name=db_name)
+        self._doi_validator = DOIValidator(db_name=db_name)
+
     def parse_arguments_from_cmd(self, arguments):
 
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
+        self._force_flag     = False
 
         if arguments:
             if hasattr(arguments, 'input'):
@@ -29,6 +36,8 @@ class DOICoreActionReserve(DOICoreAction):
                 self._node_id = arguments.node_id
             if hasattr(arguments, 'submitter_email'):
                 self._submitter       = arguments.submitter_email
+            if hasattr(arguments, 'force'):
+                self._force_flag      = arguments.force
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -40,6 +49,9 @@ class DOICoreActionReserve(DOICoreAction):
                                         ' Authorized values are: ' + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
+        action_parser.add_argument('-f', '--force',
+                                   help= 'If provided the reserve action will succeed even if warnings are raised: duplicated title or reserve a DOI which has already been previously reserve',
+                                   required=False, action='store_true')
         action_parser.add_argument('-i', '--input',
                                    help='A PDS4 label or a XLS spreadsheet or CSV file with the following columns: '
                                         + ','.join(DOIInputUtil.MANDATORY_COLUMNS),
@@ -100,7 +112,7 @@ class DOICoreActionReserve(DOICoreAction):
             exit(1)
 
     def run(self, input=None, node=None, submitter=None,
-            submit_label_flag=True):
+            submit_label_flag=True, force_flag=None):
         """
         Function receives a URI containing either XML, SXLS or CSV and create one or many labels to disk and submit these label(s) to OSTI.
         :param target_url:
@@ -117,6 +129,10 @@ class DOICoreActionReserve(DOICoreAction):
 
         if submitter is None:
             submitter = self._submitter
+        if force_flag is None:
+            force_flag = self._force_flag
+
+        logger.info(f"force_flag {force_flag}")
 
         try:
             contributor_value = self.m_node_util.get_node_long_name(node)
@@ -141,9 +157,46 @@ class DOICoreActionReserve(DOICoreAction):
             logger.error(f"File type has not been implemented:target_url {input}")
             exit(1)
 
+        counter = 0
         for doi in dois:
             doi.contributor = contributor_value
             doi.publisher = publisher_value
+            # Note that the mustache file must have the double quotes around the status value: <record status="{{status}}">
+            # as it is an attribute of a field.
+            doi.status = "Reserved" # Add 'status' field so the ranking in the workflow can be determined.
+
+            # Save the field 'publication_date' in 'original_publication_date' in case it is needed later if the label is not submitted.
+            # The type of 'publication_date' field is a timestamp.
+            doi.original_publication_date = doi.publication_date
+
+            # Wrap the validate() in a try/except to allow the processing of specific error in this run() function.
+            # Validate the label to ensure that no rules are violated against using the same title if a DOI has been minted.
+            # The IllegalDOIActionException can also occur if an existing DOI has been minted using the same lidvid value.
+
+            #doi.title = 'some other title counter_' + str(counter)
+            try:
+                # Validate the label to ensure that no rules are violated against using the same title if a DOI has been minted
+                # or the same lidvid has been used if a DOI has been minted.
+                self._doi_validator.validate(doi,self._name)
+            except DuplicatedTitleDOIException as e:
+                if not force_flag:
+                    # If the user did not use force_flag, re-raise the DuplicatedTitleDOIException exception.
+                    raise
+                else:
+                    logger.debug(e)
+                    logger.debug(f"Exception DuplicatedTitleDOIException encountered but force_flag is true, will continue.")
+            except IllegalDOIActionException as e:
+                if not force_flag:
+                    # If the user did not use force_flag, re-raise the IllegalDOIActionException exception.
+                    raise
+                else:
+                    logger.debug(e)
+                    logger.debug(f"Exception IllegalDOIActionException encountered but force_flag is true, will continue.")
+            except Exception as e:
+                raise # Re-raise all other exceptions.
+
+            # Note that if an individual row in the input file has an error, this loop will stop prematurely to allow
+            # the user to make correction.
 
         o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(dois)
 
@@ -172,6 +225,10 @@ class DOICoreActionReserve(DOICoreAction):
             # Write a transaction for the 'reserve' action.
             for doi in dois:
                 doi.status = 'reserved_not_submitted'
+                # Fetch the 'original_publication_date' field (a timestamp) and save to 'publication_date' field.
+                # otherwise the function create_osti_doi_reserved_record will fail because it is expecting 'publication_date' to be a timestamp.
+                doi.publication_date = doi.original_publication_date
+            o_doi_label = self.m_doi_output_osti.create_osti_doi_reserved_record(dois)
             output_str = o_doi_label
 
         # Use the service of TransactionBuilder to prepare all things related to writing a transaction.

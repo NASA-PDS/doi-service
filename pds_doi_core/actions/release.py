@@ -8,10 +8,11 @@
 # ------------------------------
 
 from pds_doi_core.actions.action import DOICoreAction, logger
-from pds_doi_core.input.exeptions import UnknownNodeException
+from pds_doi_core.input.exeptions import UnknownNodeException, DuplicatedTitleDOIException, InvalidDOIException, IllegalDOIActionException, UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException
 from pds_doi_core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_core.util.doi_validator import DOIValidator
 from pds_doi_core.input.node_util import NodeUtil
 
 class DOICoreActionRelease(DOICoreAction):
@@ -30,12 +31,13 @@ class DOICoreActionRelease(DOICoreAction):
         self._doi_web_client = DOIOstiWebClient()
         self._web_parser = DOIOstiWebParser()
         self._validator = OSTIInputValidator()
-
+        self._doi_validator = DOIValidator(db_name=db_name)
 
     def parse_arguments_from_cmd(self, arguments):
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
+        self._force_flag     = False
 
         if arguments:
             if hasattr(arguments, 'input'):
@@ -44,6 +46,8 @@ class DOICoreActionRelease(DOICoreAction):
                 self._node_id = arguments.node_id
             if hasattr(arguments, 'submitter_email'):
                 self._submitter       = arguments.submitter_email
+            if hasattr(arguments, 'force'):
+                self._force_flag      = arguments.force
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -56,6 +60,9 @@ class DOICoreActionRelease(DOICoreAction):
                                         ' Authorized values are: ' + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
+        action_parser.add_argument('-f', '--force',
+                                   help='If provided the release action will succeed even if warning are raised: duplicated title or release a DOI which has already been previously released.',
+                                   required=False, action='store_true')
         action_parser.add_argument('-i', '--input',
                                    help='A file containing a list of doi metadata to update/release'
                                         'in OSTI XML format (see https://www.osti.gov/iad2/docs#record-model)'
@@ -67,7 +74,7 @@ class DOICoreActionRelease(DOICoreAction):
                                    required=True,
                                    metavar='"my.email@node.gov"')
 
-    def run(self, input=None, node=None, submitter=None):
+    def run(self, input=None, node=None, submitter=None, force_flag=None):
         """
         Function performs a release of a DOI that has been previously reserved.  The input is a
         XML text file contains previously return output from a 'reserved' action.  The only
@@ -88,6 +95,11 @@ class DOICoreActionRelease(DOICoreAction):
 
         if submitter is None:
             submitter = self._submitter
+
+        if force_flag is None:
+            force_flag = self._force_flag
+
+        logger.info(f"force_flag {force_flag}")
 
         try:
             contributor_value = self.m_node_util.get_node_long_name(node)
@@ -114,6 +126,38 @@ class DOICoreActionRelease(DOICoreAction):
             exit(1)
 
         logger.debug(f"o_doi_label {o_doi_label} {type(o_doi_label)}")
+
+        # Before submitting the user input, it has to be validated against the database so a Doi object need to be built.
+        # Since the format of o_doi_label is same as a response from OSTI, the same parser can be used.
+        dois = self._web_parser.response_get_parse_osti_xml(o_doi_label)
+
+        for doi in dois:
+            doi.status      = 'Registered' # Add 'status' field so the ranking in the workflow can be determined.
+
+            # Wrap the validate() in a try/except to allow the processing of specific error in this run() function.
+            # Validate the label to ensure that no rules are violated against using the same title if a DOI has been minted.
+            # The IllegalDOIActionException can also occur if an existing DOI has been minted using the same lidvid value.
+
+            try:
+                # Validate the label to ensure that no rules are violated.
+                self._doi_validator.validate(doi,self._name)
+            except DuplicatedTitleDOIException as e:
+                if not force_flag:
+                    # If the user did not use force_flag, re-raise the DuplicatedTitleDOIException exception.
+                    raise
+                else:
+                    logger.debug(e)
+                    logger.debug(f"Exception DuplicatedTitleDOIException encountered but force_flag is true, will continue.")
+            except IllegalDOIActionException as e:
+                if not force_flag:
+                    # If the user did not use force_flag, re-raise the IllegalDOIActionException exception.
+                    raise
+                else:
+                    logger.debug(e)
+                    logger.debug(f"Exception IllegalDOIActionException encountered but force_flag is true, will continue.")
+            except Exception as e:
+                raise # Re-raise all other exceptions.
+
 
         # Submit the text containing the 'release' action and its associated DOIs and optional metadata.
         (o_release_result, osti_response_str) = self._doi_web_client.webclient_submit_existing_content(o_doi_label,

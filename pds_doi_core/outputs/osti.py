@@ -3,9 +3,6 @@ import pystache
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.entities.doi import Doi
 
-#from pds_doi_core.outputs.osti_reserve import DOIReserveOstiUtil
-from pds_doi_core.outputs.osti_release import DOIReleaseOstiUtil
-
 logger = get_logger(__name__)
 
 

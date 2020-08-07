@@ -4,22 +4,27 @@ import requests
 from lxml import etree
 
 from pds_doi_core.actions.action import DOICoreAction, logger
-from pds_doi_core.input.exeptions import UnknownNodeException
+from pds_doi_core.input.exeptions import DuplicatedTitleDOIException, InvalidDOIException, IllegalDOIActionException, UnexpectedDOIActionException
 from pds_doi_core.references.contributors import DOIContributorUtil
 from pds_doi_core.input.node_util import NodeUtil
 
 
-
+from pds_doi_core.util.doi_validator import DOIValidator
 
 class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     _description = 'prepare a OSTI record from a PDS4 labels'
     _order = 10
 
+    def __init__(self,db_name=None):
+        super().__init__(db_name=db_name)
+        self._doi_validator = DOIValidator(db_name=db_name)
+
     def parse_arguments_from_cmd(self,arguments):
         self._input_location = None
         self._node_id        = None
         self._submitter      = None
+        self._force_flag     = False
 
         if arguments:
             if hasattr(arguments, 'input'):
@@ -28,6 +33,8 @@ class DOICoreActionDraft(DOICoreAction):
                 self._node_id = arguments.node_id
             if hasattr(arguments, 'submitter_email'):
                 self._submitter       = arguments.submitter_email
+            if hasattr(arguments, 'force'):
+                self._force_flag      = arguments.force
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -38,6 +45,9 @@ class DOICoreActionDraft(DOICoreAction):
                                         ' Authorized values are: ' + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
+        action_parser.add_argument('-f', '--force',
+                                   help='If provided, will force an action to proceed even if the workflow step is less than in database',
+                                   required=False, action='store_true')
         action_parser.add_argument('-i', '--input',
                                    help='A pds4 label local or on http, or a list of them separated by ","',
                                    required=True,
@@ -47,7 +57,7 @@ class DOICoreActionDraft(DOICoreAction):
                                    required=True,
                                    metavar='"my.email@node.gov"')
         action_parser.add_argument('-t', '--target',
-                                   help='the system target to mint the DOI',
+                                   help='The system target to mint the DOI',
                                    required=False,
                                    default='osti',
                                    metavar='osti')
@@ -85,6 +95,7 @@ class DOICoreActionDraft(DOICoreAction):
         """
 
         o_transformed_label = etree.Element("records")  # If the file cannot be transformed, an XML text of an empty tree will be returned.
+        o_doi = None  # Set to None to signify if finding a file that does not end with '.xml' extension.
 
         # parse input_file
         if not input_file.startswith('http'):
@@ -93,34 +104,28 @@ class DOICoreActionDraft(DOICoreAction):
                xml_tree = etree.parse(input_file)
             else:
                 logger.warn(f"Expecting .xml files only, encountering {input_file}")
-                return etree.tostring(o_transformed_label).decode()
+                return etree.tostring(o_transformed_label).decode(),o_doi
         else:
             # A URL gets read into memory.
             response = requests.get(input_file)
             xml_tree = etree.fromstring(response.content)
 
-        doi = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
-        doi.publisher = self._config.get('OTHER', 'doi_publisher')
-        doi.contributor = contributor_value
+        o_doi = self.m_doi_pds4_label.get_doi_fields_from_pds4(xml_tree)
+        o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
+        o_doi.contributor = contributor_value
+        o_doi.status      = 'Draft' # Add 'status' field so the ranking in the workflow can be determined.
 
         # generate output
-        o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(doi)
+        o_doi_label = self.m_doi_output_osti.create_osti_doi_draft_record(o_doi)
 
-        # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
-        doi.status = 'draft'
-        transaction_obj = self.m_transaction_builder.prepare_transaction(node,
-                                                                         submitter,
-                                                                         [doi],
-                                                                         output_content=o_transformed_label)
-        # Write a transaction for the 'draft' action.
-        transaction_obj.log()
-
-        return o_doi_label
+        # Return the label (which is text) and a dictionary 'o_doi' representing all values parsed.
+        return o_doi_label,o_doi
 
     def run(self,
             input = None,
             node = None,
-            submitter = None):
+            submitter = None,
+            force_flag = None):
         """
         Function receives a URI containing either XML or a local file and draft a Data Object Identifier (DOI).
         :param target_url:
@@ -136,6 +141,11 @@ class DOICoreActionDraft(DOICoreAction):
 
         if submitter is None:
             submitter = self._submitter
+
+        if force_flag is None:
+            force_flag = self._force_flag
+
+        logger.info(f"force_flag {force_flag}")
 
         try:
             contributor_value = self.m_node_util.get_node_long_name(node)
@@ -165,7 +175,33 @@ class DOICoreActionDraft(DOICoreAction):
         for input_file in list_of_names:
 
             # Transform the PDS4 label to an OSTI record.
-            doi_label = self._transform_pds4_label_into_osti_record(input_file,node,submitter,contributor_value)
+
+            doi_label,doi_fields = self._transform_pds4_label_into_osti_record(input_file,node,submitter,contributor_value)
+
+            # Wrap the validate() in a try/except to allow the processing of specific error in this run() function
+            # especially the DuplicatedTitleDOIException exception.
+            # Validate the label to ensure that no rules are violated against using the same title if a DOI has been minted.
+
+            # If doi_fields is None, meaning the file name was not expected an XML file or a URL, there's no need to validate.
+            if doi_fields is None:
+                continue
+            try:
+                self._doi_validator.validate(doi_fields,self._name)
+            except DuplicatedTitleDOIException as e:
+                if not force_flag:
+                    # If the user did not use force_flag, re-raise the exception.
+                    raise
+            except Exception as e:
+                raise # Re-raise any other exceptions.
+
+            # Use the service of TransactionBuilder to prepare all things related to writing a transaction.
+            # The field 'status' has already been set by _transform_pds4_label_into_osti_record() so no need to do it here.
+            transaction_obj = self.m_transaction_builder.prepare_transaction(node,
+                                                                             submitter,
+                                                                             [doi_fields],
+                                                                             output_content=doi_label)
+            # Write a transaction for the 'draft' action.
+            transaction_obj.log()
 
             # Concatenate each label to o_doi_labels to return.
             doc = etree.fromstring(doi_label.encode())

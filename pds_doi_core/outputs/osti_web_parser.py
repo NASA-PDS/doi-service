@@ -58,17 +58,28 @@ class DOIOstiWebParser:
                     logger.error(f"ERROR OSTI RECORD {element.text}")
                     continue
                 else:
+                    # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
+                    #     ['id','doi','date_record_added',date_record_updated']
                     doi = Doi(title=element.xpath('title')[0].text,
                               publication_date=element.xpath('publication_date')[0].text,
                               product_type=element.xpath('product_type')[0].text,
                               product_type_specific=element.xpath('product_type_specific')[0].text,
                               related_identifier=element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text,
-                              id=element.xpath('id')[0].text,
-                              doi=element.xpath('doi')[0].text,
-                              status=element.attrib['status'].lower(),
-                              date_record_added=datetime.strptime(element.xpath('date_record_added')[0].text, '%Y-%m-%d'),
-                              date_record_updated=datetime.strptime(element.xpath('date_record_updated')[0].text, '%Y-%m-%d'),
-                              )
+                              status=element.attrib['status'].lower())
+
+                    # Not all responses have the 'id' or 'doi' fields.
+                    if element.xpath('id'):
+                        doi.id = element.xpath('id')[0].text
+                    if element.xpath('doi'):
+                        doi.doi = element.xpath('doi')[0].text
+
+                    # Not all responses have 'date_record_added' field.
+                    if element.xpath('date_record_added'):
+                        doi.date_record_added = datetime.strptime(element.xpath('date_record_added')[0].text, '%Y-%m-%d') 
+
+                    # Not all responses have 'date_record_updated' field.
+                    if element.xpath('date_record_updated'):
+                        doi.date_record_updated = datetime.strptime(element.xpath('date_record_updated')[0].text, '%Y-%m-%d') 
 
                     # Not all responses have the 'doi_message' field.
                     if element.xpath('doi_message'):
