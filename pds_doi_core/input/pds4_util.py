@@ -75,10 +75,6 @@ class DOIPDS4LabelUtil:
         return doi
 
     def get_publication_date(self, pds4_fields):
-        print("get_publication_date:pds4_fields",pds4_fields)
-        print('get_publication_date:publication_year' in pds4_fields.keys())
-        print('get_publication_date:modification_date' in pds4_fields.keys())
-        #exit(0)
         if 'publication_year' in pds4_fields.keys():
             return datetime.strptime(pds4_fields['publication_year'], '%Y')
         elif 'modification_date' in pds4_fields.keys():

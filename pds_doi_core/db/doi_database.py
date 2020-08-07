@@ -352,6 +352,10 @@ class DOIDataBase:
         return f' AND lower({column}) IN ({named_parameters})', named_parameter_values
 
     @staticmethod
+    def _get_query_criteria_title(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'title')
+
+    @staticmethod
     def _get_query_criteria_doi(v):
         return DOIDataBase._get_simple_in_criteria(v, 'doi')
 
