@@ -13,11 +13,13 @@ import json
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.db.doi_database import DOIDataBase
 from pds_doi_core.input.exeptions import UnknownNodeException
+from pds_doi_core.input.node_util import NodeUtil
 
 
 class DOICoreActionList(DOICoreAction):
     _name = 'list'
-    description = ' % pds-doi-cmd list \n'
+    _description = 'extract doi descriptions with criteria'
+    _order = 40
 
     def __init__(self, db_name=None):
         super().__init__(db_name=None)
@@ -79,16 +81,13 @@ class DOICoreActionList(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name)
+        action_parser = subparsers.add_parser(cls._name, description='extract the submitted DOI from the local transaction log, with following selection criteria')
+        node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument('-n', '--node-id',
-                                   help='A list of node names comma separated to pass as input to the database query.',
+                                   help='A list of node names comma separated to return the matching DOI.'
+                                        ' Authorized values are: ' + ','.join(node_values),
                                    required=False,
                                    metavar='"img,eng"')
-        action_parser.add_argument('-f', '--format-output',
-                                   help='The format of the output from the database query.  Default is JSON if not specified',
-                                   default='JSON',
-                                   required=False,
-                                   metavar='JSON')
         action_parser.add_argument('-doi', '--doi',
                                    help='A list of DOIs comma separated to pass as input to the database query.',
                                    required=False,
@@ -113,6 +112,11 @@ class DOICoreActionList(DOICoreAction):
                                    help='A list of email addresses comma seprated to pass as input to the database query',
                                    required=False,
                                    metavar='"my.email@node.gov"')
+        action_parser.add_argument('-f', '--format-output',
+                                   help='The format of the output from the database query.  Default is JSON if not specified',
+                                   default='JSON',
+                                   required=False,
+                                   metavar='JSON')
 
     def run(self):
         """

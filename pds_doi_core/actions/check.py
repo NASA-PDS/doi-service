@@ -24,7 +24,8 @@ from pds_doi_core.util.emailer import Emailer
 
 class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
-    description = ' % pds-doi-cmd check \n'
+    _description = 'check DOI pending status at OSTI'
+    _order = 30
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
@@ -37,7 +38,12 @@ class DOICoreActionCheck(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name)
+        action_parser = subparsers.add_parser(cls._name,
+                                              description=
+                                              'check DOI status of pending DOIs at OSTI,'
+                                              'email reports are sent to admins and submitters of the pending DOIs'
+                                              'when status is updated, the local transaction log is updated')
+
 
     def _update_transaction_db_when_needed(self, pending_record):
         """

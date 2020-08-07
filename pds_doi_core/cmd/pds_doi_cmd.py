@@ -26,7 +26,7 @@ logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
 def main():
     parser = DOICoreAction.create_cmd_parser()
     arguments = parser.parse_args()
-    action_type = arguments.action
+    action_type = arguments.subcommand
     # Moved many argument parsing to each action class.
     
     logger.info(f"run_dir {os.getcwd()}")

@@ -17,6 +17,7 @@ class DOIInputUtil:
     m_doi_output_util = DOIOutputUtil()
 
     m_EXPECTED_NUM_COLUMNS = 7
+    MANDATORY_COLUMNS = ['status', 'title', 'publication_date','product_type_specific','author_last_name','author_first_name','related_resource']
 
     def parse_sxls_file(self, i_filepath):
         """Function receives a URI containing SXLS format and create one external file per row to output directory."""

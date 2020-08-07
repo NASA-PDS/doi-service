@@ -31,6 +31,9 @@ This tools provides services for PDS operators to mint DOIs.
 #### tables
 For reserved dois, `xlsx` and `csv` inputs are supported.
 
+#### osti format
+The osti format can be used as an input for release.
+
 ## Developers
 
 Get the code and work on a branch
@@ -94,6 +97,13 @@ Deploy the package and launch the API server (for demo or test purpose):
 
     pip install  --upgrade --force-reinstall https://github.com/NASA-PDS-Incubator/pds-doi-service/releases/download/0.0.1%2Bdev/pds_doi_core-0.0.1+dev-py3-none-any.whl
     pds-doi-start-dev
+    
+## Generate documentation
+
+    brew install sphinx-doc
+    pip install -r requirements.txt
+    cd docs
+    sphinx-build -b html source build -a
     
     
 

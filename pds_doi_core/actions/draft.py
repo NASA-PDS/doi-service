@@ -6,12 +6,15 @@ from lxml import etree
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.references.contributors import DOIContributorUtil
+from pds_doi_core.input.node_util import NodeUtil
+
 
 
 
 class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
-    description = ' % pds-doi-cmd draft -n img -s Qui.T.Chau@jpl.nasa.gov -i input/bundle_in_with_contributors.xml\n'
+    _description = 'prepare a OSTI record from a PDS4 labels'
+    _order = 10
 
     def parse_arguments_from_cmd(self,arguments):
         self._input_location = None
@@ -28,18 +31,19 @@ class DOICoreActionDraft(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name)
+        action_parser = subparsers.add_parser(cls._name, description='create a draft of OSTI records, from PDS4 label or list of PDS4 labels input')
+        node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument('-n', '--node-id',
-                                   help='The pds discipline node in charge of the submission of the DOI',
+                                   help='The pds discipline node in charge of the DOI.'
+                                        ' Authorized values are: ' + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
         action_parser.add_argument('-i', '--input',
-                                   help='A pds4 label local or on http, a xls spreadsheet, a database file'
-                                        ' is also supported to reserve a list of doi',
+                                   help='A pds4 label local or on http, or a list of them separated by ","',
                                    required=True,
                                    metavar='input/bundle_in_with_contributors.xml')
         action_parser.add_argument('-s', '--submitter-email',
-                                   help='The email address of the user performing the action for these services',
+                                   help='The email address of the user creating the draft',
                                    required=True,
                                    metavar='"my.email@node.gov"')
         action_parser.add_argument('-t', '--target',

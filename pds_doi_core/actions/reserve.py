@@ -3,16 +3,18 @@ import requests
 from lxml import etree
 
 from pds_doi_core.actions.action import DOICoreAction
+from pds_doi_core.input.input_util import DOIInputUtil
 from pds_doi_core.input.exeptions import InputFormatException, UnknownNodeException
+from pds_doi_core.input.node_util import NodeUtil
 from pds_doi_core.util.general_util import get_logger
-from pds_doi_core.actions.release import DOICoreActionRelease
 
 logger = get_logger('pds_doi_core.actions.reserve')
 
 
 class DOICoreActionReserve(DOICoreAction):
     _name = 'reserve'
-    description = ' % pds-doi-cmd reserve -n img -s Qui.T.Chau@jpl.nasa.gov -i input/DOI_Reserved_GEO_200318.csv\n'
+    _description = 'create or update a DOI before the data is published'
+    _order = 0
 
     def parse_arguments_from_cmd(self, arguments):
 
@@ -30,18 +32,21 @@ class DOICoreActionReserve(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name)
+        action_parser = subparsers.add_parser(cls._name, description='create a DOI for a unpublished dataset.'
+                                                                     ' The input is a spreadsheet or csv file')
+        node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument('-n', '--node-id',
-                                   help='The pds discipline node in charge of the submission of the DOI',
+                                   help='The pds discipline node in charge of the submission of the DOI. '
+                                        ' Authorized values are: ' + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
         action_parser.add_argument('-i', '--input',
-                                   help='A pds4 label local or on http, a xls spreadsheet, a database file'
-                                        ' is also supported to reserve a list of doi',
+                                   help='A PDS4 label or a XLS spreadsheet or CSV file with the following columns: '
+                                        + ','.join(DOIInputUtil.MANDATORY_COLUMNS),
                                    required=True,
                                    metavar='input/DOI_Reserved_GEO_200318.csv')
         action_parser.add_argument('-s', '--submitter-email',
-                                   help='The email address of the user performing the action for these services',
+                                   help='The email address of the user reserving the DOIs',
                                    required=True,
                                    metavar='"my.email@node.gov"')
 

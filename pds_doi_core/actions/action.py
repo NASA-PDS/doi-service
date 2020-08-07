@@ -11,6 +11,11 @@ from pds_doi_core.util.general_util import get_logger
 logger = get_logger('pds_doi_core.actions.actions')
 
 
+# non object function to be used by sphynx-argparse for documentation
+def create_parser():
+    logger.info('parser for sphynx-argparse')
+    return DOICoreAction.create_cmd_parser()
+
 class DOICoreAction:
     m_doi_config_util = DOIConfigUtil()
     m_doi_input_util = DOIInputUtil()
@@ -18,6 +23,10 @@ class DOICoreAction:
     m_doi_pds4_label = DOIPDS4LabelUtil()
     m_doi_output_osti = DOIOutputOsti()
     m_node_util = NodeUtil()
+
+    _name = 'unknown'
+    _decription = 'no description'
+    _order = 9999999 # used to sort actions in documentation
 
     def __init__(self, db_name=None):
         self._config = self.m_doi_config_util.get_config()
@@ -31,16 +40,16 @@ class DOICoreAction:
     @staticmethod
     def create_cmd_parser():
         parser = argparse.ArgumentParser(
-            description='PDS code command for DOI management\n'
-                        ' Examples:\n ',
+            description='PDS core command for DOI management. The available subcommands are:\n',
             formatter_class=argparse.RawTextHelpFormatter)
         # ArgumentDefaultsHelpFormatter)
 
-        subparsers = parser.add_subparsers(dest='action')
+        subparsers = parser.add_subparsers(dest='subcommand')
 
         # create subparsers
-        for cls in DOICoreAction.__subclasses__():
-            parser.description += cls.description if 'description' in cls.__dict__ else ''
+        action_classes = sorted(DOICoreAction.__subclasses__(), key=lambda c : c._order)
+        for cls in action_classes:
+            parser.description += f'{cls._name} ({cls._description}),\n'
             add_to_subparser_method = getattr(cls, "add_to_subparser", None)
             if callable(add_to_subparser_method):
                 add_to_subparser_method.__call__(subparsers)

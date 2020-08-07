@@ -12,10 +12,12 @@ from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_core.input.node_util import NodeUtil
 
 class DOICoreActionRelease(DOICoreAction):
     _name = 'release'
-    description = ' % pds-doi-cmd release -n img -s Qui.T.Chau@jpl.nasa.gov -i input/DOI_Release_20200723.xml \n'
+    _description = 'create or update a DOI on OSTI server'
+    _order = 20
     # Examples:
     #
     # python3 pds_doi_core/cmd/pds_doi_cmd.py release -n img -s Qui.T.Chau@jpl.nasa.gov -i my_release_doc.xml
@@ -45,18 +47,23 @@ class DOICoreActionRelease(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name)
+        action_parser = subparsers.add_parser(cls._name,
+                                              description='register a new DOI or update an existing DOI on OSTI server')
 
+        node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument('-n', '--node-id',
-                                   help='The pds discipline node in charge of the submission of the DOI',
+                                   help='The pds discipline node in charge of the released DOI. '
+                                        ' Authorized values are: ' + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
         action_parser.add_argument('-i', '--input',
-                                   help='A file containing a list of doi metadata to update/release',
+                                   help='A file containing a list of doi metadata to update/release'
+                                        'in OSTI XML format (see https://www.osti.gov/iad2/docs#record-model)'
+                                        'The input can be produced by reserve and draft subcommands',
                                    required=True,
                                    metavar='input/DOI_Update_GEO_200318.xml')
         action_parser.add_argument('-s', '--submitter-email',
-                                   help='The email address of the user performing the action for these services',
+                                   help='The email address of the user performing the release',
                                    required=True,
                                    metavar='"my.email@node.gov"')
 
