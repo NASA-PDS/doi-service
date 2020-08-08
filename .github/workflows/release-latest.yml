@@ -73,7 +73,7 @@ jobs:
         sudo apt-get install python3-sphinx
         pip install -r requirements.txt
         cd docs
-        sphinx-build -b html source build -a
+        sphinx-build -M markdown source build -a
     - name: 📒 Publishing to GitHub Pages
       if: success()
       uses: JamesIves/github-pages-deploy-action@3.5.9
