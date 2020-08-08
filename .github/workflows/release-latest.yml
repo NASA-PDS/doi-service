@@ -67,6 +67,21 @@ jobs:
       run: |
         pip install pds-github-util
         python-snapshot-release --token ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 🖋 Writing documentation (to be move to stable when ready)
+      run: |
+        sudo apt-get install python3-sphinx
+        pip install -r requirements.txt
+        cd docs
+        sphinx-build -b html source build -a
+    - name: 📒 Publishing to GitHub Pages
+      if: success()
+      uses: crazy-max/ghaction-github-pages@v1
+      env:
+        GITHUB_PAT: ${{secrets.github_personal_access_token}}
+      with:
+        target_branch: gh-pages
+        build_dir: docs/build
     # the changelog will be available on https://nasa-pds.github.io/<your repo>/CHANGELOG
     - uses: actions/checkout@v2
       with:
