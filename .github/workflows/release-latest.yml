@@ -76,12 +76,11 @@ jobs:
         sphinx-build -b html source build -a
     - name: 📒 Publishing to GitHub Pages
       if: success()
-      uses: crazy-max/ghaction-github-pages@v1
-      env:
-        GITHUB_PAT: ${{secrets.GITHUB_TOKEN}}
-      with:
-        target_branch: gh-pages
-        build_dir: docs/build
+      uses: JamesIves/github-pages-deploy-action@3.5.9
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: docs/build # The folder the action should deploy.
     # the changelog will be available on https://nasa-pds.github.io/<your repo>/CHANGELOG
     - uses: actions/checkout@v2
       with:
