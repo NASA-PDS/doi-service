@@ -1,9 +1,5 @@
 # Changelog
 
-## [0.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.2-dev) (2020-08-06)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.2-dev)
-
 ## [0.0.3](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.3) (2020-07-31)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.2...0.0.3)
