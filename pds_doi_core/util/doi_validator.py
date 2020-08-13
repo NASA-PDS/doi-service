@@ -112,7 +112,7 @@ class DOIValidator:
         if doi.status.lower() not in self.m_workflow_order:
             logger.error(
                 f"Unexpected status of doi {doi.status.lower()} from label.  Valid values are {self.m_workflow_order.keys()}")
-            raise InvalidDOIException(
+            raise UnexpectedDOIActionException(
                 f"Unexpected status of doi {doi.status.lower()} from label.  Valid values are {self.m_workflow_order.keys()}")
 
         query_criterias = {}
