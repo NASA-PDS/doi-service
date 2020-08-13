@@ -30,7 +30,7 @@
     <id>25902</id>
     <site_url>http://mysite.example.com/link/to/my-dataset-id-25902.html</site_url>
     <site_code>NASA-PDS</site_code>
-    <title>Laboratory Shocked Feldspars Collection</title>
+    <title>Laboratory Shocked Feldspars Bundle</title>
     <doi>10.17189/25902</doi>
     <publication_date>2020-03-12</publication_date>
     <product_type>Collection</product_type>
@@ -57,7 +57,7 @@
     <id>25903</id>
     <site_url>http://mysite.example.com/link/to/my-dataset-id-25903.html</site_url>
     <site_code>NASA-PDS</site_code>
-    <title>Laboratory Shocked Feldspars Collection</title>
+    <title>Laboratory Shocked Feldspars Bundle</title>
     <doi>10.17189/25903</doi>
     <publication_date>2020-03-12</publication_date>
     <product_type>Collection</product_type>

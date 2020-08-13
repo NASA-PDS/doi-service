@@ -1,9 +1,4 @@
 import argparse
-from pds_doi_core.input.input_util import DOIInputUtil
-from pds_doi_core.input.node_util import NodeUtil
-from pds_doi_core.input.pds4_util import DOIPDS4LabelUtil
-from pds_doi_core.outputs.osti import DOIOutputOsti
-from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
@@ -18,24 +13,16 @@ def create_parser():
 
 class DOICoreAction:
     m_doi_config_util = DOIConfigUtil()
-    m_doi_input_util = DOIInputUtil()
-    m_doi_output_util = DOIOutputUtil()
-    m_doi_pds4_label = DOIPDS4LabelUtil()
-    m_doi_output_osti = DOIOutputOsti()
-    m_node_util = NodeUtil()
 
     _name = 'unknown'
     _decription = 'no description'
     _order = 9999999 # used to sort actions in documentation
+    _run_arguments = ()
 
     def __init__(self, db_name=None):
         self._config = self.m_doi_config_util.get_config()
         # Let each class derived from DOICoreAction parse its own arguments.
         self.m_transaction_builder = TransactionBuilder(db_name)
-
-    def parse_arguments_from_cmd(self, arguments):
-        # The 'check' action has no arguments.  This empty function is needed though.
-        return 1
 
     @staticmethod
     def create_cmd_parser():
@@ -55,5 +42,22 @@ class DOICoreAction:
                 add_to_subparser_method.__call__(subparsers)
 
         return parser
+
+    def parse_arguments_from_cmd(self, arguments):
+        if arguments:
+            for arg in self._run_arguments:
+                if hasattr(arguments, arg):
+                    v = getattr(arguments, arg)
+                    setattr(self, f'_{arg}', v)
+
+    def parse_arguments(self, kwargs):
+        for kwarg in self._run_arguments:
+            if kwarg in kwargs:
+                setattr(self, f'_{kwarg}', kwargs[kwarg])
+            logger.info(f"{kwarg} = {getattr(self,  f'_{kwarg}')}")
+
+
+
+
 
 # end of class DOICoreAction:

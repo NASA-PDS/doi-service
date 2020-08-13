@@ -11,7 +11,7 @@ import os
 import sys
 
 from pds_doi_core.util.general_util import get_logger
-from pds_doi_core.input.exeptions import UnknownNodeException
+from pds_doi_core.input.exceptions import UnknownNodeException
 
 # Get the common logger and set the level for this file.
 import logging

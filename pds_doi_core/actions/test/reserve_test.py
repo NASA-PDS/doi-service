@@ -1,6 +1,6 @@
 import os
 import unittest
-from pds_doi_core.input.exeptions import DuplicatedTitleDOIException, InvalidDOIException, IllegalDOIActionException, UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException
+from pds_doi_core.input.exceptions import WarningDOIException
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.actions.reserve import DOICoreActionReserve
 
@@ -18,24 +18,23 @@ class MyTestCase(unittest.TestCase):
     # Because validation has been added to each action, the force_flag=True is required as the command line is not parsed for unit test.
     db_name = 'doi_temp.db'
 
-    @classmethod
     def setUp(self):
         # This setUp() function is called for every test.
         self._action = DOICoreActionReserve(db_name=self.db_name)
         logger.info(f"Instantiate DOICoreActionReserve with database file {self.db_name}")
 
-    @classmethod
     def tearDown(self):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
             logger.info(f"Removed test artifact database file {self.db_name}")
+
 
     def test_reserve_xlsx(self):
         # Instantiate DOICoreActionReserve() class per test.
         # The setUp() function is called for every test.
         logger.info("test reserve xlsx file format")
 
-        self.assertRaises(TitleDoesNotMatchProductTypeException,self._action.run,
+        self._action.run(
             input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             node='img', submitter='my_user@my_node.gov',
             submit_label_flag=False,force_flag=True)
@@ -47,21 +46,14 @@ class MyTestCase(unittest.TestCase):
         # The setUp(0 function is called for every test.
         logger.info("test reserve xlsx file format")
 
-        self.assertRaises(TitleDoesNotMatchProductTypeException,self._action.run,input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
+        self._action.run(
+            input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             node='img', submitter='my_user@my_node.gov',
             submit_label_flag=True,force_flag=True)
 
-        # Expecting same exception because the title does not match product type.
-
-        self.assertRaises(TitleDoesNotMatchProductTypeException,self._action.run,
-                          input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
-                          node='img', submitter='my_user@my_node.gov',
-                          submit_label_flag=False,force_flag=True)
-
-
         # The tearDown() function is called per test.
 
-    def test_reserve_csv_and_submit(self):
+    def test_reserve_csv(self):
         # Instantiate DOICoreActionReserve() class per test.
         # The setUp(0 function is called for every test.
         logger.info("test reserve csv file format")
@@ -71,6 +63,8 @@ class MyTestCase(unittest.TestCase):
             submit_label_flag=False,force_flag=True)
         logger.info(osti_doi)
 
+    def test_reserve_csv_and_submit(self):
+        logger.info("test reserve csv file format and submit")
         osti_doi = self._action.run(
             input='input/DOI_Reserved_GEO_200318.csv',
             node='img', submitter='my_user@my_node.gov',

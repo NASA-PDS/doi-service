@@ -11,8 +11,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_1(self):
         logger.info("test making a query to database")
-        self._action.set_criterias(node_id='img')
-        result_list = self._action.run()
+        result_list = self._action.run(node='img')
         logger.info(result_list)
 
 if __name__ == '__main__':

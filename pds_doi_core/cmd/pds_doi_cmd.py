@@ -11,7 +11,7 @@ import os
 
 
 from pds_doi_core.util.general_util import get_logger
-from pds_doi_core.input.exeptions import UnknownNodeException
+from pds_doi_core.input.exceptions import UnknownNodeException
 from pds_doi_core.actions.action import DOICoreAction
 from pds_doi_core.actions.check import DOICoreActionCheck
 from pds_doi_core.actions.reserve import DOICoreActionReserve

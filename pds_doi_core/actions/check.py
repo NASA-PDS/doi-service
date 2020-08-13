@@ -13,7 +13,6 @@ import os
 import pystache
 from copy import deepcopy
 from datetime import date
-import tempfile
 
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.actions.list import DOICoreActionList
@@ -26,24 +25,33 @@ class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
     _description = 'check DOI pending status at OSTI'
     _order = 30
+    _run_arguments = ('submitter', 'email', 'attachment')
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
-        # Object self._config is already instantiated from the previous super().__init__() command, no need to do it again.
-        self._doi_web_client = DOIOstiWebClient()
-        self._emailer = Emailer()
-        self._submitter = self._config.get('OTHER', 'emailer_sender')
-
         self._list_obj = DOICoreActionList(db_name=db_name)
+        self._emailer = Emailer()
+
+        self._submitter = self._config.get('OTHER', 'emailer_sender')
+        self._email = True
+        self._attachment = True
+
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name,
-                                              description=
-                                              'check DOI status of pending DOIs at OSTI,'
-                                              'email reports are sent to admins and submitters of the pending DOIs'
-                                              'when status is updated, the local transaction log is updated')
-
+        action_parser = subparsers.add_parser(cls._name)
+        action_parser.add_argument('-e', '--email',
+                                   help='If provided the check action will send results to default recipients '
+                                        'and pending dois submitters',
+                                   required=False, action='store_true')
+        action_parser.add_argument('-a', '--attachement',
+                                   help='If provided the check action will send results as an email attachment',
+                                   required=False, action='store_true')
+        action_parser.add_argument('-r', '--submitter',
+                                   help='The email address of the user who will be registered as author '
+                                        'of the check action',
+                                   required=False,
+                                   metavar='"my.email@node.gov"')
 
     def _update_transaction_db_when_needed(self, pending_record):
         """
@@ -55,15 +63,15 @@ class DOICoreActionCheck(DOICoreAction):
 
         doi_value = pending_record['doi']
         query_dict = {'doi': doi_value}
-        doi_xml = self._doi_web_client.webclient_query_doi(self._config.get('OSTI', 'url'),
-                                                           query_dict,
-                                                           i_username=self._config.get('OSTI', 'user'),
-                                                           i_password=self._config.get('OSTI', 'password'))
+        doi_xml = DOIOstiWebClient().webclient_query_doi(self._config.get('OSTI', 'url'),
+                                                         query_dict,
+                                                         i_username=self._config.get('OSTI', 'user'),
+                                                         i_password=self._config.get('OSTI', 'password'))
         dois = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
 
-        if len(dois) == 1:
+        if dois:
             doi = dois[0]
-            if doi.status != 'Pending':
+            if doi.status.lower() != 'Pending'.lower():
                 # have an author for this automated action
                 doi.submitter = self._submitter
                 transaction_obj = self.m_transaction_builder.prepare_transaction(pending_record['node_id'],
@@ -231,35 +239,27 @@ class DOICoreActionCheck(DOICoreAction):
 
         return 1
 
-    def run(self, to_send_mail_flag=True, to_send_attachment_flag=True):
+    def run(self, **kwargs):
         """
         Function query the local database for latest records for pending state and check OSTI server all the records with criteria specified in query_criterias return the object either in JSON or XML.
         Once the query is returned every record will be checked for initial status and status returned from OSTI.
         If the status has changed from initial status, write a new record to the database.
         All parameters are optional and may be useful for tests.
-        :param output_format:
-        :param query_criterias:
-        :param to_send_mail_flag:
-        :param to_send_attachment_flag:
-        :return: o_check_result:
         """
 
-        logger.debug(f"to_send_mail_flag {to_send_mail_flag}")
-        o_check_result = []
+        self.parse_arguments(kwargs)
 
         # Get the list of latest rows in database with status = 'Pending'.
-        # Use query_criterias if provided from user.
-        self._list_obj.set_criterias(status='pending')
-        o_doi_list = self._list_obj.run()
+        o_doi_list = self._list_obj.run(status='pending')
 
         if len(o_doi_list) > 0:
             pending_state_list = json.loads(o_doi_list)
 
             for pending_record in pending_state_list:
                 logger.debug(f"pending_record {pending_record}")
-                pending_record = self._update_transaction_db_when_needed(pending_record)
+                self._update_transaction_db_when_needed(pending_record)
 
-            self._group_dois_updated_records_and_email(pending_state_list, to_send_mail_flag, to_send_attachment_flag)
+            self._group_dois_updated_records_and_email(pending_state_list, self._email, self._attachment)
 
         # Return a list of DOIs updated or still in pending status.  List can be empty meaning no records have changed from 'Pending' to something else.
         return pending_state_list

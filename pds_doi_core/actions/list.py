@@ -12,14 +12,16 @@ import json
 
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.db.doi_database import DOIDataBase
-from pds_doi_core.input.exeptions import UnknownNodeException
 from pds_doi_core.input.node_util import NodeUtil
+from pds_doi_core.input.exceptions import UnknownNodeException
+
 
 
 class DOICoreActionList(DOICoreAction):
     _name = 'list'
     _description = 'extract doi descriptions with criteria'
     _order = 40
+    _run_arguments = ('format', 'doi', 'lid', 'lidvid', 'node', 'status', 'start_update', 'end_update', 'submitter')
 
     def __init__(self, db_name=None):
         super().__init__(db_name=None)
@@ -31,28 +33,28 @@ class DOICoreActionList(DOICoreAction):
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
         self._query_criterias = {}
-        self._output_format = 'JSON'
+        self._format = 'JSON'
 
     def parse_arguments_from_cmd(self, arguments):
         criteria = {}
         for k,v in arguments._get_kwargs():
-            if k != 'action':
+            if k != 'subcommand':
                 criteria[k] = v
 
-        self.set_criterias(**criteria)
+        self.parse_criteria(**criteria)
 
-    def set_criterias(self,
-                       format_output='JSON',
+    def parse_criteria(self,
+                       format='JSON',
                        doi=None,
                        lid=None,
                        lidvid=None,
-                       node_id=None,
+                       node=None,
                        status=None,
                        start_update=None,
                        end_update=None,
-                       submitter_email=None):
+                       submitter=None):
 
-        self._output_format = format_output
+        self._format = format
 
         if doi:
             self._query_criterias['doi'] = doi.split(',')
@@ -63,11 +65,12 @@ class DOICoreActionList(DOICoreAction):
         if lidvid:
             self._query_criterias['lidvid'] = lidvid.split(',')
 
-        if submitter_email:
-            self._query_criterias['submitter'] = submitter_email.split(',')
+        if submitter:
+            self._query_criterias['submitter'] = submitter.split(',')
 
-        if node_id:
-            self._query_criterias['node'] = node_id.lstrip().rstrip().split(',')
+        if node:
+            self._query_criterias['node'] = node.lstrip().rstrip().split(',')
+            node_longnames = [NodeUtil().get_node_long_name(node) for node in self._query_criterias['node']]
 
         if status:
             self._query_criterias['status'] = status.lstrip().rstrip().split(',')
@@ -83,11 +86,16 @@ class DOICoreActionList(DOICoreAction):
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(cls._name, description='extract the submitted DOI from the local transaction log, with following selection criteria')
         node_values = NodeUtil.get_permissible_values()
-        action_parser.add_argument('-n', '--node-id',
+        action_parser.add_argument('-n', '--node',
                                    help='A list of node names comma separated to return the matching DOI.'
                                         ' Authorized values are: ' + ','.join(node_values),
                                    required=False,
                                    metavar='"img,eng"')
+        action_parser.add_argument('-f', '--format',
+                                   help='The format of the output from the database query.  Default is JSON if not specified',
+                                   default='JSON',
+                                   required=False,
+                                   metavar='JSON')
         action_parser.add_argument('-doi', '--doi',
                                    help='A list of DOIs comma separated to pass as input to the database query.',
                                    required=False,
@@ -108,44 +116,35 @@ class DOICoreActionList(DOICoreAction):
                                    help='The end time for record update time to pass as input to the database query.',
                                    required=False,
                                    metavar='2020-12-311T23:59:00.000000')
-        action_parser.add_argument('-s', '--submitter-email',
+        action_parser.add_argument('-s', '--submitter',
                                    help='A list of email addresses comma seprated to pass as input to the database query',
                                    required=False,
                                    metavar='"my.email@node.gov"')
-        action_parser.add_argument('-f', '--format-output',
-                                   help='The format of the output from the database query.  Default is JSON if not specified',
-                                   default='JSON',
-                                   required=False,
-                                   metavar='JSON')
 
-    def run(self):
+    def run(self, **kwargs):
         """
         Function list all the latest records in the named database and return the object either in JSON or XML.
         :param submitter_email:
         :param query_criterias:
         :return: o_list_result:
         """
+        try:
 
-        # For a list operation, the 'node' field is just a series of tokens to pass into database query.
-        # We do a verification by converting each to a long name.
-        if (len(self._query_criterias) > 0) and 'node' in self._query_criterias:
-            for ii in range(0,len(self._query_criterias['node'])):
-                try:
-                    contributor_value = self.m_node_util.get_node_long_name(self._query_criterias['node'][ii])
-                    logger.info(f"contributor_value['{contributor_value}']")
-                except UnknownNodeException as e:
-                    raise e
+            self.parse_criteria(**kwargs)
 
-        columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
+            columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
 
-        # generate output
-        if self._output_format == 'JSON':
-            result_json = []
-            for row in rows:
-                result_json.append({columns[i]:row[i] for i in range(len(columns))})
-            o_query_result = json.dumps(result_json)
-            logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
-        else:
-            logger.error(f"Output format type {self._output_format} not supported yet")
-            exit(1)
-        return o_query_result
+            # generate output
+            if self._format == 'JSON':
+                result_json = []
+                for row in rows:
+                    result_json.append({columns[i]:row[i] for i in range(len(columns))})
+                o_query_result = json.dumps(result_json)
+                logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
+            else:
+                logger.error(f"Output format type {self._format} not supported yet")
+                exit(1)
+            return o_query_result
+
+        except Exception:
+            raise

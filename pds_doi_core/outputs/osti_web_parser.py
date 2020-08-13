@@ -52,7 +52,8 @@ class DOIOstiWebParser:
         element_record = 0
         for element in my_root.iter():
             if element.tag == 'record':
-                if element.get('status').lower() == 'error':
+                status = element.get('status')
+                if status is not None and status.lower() == 'error':
                     # The 'error' record is parsed differently and does not have all the attributes we desire.
                     # Get the entire text and save it in 'error' key.  Print a WARN only since it is not related to any particular 'doi' or 'id' action.
                     logger.error(f"ERROR OSTI RECORD {element.text}")
@@ -65,7 +66,7 @@ class DOIOstiWebParser:
                               product_type=element.xpath('product_type')[0].text,
                               product_type_specific=element.xpath('product_type_specific')[0].text,
                               related_identifier=element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text,
-                              status=element.attrib['status'].lower())
+                              status=status)
 
                     # Not all responses have the 'id' or 'doi' fields.
                     if element.xpath('id'):

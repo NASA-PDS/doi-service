@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pds_doi_core.outputs.output_util import DOIOutputUtil
 from pds_doi_core.util.general_util import get_logger
-from pds_doi_core.input.exeptions import InputFormatException
+from pds_doi_core.input.exceptions import InputFormatException
 from pds_doi_core.entities.doi import Doi
 
 # Get the common logger and set the level for this file if desire.
@@ -42,13 +42,10 @@ class DOIInputUtil:
                                             'product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)': 'product_type_specific',
                                             'related_resource\nLIDVID': 'related_resource'})
 
-        if (num_cols < self.m_EXPECTED_NUM_COLUMNS):
-            logger.error(
-                "expecting" + " " + str(self.m_EXPECTED_NUM_COLUMNS) + " columns in XLS file has %i columns." % (
-                    num_cols))
-            logger.error("i_filepath" + " " + i_filepath)
-            logger.error("columns " + " " + str(list(xl_sheet.columns)))
-            raise InputFormatException("columns " + " " + str(list(xl_sheet.columns)))
+        if num_cols < self.m_EXPECTED_NUM_COLUMNS:
+            msg = f"expecting {self.m_EXPECTED_NUM_COLUMNS} columns in XLS file has {num_cols} columns."
+            logger.error(msg)
+            raise InputFormatException(msg)
         else:
             dois = self._parse_rows_to_doi_meta(xl_sheet)
             logger.info("FILE_WRITE_SUMMARY:num_rows" + " " + str(num_rows))
