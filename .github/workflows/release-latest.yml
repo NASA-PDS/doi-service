@@ -113,8 +113,8 @@ jobs:
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: gh-pages
+        github_token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+        branch: master
     - name: Ping pdsen-corral
       run: |
         pip install pds-github-util
