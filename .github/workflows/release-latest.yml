@@ -106,7 +106,7 @@ jobs:
       run: |
         git config --local user.email "tloubrieu-jpl@github.com"
         git config --local user.name "PDS dev admin"
-        git pull
+        git pull origin master
         echo "commit pdsen-corral/CHANGELOG.md and ${{ env.REQUIREMENT_FILE }} on master branch"
         git add CHANGELOG.md ${{ env.REQUIREMENT_FILE }}
         git commit -m "update changelog and requirements" --allow-empty
