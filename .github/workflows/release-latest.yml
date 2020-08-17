@@ -101,13 +101,13 @@ jobs:
         github_changelog_generator --user NASA-PDS --project pds-doi-service  --output CHANGELOG.md --token ${{ secrets.ADMIN_GITHUB_TOKEN }} --configure-sections '{"improvements":{"prefix":"**Improvements:**","labels":["Epic"]},"defects":{"prefix":"**Defects:**","labels":["bug"]},"deprecations":{"prefix":"**Deprecations:**","labels":["deprecation"]}}' --no-pull-requests  --issues-label '**Other closed issues:**' --issue-line-labels high,low,medium
     - name: Create requirements
       run: |
-        echo ::set-env name=REQUIREMENT_FILE::$(requirement-report --organization NASA-PDS --repository pds-doi-service  --output pdsen-corral --token ${{ secrets.GITHUB_TOKEN }} --dev)
+        echo ::set-env name=REQUIREMENT_FILE::$(requirement-report --organization NASA-PDS --repository pds-doi-service  --output . --token ${{ secrets.ADMIN_GITHUB_TOKEN }} --dev)
     - name: Commit CHANGELOG.md and requirement files
       run: |
         git config --local user.email "tloubrieu-jpl@github.com"
         git config --local user.name "PDS dev admin"
-        echo "commit pdsen-corral/CHANGELOG.md and ${{ env.REQUIREMENT_FILE }}on master branch"
-        git add pdsen-corral/CHANGELOG.md ${{ env.REQUIREMENT_FILE }}
+        echo "commit pdsen-corral/CHANGELOG.md and ${{ env.REQUIREMENT_FILE }} on master branch"
+        git add CHANGELOG.md ${{ env.REQUIREMENT_FILE }}
         git commit -m "update changelog and requirements" --allow-empty
     - name: Push changes
       uses: ad-m/github-push-action@master
