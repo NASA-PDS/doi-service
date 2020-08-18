@@ -59,23 +59,13 @@ class DOIOstiWebParser:
                     logger.error(f"ERROR OSTI RECORD {element.text}")
                     continue
                 else:
-                    # It is important to check if either 'URL' or 'URN' are in the element.xpath for related_identifiers before accessing it
-                    # otherwise an index error will occur.
-                    if element.xpath("related_identifiers/related_identifier[./identifier_type='URL']"):
-                        identifier_parsed = element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text
-                    elif element.xpath("related_identifiers/related_identifier[./identifier_type='URN']"):
-
-                        identifier_parsed = element.xpath("related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text
-                    else:
-                        raise InputFormatException("Cannot find identifier_value.  Expecting either URL or URN for identifier_type")
-
                     # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
                     #     ['id','doi','date_record_added',date_record_updated']
                     doi = Doi(title=element.xpath('title')[0].text,
                               publication_date=element.xpath('publication_date')[0].text,
                               product_type=element.xpath('product_type')[0].text,
                               product_type_specific=element.xpath('product_type_specific')[0].text,
-                              related_identifier=identifier_parsed,
+                              related_identifier=element.xpath("related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text,
                               status=status)
 
                     # Not all responses have the 'id' or 'doi' fields.
