@@ -4,9 +4,7 @@ Feature: create a draft OSTI DOI
   Scenario Outline: Create a draft <output_type> DOI from a valid PDS4 <input_value> label
     Given a valid PDS4 <input_type> label at url <input_value>
     When create draft DOI in <output_type> format
-    Then PDS4 <input_value> label is validated for DOI production
     Then <output_type> DOI label is created like <output_value>
-    Then The <output_type> DOI label is valid
 
     Examples: Valid PDS4 labels
       | input_type             | input_value                                                                                               | output_type | output_value                        |
@@ -25,6 +23,17 @@ Feature: create a draft OSTI DOI
     Examples: Invalid PDS4 labels
       | input_type | input_value                   | output_type | error_report                |
       | bundle     | tests/data/invalid_bundle.xml | OSTI        | tests/data/error_report.txt |
+
+
+
+  Scenario Outline: Software results match historical draft transactions <transaction_dir>
+    Given historical transaction <transaction_dir>
+    When historical <input_subdir> is drafted
+    Then producted osti record is similar to historical osti <output_subdir>
+
+    Examples: historical draft transactions
+      | transaction_dir                 | input_subdir                         | output_subdir
+      | ATMOS_mpf_irtf_Bundles_20200414 | aaaSubmitted_by_ATMOS_active_2020414 | aaaRegistered_by_EN_active_20200330
 
 
 

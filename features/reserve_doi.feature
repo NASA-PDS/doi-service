@@ -21,3 +21,13 @@ Feature: reserve a OSTI DOI
       | input_type   | url                     |
       | bundle | tests/data/invalid_bundle.xml |
 
+  Scenario Outline: Software results match historical reserve transactions <transaction_dir>
+    Given historical transaction <transaction_dir>
+    When historical <input> is reserved
+    Then producted osti record is similar to historical osti <output_subdir>
+
+    Examples: historical reserve transactions
+      | transaction_dir                       | input                                                                  | output_subdir
+      | ATMOS_reserve_Insight_Bundle_20200624 | aaaSubmitted_by_ATMOS_reserve_2020624/DOI_Requests_ATM-2020-06-30.xlsx | aaRegistered_by_EN
+
+
