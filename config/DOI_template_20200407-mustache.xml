@@ -5,11 +5,15 @@
         <authors>
             {{#authors}}
              <author>
+                {{#first_name}}
                 <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#last_name}}
                 <last_name>{{last_name}}</last_name>
-                {{#full_name.length}}
+                {{/last_name}}
+                {{#full_name}}
                 <full_name>{{full_name}}</full_name>
-                {{/full_name.length}}
+                {{/full_name}}
             </author>
             {{/authors}}
         </authors>
@@ -40,11 +44,15 @@
             {{#editors}}
             <contributor>
                     <email/>
+                    {{#first_name}}
                     <first_name>{{first_name}}</first_name>
+                    {{/first_name}}
+                    {{#last_name}}
                     <last_name>{{last_name}}</last_name>
-                    {{#full_name.length}}
+                    {{/last_name}}
+                    {{#full_name}}
                     <full_name>{{full_name}}</full_name>
-                    {{/full_name.length}}
+                    {{/full_name}}
                     <contributor_type>Editor</contributor_type>
                     <affiliations/>
             </contributor>
