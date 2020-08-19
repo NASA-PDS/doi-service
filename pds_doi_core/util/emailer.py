@@ -55,6 +55,7 @@ class Emailer:
             smtpObj = smtplib.SMTP(self.m_localhost,self.m_email_port)
             smtpObj.sendmail(sender, receivers, out_message)
             logger.debug(f"Successfully sent email to {receivers}")
+            smtpObj.quit() # Terminate the SMTP session and close the connection.
         except OSError:
             logger.error("OSError:Error: unable to send email")
             logger.debug(f"subject,message_body {subject,message_body}")
@@ -117,6 +118,7 @@ class Emailer:
             smtpObj = smtplib.SMTP(self.m_localhost,self.m_email_port)
             smtpObj.send_message(message)
             logger.debug(f"Successfully sent email to {message['To']}")
+            smtpObj.quit() # Terminate the SMTP session and close the connection.
         except OSError:
             logger.error("OSError:Error: unable to send email")
             logger.error("subject,message_body {msg['Subject'],msg.get_body('plain')}")

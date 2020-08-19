@@ -72,8 +72,10 @@ class DOIValidator:
             Otherwise we raise a warning.
         """
         product_type_specific_split = doi.product_type_specific.split(' ')
-        product_type_specific_suffix = product_type_specific_split[1] if len(product_type_specific_split)>1 else '<<< no product specfic type found >>> '
+        # The suffix should be the last field in the product_type_specific so if it has many tokens, check the last one.
+        product_type_specific_suffix = product_type_specific_split[-1] if len(product_type_specific_split)>1 else '<<< no product specfic type found >>> '
 
+        logger.debug(f"product_type_specific_suffix: {product_type_specific_suffix}, doi.title: {doi.title}")
         if not product_type_specific_suffix.lower() in doi.title.lower():
             logger.debug(f"DOI with lidvid {doi.related_identifier} title {doi.title} does not match product type {doi.product_type.lower()}. Product type should be in the title")
             raise TitleDoesNotMatchProductTypeException(f"DOI with lidvid {doi.related_identifier} title {doi.title} does not match product type {doi.product_type.lower()}. Product type should be in the title")

@@ -65,7 +65,7 @@ class DOIOstiWebParser:
                               publication_date=element.xpath('publication_date')[0].text,
                               product_type=element.xpath('product_type')[0].text,
                               product_type_specific=element.xpath('product_type_specific')[0].text,
-                              related_identifier=element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text,
+                              related_identifier=element.xpath("related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text,
                               status=status)
 
                     # Not all responses have the 'id' or 'doi' fields.
