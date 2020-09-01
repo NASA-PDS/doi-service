@@ -8,10 +8,18 @@
              <author>
                 <first_name>{{first_name}}</first_name>
                 <last_name>{{last_name}}</last_name>
-                <full_name>{{full_name}}</full_name>
             </author>
             {{/authors}}
         </authors>
+        <contributors>
+            {{#contributors}}
+            <contributor>
+                <full_name>{{full_name}}</full_name>
+                <contributor_type>DataCurator</contributor_type>
+                <affiliations/>
+            </contributor>
+            {{/contributors}}
+        </contributors>
         <publication_date>{{publication_date}}</publication_date>
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>

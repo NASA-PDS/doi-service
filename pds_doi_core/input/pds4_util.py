@@ -1,10 +1,15 @@
 import requests
 from datetime import datetime
+from enum import Enum
 
+from pds_doi_core.input.exceptions import InputFormatException
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.entities.doi import Doi
 logger = get_logger('pds_doi_core.input.pds4_util')
 
+class BestParserMethod(Enum):
+    BY_COMMA      = 1
+    BY_SEMI_COLON = 2
 
 class DOIPDS4LabelUtil:
 
@@ -34,10 +39,13 @@ class DOIPDS4LabelUtil:
             'product_class': '/*/pds4:Identification_Area/pds4:product_class',
             'authors': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:author_list',
             'editors': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:editor_list',
-            'investigation_area': '/*/pds4:Context_Area/pds4:Investigation_Area/*',
+            # Desire only the 'name' field
+            'investigation_area': '/*/pds4:Context_Area/pds4:Investigation_Area/pds4:name',
+            # Desire only the 'name' field.
             'observing_system_component':
-                '/*/pds4:Context_Area/pds4:Observing_System/pds4:Observing_System_Component/*',
-            'target_identication': '/*/pds4:Context_Area/pds4:Target_Identification/*',
+                '/*/pds4:Context_Area/pds4:Observing_System/pds4:Observing_System_Component/pds4:name',
+            # Desire only the 'name' field
+            'target_identication': '/*/pds4:Context_Area/pds4:Target_Identification/pds4:name',
             'primary_result_summary':  '/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*',
 
         }
@@ -48,6 +56,28 @@ class DOIPDS4LabelUtil:
                 pds4_field_value_dict[key] = ' '.join([elmt.text.strip() for elmt in elmts]).strip()
 
         return pds4_field_value_dict
+
+    def _make_best_guess_method_to_parse_authors(self,pds4_fields_authors):
+        # The 'authors' field is inconsistent.  Sometimes it is using comma ',' to separate
+        # the names, sometimes it is using semi-colon ';'
+        # If after parsing using the get_author_names(), if the 'full_name' is in the dictionary
+        # it is a clue that the best method of parsing is the other one.
+
+        o_best_method = None 
+        authors_from_comma_split      = pds4_fields_authors.split(',')
+        authors_from_semi_colon_split = pds4_fields_authors.split(';')
+
+        authors_list_via_comma = self.get_author_names(authors_from_comma_split)
+        authors_list_via_semi_colon = self.get_author_names(authors_from_semi_colon_split)
+
+        for one_author in authors_list_via_comma:
+            if 'full_name' in one_author.keys():
+                o_best_method = BestParserMethod.BY_SEMI_COLON
+        for one_author in authors_list_via_semi_colon:
+            if 'full_name' in one_author.keys():
+                o_best_method = BestParserMethod.BY_COMMA 
+
+        return o_best_method
 
     def process_pds4_fields(self, pds4_fields):
         doi_field_value_dict = {}
@@ -60,6 +90,16 @@ class DOIPDS4LabelUtil:
                                                 requests.utils.quote(pds4_fields['vid']))
         editors = self.get_editor_names(pds4_fields['editors'].split(';')) if 'editors' in pds4_fields.keys() else None
 
+
+        # The 'authors' field is inconsistent.  Try to make a best guess on which method is better.
+        o_best_method =  self._make_best_guess_method_to_parse_authors(pds4_fields['authors'])
+        if o_best_method == BestParserMethod.BY_COMMA:
+            authors_list = pds4_fields['authors'].split(',')
+        elif o_best_method == BestParserMethod.BY_SEMI_COLON:
+            authors_list = pds4_fields['authors'].split(';')
+        else:
+            raise InputFormatException("Cannot split the authors using comma or semi-colon.")
+
         doi = Doi(title=pds4_fields['title'],
                   description=pds4_fields['description'],
                   publication_date=self.get_publication_date(pds4_fields),
@@ -67,7 +107,7 @@ class DOIPDS4LabelUtil:
                   product_type_specific= "PDS4 Refereed Data " + product_type,
                   related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
                   site_url=site_url,
-                  authors=self.get_author_names(pds4_fields['authors'].split(',')),
+                  authors=self.get_author_names(authors_list),
                   editors=editors,
                   keywords=self.get_keywords(pds4_fields)
                   )
@@ -75,10 +115,11 @@ class DOIPDS4LabelUtil:
         return doi
 
     def get_publication_date(self, pds4_fields):
-        if 'publication_year' in pds4_fields.keys():
-            return datetime.strptime(pds4_fields['publication_year'], '%Y')
-        elif 'modification_date' in pds4_fields.keys():
+        # The field 'modification_date' is favored first.  If it occurs, use it, otherwise use 'publication_year' field next.
+        if 'modification_date' in pds4_fields.keys():
             return datetime.strptime(pds4_fields['modification_date'], '%Y-%m-%d')
+        elif 'publication_year' in pds4_fields.keys():
+            return datetime.strptime(pds4_fields['publication_year'], '%Y')
         else:
             return datetime.now()
 
@@ -90,6 +131,22 @@ class DOIPDS4LabelUtil:
                 keyword_list = [k.strip()
                                 for k in pds4_fields[keyword_src].strip().split(" ") if len(k.strip()) > 0]
                 keywords = keywords.union(keyword_list)
+
+        # Take the fields as is as well without splitting on spaces
+        if 'description' in pds4_fields.keys():
+            keywords = keywords.union([pds4_fields['description'].lstrip().rstrip()])
+        if 'investigation_area' in pds4_fields.keys():
+            keywords = keywords.union([pds4_fields['investigation_area'].lstrip().rstrip()])
+        # Example: 'IRTF 3.0-Meter Telescope'
+        if 'observing_system_component' in pds4_fields.keys():
+            keywords = keywords.union([pds4_fields['observing_system_component'].lstrip().rstrip()])
+
+        # Remove words that may not be useful, such as 'of', 'or', 'the'.
+        not_useful_words = ['of','or','the']
+        for word_to_remove in not_useful_words:
+            if word_to_remove in keywords:
+                keywords.remove(word_to_remove)
+
         return keywords
 
     def get_names(self, name_list,
@@ -115,8 +172,24 @@ class DOIPDS4LabelUtil:
                 corrected_first_name = split_full_name[first_last_name_order[0]].strip()
                 if use_dot_split_flag:
                     corrected_first_name = corrected_first_name + "."
-                persons.append({'first_name': corrected_first_name,
-                                'last_name': split_full_name[first_last_name_order[1]].strip()})
+
+                # If the last name contains the dot '.', that means the first and last name are in the wrong order
+                # and will need swapping.
+                # An example of of split_full_name that need swapping is:
+                #     split_full_name = ['Davies,', 'A.']
+                # Usually, the expected values should be:
+                #     split_full_name ['A.', 'Davis']
+                if '.' in split_full_name[first_last_name_order[1]].strip():
+                    actual_last_name = split_full_name[first_last_name_order[0]].strip() 
+                    # Remove comma if actual_last_name ends with ','.
+                    if split_full_name[first_last_name_order[0]].strip().endswith(','):
+                        pos_of_comma = split_full_name[first_last_name_order[0]].strip().index(',')
+                        actual_last_name = split_full_name[first_last_name_order[0]].strip()[0:pos_of_comma];
+                    persons.append({'first_name': split_full_name[first_last_name_order[1]].strip(),
+                                    'last_name':  actual_last_name})
+                else:
+                    persons.append({'first_name': corrected_first_name,
+                                    'last_name': split_full_name[first_last_name_order[1]].strip()})
             else:
                 logger.warning(f"author first name not found for [{full_name}]")
                 # Deleted the first_name field as an empty string.

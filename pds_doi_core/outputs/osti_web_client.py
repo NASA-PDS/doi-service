@@ -71,6 +71,7 @@ class DOIOstiWebClient:
     def webclient_submit_doi(self, payload_filename, i_username=None, i_password=None):
         """Function submit the content external file as a DOI to server."""
 
+        logger.debug(f"payload_filename {payload_filename}")
         try:
             with open(payload_filename, 'rb') as payload:
                 o_status, doc = self.webclient_submit_existing_content(payload, i_username=None, i_password=None)

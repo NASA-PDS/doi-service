@@ -22,16 +22,15 @@
         <site_url>{{site_url}}</site_url>
         <product_type>Dataset</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
-        <!-- Product Numbers: insert LIDVID here -->
         <product_nos>{{related_identifier}}</product_nos>
-
+        <country>USA</country>
         <description>{{description}}
         </description>
-        <keywords>PDS; {{keywords}}</keywords>
+        <keywords>PDS; PDS4; {{keywords}}</keywords>
 
         <related_resource></related_resource>
         <contributor_organizations></contributor_organizations>
-        <sponsor_org>National Aeronautics and Space Administration (NASA)</sponsor_org>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
         <contract_nos></contract_nos>
         <other_identifying_nos></other_identifying_nos>
         <file_extension></file_extension>
@@ -58,7 +57,7 @@
             </contributor>
             {{/editors}}
             <contributor>
-                <full_name>PDS {{contributor}}</full_name>
+                <full_name>Planetary Data System: {{contributor}} Node</full_name>
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>

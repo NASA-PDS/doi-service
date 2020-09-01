@@ -19,7 +19,7 @@ class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     _description = 'prepare a OSTI record from a PDS4 labels'
     _order = 10
-    _run_arguments = ('input', 'node', 'submitter', 'force')
+    _run_arguments = ('input', 'node', 'submitter', 'force', 'keyword')
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
@@ -30,6 +30,7 @@ class DOICoreActionDraft(DOICoreAction):
         self._submitter = None
         self._force = False
         self._target = None
+        self._keyword = None
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -47,6 +48,10 @@ class DOICoreActionDraft(DOICoreAction):
                                    help='A pds4 label local or on http, or a list of them separated by ","',
                                    required=True,
                                    metavar='input/bundle_in_with_contributors.xml')
+        action_parser.add_argument('-k', '--keyword',
+                                   help='Extra keywords separated by ","',
+                                   required=False,
+                                   metavar='"Image"')
         action_parser.add_argument('-s', '--submitter',
                                    help='The email address of the user creating the draft',
                                    required=True,
@@ -86,7 +91,18 @@ class DOICoreActionDraft(DOICoreAction):
 
         return o_list_of_names
 
-    def _transform_pds4_label_into_osti_record(self, input_file, contributor_value):
+    def _add_extra_keywords(self, keywords, io_doi):
+        """Function add any extra keywords added to the already produced DOI object.
+        """
+
+        # The keywords are commma separated.  The io_doi.keywords field is a set.
+        tokens = keywords.split(',')
+        for one_keyword in tokens: 
+            io_doi.keywords.add(one_keyword.lstrip().rstrip())
+
+        return io_doi
+
+    def _transform_pds4_label_into_osti_record(self, input_file, contributor_value, keywords):
         """Function receives an XML input file and transform it into an OSTI record.
         """
 
@@ -112,17 +128,24 @@ class DOICoreActionDraft(DOICoreAction):
         o_doi.contributor = contributor_value
         o_doi.status = 'Draft'  # Add 'status' field so the ranking in the workflow can be determined.
 
+        # Add any extra keywords provided by the user.
+        if keywords:
+            self._add_extra_keywords(keywords, o_doi)
+
+        # Add the node long name (contributor) as a keyword as well.
+        o_doi.keywords.add(contributor_value)
+
         # generate output
         o_doi_label = DOIOutputOsti().create_osti_doi_draft_record(o_doi)
 
         # Return the label (which is text) and a dictionary 'o_doi' representing all values parsed.
         return o_doi_label, o_doi
 
-    def _run_single_file(self, input_file, node, submitter, contributor_value, force_flag):
+    def _run_single_file(self, input_file, node, submitter, contributor_value, force_flag, keywords=None):
         try:
 
             # Transform the PDS4 label to an OSTI record.
-            doi_label, doi_obj = self._transform_pds4_label_into_osti_record(input_file, contributor_value)
+            doi_label, doi_obj = self._transform_pds4_label_into_osti_record(input_file, contributor_value, keywords)
             if doi_obj:
                 self._doi_validator.validate(doi_obj)
 
@@ -162,7 +185,7 @@ class DOICoreActionDraft(DOICoreAction):
 
             # For each name found, transform the PDS4 label to an OSTI record, then concatenate that record to o_doi_label to return.
             for input_file in list_of_names:
-                doi_label = self._run_single_file(input_file, self._node, self._submitter, contributor_value, self._force)
+                doi_label = self._run_single_file(input_file, self._node, self._submitter, contributor_value, self._force, self._keyword)
 
                 # Concatenate each label to o_doi_labels to return.
                 doc = etree.fromstring(doi_label.encode())

@@ -85,6 +85,12 @@ class DOICoreActionReserve(DOICoreAction):
             if len(dois) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
+            # Add values in _node_long_names as a list of contributors
+            for ii in range(len(dois)):
+                dois[ii].contributors = []
+                for jj in range(len(self._node_long_names)):
+                    dois[ii].contributors.append({'full_name': 'Planetary Data System: ' + self._node_long_names[jj] + ' Node'})
+
             return dois
         except InputFormatException as e:
             logger.error(e)
@@ -103,6 +109,12 @@ class DOICoreActionReserve(DOICoreAction):
             if len(dois) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
+            # Add values in _node_long_names as a list of contributors
+            for ii in range(len(dois)):
+                dois[ii].contributors = []
+                for jj in range(len(self._node_long_names)):
+                    dois[ii].contributors.append({'full_name': 'Planetary Data System: ' + self._node_long_names[jj] + ' Node'})
+
             return dois
         except InputFormatException as e:
             logger.error(e)
@@ -110,7 +122,8 @@ class DOICoreActionReserve(DOICoreAction):
 
     def _parse_input(self, input):
         if input.endswith('.xml'):
-            dois = self._process_reserve_action_pds4(input)
+            raise InputFormatException("This program does not work with .xml file type yet.")
+            #dois = self._process_reserve_action_pds4(input)
 
         elif input.endswith('.xlsx'):
             dois = self._process_reserve_action_xlsx(input)
@@ -126,37 +139,51 @@ class DOICoreActionReserve(DOICoreAction):
         return dois
 
     def complete_and_validate_dois(self, dois, contributor, publisher, dry_run):
+        # Note that it is important to fill in the doi.status for all dois in case an exception occur in validate() function.
+        # If an exception occur, the value of dois now has the correct contributor, publisher and status fields filled in.
+        for doi in dois:
+            doi.contributor = contributor
+            doi.publisher = publisher
+            # Note that the mustache file must have the double quotes around the status value: <record status="{{status}}">
+            # as it is an attribute of a field.
+            doi.status = "reserved_not_submitted" if dry_run else "reserved"  # Add 'status' field so the ranking in the workflow can be determ
+
         try:
             dois_out = []
             for doi in dois:
-                doi.contributor = contributor
-                doi.publisher = publisher
-                # Note that the mustache file must have the double quotes around the status value: <record status="{{status}}">
-                # as it is an attribute of a field.
-                doi.status = "reserved_not_submitted" if dry_run else "reserved"  # Add 'status' field so the ranking in the workflow can be determined.
+                # Moved the setting of contributor, publisher and status to the beginning of the function
+                # to ensure that they are set incase of an exception.
 
                 # Validate the label to ensure that no rules are violated against using the same title if a DOI has been minted
                 # or the same lidvid has been used if a DOI has been minted.
                 self._doi_validator.validate(doi)
 
                 dois_out.append(doi)
-
             return dois_out
 
         except Exception as e:
             raise
+
+    def _convert_nodes_to_long_names(self):
+        # The input value in self._node can be a list, split it into _nodes and _node_long_names
+        self._nodes = self._node.split(',')
+        self._node_long_names = []
+        for ii in range(len(self._nodes)):
+            self._node_long_names.append(NodeUtil().get_node_long_name(self._nodes[ii]))  
 
     def run(self, **kwargs):
 
         logger.info('run reserve')
         self.parse_arguments(kwargs)
 
+        self._convert_nodes_to_long_names()
+
         try:
             try:
 
                 dois = self._parse_input(self._input)
                 dois = self.complete_and_validate_dois(dois,
-                                                       NodeUtil().get_node_long_name(self._node),
+                                                       NodeUtil().get_node_long_name(self._nodes[0]),
                                                        self._config.get('OTHER', 'doi_publisher'),
                                                        self._dry_run)
 
