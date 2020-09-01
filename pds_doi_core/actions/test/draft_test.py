@@ -25,6 +25,9 @@ class MyTestCase(unittest.TestCase):
         # This setUp() function is called for every test.
         self._action = DOICoreActionDraft(db_name=self.db_name)
         logger.info(f"Instantiate DOICoreActionDraft with database file {self.db_name}")
+        # Create output directory if one does not already exist.
+        self._temporary_output_dir = './tests/data'
+        os.makedirs(self._temporary_output_dir, exist_ok=True)
 
     @classmethod
     def tearDown(self):
@@ -64,6 +67,7 @@ class MyTestCase(unittest.TestCase):
                                     node='img',
                                     submitter='my_user@my_node.gov',force_flag=True)
         logger.info(osti_doi)
+        create_temporary_output_file(osti_doi, os.path.join(self._temporary_output_dir,'valid_bundle_doi.xml'))
 
     def test_remote_collection(self):
         logger.info("test remote collection")
@@ -71,6 +75,7 @@ class MyTestCase(unittest.TestCase):
                                     input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml',
                                     node='img', submitter='my_user@my_node.gov',force_flag=True)
         logger.info(osti_doi)
+        create_temporary_output_file(osti_doi, os.path.join(self._temporary_output_dir,'valid_datacoll_doi.xml'))
 
     def test_remote_browse_collection(self):
         logger.info("test remote browse collection")
@@ -78,6 +83,7 @@ class MyTestCase(unittest.TestCase):
                                     input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml',
                                     node='img', submitter='my_user@my_node.gov',force_flag=True)
         logger.info(osti_doi)
+        create_temporary_output_file(osti_doi, os.path.join(self._temporary_output_dir,'valid_browsecoll_doi.xml'))
 
     def test_remote_calibration_collection(self):
         logger.info("test remote calibration collection")
@@ -85,6 +91,7 @@ class MyTestCase(unittest.TestCase):
                                     input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml',
                                     node='img', submitter='my_user@my_node.gov',force_flag=True)
         logger.info(osti_doi)
+        create_temporary_output_file(osti_doi, os.path.join(self._temporary_output_dir,'valid_calibcoll_doi.xml'))
 
     def test_remote_document_collection(self):
         logger.info("test remote document collection")
@@ -92,6 +99,7 @@ class MyTestCase(unittest.TestCase):
                                     input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml',
                                     node='img', submitter='my_user@my_node.gov',force_flag=True)
         logger.info(osti_doi)
+        create_temporary_output_file(osti_doi, os.path.join(self._temporary_output_dir,'valid_docucoll_doi.xml'))
 
 
 if __name__ == '__main__':
