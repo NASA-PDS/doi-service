@@ -1,12 +1,15 @@
 # Scope
 
 ## Stakeholders:
-- discipline nodes
-- engineering node operations
+- PDS discipline nodes
+- PDS engineering node operations
 - PDS DOI working group
+- Scientific paper publisher (e.g. AGU)
 
 
-## Need: Discipline nodes need to mint DOIs for their data products.
+## Need
+
+Discipline nodes need to mint DOIs for their data products.
 
 ## Goal:
 - Engineering Node provides a service to mint DOI
@@ -25,13 +28,13 @@ A Digital Object Identifier (DOI) is a permanent URL maintained by a partner (da
 
 The user (discipline node, engineering node operator) perform reserve,draft,release,deactivate operations on the system.
 
-Draft, reserve and release can be run multiple time.
+Draft, reserve and release can be run multiple time for the same DOI.
 
 The system perform the reserve, draft, release, deactivate operations on OSTI system for a DOI or a batch of DOIs
 
 
 ## Interfaces are:
 - discipline node user
-- OSTI and dataCite, initially DOI are recorded by submission to OSTI (see https://www.osti.gov/iad2/docs)
+- OSTI and dataCite, initially DOI are recorded by submission to OSTI (see https://www.osti.gov/iad2/docs) which submits them to DataCite
 - engineering node operator
 - deployment platform (on-prem JPL)
