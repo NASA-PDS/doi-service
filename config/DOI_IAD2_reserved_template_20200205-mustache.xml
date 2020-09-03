@@ -3,12 +3,12 @@
     {{#dois}}
     <record status="{{status}}"> 
         <title>{{title}}</title>
-        <creators></creators>
         <authors>
             {{#authors}}
              <author>
                 <first_name>{{first_name}}</first_name>
                 <last_name>{{last_name}}</last_name>
+                <full_name>{{full_name}}</full_name>
             </author>
             {{/authors}}
         </authors>
@@ -18,9 +18,9 @@
 
         <related_identifiers>
             <related_identifier>
-                <identifier_type>URL</identifier_type>
+                <identifier_type>URN</identifier_type>
                 <identifier_value>{{related_identifier}}</identifier_value>
-                <relation_type>Cites</relation_type>
+                <relation_type>IsIdenticalTo</relation_type>
             </related_identifier>
         </related_identifiers>        
     </record>

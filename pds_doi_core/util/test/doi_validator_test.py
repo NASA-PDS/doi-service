@@ -59,8 +59,7 @@ class MyTestCase(unittest.TestCase):
         self.doi = '10.17189/' + self.id
 
         # Write a record into database
-        # The value of 'doi', 'lid', 'vid' fields are None.  Other later calls write_doi_info_to_database() to write other records with valid 'doi' field.
-        # (lid,vid,transaction_key,doi,transaction_date,status,title,product_type,product_type_specific,submitter,discipline_node)
+        # All fields are valid.
         self._database_obj.write_doi_info_to_database(self.lid, self.vid, self.transaction_key, self.doi,
                                                       self.transaction_date,
                                                       self.status, self.title, self.product_type,
@@ -71,7 +70,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def tearDown(self):
-        logger.info("RUNNING_TEST:_test_last")
+        logger.info(f"tearDown() called")
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
             logger.info(f"Removed test artifact database file {self.db_name}")
@@ -82,8 +81,8 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_draft_existing_title_new_lidvid_exception(self):
-        logger.info("RUNNING_TEST:_test_draft_existing_title_existing_doi_duplicate_exception")
-        logger.info("Test validation of 'draft' action with existing title, existing DOI.  Expecting DuplicatedTitleDOIException and will catch it.")
+        logger.info("RUNNING_TEST:test_draft_existing_title_new_lidvid_exception")
+        logger.info("Test validation of 'draft' action with existing title, existing DOI but new lidvid.  Expecting DuplicatedTitleDOIException and will catch it.")
 
         doi_obj = Doi(title=self.title,
                       publication_date=self.transaction_date,
@@ -97,9 +96,9 @@ class MyTestCase(unittest.TestCase):
         self.assertRaises(DuplicatedTitleDOIException,self._doi_validator.validate,doi_obj)
 
     def test_draft_new_title_new_lidvid_nominal(self):
-        logger.info("RUNNING_TEST:_test_draft_existing_title_existing_doi_duplicate_exception")
+        logger.info("RUNNING_TEST:test_draft_new_title_new_lidvid_nominal")
         logger.info(
-            "Test validation of 'draft' action with existing title, existing DOI.  Expecting DuplicatedTitleDOIException and will catch it.")
+            "Test validation of 'draft' action with new title, existing DOI.  Expecting no error: Allow to draft a new title with existing DOI.")
 
         doi_obj = Doi(title=self.title + '111',
                       publication_date=self.transaction_date,
@@ -114,9 +113,9 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_draft_new_title_existing_lidvid_nominal(self):
-        logger.info("RUNNING_TEST:_test_draft_existing_title_existing_doi_duplicate_exception")
+        logger.info("RUNNING_TEST:test_draft_new_title_existing_lidvid_nominal")
         logger.info(
-            "Test validation of 'draft' action with existing title, existing DOI.  Expecting DuplicatedTitleDOIException and will catch it.")
+            "Test validation of 'draft' action with new title, existing DOI, existing lidvid.  Expecting no error: Allowed to draft a new title with existing lidvid.")
 
         doi_obj = Doi(title=self.title + ' 111',
                       publication_date=self.transaction_date,
@@ -130,6 +129,9 @@ class MyTestCase(unittest.TestCase):
         self._doi_validator.validate(doi_obj)
 
     def test_title_does_not_match_product_type_exception(self):
+        logger.info("RUNNING_TEST:test_title_does_not_match_product_type_exception")
+        logger.info(
+            "Test validation of DOI with non matching title, existing DOI, existing lidvid.  Expecting TitleDoesNotMatchProductTypeException: Not allow to have a title that does not have the last token from product_type_specific.")
 
         doi_obj = Doi(title='test title',
                       publication_date=self.transaction_date,
@@ -143,6 +145,9 @@ class MyTestCase(unittest.TestCase):
         self.assertRaises(TitleDoesNotMatchProductTypeException,self._doi_validator.validate,doi_obj)
 
     def test_title_does_match_product_type_nominal(self):
+        logger.info("RUNNING_TEST:test_title_does_match_product_type_nominal")
+        logger.info(
+            "Test validation of DOI with matching title, existing DOI, existing lidvid.  Expecting no error: The title matches the last token from product_type_specific.")
 
         doi_obj = Doi(title='test title ' + self.product_type_specific,
                       publication_date=self.transaction_date,
@@ -156,10 +161,9 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_release_existing_lidvid_new_doi(self):
-        logger.info("RUNNING_TEST:_test_release_new_title_existing_doi_new_lidvid")
+        logger.info("RUNNING_TEST:test_release_existing_lidvid_new_doi")
         logger.info("Test validation of 'release' action with existing title, new DOI, existing lidvid.  Expect IllegalDOIActionException.")
         # Expecting IllegalDOIActionException because attempt to release an existing lidvid, existing title but different doi than the one in database.
-        # To make it valid, the doi being updated should be the same in database.
 
         doi_obj = Doi(title=self.title + 'different',
                       publication_date=self.transaction_date,
@@ -174,11 +178,9 @@ class MyTestCase(unittest.TestCase):
         self.assertRaises(IllegalDOIActionException,self._doi_validator.validate_release,doi_obj)
 
     def test_release_existing_lidvid_missing_doi(self):
-        logger.info("RUNNING_TEST:_test_release_new_title_existing_doi_new_lidvid")
+        logger.info("RUNNING_TEST:test_release_existing_lidvid_missing_doi")
         logger.info(
-            "Test validation of 'release' action with existing title, new DOI, existing lidvid.  Expect IllegalDOIActionException.")
-        # Expecting IllegalDOIActionException because attempt to release an existing lidvid, existing title but different doi than the one in database.
-        # To make it valid, the doi being updated should be the same in database.
+            "Test validation of 'release' action with new title, no DOI, existing lidvid.  Expect IllegalDOIActionException: Not allowed to release a lidvid until the DOI is known.")
 
         doi_obj = Doi(title=self.title + 'different',
                       publication_date=self.transaction_date,
@@ -193,6 +195,9 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_workflow_sequence_exception(self):
+        logger.info("RUNNING_TEST:test_workflow_sequence_exception")
+        logger.info(
+            "Test validation of 'reserved' action with new title, existing doi, existing lidvid when doi exist already with status 'draft'.  Expect UnexpectedDOIActionException: Not allowed to start an action when an existing one already has a higher flow state than the new one.  Existing status 'draft' has an order of 3 and new 'reserved' has an order 1.")
 
         doi_obj = Doi(title=self.title + 'different',
                       publication_date=self.transaction_date,
@@ -206,6 +211,9 @@ class MyTestCase(unittest.TestCase):
         self.assertRaises(UnexpectedDOIActionException, self._doi_validator.validate, doi_obj)
 
     def test_workflow_sequence_nominal(self):
+        logger.info("RUNNING_TEST:test_workflow_sequence_nominal")
+        logger.info(
+            "Test validation of 'registered' action with new title, existing doi, existing lidvid when doi exist already with status 'draft'.  Expect no error since 'registered' has an order of 4 and 'draft' has an order of 2.")
 
         doi_obj = Doi(title=self.title + 'different',
                       publication_date=self.transaction_date,

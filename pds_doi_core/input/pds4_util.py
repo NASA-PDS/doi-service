@@ -64,7 +64,7 @@ class DOIPDS4LabelUtil:
                   description=pds4_fields['description'],
                   publication_date=self.get_publication_date(pds4_fields),
                   product_type=product_type,
-                  product_type_specific= "PDS4 " + product_type,
+                  product_type_specific= "PDS4 Refereed Data " + product_type,
                   related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
                   site_url=site_url,
                   authors=self.get_author_names(pds4_fields['authors'].split(',')),
@@ -119,8 +119,10 @@ class DOIPDS4LabelUtil:
                                 'last_name': split_full_name[first_last_name_order[1]].strip()})
             else:
                 logger.warning(f"author first name not found for [{full_name}]")
-                persons.append({'first_name': '',
-                                'last_name': full_name.strip()})
+                # Deleted the first_name field as an empty string.
+                # OSTI does not like for any fields to be empty string.
+                # If cannot parse first_name or last_name, create full_name instead.
+                persons.append({'full_name': full_name.strip()}) 
 
         return persons
 

@@ -2,29 +2,28 @@
 <records>
     <record>
         <title>{{title}}</title>
-        <creators></creators>
         <authors>
             {{#authors}}
              <author>
+                {{#first_name}}
                 <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#last_name}}
                 <last_name>{{last_name}}</last_name>
+                {{/last_name}}
+                {{#full_name}}
+                <full_name>{{full_name}}</full_name>
+                {{/full_name}}
             </author>
             {{/authors}}
         </authors>
         <publisher>{{publisher}}</publisher>
         <publication_date>{{publication_date}}</publication_date>
         <site_url>{{site_url}}</site_url>
-        <product_type>{{product_type}}</product_type>
+        <product_type>Dataset</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
         <!-- Product Numbers: insert LIDVID here -->
-        <related_identifiers>
-            <related_identifier>
-            <identifier_type>URL</identifier_type>
-            <identifier_value>{{related_identifier}}</identifier_value>
-            <relation_type>Cites</relation_type>
-            </related_identifier>
-        </related_identifiers>
-        <product_nos>{{identifier}}</product_nos>
+        <product_nos>{{related_identifier}}</product_nos>
 
         <description>{{description}}
         </description>
@@ -45,8 +44,15 @@
             {{#editors}}
             <contributor>
                     <email/>
+                    {{#first_name}}
                     <first_name>{{first_name}}</first_name>
+                    {{/first_name}}
+                    {{#last_name}}
                     <last_name>{{last_name}}</last_name>
+                    {{/last_name}}
+                    {{#full_name}}
+                    <full_name>{{full_name}}</full_name>
+                    {{/full_name}}
                     <contributor_type>Editor</contributor_type>
                     <affiliations/>
             </contributor>
