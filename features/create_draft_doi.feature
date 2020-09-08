@@ -18,7 +18,7 @@ Feature: create a draft OSTI DOI
   Scenario Outline: an invalid PDS4 is submitted for DOI draft input_type,output_type <input_type>,<output_type>
     Given an invalid PDS4 label at input_type,input_value <input_type>,<input_value>
     When create draft DOI for node <node_value> from <input_value>
-    Then an error report is generated as <error_report>,<input_value>
+    Then a reading error report is generated for <input_value>
 
     Examples: Invalid PDS4 labels
       | input_type |node_value | input_value                   | output_type | error_report                      |
@@ -34,3 +34,4 @@ Feature: create a draft OSTI DOI
     Examples: historical draft transactions
       | transaction_dir                 | node_value | input_subdir                                                         | ref_output_value |
       | aaDOI_production_submitted_labels/ATMOS_mpf_irtf_Bundles_20200414 | atm        | aaaSubmitted_by_ATMOS_active_2020414 | aaaRegistered_by_EN_active_20200330/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_asurpif_phx_tega_20200428   | geo        | aaaSubmitted_by_GEO_active_20200330 | aaaRegistered_by_EN_active_20200330/DOI_registered_all_records.xml |

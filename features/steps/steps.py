@@ -61,22 +61,13 @@ def draft_action_run(node_value,input_value):
     _action = DOICoreActionDraft(db_name=db_name)
     logger.info(f"input_value {input_value}")
 
-    try:
-        o_doi_label = _action.run(input=input_value,
-                              node=node_value,
-                              submitter='my_user@my_node.gov',force=True)
-        # Save o_doi_label to disk so it can be compared to historical in next step
-        logger.info(f"success input_value {input_value}")
-        return save_doi_to_temporary_file(o_doi_label)
-    except InputFormatException as e:
-        logger.error(e)
-        logger.info(f"failure input_value {input_value}")
-        assert False
-    except CriticalDOIException as e:
-        logger.info(f"CRITICAL {e}")
-        logger.info(f"Expecting CriticalDOIException from input_value {input_value}")
-        logger.info(f"failure input_value {input_value}")
-        assert False
+    o_doi_label = _action.run(input=input_value,
+                          node=node_value,
+                          submitter='my_user@my_node.gov',force=True)
+    # Save o_doi_label to disk so it can be compared to historical in next step
+    logger.info(f"success input_value {input_value}")
+    return save_doi_to_temporary_file(o_doi_label)
+
 
 def reserve_action_run(node_value,input_value):
     # Helper function to 'reserve' a given input_value.
@@ -175,28 +166,24 @@ def when_create_draft_impl(context, node_value, input_value):
     logger.info(f"when create DOI draft ")
     logger.info(f"input_value {input_value}")
 
-    # catch stdout
-    #logging.basicConfig(filename='behave_test.out', level=logging.INFO)
-    #logger = logging.getLogger(__name__)
+    try:
+        context.output_file = draft_action_run(node_value,input_value)
 
-    context.output_file = draft_action_run(node_value,input_value)
-
-    #sys.stdout = old_stdout
+    except CriticalDOIException as e:
+        logger.info(str(e))
+        context.exception_msg = str(e)
 
 @then('DOI label is created like {output_type},{ref_output_value}')
 def then_validate_draft_output(context, output_type, ref_output_value):
     draft_output_compare(context.output_value, ref_output_value)
 
-@then('an error report is generated as {error_report},{input_value}')
-def step_an_error_report_is_generated_impl(context, error_report, input_value):
-    # Write an error report.
-    # Create the parent directory if one does not already exist.
-    os.makedirs(os.path.dirname(error_report),exist_ok=True)
-    temporary_file_name = error_report
-    temporary_file_ptr = open(temporary_file_name,"w+") 
-    temporary_file_ptr.write("Input value " + input_value + " cannot be drafted or reserved.\n")
-    temporary_file_ptr.close()
-    return temporary_file_name
+@then('a reading error report is generated for {input_value}')
+def step_an_error_report_is_generated_impl(context, input_value):
+
+    assert hasattr(context, 'exception_msg')
+    assert context.exception_msg == f'Error reading file {input_value}'
+
+
 
 @when('reserve DOI in OSTI format at node_value,input_value {node_value},{input_value}')
 def step_when_reserve_doi_in_osti_format_impl(context, node_value, input_value):

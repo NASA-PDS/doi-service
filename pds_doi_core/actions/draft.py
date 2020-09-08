@@ -113,7 +113,12 @@ class DOICoreActionDraft(DOICoreAction):
         if not input_file.startswith('http'):
             # Only process .xml files and print WARNING for any other files, then continue.
             if input_file.endswith('.xml'):
-                xml_tree = etree.parse(input_file)
+                try:
+                   xml_tree = etree.parse(input_file)
+                except OSError as e:
+                    msg = f'Error reading file {input_file}'
+                    logger.error(msg)
+                    raise InputFormatException(msg)
             else:
                 msg = f"Expecting .xml files only, encountering {input_file}"
                 logger.error(msg)
