@@ -17,7 +17,7 @@ Feature: create a draft OSTI DOI
 
   Scenario Outline: an invalid PDS4 is submitted for DOI draft input_type,output_type <input_type>,<output_type>
     Given an invalid PDS4 label at input_type,input_value <input_type>,<input_value>
-    When create draft DOI at node_value,input_value,format <node_value>,<input_value>,<output_type>
+    When create draft DOI for node <node_value> from <input_value>
     Then an error report is generated as <error_report>,<input_value>
 
     Examples: Invalid PDS4 labels

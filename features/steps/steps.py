@@ -1,11 +1,11 @@
 import os
-
+import sys
 from behave import *
 from copy import deepcopy
 from datetime import datetime
 from enum import Enum
 from lxml import etree
-from xmldiff import main
+from io import StringIO
 
 import logging
 
@@ -175,7 +175,13 @@ def when_create_draft_impl(context, node_value, input_value):
     logger.info(f"when create DOI draft ")
     logger.info(f"input_value {input_value}")
 
+    # catch stdout
+    #logging.basicConfig(filename='behave_test.out', level=logging.INFO)
+    #logger = logging.getLogger(__name__)
+
     context.output_file = draft_action_run(node_value,input_value)
+
+    #sys.stdout = old_stdout
 
 @then('DOI label is created like {output_type},{ref_output_value}')
 def then_validate_draft_output(context, output_type, ref_output_value):
