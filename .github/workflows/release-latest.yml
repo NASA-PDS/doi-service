@@ -69,7 +69,12 @@ jobs:
       run: |
         pip install pds-github-util
         python-snapshot-release --token ${{ secrets.ADMIN_GITHUB_TOKEN }}
-
+    - name: Publish the Python distribution to test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: ${{ secrets.pypi_username }}
+        password: ${{ secrets.pypi_password }}
+        repository_url: https://test.pypi.org/legacy/
     - name: 🖋 Writing documentation (to be move to stable when ready)
       run: |
         sudo apt-get install python3-sphinx
