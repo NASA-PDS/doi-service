@@ -59,7 +59,7 @@ class DOIValidator:
         if rows_with_different_lidvid:
             lidvids = ','.join([self.__lidvid(columns, row) for row in rows_with_different_lidvid])
             status = ','.join([row[columns.index('status')] for row in rows_with_different_lidvid])
-            dois = ','.join([row[columns.index('doi')] for row in rows_with_different_lidvid])
+            dois = ','.join([row[columns.index('doi') if 'doi' in columns else ''] for row in rows_with_different_lidvid])
             msg = f"The title: '{doi.title}' has already been used for a DOI by lidvid(s):{lidvids}, status: {status}, doi: {dois} . You must use a different title."
             logger.error(msg)
             raise DuplicatedTitleDOIException(msg)
