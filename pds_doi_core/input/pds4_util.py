@@ -70,6 +70,10 @@ class DOIPDS4LabelUtil:
         authors_list_via_comma = self.get_author_names(authors_from_comma_split)
         authors_list_via_semi_colon = self.get_author_names(authors_from_semi_colon_split)
 
+        logger.debug(f"authors_list_via_comma = {authors_list_via_comma}") 
+        logger.debug(f"authors_list_via_semi_colon = {authors_list_via_semi_colon}")
+
+        o_best_method = BestParserMethod.BY_COMMA 
         for one_author in authors_list_via_comma:
             if 'full_name' in one_author.keys():
                 o_best_method = BestParserMethod.BY_SEMI_COLON
@@ -77,6 +81,7 @@ class DOIPDS4LabelUtil:
             if 'full_name' in one_author.keys():
                 o_best_method = BestParserMethod.BY_COMMA 
 
+        logger.debug(f"o_best_method,pds4_fields_authors {o_best_method,pds4_fields_authors}")
         return o_best_method
 
     def process_pds4_fields(self, pds4_fields):
@@ -98,6 +103,7 @@ class DOIPDS4LabelUtil:
         elif o_best_method == BestParserMethod.BY_SEMI_COLON:
             authors_list = pds4_fields['authors'].split(';')
         else:
+            logger.error(f"o_best_method,pds4_fields['authors'] {o_best_method,pds4_fields['authors']}")
             raise InputFormatException("Cannot split the authors using comma or semi-colon.")
 
         doi = Doi(title=pds4_fields['title'],
@@ -111,6 +117,10 @@ class DOIPDS4LabelUtil:
                   editors=editors,
                   keywords=self.get_keywords(pds4_fields)
                   )
+
+        # Add field 'date_record_added' because the XSD requires it.
+        if doi.date_record_added is None:
+            doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
 
         return doi
 
@@ -167,11 +177,15 @@ class DOIPDS4LabelUtil:
                 split_full_name = full_name.strip().split(first_last_name_separator[separator_index])
                 separator_index += 1
 
-            if len(split_full_name) == 2:
+            logger.debug(f"split_full_name,len(split_full_name) {split_full_name,len(split_full_name)}")
+            logger.debug(f"first_last_name_order {first_last_name_order}")
+            logger.debug(f"use_dot_split_flag {use_dot_split_flag}")
+            if len(split_full_name) >= 2:
                 # If the dot '.' was used to split the full_name, the dot need to be add back to the first name.
                 corrected_first_name = split_full_name[first_last_name_order[0]].strip()
                 if use_dot_split_flag:
                     corrected_first_name = corrected_first_name + "."
+                logger.debug(f"corrected_first_name {corrected_first_name}")
 
                 # If the last name contains the dot '.', that means the first and last name are in the wrong order
                 # and will need swapping.
@@ -180,6 +194,7 @@ class DOIPDS4LabelUtil:
                 # Usually, the expected values should be:
                 #     split_full_name ['A.', 'Davis']
                 if '.' in split_full_name[first_last_name_order[1]].strip():
+                    logger.debug(f"true dot in split_full_name[first_last_name_order[1]].strip() {split_full_name[first_last_name_order[1]].strip()}") 
                     actual_last_name = split_full_name[first_last_name_order[0]].strip() 
                     # Remove comma if actual_last_name ends with ','.
                     if split_full_name[first_last_name_order[0]].strip().endswith(','):
@@ -188,8 +203,15 @@ class DOIPDS4LabelUtil:
                     persons.append({'first_name': split_full_name[first_last_name_order[1]].strip(),
                                     'last_name':  actual_last_name})
                 else:
-                    persons.append({'first_name': corrected_first_name,
-                                    'last_name': split_full_name[first_last_name_order[1]].strip()})
+                    logger.debug(f"false dot in split_full_name[first_last_name_order[1]].strip() {split_full_name[first_last_name_order[1]].strip()}, len(split_full_name) {len(split_full_name)}") 
+                    # Fetch the middle name if provided.
+                    if len(split_full_name) >= 3:
+                        persons.append({'first_name': corrected_first_name,
+                                        'middle_name': split_full_name[2].strip(),
+                                        'last_name': split_full_name[first_last_name_order[1]].strip()})
+                    else:
+                        persons.append({'first_name': corrected_first_name,
+                                        'last_name': split_full_name[first_last_name_order[1]].strip()})
             else:
                 logger.warning(f"author first name not found for [{full_name}]")
                 # Deleted the first_name field as an empty string.

@@ -1,7 +1,8 @@
 Feature: reserve a OSTI DOI
   @non-regression
   Scenario Outline: Reserve an OSTI DOI
-    Given a valid PDS4 label at input_type,input_value <input_type>,<input_value>
+    # The given for 'reserve' action cannot be shared with 'draft' action as they required different setup.
+    Given a valid reserve PDS4 label at input_type,input_value <input_type>,<input_value>
     When reserve DOI in OSTI format at node_value,input_value <node_value>,<input_value>
     Then PDS4 label is validated for DOI production at input_value <input_value>
     Then OSTI DOI label is created at input_value,node_value <input_value>,<node_value>
@@ -13,9 +14,11 @@ Feature: reserve a OSTI DOI
 
 
   Scenario Outline: an invalid PDS4 is submitted for <input_type>
-    Given an invalid PDS4 label at input_type,input_value <input_type>,<input_value>
+    # The given for 'reserve' action cannot be shared with 'draft' action as they required different setup.
+    Given an invalid reserve PDS4 label at input_type,input_value <input_type>,<input_value>
     When reserve DOI in OSTI format at node_value,input_value <node_value>,<input_value>
-    Then an error report is generated as <error_report>,<input_value> 
+    # Use the same 'then' as 'draft' to share function.
+    Then a reading error report is generated for <input_value> 
     Examples: Invalid PDS4 labels
       | input_type   | node_value | input_value                   | error_report  |
       | bundle       | img        | tests/data/invalid_bundle.xml | tests/data/reserve_error_report.txt |

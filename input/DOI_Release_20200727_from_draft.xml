@@ -34,9 +34,9 @@
         <!-- Product Numbers: insert LIDVID here -->
         <related_identifiers>
             <related_identifier>
-            <identifier_type>URL</identifier_type>
+            <identifier_type>URN</identifier_type>
             <identifier_value>urn:nasa:pds:insight_cameras::2.0</identifier_value>
-            <relation_type>Cites</relation_type>
+            <relation_type>IsIdenticalTo</relation_type>
             </related_identifier>
         </related_identifiers>
         <product_nos></product_nos>

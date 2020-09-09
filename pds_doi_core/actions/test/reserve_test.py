@@ -37,7 +37,7 @@ class MyTestCase(unittest.TestCase):
         self._action.run(
             input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             node='img', submitter='my_user@my_node.gov',
-            submit_label_flag=False,force_flag=True)
+            dry_run=True,force_flag=True)
 
         # The tearDown() function is called per test.
 
@@ -49,7 +49,7 @@ class MyTestCase(unittest.TestCase):
         self._action.run(
             input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             node='img', submitter='my_user@my_node.gov',
-            submit_label_flag=True,force_flag=True)
+            dry_run=True,force_flag=True)
 
         # The tearDown() function is called per test.
 
@@ -60,7 +60,7 @@ class MyTestCase(unittest.TestCase):
         osti_doi = self._action.run(
             input='input/DOI_Reserved_GEO_200318.csv',
             node='img', submitter='my_user@my_node.gov',
-            submit_label_flag=False,force_flag=True)
+            dry_run=True,force_flag=True)
         logger.info(osti_doi)
 
     def test_reserve_csv_and_submit(self):
@@ -68,7 +68,7 @@ class MyTestCase(unittest.TestCase):
         osti_doi = self._action.run(
             input='input/DOI_Reserved_GEO_200318.csv',
             node='img', submitter='my_user@my_node.gov',
-            submit_label_flag=True,force_flag=True)
+            dry_run=False,force_flag=True)
         logger.info(osti_doi)
 
         # The tearDown() function is called per test.

@@ -2,7 +2,8 @@
 url = https://www.osti.gov/iad2test/api/records
 user = username
 password = secret
-release_input_schematron = config/osti_release_input_schematron.xml
+release_input_schematron = config/IAD3_scheematron_edited_20200908.sch
+input_xsd                = config/iad_1.0.0_edited_20200908.xsd
 
 [PDS4_DICTIONARY]
 url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
@@ -24,3 +25,6 @@ emailer_local_host = localhost
 emailer_port       = 25
 emailer_sender     = pdsen-doi-test@jpl.nasa.gov 
 emailer_receivers  = pdsen-doi-test@jpl.nasa.gov 
+draft_validate_against_xsd_flag = True
+release_validate_against_xsd_flag = True
+reserve_validate_against_xsd_flag = True

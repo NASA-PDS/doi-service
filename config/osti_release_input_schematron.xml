@@ -106,7 +106,7 @@
             <assert test="text()">
             If exist, authors field may not be empty.
             </assert>
-            <assert test="count(*) >= 1 and count(first_name) = 1 and count(last_name) = 1">The element author should have 'first_name' and 'last_name' tags.</assert>
+            <assert test="count(*) >= 1 and (count(first_name) = 1 and count(last_name) = 1) or (count(full_name) = 1)">The element author should have 'first_name' and 'last_name' or 'full_name' tags.</assert>
         </rule>
         <rule context="authors/author/first_name">
             <assert test="string-length(normalize-space(.)) &gt;= 1">
@@ -116,6 +116,11 @@
         <rule context="authors/author/last_name">
             <assert test="string-length(normalize-space(.)) &gt;= 1">
             If exist, authors field containing 'last_name' must not be empty.
+            </assert>
+        </rule>
+        <rule context="authors/author/full_name">
+            <assert test="string-length(normalize-space(.)) &gt;= 1">
+            If exist, authors field containing 'full_name' must not be empty.
             </assert>
         </rule>
         <rule context="related_identifiers">
