@@ -10,6 +10,8 @@ with open(f"./{PACKAGE}/__init__.py") as fi:
     result = re.search(r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fi.read())
 version = result.group(1)
 
+with open('requirements.txt', 'r') as f:
+    pip_requirements = f.readlines()
 
 setuptools.setup(
     name=PACKAGE, # Replace with your own username
@@ -31,12 +33,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=[
-        "Flask==1.1.2",
-        "flask-restplus==0.13.0",
-        "Werkzeug==0.16.0",
-        "pystache"
-    ],
+    install_requires=pip_requirements,
     scripts=[],
     entry_points={
         'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',
