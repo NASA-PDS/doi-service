@@ -45,7 +45,8 @@ class DOICoreActionRelease(DOICoreAction):
                                    required=True,
                                    metavar='"img"')
         action_parser.add_argument('-f', '--force',
-                                   help='If provided the release action will succeed even if warning are raised: duplicated title or release a DOI which has already been previously released.',
+                                   help='If provided the release action will succeed even if warning are raised: '
+                                        'duplicated title or release a DOI which has already been previously released.',
                                    required=False, action='store_true')
         action_parser.add_argument('-i', '--input',
                                    help='A file containing a list of doi metadata to update/release'
@@ -67,7 +68,6 @@ class DOICoreActionRelease(DOICoreAction):
             raise CriticalDOIException(msg)
 
         return o_doi_label
-
 
     def _validate_doi(self, doi_label):
         """

@@ -47,7 +47,7 @@ class DOIOstiWebParser:
 
         dois = []
 
-        doc     = etree.fromstring(osti_response_text)
+        doc = etree.fromstring(osti_response_text)
         my_root = doc.getroottree()
 
         # Trim down input to just fields we want.
