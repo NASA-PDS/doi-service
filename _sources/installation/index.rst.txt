@@ -24,6 +24,9 @@ using a Miniconda_ installation.
 Doing the Installation
 ----------------------
 
+Install
+^^^^^^^
+
 The easiest way to install this software is to use Pip_, the Python Package
 Installer. If you have Python on your system, you probably already have Pip;
 you can run ``pip3 --help`` to check. Then run::
@@ -40,8 +43,8 @@ To do so::
     pip3 install pds.deeparchive
 
 
-Update the configuration
-^^^^^^^^^^^^^^^^^^^^^^^^
+Configure
+^^^^^^^^^
 In the python installation directory, that you can find with command::
 
     python -c "import sys;print(sys.prefix)"
@@ -59,9 +62,8 @@ You MUST set the OSTI service user and password to be able to reserve or release
 Ask the code to pds-operator@jpl.nasa.gov
 
 
-
-
-
+Start using the tool
+^^^^^^^^^^^^^^^^^^^^
 
 You can then run ``pds-doi-cmd --help`` to get a usage message and ensure
 it's properly installed. You can go to the `usage`_ documentation for details.
