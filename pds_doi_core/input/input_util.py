@@ -29,7 +29,8 @@ class DOIInputUtil:
 
         xl_wb = pd.ExcelFile(i_filepath)
         actual_sheet_name = xl_wb.sheet_names[0]  # We only want the first sheet.
-        xl_sheet = pd.read_excel(i_filepath, actual_sheet_name, dtype={'publication_date (yyyy-mm-dd)': str})
+        xl_sheet = pd.read_excel(i_filepath, actual_sheet_name, converters={'publication_date': str,
+                                                                       'publication_date (yyyy-mm-dd)': str})
         num_cols = len(xl_sheet.columns)
         num_rows = len(xl_sheet.index)
 
@@ -80,9 +81,7 @@ class DOIInputUtil:
 
         # Read the CSV file into memory.
 
-        csv_sheet = pd.read_csv(i_filepath,
-                               parse_dates=['publication_date'],
-                               date_parser=lambda d: datetime.strptime(d, '%Y-%m-%d'))
+        csv_sheet = pd.read_csv(i_filepath)
         num_cols = len(csv_sheet.columns)
         num_rows = len(csv_sheet.index)
 
