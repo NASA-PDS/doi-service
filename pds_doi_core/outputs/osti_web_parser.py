@@ -10,7 +10,9 @@ from datetime import datetime
 
 from pds_doi_core.util.general_util import get_logger
 from pds_doi_core.entities.doi import Doi
+from pds_doi_core.input.exceptions import InputFormatException
 logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
+
 
 class DOIOstiWebParser:
     # This class contains functions related to parsing input/output for interactions with OSTI server.
