@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/NASA-PDS/pds-doi-service/tree/HEAD)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.8-dev...HEAD)
+
+**Other closed issues:**
+
+- Add configuration documentation [\#60](https://github.com/NASA-PDS/pds-doi-service/issues/60)
+
 ## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-09-10)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.8-dev)
