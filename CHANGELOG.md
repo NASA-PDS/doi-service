@@ -1,11 +1,16 @@
 # Changelog
 
-## [0.0.3-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.3-dev) (2020-08-18)
+## [0.0.3-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.3-dev) (2020-09-10)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.3-dev)
 
+**Defects:**
+
+- Update default DOI metadata according to changes in requirements [\#55](https://github.com/NASA-PDS/pds-doi-service/issues/55)
+
 **Other closed issues:**
 
+- create full\_name when first/last name cannot be parsed [\#58](https://github.com/NASA-PDS/pds-doi-service/issues/58)
 - Update documentation for operational installation and usage [\#42](https://github.com/NASA-PDS/pds-doi-service/issues/42)
 - Develop DOI metadata automated validation component [\#18](https://github.com/NASA-PDS/pds-doi-service/issues/18)
 
