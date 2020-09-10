@@ -89,7 +89,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">📦 Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#doing-the-installation">Doing the Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#doing-the-installation">Doing the Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#update-the-configuration">Update the configuration</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#upgrade-software">Upgrade Software</a></li>
 </ul>
 </li>
@@ -196,6 +199,21 @@ source $HOME/.virtualenvs/pds-deep-archive/bin/activate
 pip3 install pds.deeparchive
 </pre></div>
 </div>
+<div class="section" id="update-the-configuration">
+<h3>Update the configuration<a class="headerlink" href="#update-the-configuration" title="Permalink to this headline">¶</a></h3>
+<p>In the python installation directory, that you can find with command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import sys;print(sys.prefix)&quot;</span>
+</pre></div>
+</div>
+<p>Create a file <cite>pds-doi-core/conf.ini</cite></p>
+<p>You can override in this file any option set in the file <cite>pds-doi-core/conf.ini.default</cite></p>
+<p>You MUST set the OSTI service user and password to be able to reserve or release a DOI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">OSTI</span><span class="p">]</span>
+<span class="n">user</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">username</span><span class="o">&gt;</span>
+<span class="n">password</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Ask the code to <a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a></p>
 <p>You can then run <code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span> <span class="pre">--help</span></code> to get a usage message and ensure
 it’s properly installed. You can go to the <a class="reference external" href="../usage/index.html">usage</a> documentation for details.</p>
 <div class="admonition note">
@@ -205,6 +223,7 @@ To install former releases, you can do:</p>
 <p>pip install pds-doi-core==&lt;version&gt;</p>
 <p>The released versions are listed on: <a class="reference external" href="https://pypi.org/project/pds-doi-core/#history">https://pypi.org/project/pds-doi-core/#history</a></p>
 <p>If you want to use the latest unstable version, you can refer to the <a class="reference external" href="../development/index.html">development</a> documentation</p>
+</div>
 </div>
 </div>
 <div class="section" id="upgrade-software">

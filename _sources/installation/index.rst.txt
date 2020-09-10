@@ -40,6 +40,29 @@ To do so::
     pip3 install pds.deeparchive
 
 
+Update the configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
+In the python installation directory, that you can find with command::
+
+    python -c "import sys;print(sys.prefix)"
+
+Create a file `pds-doi-core/conf.ini`
+
+You can override in this file any option set in the file `pds-doi-core/conf.ini.default`
+
+You MUST set the OSTI service user and password to be able to reserve or release a DOI::
+
+    [OSTI]
+    user = <username>
+    password = <password>
+
+Ask the code to pds-operator@jpl.nasa.gov
+
+
+
+
+
+
 You can then run ``pds-doi-cmd --help`` to get a usage message and ensure
 it's properly installed. You can go to the `usage`_ documentation for details.
 
