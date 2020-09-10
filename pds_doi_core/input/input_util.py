@@ -29,7 +29,7 @@ class DOIInputUtil:
 
         xl_wb = pd.ExcelFile(i_filepath)
         actual_sheet_name = xl_wb.sheet_names[0]  # We only want the first sheet.
-        xl_sheet = pd.read_excel(i_filepath, actual_sheet_name)
+        xl_sheet = pd.read_excel(i_filepath, actual_sheet_name, dtype={'publication_date (yyyy-mm-dd)': str})
         num_cols = len(xl_sheet.columns)
         num_rows = len(xl_sheet.index)
 
@@ -59,7 +59,7 @@ class DOIInputUtil:
 
         for index, row in xl_sheet.iterrows():
             doi = Doi(title=row['title'],
-                      publication_date=row['publication_date'],
+                      publication_date=datetime.fromisoformat(row['publication_date']),
                       product_type='Collection',
                       product_type_specific=row['product_type_specific'],
                       related_identifier=row['related_resource'],

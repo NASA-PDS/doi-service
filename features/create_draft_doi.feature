@@ -36,7 +36,11 @@ Feature: create a draft OSTI DOI
       | ATMOS_mpf_irtf_Bundles_20200414 | aaaSubmitted_by_ATMOS_active_2020414 | aaaRegistered_by_EN_active_20200330
 
 
-
+  Scenario Outline: Draft a DOI which has been previously reserved
+    Given historical transaction <transaction_dir>
+    When <input_xls> is reserved
+    Then <input_pds4_label> is draft
+    Then the reserved and drafts doi have the same id
 
 
 

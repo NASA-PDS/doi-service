@@ -87,7 +87,6 @@ class DOICoreActionRelease(DOICoreAction):
         except Exception as e:
             raise  # Re-raise all exceptions.
 
-
     def run(self, **kwargs):
         """
         Function performs a release of a DOI that has been previously reserved.  The input is a
