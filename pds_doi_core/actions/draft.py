@@ -151,6 +151,7 @@ class DOICoreActionDraft(DOICoreAction):
         return o_doi_label, o_doi
 
     def _run_single_file(self, input_file, node, submitter, contributor_value, force_flag, keywords=None):
+        logger.info(f"input_file {input_file}")
         try:
 
             # Transform the PDS4 label to an OSTI record.

@@ -219,7 +219,14 @@ class DOIDiffer:
         # using the 'related_identifiers/related_identifier/identifier_valuetitle' as key.
         historical_dict_list = {}
         for element in historical_root.iter("record"):
+            # Some historical document does not have 'related_identifiers/related_identifier/identifier_value field' so
+            # an alternative one is 'product_nos'
             sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
+            #print("_pre_condition_documents:len(sorting_element)",len(sorting_element))
+            logger.info(f":related_identifiers/related_identifier/identifier_value:len(sorting_element) {len(sorting_element)}")
+            if len(sorting_element) == 0:
+                sorting_element = element.xpath("product_nos")
+                logger.info(f":product_nos:len(sorting_element) {len(sorting_element)}")
             historical_dict_list[sorting_element[0].text] = element
 
         # Build a dictionary of all elements in new_root using the 'title' as key.
@@ -280,7 +287,8 @@ class DOIDiffer:
 
         indices_where_field_occur_dict = DOIDiffer._setup_where_field_occur_dict()
 
-         # Get the same 'record' element from the new_doc XML tree.  Assumes the ordering is the same.
+        logger.info(f"element_index,historical_element.tag {element_index,historical_element.tag}")
+        # Get the same 'record' element from the new_doc XML tree.  Assumes the ordering is the same.
         new_element = new_doc.xpath(historical_element.tag)[element_index]
 
         # Loop through until cannot find any more elements.  Travel all way to the leaves and then compare the fields.

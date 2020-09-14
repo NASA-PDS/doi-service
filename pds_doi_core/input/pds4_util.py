@@ -127,7 +127,9 @@ class DOIPDS4LabelUtil:
     def get_publication_date(self, pds4_fields):
         # The field 'modification_date' is favored first.  If it occurs, use it, otherwise use 'publication_year' field next.
         if 'modification_date' in pds4_fields.keys():
-            return datetime.strptime(pds4_fields['modification_date'], '%Y-%m-%d')
+            logger.debug(f"pds4_fields['modification_date'] {pds4_fields['modification_date'],type(pds4_fields['modification_date'])}")
+            # Some PDS4 label has more than one 'modification_date' fields so sort in descending and select the first date.
+            return datetime.strptime(sorted(pds4_fields['modification_date'].split(),reverse=True)[0], '%Y-%m-%d')
         elif 'publication_year' in pds4_fields.keys():
             return datetime.strptime(pds4_fields['publication_year'], '%Y')
         else:
@@ -168,6 +170,11 @@ class DOIPDS4LabelUtil:
 
         for full_name in name_list:
             logger.debug(f"full_name {full_name}")
+            # It is important to remove the leading and trailing blanks because the space may be used to split further.
+            full_name = full_name.lstrip().rstrip()
+            # It is possible that if the length of full_name to be zero if the semi-colon is the last characters in author_list field.
+            if len(full_name) == 0:
+                continue # Skip if the name is of zero length.
             split_full_name = []
             separator_index = 0
             use_dot_split_flag = False
@@ -200,7 +207,14 @@ class DOIPDS4LabelUtil:
                     if split_full_name[first_last_name_order[0]].strip().endswith(','):
                         pos_of_comma = split_full_name[first_last_name_order[0]].strip().index(',')
                         actual_last_name = split_full_name[first_last_name_order[0]].strip()[0:pos_of_comma];
-                    persons.append({'first_name': split_full_name[first_last_name_order[1]].strip(),
+                    # It is possible that the split_full_name,len(split_full_name) is (['Joy,', 'S.', 'P.'], 3)
+                    # where there is first_name 'S.' and middle_name 'P.'
+                    # Inorder to match historical code, we must pick up 'P.' as first name as well.
+                    # so the first_name will be 'S. P.'
+                    possible_middle_name = ''
+                    if len(split_full_name) > 2:
+                        possible_middle_name = ' ' + split_full_name[2] # to become ' P.'
+                    persons.append({'first_name': split_full_name[first_last_name_order[1]].strip() + possible_middle_name,
                                     'last_name':  actual_last_name})
                 else:
                     logger.debug(f"false dot in split_full_name[first_last_name_order[1]].strip() {split_full_name[first_last_name_order[1]].strip()}, len(split_full_name) {len(split_full_name)}") 

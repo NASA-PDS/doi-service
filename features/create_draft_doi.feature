@@ -35,3 +35,27 @@ Feature: create a draft OSTI DOI
       | transaction_dir                 | node_value | input_subdir                                                         | ref_output_value |
       | aaDOI_production_submitted_labels/ATMOS_mpf_irtf_Bundles_20200414 | atm        | aaaSubmitted_by_ATMOS_active_2020414 | aaaRegistered_by_EN_active_20200330/DOI_registered_all_records.xml |
       | aaDOI_production_submitted_labels/GEO_asurpif_phx_tega_20200428   | geo        | aaaSubmitted_by_GEO_active_20200330 | aaaRegistered_by_EN_active_20200330/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_Chand_Bundle_20200713       | geo        | aaaSubmitted_by_GEO_active_20200713 | aaRegistered_by_EN/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_Insight_cruise_20200611     | geo        | aaaSubmitted_by_GEO_2020611         | aaRegistered_by_EN/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_MER_cs_target_20200824      | geo        | aaaSubmitted_by_GEO_active_20200824 | aaaRegistered_by_EN_active_20200813/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_Mer_Bundles_20200622        | geo        | aaaSubmitted_by_GEO_active_2020622/MER_Bundles  | aaRegistered_by_EN/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_Mer_updated_Bundles_20200629| geo        | aaaSubmitted_by_GEO_active_2020629/MER_Bundles_2| aaRegistered_by_EN/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_Messenger_20200327          | geo        | aaaSubmitted_by_GEO_active_2020427/messenger_doi | aaaRegistered_by_EN_active_20200427/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/GEO_phy_meca_Bundle_20200609    | geo        | aaaSubmitted_by_GEO_active_2020609               | aaRegistered_by_EN/DOI_registered_all_records.xml |
+      | aaDOI_production_submitted_labels/IMG_MRO_Bundle_20200814         | img        | aaaSubmitted_by_IMG_active_2020813               | aaaRegistered_by_EN_active_20200813/DOI_registered_all_records-GC.xml |
+      | aaDOI_production_submitted_labels/PPI_InSight_Bundles_Collections_20200812 | ppi | aaaSubmitted_by_PPI_active_20200812 | aaRegistered_by_EN_active/DOI_registered_all_records_corrected.xml |
+      | aaDOI_production_submitted_labels/GEO_InSight_phx_ra_20200603              | geo | aaaSubmitted_by_GEO_active_2020603/bundle_phx_ra_EDR_raw_edited.xml  | aaRegistered_by_EN/DOI-C_registered_bundle_phx_ra_edited.xml |
+      | aaDOI_production_submitted_labels/IMG_InSight_Bundle_20191216 | img | aaSubmitted_by_Insight/bundle.xml                 | aaRegistered_by_EN/DOI_bundle.xml |
+      | aaDOI_production_submitted_labels/IMG_InSight_Bundle_20191216 | img | aaSubmitted_by_Insight/collection_browse.xml      | aaRegistered_by_EN/DOI_collection_browse.xml |
+      | aaDOI_production_submitted_labels/IMG_InSight_Bundle_20191216 | img | aaSubmitted_by_Insight/collection_calibration.xml | aaRegistered_by_EN/DOI_collection_calibration.xml |
+      | aaDOI_production_submitted_labels/IMG_InSight_Bundle_20191216 | img | aaSubmitted_by_Insight/collection_data.xml     | aaRegistered_by_EN/DOI_collection_data.xml |
+      | aaDOI_production_submitted_labels/IMG_InSight_Bundle_20191216 | img | aaSubmitted_by_Insight/collection_document.xml | aaRegistered_by_EN/DOI_collection_document.xml |
+      | aaDOI_production_submitted_labels/PPI_Cassini_RPWS_20200219   | ppi | aaSubmitted/collection_rpws-electron_density_data.xml | aaRegistered_by_EN/DOI_collection_data.xml |
+
+
+
+
+
+
+#      | aaDOI_production_submitted_labels/RINGS_Jupiter_occs_20200609  | rms | aaSubmitted/collection_rpws-electron_density_data.xml | aaRegistered_by_EN/DOI_collection_data.xml |
+#      | aaDOI_production_submitted_labels/PPI_Cassini_RPWS_hfr_qtn_20200302 | ppi       | aaSubmitted/collection-rpws-hfr-qtn-data_edited.xml | aaRegistered/DOI_collection-rpws-hfr-qtn-data_edited-mafi.xml |

@@ -22,7 +22,10 @@ class DOIOutputOsti:
         for doi in dois:
             doi_fields = copy.copy(doi.__dict__)
             logger.debug(f"convert datetime {doi_fields['publication_date']}")
-            doi_fields['publication_date'] = doi_fields['publication_date'].strftime('%Y-%m-%d')
+            logger.debug(f"type(doi_fields['publication_date') {type(doi_fields['publication_date'])}")
+            # It is possible that the 'publication_date' type is string if the input is string, check for it here.
+            if not 'str' in str(type(doi_fields['publication_date'])):
+                doi_fields['publication_date'] = doi_fields['publication_date'].strftime('%Y-%m-%d')
             doi_fields_list.append(doi_fields)
 
         renderer = pystache.Renderer()
