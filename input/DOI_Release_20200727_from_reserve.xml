@@ -4,6 +4,7 @@
     <site_url>http://mysite.example.com/link/to/my-dataset-id-25901.html</site_url>
     <site_code>NASA-PDS</site_code>
     <title>Laboratory Shocked Feldspars Bundle</title>
+    <accession_number>urn:nasa:pds:lab_shocked_feldspars::2.0</accession_number>
     <doi>10.17189/25901</doi>
     <publication_date>2020-03-11</publication_date>
     <product_type>Dataset</product_type>
@@ -18,19 +19,13 @@
       </author>
     </authors>
     <contributors/>
-    <related_identifiers>
-      <related_identifier>
-        <identifier_type>URN</identifier_type>
-        <identifier_value>urn:nasa:pds:lab_shocked_feldspars::2.0</identifier_value>
-        <relation_type>IsIdenticalTo</relation_type>
-      </related_identifier>
-    </related_identifiers>
   </record>
   <record  status='pending' index="2">
     <id>25902</id>
     <site_url>http://mysite.example.com/link/to/my-dataset-id-25902.html</site_url>
     <site_code>NASA-PDS</site_code>
     <title>Laboratory Shocked Feldspars Bundle 2</title>
+    <accession_number>urn:nasa:pds:lab_shocked_feldspars_2::1.0</accession_number>
     <doi>10.17189/25902</doi>
     <publication_date>2020-03-12</publication_date>
     <product_type>Dataset</product_type>
@@ -45,19 +40,13 @@
       </author>
     </authors>
     <contributors/>
-    <related_identifiers>
-      <related_identifier>
-        <identifier_type>URN</identifier_type>
-        <identifier_value>urn:nasa:pds:lab_shocked_feldspars_2::1.0</identifier_value>
-        <relation_type>IsIdenticalTo</relation_type>
-      </related_identifier>
-    </related_identifiers>
   </record>
   <record status='pending' index="3">
     <id>25903</id>
     <site_url>http://mysite.example.com/link/to/my-dataset-id-25903.html</site_url>
     <site_code>NASA-PDS</site_code>
     <title>Laboratory Shocked Feldspars Bundle</title>
+    <accession_number>urn:nasa:pds:lab_shocked_feldspars_3::1.0</accession_number>
     <doi>10.17189/25903</doi>
     <publication_date>2020-03-12</publication_date>
     <product_type>Dataset</product_type>
@@ -72,12 +61,5 @@
       </author>
     </authors>
     <contributors/>
-    <related_identifiers>
-      <related_identifier>
-        <identifier_type>URN</identifier_type>
-        <identifier_value>urn:nasa:pds:lab_shocked_feldspars_3::1.0</identifier_value>
-        <relation_type>IsIdenticalTo</relation_type>
-      </related_identifier>
-    </related_identifiers>
   </record>
 </records>

@@ -129,12 +129,10 @@ class DOIOstiWebParser:
                 else:
                     # It is important to check if either 'URL' or 'URN' are in the single_record_element.xpath for related_identifiers before accessing it
                     # otherwise an index error will occur.
-                    if single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URL']"):
-                        identifier_parsed = single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text
-                    elif single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URN']"):
-                        identifier_parsed = single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text
+                    if single_record_element.xpath("accession_number"):
+                        identifier_parsed = single_record_element.xpath("accession_number")[0].text
                     else:
-                        raise InputFormatException("Cannot find identifier_value.  Expecting either URL or URN for identifier_type")
+                        raise InputFormatException("Cannot find identifier_value.  Expecting 'accession_number' tag")
 
                     # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
                     #     ['id','doi','date_record_added',date_record_updated']

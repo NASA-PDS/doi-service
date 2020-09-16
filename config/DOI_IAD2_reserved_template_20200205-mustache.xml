@@ -9,6 +9,9 @@
         <id></id>
         {{/id}}
         <title>{{title}}</title>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>{{related_identifier}}</accession_number>
+        <publisher>{{publisher}}</publisher>
         {{#doi}}
         <doi>{{doi}}</doi>
         {{/doi}}
@@ -18,7 +21,7 @@
         <site_url>{{site_url}}</site_url>
         {{/site_url}}
         {{^site_url}}
-        <site_url> </site_url>
+        <site_url></site_url>
         {{/site_url}}
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
@@ -34,7 +37,7 @@
                 <first_name>{{first_name}}</first_name>
                 {{/first_name}}
                 {{#middle_name}}
-                <middle>{{middle_name}}</middle_name>
+                <middle_name>{{middle_name}}</middle_name>
                 {{/middle_name}}
                 {{#full_name}}
                 <full_name>{{full_name}}</full_name>
@@ -45,6 +48,7 @@
         <contributors>
             {{#contributors}}
             <contributor>
+                <email/>
                 {{#last_name}}
                 <last_name>{{last_name}}</last_name>
                 {{/last_name}}
@@ -52,7 +56,7 @@
                 <first_name>{{first_name}}</first_name>
                 {{/first_name}}
                 {{#middle_name}}
-                <middle>{{middle_name}}</middle_name>
+                <middle_name>{{middle_name}}</middle_name>
                 {{/middle_name}}
                 {{#full_name}}
                 <full_name>{{full_name}}</full_name>
@@ -62,13 +66,6 @@
             </contributor>
             {{/contributors}}
         </contributors>
-        <related_identifiers>
-            <related_identifier>
-                <identifier_type>URN</identifier_type>
-                <identifier_value>{{related_identifier}}</identifier_value>
-                <relation_type>IsIdenticalTo</relation_type>
-            </related_identifier>
-        </related_identifiers>        
         <contact_name>PDS Operator</contact_name>
         <contact_org>PDS</contact_org>
         <contact_email>pds-operator@jpl.nasa.gov</contact_email>

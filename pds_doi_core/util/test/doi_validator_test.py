@@ -175,7 +175,7 @@ class MyTestCase(unittest.TestCase):
                       status=self.status.lower())
 
         action_name = 'release'
-        self.assertRaises(IllegalDOIActionException,self._doi_validator.validate_release,doi_obj)
+        self.assertRaises(IllegalDOIActionException, self._doi_validator.validate_osti_submission, doi_obj)
 
     def test_release_existing_lidvid_missing_doi(self):
         logger.info("RUNNING_TEST:test_release_existing_lidvid_missing_doi")
@@ -191,7 +191,7 @@ class MyTestCase(unittest.TestCase):
                       doi=None,
                       status=self.status.lower())
 
-        self.assertRaises(IllegalDOIActionException, self._doi_validator.validate_release, doi_obj)
+        self.assertRaises(IllegalDOIActionException, self._doi_validator.validate_osti_submission, doi_obj)
 
 
     def test_workflow_sequence_exception(self):
