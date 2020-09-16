@@ -434,13 +434,13 @@
                     <xs:element name="site_code" type="type_site_code" minOccurs="0" maxOccurs="1"> </xs:element>
                     <xs:element name="product_type" type="type_product_type" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="product_type_specific" type="type_product_type_specific" minOccurs="1" maxOccurs="1"> </xs:element>
-                    <xs:element name="date_record_added" type="type_date_record_added" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="date_record_added" type="type_date_record_added" minOccurs="0" maxOccurs="1"> </xs:element>
                     <xs:element name="date_record_updated" type="type_date_record_updated" minOccurs="0" maxOccurs="1"> </xs:element>
                     <xs:element name="keywords" type="type_keywords" minOccurs="1" maxOccurs="1"> </xs:element>
                     
                     <xs:element name="authors" type="type_authors" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="contributors" type="type_contributors" minOccurs="1" maxOccurs="1"> </xs:element>
-                    <xs:element name="related_identifiers" type="type_related_identifiers" minOccurs="1" maxOccurs="1"> </xs:element>    
+                    <xs:element name="related_identifiers" type="type_related_identifiers" minOccurs="0" maxOccurs="1"> </xs:element>
       
                     <!--
                     <contact_name>PDS OPERATOR</contact_name>

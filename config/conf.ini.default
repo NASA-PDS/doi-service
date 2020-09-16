@@ -1,5 +1,6 @@
 [OSTI]
 url = https://www.osti.gov/iad2test/api/records
+#url = https://www.osti.gov/iad2/api/records
 user = username
 password = secret
 release_input_schematron = config/IAD3_scheematron.sch
@@ -10,7 +11,11 @@ url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
 pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
 
 [LANDING_PAGES]
-url = https://pds.jpl.nasa.gov/ds-view/pds/viewCollection.jsp
+# template url, arguments are
+# 1) product_class suffix, after _
+# 2) lid
+# 3) vid
+url = https://pds.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}
 
 [OTHER]
 doi_publisher = NASA Planetary Data System

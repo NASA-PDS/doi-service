@@ -9,6 +9,7 @@
 
 import os
 import requests
+from distutils.dir_util import copy_tree
 from pds_doi_core.input.node_util import NodeUtil
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
@@ -48,6 +49,8 @@ class TransactionOnDisk:
             if os.path.isfile(input_ref):
                 import shutil
                 shutil.copy2(input_ref,full_input_name)
+            elif os.path.isdir(input_ref):
+                copy_tree(input_ref, full_input_name)
             else: # remote resource
                 r = requests.get(input_ref, allow_redirects=True)
                 open(full_input_name, 'wb').write(r.content)

@@ -440,7 +440,7 @@
                     
                     <xs:element name="authors" type="type_authors" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="contributors" type="type_contributors" minOccurs="1" maxOccurs="1"> </xs:element>
-                    <xs:element name="related_identifiers" type="type_related_identifiers" minOccurs="1" maxOccurs="1"> </xs:element>    
+                    <xs:element name="related_identifiers" type="type_related_identifiers" minOccurs="0"> </xs:element>
       
                     <!--
                     <contact_name>PDS OPERATOR</contact_name>

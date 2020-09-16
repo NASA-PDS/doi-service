@@ -107,6 +107,20 @@ class DOIOstiWebParser:
         return io_doi
 
     @staticmethod
+    def get_lidvid(record):
+        # Depending on versions, lidvid has been stored in different locations
+        if record.xpath("accession_number"):
+            return record.xpath("accession_number")[0].text
+        elif record.xpath("related_identifiers/related_identifier[./identifier_type='URL']"):
+            return record.xpath(
+                "related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text
+        elif record.xpath("related_identifiers/related_identifier[./identifier_type='URN']"):
+            return record.xpath(
+                "related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text
+        else:
+            raise InputFormatException("Cannot find identifier_value.  Expecting 'accession_number' tag")
+
+    @staticmethod
     def response_get_parse_osti_xml(osti_response_text):
         """Function parse a response from a GET (query) or a PUT to the OSTI server (in XML query format) and return a list of dictionaries.
            By default, all possible fields are extracted.  If desire to only extract smaller set of fields, they should be specified accordingly.
@@ -127,15 +141,7 @@ class DOIOstiWebParser:
                     logger.error(f"ERROR OSTI RECORD {single_record_element.text}")
                     continue
                 else:
-                    # It is important to check if either 'URL' or 'URN' are in the single_record_element.xpath for related_identifiers before accessing it
-                    # otherwise an index error will occur.
-                    if single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URL']"):
-                        identifier_parsed = single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text
-                    elif single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URN']"):
-                        identifier_parsed = single_record_element.xpath("related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text
-                    else:
-                        raise InputFormatException("Cannot find identifier_value.  Expecting either URL or URN for identifier_type")
-
+                    identifier_parsed = DOIOstiWebParser.get_lidvid(single_record_element)
                     # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
                     #     ['id','doi','date_record_added',date_record_updated']
                     doi = Doi(title=single_record_element.xpath('title')[0].text,

@@ -303,7 +303,10 @@ class DOIDiffer:
         for element in historical_root.iter("record"):
             # Some historical document does not have 'related_identifiers/related_identifier/identifier_value field' so
             # an alternative one is 'product_nos'
-            sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
+            if element.xpath("related_identifiers/related_identifier/identifier_value"):
+                sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
+            else:
+                sorting_element = element.xpath("accession_number")
             logger.info(f":related_identifiers/related_identifier/identifier_value:len(sorting_element) {len(sorting_element)}")
             if len(sorting_element) == 0:
                 sorting_element = element.xpath("product_nos")
@@ -315,7 +318,11 @@ class DOIDiffer:
         # Build a dictionary of all elements in new_root using the 'identifier_value' as key.
         new_dict_list = {}
         for element in new_root.iter("record"):
-            sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
+            if element.xpath("related_identifiers/related_identifier/identifier_value"):
+                sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
+            else:
+                sorting_element = element.xpath("accession_number")
+
             new_dict_list[sorting_element[0].text] = element
 
         # Rebuilt the historical tree in the order of the 'identifier_value' field.
@@ -471,7 +478,7 @@ class DOIDiffer:
         return o_fields_differ_list, o_values_differ_list, o_record_index_differ_list
 
 if __name__ == '__main__':
-    historical_xml_output = '/Users/loubrieu/PycharmProjects/pds-doi-service/aaDOI_production_submitted_labels/GEO_Insight_cruise_20200611/aaRegistered_by_EN/DOI_registered_all_records.xml'
+    historical_xml_output = '/Users/loubrieu/PycharmProjects/pds-doi-service/aaDOI_production_submitted_labels/PPI_InSight_Bundles_Collections_20200812/aaRegistered_by_EN_active/DOI_registered_all_records_corrected.xml'
     new_xml_output       = '/Users/loubrieu/PycharmProjects/pds-doi-service/output/test.xml'
 
     #historical_xml_output = os.path.join("./","aaaSubmitted_by_ATMOS_reserve_2020624","DOI_reserved_all_records.xml")

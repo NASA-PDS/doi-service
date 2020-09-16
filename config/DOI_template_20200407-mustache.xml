@@ -20,7 +20,7 @@
         <description>{{description}}
         </description>
         <site_url>{{site_url}}</site_url>
-        <product_type>Dataset</product_type>
+        <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
         <date_record_added>{{date_record_added}}</date_record_added>
         <keywords>PDS; PDS4; {{keywords}}</keywords>
@@ -67,13 +67,6 @@
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>
-        <related_identifiers>
-            <related_identifier>
-                <identifier_type>URN</identifier_type>
-                <identifier_value>{{related_identifier}}</identifier_value>
-                <relation_type>IsIdenticalTo</relation_type>
-            </related_identifier>
-        </related_identifiers>
         <!--product_nos>{{related_identifier}}</product_nos-->
         <contact_name>PDS Operator</contact_name>
         <contact_org>PDS</contact_org>

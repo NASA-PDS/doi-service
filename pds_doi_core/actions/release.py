@@ -87,7 +87,7 @@ class DOICoreActionRelease(DOICoreAction):
                     self._doi_validator.validate_against_xsd(single_doi_label)
 
                 # Validate the label to ensure that no rules are violated.
-                self._doi_validator.validate_release(doi)
+                self._doi_validator.validate_osti_submission(doi)
 
         except Exception as e:
             raise  # Re-raise all exceptions.

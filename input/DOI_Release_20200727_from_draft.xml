@@ -2,6 +2,7 @@
 <records>
     <record status='Pending'>
         <title>InSight Cameras Bundle 0</title>
+        <accession_number>urn:nasa:pds:insight_cameras::2.0</accession_number>
         <authors>
              <author>
                 <first_name>R.</first_name>
@@ -31,15 +32,6 @@
         -->
         <product_type>Dataset</product_type>
         <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
-        <!-- Product Numbers: insert LIDVID here -->
-        <related_identifiers>
-            <related_identifier>
-            <identifier_type>URN</identifier_type>
-            <identifier_value>urn:nasa:pds:insight_cameras::2.0</identifier_value>
-            <relation_type>IsIdenticalTo</relation_type>
-            </related_identifier>
-        </related_identifiers>
-        <product_nos></product_nos>
 
         <description>InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
         </description>
@@ -83,13 +75,6 @@
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>
-        <related_identifiers>
-            <related_identifier>
-                <identifier_type>URN</identifier_type>
-                <identifier_value>urn:nasa:pds:insight_cameras::1.0</identifier_value>
-                <relation_type>IsIdenticalTo</relation_type>
-            </related_identifier>
-        </related_identifiers>
     </record>
 </records>
 

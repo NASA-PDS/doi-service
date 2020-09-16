@@ -4,6 +4,7 @@ from enum import Enum
 
 from pds_doi_core.input.exceptions import InputFormatException
 from pds_doi_core.util.general_util import get_logger
+from pds_doi_core.util.keyword_tokenizer import KeywordTokenizer
 from pds_doi_core.entities.doi import Doi
 logger = get_logger('pds_doi_core.input.pds4_util')
 
@@ -12,6 +13,9 @@ class BestParserMethod(Enum):
     BY_SEMI_COLON = 2
 
 class DOIPDS4LabelUtil:
+
+    def __init__(self, landing_page_template):
+        self._landing_page_template = landing_page_template
 
     def get_doi_fields_from_pds4(self, xml_tree):
         pds4_fields = self.read_pds4(xml_tree)
@@ -90,7 +94,7 @@ class DOIPDS4LabelUtil:
         logger.debug(f"o_list_contains_full_name_flag {o_list_contains_full_name_flag,names_list,len(names_list)}")
 
         return o_list_contains_full_name_flag
-       
+
     # This next function will make a best guess as to which method is correct.
     # Examples of cases:
     #     pds4_fields_authors = "Lemmon, M."  # Case 1 --> Should be parsed by semi-colon
@@ -105,7 +109,7 @@ class DOIPDS4LabelUtil:
         # This function will make a best guess as to which method is correct.
 
         o_best_method = None 
-         
+
         authors_from_comma_split      = pds4_fields_authors.split(',')
         authors_from_semi_colon_split = pds4_fields_authors.split(';')
 
@@ -122,7 +126,7 @@ class DOIPDS4LabelUtil:
         if number_semi_colons == 0:
             if number_commas >= 1:
                 if list_from_comma_parsed_containing_full_name_flag:
-                    # Case 2: <author_list>R. Deen, H. Abarca, P. Zamani, J.Maki</author_list> 
+                    # Case 2: <author_list>R. Deen, H. Abarca, P. Zamani, J.Maki</author_list>
                     o_best_method = BestParserMethod.BY_COMMA
                 else:
                     # Case 1:  <author_list>Lemmon, M.</author_list>
@@ -142,11 +146,14 @@ class DOIPDS4LabelUtil:
 
     def process_pds4_fields(self, pds4_fields):
         doi_field_value_dict = {}
+        product_type = pds4_fields['product_class']
+        product_type_suffix = product_type.split('_')[1]
+        if product_type == 'Product_Document':
+            product_specific_type = 'technical documentation'
+        else:
+            product_specific_type = 'PDS4 Refereed Data ' + product_type_suffix
 
-        product_type = pds4_fields['product_class'].split('_')[1]
-        landing_page_template = 'https://pds.jpl.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}'
-
-        site_url = landing_page_template.format(product_type,
+        site_url = self._landing_page_template.format(product_type_suffix,
                                                 requests.utils.quote(pds4_fields['lid']),
                                                 requests.utils.quote(pds4_fields['vid']))
         editors = self.get_editor_names(pds4_fields['editors'].split(';')) if 'editors' in pds4_fields.keys() else None
@@ -164,8 +171,8 @@ class DOIPDS4LabelUtil:
         doi = Doi(title=pds4_fields['title'],
                   description=pds4_fields['description'],
                   publication_date=self.get_publication_date(pds4_fields),
-                  product_type=product_type,
-                  product_type_specific= "PDS4 Refereed Data " + product_type,
+                  product_type='Text' if product_type=='Product_Document' else 'Dataset',
+                  product_type_specific=product_specific_type ,
                   related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
                   site_url=site_url,
                   authors=self.get_author_names(authors_list),
@@ -193,30 +200,18 @@ class DOIPDS4LabelUtil:
         return datetime.now().strftime('%Y-%m-%d')
 
     def get_keywords(self, pds4_fields):
-        keyword_field = {'investigation_area', 'observing_system_component', 'target_identication', 'primary_result_summary'}
-        keywords = set()
+        keyword_field = {'investigation_area',
+                         'observing_system_component',
+                         'target_identication',
+                         'primary_result_summary',
+                         'description'}
+
+        keyword_tokenizer = KeywordTokenizer()
         for keyword_src in keyword_field:
             if keyword_src in pds4_fields.keys():
-                keyword_list = [k.strip()
-                                for k in pds4_fields[keyword_src].strip().split(" ") if len(k.strip()) > 0]
-                keywords = keywords.union(keyword_list)
+                keyword_tokenizer.process_text(pds4_fields[keyword_src])
 
-        # Take the fields as is as well without splitting on spaces
-        if 'description' in pds4_fields.keys():
-            keywords = keywords.union([pds4_fields['description'].lstrip().rstrip()])
-        if 'investigation_area' in pds4_fields.keys():
-            keywords = keywords.union([pds4_fields['investigation_area'].lstrip().rstrip()])
-        # Example: 'IRTF 3.0-Meter Telescope'
-        if 'observing_system_component' in pds4_fields.keys():
-            keywords = keywords.union([pds4_fields['observing_system_component'].lstrip().rstrip()])
-
-        # Remove words that may not be useful, such as 'of', 'or', 'the'.
-        not_useful_words = ['of','or','the']
-        for word_to_remove in not_useful_words:
-            if word_to_remove in keywords:
-                keywords.remove(word_to_remove)
-
-        return keywords
+        return keyword_tokenizer.get_keywords()
 
     @staticmethod
     def _smart_first_last_name_detector(fullname_splitted, default_order=[0, -1]):
@@ -278,7 +273,9 @@ class DOIPDS4LabelUtil:
         return persons
 
     def get_author_names(self, name_list):
+        # -1 one for last item in list, 0 for first item
         return self.get_names(name_list, first_last_name_order=[-1, 0], first_last_name_separator=[',', '.'])
 
     def get_editor_names(self, name_list):
+        # -1 one for last item in list, 0 for first item
         return self.get_names(name_list, first_last_name_order=[0, -1], first_last_name_separator=',')

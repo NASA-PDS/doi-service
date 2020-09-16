@@ -89,8 +89,11 @@ class DOIValidator:
 
         logger.debug(f"product_type_specific_suffix: {product_type_specific_suffix}, doi.title: {doi.title}")
         if not product_type_specific_suffix.lower() in doi.title.lower():
-            logger.debug(f"DOI with lidvid {doi.related_identifier} title {doi.title} does not match product type {doi.product_type.lower()}. Product type should be in the title")
-            raise TitleDoesNotMatchProductTypeException(f"DOI with lidvid {doi.related_identifier} title {doi.title} does not match product type {doi.product_type.lower()}. Product type should be in the title")
+            msg = f"DOI with lidvid '{doi.related_identifier}' title '{doi.title}' " \
+                  f" does not contains product specific type suffix '{product_type_specific_suffix.lower()}'." \
+                  f" Product specific type suffix should be in the title"
+            logger.debug(msg)
+            raise TitleDoesNotMatchProductTypeException(msg)
         return 1
 
     def _check_field_lidvid_update(self, doi: Doi):
@@ -191,7 +194,7 @@ class DOIValidator:
 
         return 1
 
-    def validate_release(self, doi: Doi):
+    def validate_osti_submission(self, doi: Doi):
 
         self.validate(doi)
         self._check_field_lidvid_update(doi)

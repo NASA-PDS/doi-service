@@ -131,7 +131,8 @@ class DOICoreActionDraft(DOICoreAction):
             response = requests.get(input_file)
             xml_tree = etree.fromstring(response.content)
 
-        o_doi = DOIPDS4LabelUtil().get_doi_fields_from_pds4(xml_tree)
+        o_doi = DOIPDS4LabelUtil(landing_page_template=self._config.get('LANDING_PAGES', 'url'))\
+            .get_doi_fields_from_pds4(xml_tree)
         o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
         o_doi.contributor = contributor_value
         o_doi.status = 'Draft'  # Add 'status' field so the ranking in the workflow can be determined.
