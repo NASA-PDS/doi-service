@@ -12,7 +12,7 @@
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
         <accession_number>{{related_identifier}}</accession_number>
         <publisher>{{publisher}}</publisher>
-        {{#doi}}
+          {{#doi}}
         <doi>{{doi}}</doi>
         {{/doi}}
         <availability></availability>
