@@ -192,11 +192,9 @@ class DOIValidator:
         self._check_field_title_content(doi)
         self._check_field_workflow(doi)
 
-
         return 1
 
     def validate_osti_submission(self, doi: Doi):
 
         self.validate(doi)
         self._check_field_lidvid_update(doi)
-
