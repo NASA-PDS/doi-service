@@ -41,3 +41,7 @@ class NodeUtil:
     @classmethod
     def get_permissible_values(cls):
         return [c.lower() for c in cls.m_node_id_dict.keys()]
+
+#    @classmethod
+#    def get_keys(cls):
+#        return [c.lower() for c in cls.m_node_id_dict.keys()]

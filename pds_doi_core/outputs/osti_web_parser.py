@@ -40,19 +40,23 @@ class DOIOstiWebParser:
         return o_validated_dict
 
     def parse_author_names(self,authors_element):
-        """ Given a list of authors element, parse for individual 'first_name', 'last_name' or 'full_name' fields."""
+        """ Given a list of authors element, parse for individual 'first_name', 'middle_name', 'last_name' or 'full_name' fields."""
         o_authors_list = []
-        # If exist, collect all the first_name, last_name or full_name fields into a list of dictionaries.
+        # If exist, collect all the first_name, middle_name, last_name or full_name fields into a list of dictionaries.
         for single_author in authors_element:
             first_name = single_author.xpath('author/first_name')
             last_name  = single_author.xpath('author/last_name')
             full_name  = single_author.xpath('author/full_name')
-            if first_name is not None and len(first_name) > 0 and \
-               last_name  is not None and len(last_name)  > 0:
-                author_dict = {'first_name': first_name[0].text,
-                               'last_name' : last_name[0].text} 
-            if full_name is not None and len(full_name) > 0:
+            middle_name = single_author.xpath('author/middle_name')
+
+            if full_name:
                 author_dict = {'full_name': full_name[0].text}
+            else:
+                if first_name and last_name:
+                    if middle_name:
+                        author_dict = {'first_name': first_name[0].text, 'middle_name' : middle_name[0].text, 'last_name' : last_name[0].text} 
+                    else:
+                        author_dict = {'first_name': first_name[0].text, 'last_name' : last_name[0].text} 
             o_authors_list.append(author_dict)
         return o_authors_list
 
@@ -60,22 +64,20 @@ class DOIOstiWebParser:
         """ Given a single record element, parse for optional fields that may not be present from the OSTI response:
                 'id', 'site_url', 'doi', 'date_record_added', 'date_record_updated', 'doi_message', 'authors'."""
 
-        o_optional_fields_found = []
-
         if single_record_element.xpath('id'):
             io_doi.id = single_record_element.xpath('id')[0].text
-            o_optional_fields_found.append('id')
+            logger.debug(f"Adding optional field 'id'")
 
         if single_record_element.xpath('site_url'):
             io_doi.site_url = single_record_element.xpath('site_url')[0].text
-            o_optional_fields_found.append('site_url')
+            logger.debug(f"Adding optional field 'site_url'")
 
         if single_record_element.xpath('doi'):
             io_doi.doi = single_record_element.xpath('doi')[0].text
-            o_optional_fields_found.append('doi')
+            logger.debug(f"Adding optional field 'doi'")
 
         if single_record_element.xpath('date_record_added'):
-            o_optional_fields_found.append('date_record_added')
+            logger.debug(f"Adding optional field 'date_record_added'")
             # It is possible have bad date format.
             try:
                 io_doi.date_record_added = datetime.strptime(single_record_element.xpath('date_record_added')[0].text, '%Y-%m-%d') 
@@ -84,7 +86,7 @@ class DOIOstiWebParser:
                 raise InputFormatException(f"Cannot parse field 'date_record_added'.  Expecting format '%Y-%m-%d'.  Received {single_record_element.xpath('date_record_added')[0].text}")
 
         if single_record_element.xpath('date_record_updated'):
-            o_optional_fields_found.append('date_record_updated')
+            logger.debug(f"Adding optional field 'date_record_updated'")
             # It is possible have bad date format.
             try:
                 io_doi.date_record_updated = datetime.strptime(single_record_element.xpath('date_record_updated')[0].text, '%Y-%m-%d') 
@@ -93,20 +95,19 @@ class DOIOstiWebParser:
                 raise InputFormatException(f"Cannot parse field 'date_record_updated'.  Expecting format '%Y-%m-%d'.  Received {single_record_element.xpath('date_record_updated')[0].text}")
 
         if single_record_element.xpath('doi_message'):
-            o_optional_fields_found.append('doi_message')
+            logger.debug(f"Adding optional field 'doi_message'")
             io_doi.message = single_record_element.xpath('doi_message')[0].text
 
         if single_record_element.xpath('authors'):
-            o_optional_fields_found.append('authors')
+            logger.debug(f"Adding optional field 'authors'")
             io_doi.authors = DOIOstiWebParser().parse_author_names(single_record_element.xpath('authors')) 
 
         logger.debug(f"io_doi {io_doi}")
-        logger.debug(f"o_optional_fields_found {o_optional_fields_found}")
 
-        return io_doi, o_optional_fields_found
+        return io_doi
 
     @staticmethod
-    def response_get_parse_osti_xml(osti_response_text,interested_fields=['status','doi','id','title','date_record_added','date_record_updated','publication_date','product_type','product_type_specific','doi_message','related_identifier']):
+    def response_get_parse_osti_xml(osti_response_text):
         """Function parse a response from a GET (query) or a PUT to the OSTI server (in XML query format) and return a list of dictionaries.
            By default, all possible fields are extracted.  If desire to only extract smaller set of fields, they should be specified accordingly.
            Specific fields are extracted from input.  Not all fields in XML are used."""
@@ -145,7 +146,7 @@ class DOIOstiWebParser:
                               status=status)
 
                     # Parse for some optional fields that may not be present in every record from OSTI.
-                    doi, o_optional_fields_found = DOIOstiWebParser().parse_optional_fields(doi,single_record_element)
+                    doi= DOIOstiWebParser().parse_optional_fields(doi,single_record_element)
 
                     dois.append(doi)
         # end for single_record_element in my_root.iter():

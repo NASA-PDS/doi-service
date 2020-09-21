@@ -34,6 +34,20 @@ class OSTIInputValidator:
         sct_doc = etree.parse(self._default_schematron)
         self._schematron = isoschematron.Schematron(sct_doc, store_report=True)
 
+    def validate_from_file(self, input_as_file):
+        """
+        Function validate the input file that will be used to submit to OSTI for 'release' action.
+        """
+        # The input is a file, read it into string and call self.validate()
+        try:
+            with open(input_as_file, mode='r') as f:
+                input_to_osti  = f.read()
+            self.validate(input_to_osti)
+        except Exception as e:
+            raise CriticalDOIException(str(e))
+
+        return 1
+
     def validate(self, input_to_osti):
         """
         Function validate the XML content that will be used to submit to OSTI for 'release' action.
@@ -42,14 +56,8 @@ class OSTIInputValidator:
         :return:
         """
 
-        # If the input is a file, parse input into an etree document. 
-        if os.path.isfile(input_to_osti):
-            osti_doc = etree.parse(input_to_osti)
-            osti_root = osti_doc.getroot()
-        else:
-            # If the input is not a file, assumes it is actually the XML content and parse using fromstring() function.
-            osti_root = etree.fromstring(input_to_osti.encode())
-            osti_doc  = osti_root  # The returned from fromstring() function is an Element type and is the root.
+        osti_root = etree.fromstring(input_to_osti.encode())
+        osti_doc  = osti_root  # The returned from fromstring() function is an Element type and is the root.
 
         # Validate the given input (as an etree document now) against the schematron.
         if not self._schematron.validate(osti_doc):

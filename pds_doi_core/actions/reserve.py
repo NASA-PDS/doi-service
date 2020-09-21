@@ -73,13 +73,22 @@ class DOICoreActionReserve(DOICoreAction):
                 response = requests.get(target_url)
                 xml_tree = etree.fromstring(response.content)
         except OSError as e:
-            msg = f'Error reading file {input_file}'
+            msg = f'Error reading file {target_url}'
             logger.error(msg)
             raise InputFormatException(msg)
 
         doi = DOIPDS4LabelUtil().get_doi_fields_from_pds4(xml_tree)
 
         return [doi]
+
+    def _add_multiple_contributors(self, dois):
+        # Add values in _node_long_names as a list of contributors
+        for doi in dois:
+            doi.contributors = []
+            for node_name in self._node_long_names:
+                doi.contributors.append({'full_name': 'Planetary Data System: ' + node_name + ' Node'})
+
+        return dois
 
     def _process_reserve_action_xlsx(self, target_url):
         '''Function process a reserve action based on .xlsx ending.'''
@@ -95,17 +104,14 @@ class DOICoreActionReserve(DOICoreAction):
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
             # Add values in _node_long_names as a list of contributors
-            for ii in range(len(dois)):
-                dois[ii].contributors = []
-                for jj in range(len(self._node_long_names)):
-                    dois[ii].contributors.append({'full_name': 'Planetary Data System: ' + self._node_long_names[jj] + ' Node'})
+            dois = self._add_multiple_contributors(dois)
 
             return dois
         except InputFormatException as e:
             logger.error(e)
             exit(1)
         except OSError as e:
-            msg = f'Error reading file {input_file}'
+            msg = f'Error reading file {target_url}'
             logger.error(msg)
             raise InputFormatException(msg)
 
@@ -123,17 +129,14 @@ class DOICoreActionReserve(DOICoreAction):
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
 
             # Add values in _node_long_names as a list of contributors
-            for ii in range(len(dois)):
-                dois[ii].contributors = []
-                for jj in range(len(self._node_long_names)):
-                    dois[ii].contributors.append({'full_name': 'Planetary Data System: ' + self._node_long_names[jj] + ' Node'})
+            dois = self._add_multiple_contributors(dois)
 
             return dois
         except InputFormatException as e:
             logger.error(e)
             exit(1)
         except OSError as e:
-            msg = f'Error reading file {input_file}'
+            msg = f'Error reading file {target_url}'
             logger.error(msg)
             raise InputFormatException(msg)
 
@@ -187,7 +190,7 @@ class DOICoreActionReserve(DOICoreAction):
         except Exception as e:
             raise
 
-    def _validate_against_schematron(self, dois, dry_run):
+    def _validate_against_schematron_as_batch(self, dois, dry_run):
         # Because the function schematron validator only work on one record, each must be
         # extracted and validated one at a time.
         for doi in dois:
@@ -204,7 +207,7 @@ class DOICoreActionReserve(DOICoreAction):
 
         return 1
 
-    def _validate_against_xsd(self, dois, dry_run):
+    def _validate_against_xsd_as_batch(self, dois, dry_run):
         # Because the function XSD validator only work on one record, each must be
         # extracted and validated one at a time.
         for doi in dois:
@@ -214,6 +217,7 @@ class DOICoreActionReserve(DOICoreAction):
 
             # The function create_osti_doi_reserved_record works of a list so put doi in a list of 1: [doi]
             single_doi_label = DOIOutputOsti().create_osti_doi_reserved_record([doi])
+            logger.debug(f"single_doi_label {single_doi_label}")
 
             # Validate the single_doi_label against the XSD.
             self._doi_validator.validate_against_xsd(single_doi_label)
@@ -239,8 +243,8 @@ class DOICoreActionReserve(DOICoreAction):
 
                 dois = self._parse_input(self._input)
                 if self._config.get('OTHER', 'reserve_validate_against_xsd_flag').lower() == 'true':
-                    self._validate_against_xsd(dois,self._dry_run)
-                self._validate_against_schematron(dois,self._dry_run)
+                    self._validate_against_xsd_as_batch(dois,self._dry_run)
+                self._validate_against_schematron_as_batch(dois,self._dry_run)
 
                 dois = self.complete_and_validate_dois(dois,
                                                        NodeUtil().get_node_long_name(self._nodes[0]),

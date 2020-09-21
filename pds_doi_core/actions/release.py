@@ -114,7 +114,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # Also note that the check against schematron is done after XSD above so any bad dates
                 # would have been caught already.
 
-                OSTIInputValidator().validate(self._input)
+                OSTIInputValidator().validate_from_file(self._input)
 
             # warnings
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,

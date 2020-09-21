@@ -24,28 +24,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Global flag to submit the DOI to OSTI or not after it has been built.
-# Normally should be set to True.  Used by developer to prevent the sending of DOI during may iterations.
 g_submit_flag = True
 g_submit_flag = False 
-
-# Enum type about testing all actions.
-class TestCondition(Enum):
-    NOOP            = 0
-    NORMAL          = 1
-    FILE_NOT_EXIST  = 2
-    FILE_BAD_FORMAT = 3
-
-# Global variable to signify the condition of the 'draft' test.
-global g_draft_condition
-g_draft_condition = TestCondition.NORMAL
-
-# Global variable to signify the condition of the 'draft' test.
-global g_reserve_condition
-g_reserve_condition = TestCondition.NORMAL
-
-# Global variable to signify to other functions what to expect when an action is called.
-global g_action_expectant_bad
-g_action_expectant_bad = False
 
 def get_temporary_output_filename():
     return 'temp_doi_label.xml'
@@ -74,7 +54,6 @@ def draft_action_run(node_value,input_value):
 
 def reserve_action_run(node_value,input_value):
     # Helper function to 'reserve' a given input_value.
-    global g_action_expectant_bad
     logger.info(f"when node_value,input_value {node_value,input_value}")
     o_doi_label = None
 
@@ -87,9 +66,8 @@ def reserve_action_run(node_value,input_value):
                       dry_run=True,force=True)
 
     return save_doi_to_temporary_file(o_doi_label)
-    #return o_doi_label
 
-def draft_output_compare(output_file, ref_output_value):
+def file_output_compare(output_file, ref_output_value):
     # Function compare two XML files created from 'draft' or 'reserve' actions.
     # Assumption(s): 
     #   1.  The name of the new XML file is defined in get_temporary_output_filename().
@@ -101,6 +79,9 @@ def draft_output_compare(output_file, ref_output_value):
 
 
     logger.info(f'different fields are {o_fields_differ_list}')
+    logger.info(f'o_fields_differ_list {o_fields_differ_list}')
+    logger.info(f'o_values_differ_list {o_values_differ_list}')
+    logger.info(f'o_record_index_differ_list {o_record_index_differ_list}')
 
     assert len(o_fields_differ_list) is 0
 
@@ -108,58 +89,22 @@ def draft_output_compare(output_file, ref_output_value):
 
 def reserve_output_compare(output_file, ref_output_value):
     logger.info(f"output_file,ref_output_value {output_file},{ref_output_value}")
-    # Use the same function draft_output_compare() to compare a DOI (XML output) from the 'reserve' action.
-    draft_output_compare(output_file,ref_output_value)
-
-def initialize_normal_draft():
-    global g_action_expectant_bad, g_draft_condition
-    # Set to g_action_expectant_bad to signify to not expect the action to be bad.
-    g_action_expectant_bad = False
-    g_draft_condition = TestCondition.NORMAL
-
-def initialize_normal_reserve():
-    global g_action_expectant_bad, g_reserve_condition
-    # Set to g_action_expectant_bad to signify to not expect the action to be bad.
-    g_action_expectant_bad = False
-    g_reserve_condition = TestCondition.NORMAL
+    # Use the same function file_output_compare() to compare a DOI (XML output) from the 'reserve' action.
+    file_output_compare(output_file,ref_output_value)
 
 @given('a valid PDS4 label at {input_value}')
-def given_valid_draft_input(context, input_value):
-    global g_action_expectant_bad, g_draft_condition
+def given_valid_action_input(context, input_value):
     logger.info(f"given {input_value}")
-    initialize_normal_draft()
-    context.input_value = input_value
-    logger.info(f"g_action_expectant_bad {g_action_expectant_bad}")
-
-@given('a valid reserve PDS4 label at input_type,input_value {input_type},{input_value}')
-def given_valid_reserve_input(context, input_type, input_value):
-    global g_action_expectant_bad, g_reserve_condition
-    logger.info(f"given {input_type},{input_value}")
-    initialize_normal_reserve()
-    context.input_type  = input_type
-    context.input_value = input_value
-    logger.info(f"g_action_expectant_bad {g_action_expectant_bad}")
+    context.input_value = input_value  # Don't forget to set the input_value in context to be available for other functions.
 
 @given('an invalid PDS4 label at input_type,input_value {input_type},{input_value}')
 def given_invalid_pds4(context, input_type, input_value):
     logger.info(f'an invalid PDS4 label at input_type,input_value {input_type},{input_value}')
-    global g_action_expectant_bad, g_draft_condition
-    # Set g_action_expectant_bad to True to signify to expect the action to be bad.
-    g_action_expectant_bad = True 
-    g_draft_condition      = TestCondition.FILE_NOT_EXIST
-    logger.info(f"g_action_expectant_bad {g_action_expectant_bad} g_draft_condition {g_draft_condition}")
-    logger.info(f"g_action_expectant_bad,g_draft_condition,input_value {g_action_expectant_bad,g_draft_condition,input_value}")
 
-# Cannot use the same given between draft and reserve since they require different set up.
-@given('an invalid reserve PDS4 label at input_type,input_value {input_type},{input_value}')
-def given_invalid_reserve_pds4(context, input_type, input_value):
-    logger.info(f'an invalid reserve PDS4 label at input_type,input_value {input_type},{input_value}')
-    global g_action_expectant_bad, g_reserve_condition
-    # Set g_action_expectant_bad to True to signify to expect the action to be bad.
-    g_action_expectant_bad = True
-    g_reserve_condition      = TestCondition.FILE_NOT_EXIST
-    logger.info(f"g_action_expectant_bad {g_action_expectant_bad} g_reserve_condition {g_reserve_condition}")
-    logger.info(f"g_action_expectant_bad,g_reserve_condition,input_value {g_action_expectant_bad,g_reserve_condition,input_value}")
+@given('an invalid reserve PDS4 label at input_value {input_value}')
+def given_invalid_reserve_pds4(context, input_value):
+    logger.info(f'an invalid reserve PDS4 label at input_value {input_value}')
+    context.input_value = input_value  # Don't forget to set the input_value in context to be available for other functions.
 
 @when('create draft DOI for node {node_value} from {input_value}')
 def when_create_draft_impl(context, node_value, input_value):
@@ -173,18 +118,15 @@ def when_create_draft_impl(context, node_value, input_value):
         logger.info(str(e))
         context.exception_msg = str(e)
 
-@then('DOI label is created like {output_type},{ref_output_value}')
-def then_validate_draft_output(context, output_type, ref_output_value):
-    draft_output_compare(context.output_value, ref_output_value)
-
 @then('a reading error report is generated for {input_value}')
 def step_an_error_report_is_generated_impl(context, input_value):
 
     assert hasattr(context, 'exception_msg')
     assert context.exception_msg == f'Error reading file {input_value}'
 
-@when('reserve DOI in OSTI format at node_value,input_value {node_value},{input_value}')
-def step_when_reserve_doi_in_osti_format_impl(context, node_value, input_value):
+@when('reserve DOI in OSTI format at {node_value}')
+def step_when_reserve_doi_in_osti_format_impl(context, node_value):
+    input_value = context.input_value
     logger.info(f"when context {context}")
     logger.info(f"when input_value {input_value}")
     try:
@@ -215,16 +157,6 @@ def step_then_osti_doi_label_is_created_impl(context,node_value,input_value):
         logger.info(f"CRITICAL {e}")
         logger.info(f"Expecting CriticalDOIException from input_value {input_value}")
     logger.info(f"context.failed {context.failed}")
-
-@then('PDS4 label is validated for DOI production at input_value {input_value}')
-def step_pds4_label_is_validated_impl(context,input_value):
-    # Cannot do anything
-    assert 2 is 2
-
-@then(u'The OSTI DOI label is valid')
-def step_doi_label_is_valid_impl(context):
-    # Cannot do anything
-    assert 2 is 2
 
 @then(u'The OSTI DOI is submitted to the OSTI server')
 def step_doi_label_is_submitted_impl(context):
@@ -257,38 +189,26 @@ def step_doi_label_is_submitted_impl(context):
     else:
         logger.info(f"g_submit_flag is False")
 
-@given('historical draft transaction {transaction_dir}')
-def step_historical_draft_impl(context,transaction_dir):
-    initialize_normal_draft()
-    context.transaction_dir = transaction_dir
-
 @when('historical is drafted for node {node_value} from {input_subdir}')
 def when_historical_is_drafted_from_impl(context,node_value,input_subdir):
     input_dir = os.path.join(context.transaction_dir, input_subdir)
     context.output_file = draft_action_run(node_value, input_dir)
 
-@given('historical reserve transaction {transaction_dir}')
-def step_historical_reserve_impl(context,transaction_dir):
-    # Cannot do anything
-    assert 2 is 2
+@given('historical transaction {transaction_dir}')
+def step_historical_impl(context,transaction_dir):
+    context.transaction_dir = transaction_dir
 
-@when('historical is reserved at node_value,transaction_dir,input_value {node_value},{transaction_dir},{input_value}')
-def step_historical_is_reserved_at_input_impl(context,node_value,transaction_dir,input_value):
+@when('historical is reserved with node {node_value} with {input_value}')
+def step_historical_is_reserved_at_input_impl(context,node_value,input_value):
+    transaction_dir = context.transaction_dir
     input_dir = os.path.join(transaction_dir,input_value)
     context.output_file = reserve_action_run(node_value,input_dir)
 
-# The previous version was bug because it was missing 'historical osti' which
-# should match the feature text.
-@then('produced osti record is similar to historical osti {ref_output_value}')
-def step_produced_osti_record_is_similiar_to_historical_osti_impl(context,ref_output_value):
+@then('produced osti record is similar to reference osti {ref_output_value}')
+def step_produced_osti_record_is_similiar_to_reference_osti_impl(context,ref_output_value):
     if hasattr(context, 'transaction_dir'):
         ref_output_value = os.path.join(context.transaction_dir, ref_output_value)
         logger.info(f"context.transaction_dir {context.transaction_dir}")
     logger.info(f"context.output_file {context.output_file}")
     logger.info(f"ref_output_value {ref_output_value}")
     reserve_output_compare(context.output_file, ref_output_value)
-
-@when(u'create draft DOI in format OSTI')
-def step_create_draft_doi_impl(context):
-    # Cannot do anything
-    assert 2 is 2

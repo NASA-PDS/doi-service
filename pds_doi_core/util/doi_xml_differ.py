@@ -12,24 +12,31 @@ import os
 from lxml import etree
 
 from pds_doi_core.input.exceptions import InputFormatException
+from pds_doi_core.input.node_util import NodeUtil
 from pds_doi_core.util.general_util import get_logger
+
 logger = get_logger('pds_doi_core.util.doi_xml_differ')
 
 class DOIDiffer:
-    # This class provide a way to answer the question if two DOIs (XML format) are similiar.
+    # This class provide a way to answer the question if two DOIs (XML format) are similar.
 
     def _resolve_special_fields(field_name, historical_value, new_value):
         # Some fields may have different format.  For example:
         # The historical field 'publication_date' format may be 2019-09-26
         # Where the new 'publication_date' format may be 09/26/2019
         # The 'full_name' for contributor may have 'Planetary Data System:" preceding the node name.
+        # Historical may have keywords that will not be in new code so a list is needed to skip.
+        # Use all lowercase for consistency.
+        keywords_to_skip_compare = NodeUtil.get_permissible_values()
+        keywords_to_skip_compare.append('PDS3'.lower())
+
 
         o_difference_is_acceptable_flag = False
         if field_name == 'id':
             if new_value is None:
-                o_difference_is_acceptable_flag = True  # The 'draft' may not the 'id' field.
+                o_difference_is_acceptable_flag = True  # The DOI fromo 'draft' may not have the 'id' field.
             else:
-                if historical_value == new_value.lstrip().rstrip():
+                if historical_value.lstrip().rstrip() == new_value.lstrip().rstrip():
                     o_difference_is_acceptable_flag = True
         elif field_name == 'date_record_added':
             o_difference_is_acceptable_flag = True  # The record may be added on different day.
@@ -41,29 +48,56 @@ class DOIDiffer:
                     o_difference_is_acceptable_flag = True
             except Exception:
                 logger.error(f"Failed to parse publication_date {historical_value} as %Y-%m-%d format.")
-                raise InputFormatException(f"Failed to parse publication_date {historical_value} as %Y-%m-%d format.")
-        elif field_name == 'full_name':
-            if historical_value.lower() in new_value.lower():
-                o_difference_is_acceptable_flag = True
+
+                # Try a different method before raising 
+                try:
+                    reformatted_date = datetime.datetime.strptime(historical_value,"%m/%d/%Y")  # Parse using mm/dd/yyy format.
+                    historical_date_as_string  = reformatted_date.strftime('%Y-%m-%d')
+                    if historical_date_as_string == new_value:
+                        o_difference_is_acceptable_flag = True
+                except Exception:
+                    logger.error(f"Failed to parse publication_date {historical_value} as %m/%d/%Y format.")
+                    raise InputFormatException(f"Failed to parse publication_date {historical_value} as %Y-%m-%d  and %m/%d/%Y formats.")
         elif field_name == 'keywords':
+            # We will relax the keywords check since there will be new module used to build the keywords.
+            # Comment out the next two lines if desire to un-relax the check after the module has been added.
+            o_difference_is_acceptable_flag = True 
+            return o_difference_is_acceptable_flag
+
+            # Code is not pretty, will be clean up later.
             # The 'keywords' field can be in any particular order. Split the keywords using ';' and then perform the 'in' function.
             historical_value_tokens = historical_value.split(';')
-            historical_value_tokens = [x.lstrip().rstrip() for x in historical_value_tokens] # Remove leading and trailing blanks. 
+            historical_value_tokens = [x.lstrip().rstrip().lower() for x in historical_value_tokens] # Remove leading and trailing blanks. 
             new_value_tokens        = new_value.split(';')
-            new_value_tokens        = [x.lstrip().rstrip() for x in new_value_tokens]        # Remove leading and trailing blanks.
+            new_value_tokens        = [x.lstrip().rstrip().lower() for x in new_value_tokens]        # Remove leading and trailing blanks.
             o_difference_is_acceptable_flag = True 
             for ii in range(len(historical_value_tokens)):
                 # If one token differ, then the whole 'keywords' field is different.  
                 # Make a 2nd attempt by looking at each token in the list of tokens.
+                if historical_value_tokens[ii].lower() in keywords_to_skip_compare:
+                    continue
                 if historical_value_tokens[ii] not in new_value_tokens:
                     # Loop again through all new_value_tokens to look for substring.
                     # If one token matches, then the difference is acceptable.
                     o_difference_is_acceptable_flag = False
                     for jj in range(len(new_value_tokens)):
-                        if historical_value_tokens[ii].lower() in new_value_tokens[jj].lower(): 
+                        if historical_value_tokens[ii] in new_value_tokens[jj]: 
                             o_difference_is_acceptable_flag = True
+                        else:
+                            # Split the historical_value_tokens[ii] with spaces "solar wind" into ["solar", "wind"]
+                            space_split_historical_tokens = historical_value_tokens[ii].split()
+                            logger.debug(f"KEYWORD_SEARCH_FAILED:len(space_split_historical_tokens {len(space_split_historical_tokens)}")
+                            for kk in range(len(space_split_historical_tokens)):
+                                logger.debug(f"KEYWORD_SEARCH_FAILED:INSPECTING_IN {space_split_historical_tokens[kk]} IN {new_value_tokens[jj],space_split_historical_tokens[kk] in new_value_tokens[jj]}")
+                                if space_split_historical_tokens[kk] in new_value_tokens[jj]:
+                                    o_difference_is_acceptable_flag = True
+                                else:
+                                    pass
+                                    logger.debug(f"KEYWORD_SEARCH_FAILED:historical_value_tokens[ii] NOT_IN new_value_tokens[jj] {historical_value_tokens[ii],new_value_tokens[jj]}")
                     if not o_difference_is_acceptable_flag:
-                        logger.error("KEYWORD_SEARCH_FAILED:[{historical_value_tokens[ii].lstrip().rstrip()} IN {new_value_tokens}")
+                        logger.error(f"KEYWORD_SEARCH_FAILED:[{historical_value_tokens[ii].lstrip().rstrip()} IN {new_value_tokens}")
+                        logger.error(f"KEYWORD_SEARCH_FAILED:keywords_to_skip_compare [{keywords_to_skip_compare}")
+                        #exit(0)
         elif field_name == 'publisher':
             # Historical value may be: "Atmospheres Node"
             # But new value may have "Planetary Data System:" preceding the node name as in "Planetary Data System: Atmospheres Node"
@@ -82,6 +116,50 @@ class DOIDiffer:
                 # If just one token in historical not in new, then the difference is not acceptable.
                 if historical_value_tokens[ii].lower() not in new_value.lower():
                     o_difference_is_acceptable_flag = False
+        elif field_name == 'first_name':
+            # Historical may not have the first_name as expected:
+            #    'first_name': 'C. T.'
+            # Whereas new code may have two distinct names.
+            #    'first_name': 'C.'
+            #    'middle_name': 'T.'
+            # so a check for in should be sufficient.
+            if new_value.lower() in historical_value.lower():
+                o_difference_is_acceptable_flag = True
+        elif field_name == 'description' or field_name == 'title':
+            # Remove tabs, new lines, spaces, split and join the string back to all lowercase.
+            sanitized_new_value        = ' '.join(new_value.split())
+            sanitized_new_value        = [x.lower() for x in sanitized_new_value]
+            sanitized_historical_value = ' '.join(historical_value.split())
+            sanitized_historical_value = [x.lower() for x in sanitized_historical_value] 
+            if sanitized_new_value == sanitized_historical_value:
+                o_difference_is_acceptable_flag = True
+        elif field_name == 'full_name':
+            # ['historical:[PDS Geosciences (GEO) Node], new:[Planetary Data System: Geosciences Node]']
+            historical_value_tokens = historical_value.split()
+            keywords_to_skip_compare.append('pds')
+            new_list_to_skip_compare = []
+            for keyword in keywords_to_skip_compare: 
+                new_list_to_skip_compare.append(keyword)
+                new_list_to_skip_compare.append('(' + keyword + ')')  # Add the parenthesis to each keyword so it become ('geo')
+            sanitized_new_value        = new_value.split()
+            sanitized_new_value        = [x.lower() for x in sanitized_new_value]
+
+            num_tokens_compared = 0
+            for historical_token in historical_value_tokens:
+                if historical_token.lower() in new_list_to_skip_compare:
+                    logger.debug(f"FULL_NAME:SKIPPING historical_token.lower() {historical_token.lower()}")
+                    num_tokens_compared += 1
+                    continue
+                if historical_token.lower() in sanitized_new_value:
+                    num_tokens_compared += 1
+                logger.debug(f"FULL_NAME:historical_token,sanitized_new_value,o_difference_is_acceptable_flag {historical_token,sanitized_new_value,o_difference_is_acceptable_flag}")
+
+            logger.debug(f"FULL_NAME:historical_value,sanitized_new_value,o_difference_is_acceptable_flag {historical_value,sanitized_new_value,o_difference_is_acceptable_flag,new_list_to_skip_compare,num_tokens_compared,len(historical_value_tokens)}")
+            # If all tokens from historical_value can be found in new_value then we are successful.
+            if num_tokens_compared == len(historical_value_tokens):
+                o_difference_is_acceptable_flag = True
+#            exit(0)
+
 
         return o_difference_is_acceptable_flag
 
@@ -111,7 +189,7 @@ class DOIDiffer:
 
         _acceptable_values_dict = {'identifier_type': ['URL','URN'],
                                    'relation_type'  : ['Cites','IsIdenticalTo'],
-                                   'product_type'   : ['Collection','Bundle', 'Dataset']}
+                                   'product_type'   : ['Collection','Bundle', 'Dataset', 'Text']}
 
         # If the given field name is one of the keys in _acceptable_values_dict, look to see if the value is acceptable.
         if field_name in _acceptable_values_dict:
@@ -121,8 +199,8 @@ class DOIDiffer:
                     o_difference_is_acceptable_flag = True
                     break;
         else:
-            logger.debug(f"Cannot find field_name {field_name} in _acceptable_values_dict")
-            # Make another attempting by checking to see if some fields have different format.
+            logger.debug(f"Cannot find field_name {field_name} in _acceptable_values_dict.  Will call _resolve_special_fields()")
+            # Make another attempting by checking to see if some fields have different format or values.
             o_difference_is_acceptable_flag = DOIDiffer._resolve_special_fields(field_name, historical_value, new_value)
 
         return o_difference_is_acceptable_flag
@@ -183,29 +261,31 @@ class DOIDiffer:
                 logger.warning(f"New code does not produced field {child_level_1.tag} in DOI output.  Will skip comparing this field.")
                 return o_field_differ_name, o_values_differ
 
+
             field_index = DOIDiffer._get_indices_where_tag_occur(child_level_1.tag,child_level_1.getparent().tag,indices_where_field_occur_dict)
 
             # Because some fields are forced to exist eventhough it is an empty string, check for None-ness otherwise
             # the lstrip() will failed on None.  e.g <id> </id>
+            logger.info(f"child_level_1.tag,field_index,len(new_child) {child_level_1.tag,field_index,len(new_child)}")
             if new_child[field_index].text is not None:
                 if (child_level_1.text.lstrip().rstrip() == new_child[field_index].text.lstrip().rstrip()):
                     pass # Field is the same which is good.
                     logger.debug(f"FIELD_SAME_TRUE: {child_level_1,child_level_1.text} == {new_child[field_index].text}")
-            else:
-                # Fields are different.  Attempt to resolve the apparent differences.
-                logger.debug(f"FIELD_SAME_FALSE: {child_level_1,child_level_1.text} != {new_child[field_index].text}")
-
-                # It is possible for new_child[0].text to be None so do not perform lstrip() and rstrip()
-                o_difference_is_acceptable_flag = DOIDiffer._resolve_apparent_differences(field_name=child_level_1.tag, historical_value=child_level_1.text, new_value=new_child[0].text)
-
-                if not o_difference_is_acceptable_flag:
-                    # The differences are not acceptable between historical and new field, save the field name.
-                    o_field_differ_name = child_level_1.tag
-                    # Save the values different.
-                    o_values_differ = "historical:[" + child_level_1.text + "], new:[" + new_child[0].text + "]"
-                    logger.info(f"FIELD_SAME_FALSE_FINALLY: {child_level_1,child_level_1.text} != {new_child[field_index].text}")
                 else:
-                    logger.info(f"FIELD_SAME_TRUE_FINALLY: {child_level_1,child_level_1.text} == {new_child[field_index].text}")
+                    # Fields are different.  Attempt to resolve the apparent differences.
+                    logger.debug(f"FIELD_SAME_FALSE: {child_level_1,child_level_1.text} != {new_child[field_index].text}")
+
+                    # It is possible for new_child[0].text to be None so do not perform lstrip() and rstrip()
+                    o_difference_is_acceptable_flag = DOIDiffer._resolve_apparent_differences(field_name=child_level_1.tag, historical_value=child_level_1.text, new_value=new_child[0].text)
+
+                    if not o_difference_is_acceptable_flag:
+                        # The differences are not acceptable between historical and new field, save the field name.
+                        o_field_differ_name = child_level_1.tag
+                        # Save the values different.
+                        o_values_differ = "historical:[" + child_level_1.text + "], new:[" + new_child[0].text + "]"
+                        logger.info(f"FIELD_SAME_FALSE_FINALLY: {child_level_1,child_level_1.text} != {new_child[field_index].text}")
+                    else:
+                        logger.info(f"FIELD_SAME_TRUE_FINALLY: {child_level_1,child_level_1.text} == {new_child[field_index].text}")
 
         return o_field_differ_name, o_values_differ
 
@@ -215,36 +295,42 @@ class DOIDiffer:
         new_root        = new_doc.getroot()
         historical_root = historical_doc.getroot()
 
+        identifier_list_from_historical = []
+
         # Build a dictionary of all elements in historical_root
-        # using the 'related_identifiers/related_identifier/identifier_valuetitle' as key.
+        # using the 'related_identifiers/related_identifier/identifier_value' as key.
         historical_dict_list = {}
         for element in historical_root.iter("record"):
             # Some historical document does not have 'related_identifiers/related_identifier/identifier_value field' so
             # an alternative one is 'product_nos'
             sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
-            #print("_pre_condition_documents:len(sorting_element)",len(sorting_element))
             logger.info(f":related_identifiers/related_identifier/identifier_value:len(sorting_element) {len(sorting_element)}")
             if len(sorting_element) == 0:
                 sorting_element = element.xpath("product_nos")
                 logger.info(f":product_nos:len(sorting_element) {len(sorting_element)}")
             historical_dict_list[sorting_element[0].text] = element
+            # Save each identifier_value so it can be checked when processing new records.
+            identifier_list_from_historical.append(sorting_element[0].text)
 
-        # Build a dictionary of all elements in new_root using the 'title' as key.
+        # Build a dictionary of all elements in new_root using the 'identifier_value' as key.
         new_dict_list = {}
         for element in new_root.iter("record"):
-            #sorting_element = element.xpath("title")
             sorting_element = element.xpath("related_identifiers/related_identifier/identifier_value")
             new_dict_list[sorting_element[0].text] = element
 
-        # Rebuilt the historical tree in the order of the 'title' field.
+        # Rebuilt the historical tree in the order of the 'identifier_value' field.
         historical_root = etree.Element("records")
         for key in sorted(historical_dict_list.keys()):
+            publication_date = historical_dict_list[key].xpath("publication_date")[0].text
             historical_root.append(historical_dict_list[key])
 
-        # Rebuilt the new tree in the order of the 'title' field.
+        # Rebuilt the new tree in the order of the 'identifier_value' field.
         new_root = etree.Element("records")
         for key in sorted(new_dict_list.keys()):
-            new_root.append(new_dict_list[key])
+            # It is possible that the historical doesn't have the record.  Check before adding so both will have the same number of records.
+            if key in identifier_list_from_historical:
+                publication_date = new_dict_list[key].xpath("publication_date")[0].text
+                new_root.append(new_dict_list[key])
 
         # Re-parse both documents now with the 'record' elements in the same order.
         new_doc        = etree.fromstring(etree.tostring(new_root))
@@ -279,6 +365,7 @@ class DOIDiffer:
                                           'author_last_name'       : 0,
                                           'contributor_first_name' : 0,
                                           'contributor_last_name'  : 0,
+                                          'contributor_full_name'  : 0,
                                           'contributor_contributor_type' : 0}
         return indices_where_field_occur_dict
 
@@ -356,9 +443,9 @@ class DOIDiffer:
         historical_doc = etree.parse(historical_xml_output)
 
         # Because the ordering of the 'record' element in the document tree is not known,
-        # the field 'title' is picked to be the key to sort the document tree by.
+        # the field 'related_identifiers/related_identifier/identifier_value' is picked to be the key to sort the document tree by.
         # Assumption: the document built by both software uses the same input and it is unlikely
-        #             that the 'title' field differ.
+        #             that the 'identifier_value' field differ.
         # Pre-condition both documents so they have the same order.
 
         historical_doc, new_doc = DOIDiffer._pre_condition_documents(historical_doc, new_doc)
@@ -370,6 +457,9 @@ class DOIDiffer:
 
         for historical_element in historical_doc.iter():
             if historical_element.tag == 'record':
+                # Special logic:
+                # Sometimes historical code does not produce the correct number of records.  One example
+                # was historical only produced 6 and new code produces 8.
                 o_fields_differ_list,o_values_differ_list,o_record_index_differ_list = DOIDiffer._differ_single_record(new_doc,historical_element,element_index,o_fields_differ_list,o_values_differ_list,o_record_index_differ_list)
 
                 element_index += 1
@@ -389,8 +479,12 @@ if __name__ == '__main__':
     #historical_xml_output = 'temp_doi_label.xml'
     #new_xml_output        = 'temp_doi_label.xml'
 
+    #historical_xml_output = 'aaDOI_production_submitted_labels/GEO_Insight_cruise_20200611/aaRegistered_by_EN/DOI_registered_all_records.xml'
+    #new_xml_output       = 'temp_doi_label.xml'
+
     o_fields_differ_list, o_values_differ_list, o_record_index_differ_list = DOIDiffer.doi_xml_differ(historical_xml_output,new_xml_output)
 
     print("o_fields_differ_list",len(o_fields_differ_list),o_fields_differ_list)
     print("o_values_differ_list",len(o_values_differ_list),o_values_differ_list)
     print("o_record_index_differ_list",len(o_record_index_differ_list),o_record_index_differ_list)
+    print("historical_xml_output,new_xml_output",historical_xml_output,new_xml_output)

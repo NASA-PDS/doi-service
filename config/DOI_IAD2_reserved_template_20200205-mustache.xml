@@ -9,6 +9,9 @@
         <id></id>
         {{/id}}
         <title>{{title}}</title>
+        {{#doi}}
+        <doi>{{doi}}</doi>
+        {{/doi}}
         <availability></availability>
         <publication_date>{{publication_date}}</publication_date>
         {{#site_url}}
@@ -24,15 +27,36 @@
         <authors>
             {{#authors}}
              <author>
+                {{#last_name}}
                 <last_name>{{last_name}}</last_name>
+                {{/last_name}}
+                {{#first_name}}
                 <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#middle_name}}
+                <middle>{{middle_name}}</middle_name>
+                {{/middle_name}}
+                {{#full_name}}
+                <full_name>{{full_name}}</full_name>
+                {{/full_name}}
             </author>
             {{/authors}}
         </authors>
         <contributors>
             {{#contributors}}
             <contributor>
+                {{#last_name}}
+                <last_name>{{last_name}}</last_name>
+                {{/last_name}}
+                {{#first_name}}
+                <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#middle_name}}
+                <middle>{{middle_name}}</middle_name>
+                {{/middle_name}}
+                {{#full_name}}
                 <full_name>{{full_name}}</full_name>
+                {{/full_name}}
                 <contributor_type>DataCurator</contributor_type>
                 <affiliations/>
             </contributor>
