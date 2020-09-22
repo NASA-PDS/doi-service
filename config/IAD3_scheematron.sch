@@ -14,14 +14,8 @@
         <sch:rule context="id">
             <sch:let name="id_len" value="string-length(.)"/>
                        
-            <sch:assert test="$id_len = 0 or $id_len = 5">
-                if value is populated, the value in 'id' field must be exactly 5 characters long.  Length of value is: <sch:value-of select="$id_len"/>
-            </sch:assert>
-        </sch:rule>
-
-        <sch:rule context="site_url">
-            <sch:assert test="text()">
-                If exist, site_url field may not be empty.
+            <sch:assert test="$id_len = 0 or $id_len = 5 or $id_len = 7">
+                if value is populated, the value in 'id' field must be exactly 7 characters long.  Length of value is: <sch:value-of select="$id_len"/>
             </sch:assert>
         </sch:rule>
 
@@ -37,7 +31,10 @@
             <sch:assert test="text()">
                 If exist, product_type field may not be empty.
             </sch:assert>
-            <sch:assert test="$product_type_value = 'Bundle' or $product_type_value = 'Collection' or $product_type_value = 'Dataset'">
+            <sch:assert test="$product_type_value = 'Bundle'
+                              or $product_type_value = 'Collection'
+                              or $product_type_value = 'Dataset'
+                              or $product_type_value = 'Text'">
                 If exist, product_type field should be either 'Bundle' or 'Collection' or 'Dataset'.
             </sch:assert>
         </sch:rule>

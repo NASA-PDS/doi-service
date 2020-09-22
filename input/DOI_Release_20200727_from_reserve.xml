@@ -21,7 +21,7 @@
     <related_identifiers>
       <related_identifier>
         <identifier_type>URN</identifier_type>
-        <identifier_value>urn:nasa:pds:lab_shocked_feldspars::1.0</identifier_value>
+        <identifier_value>urn:nasa:pds:lab_shocked_feldspars::2.0</identifier_value>
         <relation_type>IsIdenticalTo</relation_type>
       </related_identifier>
     </related_identifiers>
@@ -30,7 +30,7 @@
     <id>25902</id>
     <site_url>http://mysite.example.com/link/to/my-dataset-id-25902.html</site_url>
     <site_code>NASA-PDS</site_code>
-    <title>Laboratory Shocked Feldspars Bundle</title>
+    <title>Laboratory Shocked Feldspars Bundle 2</title>
     <doi>10.17189/25902</doi>
     <publication_date>2020-03-12</publication_date>
     <product_type>Dataset</product_type>

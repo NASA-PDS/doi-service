@@ -19,8 +19,8 @@ Feature: reserve a OSTI DOI
       | bundle       | img        | tests/data/invalid_bundle.xml | tests/data/reserve_error_report.txt |
 
   Scenario Outline: Verify historical reserve transactions matches with new code
-    Given historical transaction <transaction_dir>
-    When historical is reserved with node <node_value> with <input_value>
+    Given historical transactions in <transaction_dir>
+    When historical record is reserved with node <node_value> with <input_value>
     Then produced osti record is similar to reference osti <output_value>
 
     Examples: historical reserve transactions

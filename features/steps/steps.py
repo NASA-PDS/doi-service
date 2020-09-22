@@ -87,11 +87,6 @@ def file_output_compare(output_file, ref_output_value):
 
     return 1
 
-def reserve_output_compare(output_file, ref_output_value):
-    logger.info(f"output_file,ref_output_value {output_file},{ref_output_value}")
-    # Use the same function file_output_compare() to compare a DOI (XML output) from the 'reserve' action.
-    file_output_compare(output_file,ref_output_value)
-
 @given('a valid PDS4 label at {input_value}')
 def given_valid_action_input(context, input_value):
     logger.info(f"given {input_value}")
@@ -189,16 +184,16 @@ def step_doi_label_is_submitted_impl(context):
     else:
         logger.info(f"g_submit_flag is False")
 
-@when('historical is drafted for node {node_value} from {input_subdir}')
+@when('historical record is drafted for node {node_value} from {input_subdir}')
 def when_historical_is_drafted_from_impl(context,node_value,input_subdir):
     input_dir = os.path.join(context.transaction_dir, input_subdir)
     context.output_file = draft_action_run(node_value, input_dir)
 
-@given('historical transaction {transaction_dir}')
+@given('historical transactions in {transaction_dir}')
 def step_historical_impl(context,transaction_dir):
     context.transaction_dir = transaction_dir
 
-@when('historical is reserved with node {node_value} with {input_value}')
+@when('historical record is reserved with node {node_value} with {input_value}')
 def step_historical_is_reserved_at_input_impl(context,node_value,input_value):
     transaction_dir = context.transaction_dir
     input_dir = os.path.join(transaction_dir,input_value)
@@ -211,4 +206,4 @@ def step_produced_osti_record_is_similiar_to_reference_osti_impl(context,ref_out
         logger.info(f"context.transaction_dir {context.transaction_dir}")
     logger.info(f"context.output_file {context.output_file}")
     logger.info(f"ref_output_value {ref_output_value}")
-    reserve_output_compare(context.output_file, ref_output_value)
+    file_output_compare(context.output_file, ref_output_value)
