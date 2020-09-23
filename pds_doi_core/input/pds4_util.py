@@ -170,11 +170,9 @@ class DOIPDS4LabelUtil:
                   site_url=site_url,
                   authors=self.get_author_names(authors_list),
                   editors=editors,
-                  keywords=self.get_keywords(pds4_fields)
+                  keywords=self.get_keywords(pds4_fields),
+                  date_record_added=self.get_record_added_date(pds4_fields)
                   )
-
-        # Add field 'date_record_added' because the XSD requires it.
-        doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
 
         return doi
 
@@ -188,6 +186,11 @@ class DOIPDS4LabelUtil:
             return datetime.strptime(pds4_fields['publication_year'], '%Y')
         else:
             return datetime.now()
+
+    def get_record_added_date(self, pds4_fields):
+        # TO DO: have the creation date read from the transaction database if the record has been added earlier.
+
+        return datetime.now().strftime('%Y-%m-%d')
 
     def get_keywords(self, pds4_fields):
         keyword_field = {'investigation_area', 'observing_system_component', 'target_identication', 'primary_result_summary'}
@@ -313,76 +316,109 @@ class DOIPDS4LabelUtil:
                                              rebuilt_full_name[0].lstrip().rstrip().replace(',','')]
         return o_reordered_full_name
 
-    def _intelligent_parse_names(self, name_type, full_name, first_last_name_order, first_last_name_separator, io_persons):
-        # Function parses the given full_name into individual fields 'first_name', 'last_name' and return the io_persons list.
-        # Note that io_persons variable serves as both input and output.
-        split_full_name = []
-        separator_index = 0
-        use_dot_split_flag = False
-        use_comma_split_flag = False
-        while len(split_full_name)<2 and separator_index<len(first_last_name_separator):
-            if first_last_name_separator[separator_index] == '.':
-                use_dot_split_flag = True
-            if first_last_name_separator[separator_index] == ',':
-                use_comma_split_flag = True
-            split_full_name = full_name.strip().split(first_last_name_separator[separator_index])
-            separator_index += 1
+    def _intelligent_parse_name(self, full_name,
+                                first_last_name_order,
+                                first_last_name_separators,
+                                smart_first_name_detector=True):
+        logger.debug(f"parse full_name {full_name}")
 
-        # If the value of split_full_name is: ["Williams,", "David"] then return ["David", "Williams"] with the comma removed. 
-        split_full_name = self._rearrange_first_last_names(name_type,split_full_name,first_last_name_order[0])
+        full_name = full_name.lstrip().rstrip()
 
-        logger.debug(f"use_dot_split_flag {use_dot_split_flag}")
-        logger.debug(f"split_full_name,len(split_full_name) {split_full_name,len(split_full_name)}")
-        logger.debug(f"first_last_name_order {first_last_name_order}")
-        logger.debug(f"use_dot_split_flag {use_dot_split_flag}")
+        person = None
+        for sep in first_last_name_separators:
+            fullname_splitted = full_name.split(sep)
+            if len(fullname_splitted) >= 2:
+                # use default first last name order
+                [first_i, last_i] = first_last_name_order
 
-        if len(split_full_name) >= 2:
-            # If the dot '.' was used to split the full_name, the dot need to be add back to the first name.
-            corrected_first_name = split_full_name[0].strip()
-            if use_dot_split_flag:
-                corrected_first_name = corrected_first_name + "."
-            if len(split_full_name) >= 3:
-                io_persons.append({'first_name': corrected_first_name + " " + split_full_name[1].strip(),
-                                'last_name'  : split_full_name[2].strip()})
-            else:
-                # Special case: If the last name is one character and the first name is more than one characters
-                #               that means the first name and last name are swapped.
-                #    Non-nominal case:['Maki', 'J']
-                #    Nominal case    :['P.', 'Zamani']
-                if len(split_full_name[1]) == 1 and len(split_full_name[0]) > 1:
-                    one_person = {'first_name' : split_full_name[1] + '.',  # The first name needs a dot after as in 'J.'
-                                  'last_name'  : split_full_name[0]}        # The last name will be 'Maki'
-                else:
-                    one_person = {'first_name' : split_full_name[0],        # Nominal case: ['P.', 'Zamani']
-                                  'last_name'  : split_full_name[1]} 
-                io_persons.append(one_person)
-        else:
-            # If cannot parse first_name or last_name, create full_name instead.
-            io_persons.append({'full_name': full_name.strip()}) 
+                # unless we want to force initials to be first name
+                if smart_first_name_detector:
+                    if len(fullname_splitted[0]) == 1 or fullname_splitted[0][-1] == '.':
+                      first_i, last_i = 0, -1
+                    if len(fullname_splitted[-1]) == 1 or fullname_splitted[-1][-1] == '.':
+                      first_i, last_i = -1, 0
 
-        return io_persons
+                # re-add . if it has been removed as a separator
+                first_name_suffix = '.' if sep == '.' else ''
 
-    def get_names(self, name_type, name_list,
-                  first_last_name_order=[0, 1],
-                  first_last_name_separator=[' ', '.']):
-        persons = []
+                person = {'first_name': fullname_splitted[first_i].strip() + first_name_suffix,
+                          'last_name': fullname_splitted[last_i].strip()}
+
+                if len(fullname_splitted) >= 3:
+                    person['middle_name'] = 1
+                break
+
+        if not person:
+            person = {'full_name': full_name}
+
+        logger.debug('parsed person {person}')
+
+        return person
+
+
+    # def _intelligent_parse_names(self, name_type, full_name, first_last_name_order, first_last_name_separator, io_persons):
+    #     # Function parses the given full_name into individual fields 'first_name', 'last_name' and return the io_persons list.
+    #     # Note that io_persons variable serves as both input and output.
+    #     split_full_name = []
+    #     separator_index = 0
+    #     use_dot_split_flag = False
+    #     use_comma_split_flag = False
+    #     while len(split_full_name)<2 and separator_index<len(first_last_name_separator):
+    #         if first_last_name_separator[separator_index] == '.':
+    #             use_dot_split_flag = True
+    #         if first_last_name_separator[separator_index] == ',':
+    #             use_comma_split_flag = True
+    #         split_full_name = full_name.strip().split(first_last_name_separator[separator_index])
+    #         separator_index += 1
+    #
+    #     # If the value of split_full_name is: ["Williams,", "David"] then return ["David", "Williams"] with the comma removed.
+    #     split_full_name = self._rearrange_first_last_names(name_type,split_full_name,first_last_name_order[0])
+    #
+    #     logger.debug(f"use_dot_split_flag {use_dot_split_flag}")
+    #     logger.debug(f"split_full_name,len(split_full_name) {split_full_name,len(split_full_name)}")
+    #     logger.debug(f"first_last_name_order {first_last_name_order}")
+    #     logger.debug(f"use_dot_split_flag {use_dot_split_flag}")
+    #
+    #     if len(split_full_name) >= 2:
+    #         # If the dot '.' was used to split the full_name, the dot need to be add back to the first name.
+    #         corrected_first_name = split_full_name[0].strip()
+    #         if use_dot_split_flag:
+    #             corrected_first_name = corrected_first_name + "."
+    #         if len(split_full_name) >= 3:
+    #             io_persons.append({'first_name': corrected_first_name + " " + split_full_name[1].strip(),
+    #                             'last_name'  : split_full_name[2].strip()})
+    #         else:
+    #             # Special case: If the last name is one character and the first name is more than one characters
+    #             #               that means the first name and last name are swapped.
+    #             #    Non-nominal case:['Maki', 'J']
+    #             #    Nominal case    :['P.', 'Zamani']
+    #             if len(split_full_name[1]) == 1 and len(split_full_name[0]) > 1:
+    #                 one_person = {'first_name' : split_full_name[1] + '.',  # The first name needs a dot after as in 'J.'
+    #                               'last_name'  : split_full_name[0]}        # The last name will be 'Maki'
+    #             else:
+    #                 one_person = {'first_name' : split_full_name[0],        # Nominal case: ['P.', 'Zamani']
+    #                               'last_name'  : split_full_name[1]}
+    #             io_persons.append(one_person)
+    #     else:
+    #         # If cannot parse first_name or last_name, create full_name instead.
+    #         io_persons.append({'full_name': full_name.strip()})
+    #
+    #     return io_persons
+
+    def get_names(self, name_list,
+                  first_last_name_order=[0, -1],
+                  first_last_name_separator=[',', '.']):
         logger.debug(f"name_list {name_list}")
         logger.debug(f"first_last_name_order {first_last_name_order}")
-
+        persons = []
         for full_name in name_list:
-            logger.debug(f"full_name {full_name}")
-            # It is important to remove the leading and trailing blanks because the space may be used to split further.
-            full_name = full_name.lstrip().rstrip()
-            # It is possible that if the length of full_name to be zero if the semi-colon is the last characters in author_list field.
-            if len(full_name) == 0:
-                continue # Skip if the name is of zero length.
-
-            persons = self._intelligent_parse_names(name_type,full_name,first_last_name_order,first_last_name_separator,persons)
+            person = self._intelligent_parse_name(full_name, first_last_name_order, first_last_name_separator)
+            persons.append(person)
 
         return persons
 
     def get_author_names(self, name_list):
-        return self.get_names('authors_names',name_list, first_last_name_order=[0, 1], first_last_name_separator=[' ', '.'])
+        return self.get_names(name_list, first_last_name_order=[0, -1], first_last_name_separator=[',', '.'])
 
     def get_editor_names(self, name_list):
-        return self.get_names('editors_names',name_list, first_last_name_order=[1, 0], first_last_name_separator=',')
+        return self.get_names(name_list, first_last_name_order=[-1, 0], first_last_name_separator=',')

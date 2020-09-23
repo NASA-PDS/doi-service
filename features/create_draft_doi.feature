@@ -3,7 +3,7 @@ Feature: create a draft OSTI DOI
   @non-regression
   Scenario Outline: Create a draft DOI from a valid PDS4 label <output_type> at <input_value>
     Given a valid PDS4 label at <input_value>
-    When create draft DOI for node <node_value> from <input_value>
+    When create draft DOI for node <node_value>
     Then produced osti record is similar to reference osti <ref_output_value>
 
     Examples: Valid PDS4 labels
@@ -16,8 +16,8 @@ Feature: create a draft OSTI DOI
 
 
   Scenario Outline: an invalid PDS4 is submitted for DOI draft input_type<input_type>
-    Given an invalid PDS4 label at input_type,input_value <input_type>,<input_value>
-    When create draft DOI for node <node_value> from <input_value>
+    Given an invalid PDS4 label at <input_value>
+    When create draft DOI for node <node_value>
     Then a reading error report is generated for <input_value>
 
     Examples: Invalid PDS4 labels
@@ -26,9 +26,9 @@ Feature: create a draft OSTI DOI
 
 
 
-  Scenario Outline: Software results match historical draft transactions in <transaction_dir>
-    Given historical transactions in <transaction_dir>
-    When historical record is drafted for node <node_value> from <input_subdir>
+  Scenario Outline: Verify reference draft transactions match
+    Given reference transactions in <transaction_dir>
+    When reference record is drafted for node <node_value> from <input_subdir>
     Then produced osti record is similar to reference osti <ref_output_value>
 
     Examples: historical draft transactions

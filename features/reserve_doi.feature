@@ -11,16 +11,16 @@ Feature: reserve a OSTI DOI
 
 
   Scenario Outline: Reserve an OSTI DOI with an invalid PDS4 label
-    Given an invalid reserve PDS4 label at input_value <input_value>
+    Given an invalid PDS4 label at <input_value>
     When reserve DOI in OSTI format at <node_value>
     Then a reading error report is generated for <input_value> 
     Examples: Invalid PDS4 labels
       | input_type   | node_value | input_value                   | error_report  |
       | bundle       | img        | tests/data/invalid_bundle.xml | tests/data/reserve_error_report.txt |
 
-  Scenario Outline: Verify historical reserve transactions matches with new code
-    Given historical transactions in <transaction_dir>
-    When historical record is reserved with node <node_value> with <input_value>
+  Scenario Outline: Verify reference reserve transactions match
+    Given reference transactions in <transaction_dir>
+    When reference record is reserved with node <node_value> with <input_value>
     Then produced osti record is similar to reference osti <output_value>
 
     Examples: historical reserve transactions

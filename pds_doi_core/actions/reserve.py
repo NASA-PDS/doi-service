@@ -40,8 +40,8 @@ class DOICoreActionReserve(DOICoreAction):
                                                                      ' The input is a spreadsheet or csv file')
         node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument('-n', '--node',
-                                   help='The pds discipline node in charge of the submission of the DOI. '
-                                        ' Authorized values are: ' + ','.join(node_values),
+                                   help="The pds node in charge of the submission of the DOI."
+                                        " Authorized values are: " + ','.join(node_values),
                                    required=True,
                                    metavar='"img"')
         action_parser.add_argument('-f', '--force',
@@ -81,15 +81,6 @@ class DOICoreActionReserve(DOICoreAction):
 
         return [doi]
 
-    def _add_multiple_contributors(self, dois):
-        # Add values in _node_long_names as a list of contributors
-        for doi in dois:
-            doi.contributors = []
-            for node_name in self._node_long_names:
-                doi.contributors.append({'full_name': 'Planetary Data System: ' + node_name + ' Node'})
-
-        return dois
-
     def _process_reserve_action_xlsx(self, target_url):
         '''Function process a reserve action based on .xlsx ending.'''
 
@@ -102,9 +93,6 @@ class DOICoreActionReserve(DOICoreAction):
             # Do a sanity check on content of dict_condition_data.
             if len(dois) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
-
-            # Add values in _node_long_names as a list of contributors
-            dois = self._add_multiple_contributors(dois)
 
             return dois
         except InputFormatException as e:
@@ -127,9 +115,6 @@ class DOICoreActionReserve(DOICoreAction):
             # Do a sanity check on content of dict_condition_data.
             if len(dois) == 0:
                 raise InputFormatException("Length of dict_condition_data['dois'] is zero, target_url " + target_url)
-
-            # Add values in _node_long_names as a list of contributors
-            dois = self._add_multiple_contributors(dois)
 
             return dois
         except InputFormatException as e:
@@ -224,19 +209,10 @@ class DOICoreActionReserve(DOICoreAction):
 
         return 1
 
-    def _convert_nodes_to_long_names(self):
-        # The input value in self._node can be a list, split it into _nodes and _node_long_names
-        self._nodes = self._node.split(',')
-        self._node_long_names = []
-        for ii in range(len(self._nodes)):
-            self._node_long_names.append(NodeUtil().get_node_long_name(self._nodes[ii]))  
-
     def run(self, **kwargs):
 
         logger.info('run reserve')
         self.parse_arguments(kwargs)
-
-        self._convert_nodes_to_long_names()
 
         try:
             try:
@@ -247,7 +223,7 @@ class DOICoreActionReserve(DOICoreAction):
                 self._validate_against_schematron_as_batch(dois,self._dry_run)
 
                 dois = self.complete_and_validate_dois(dois,
-                                                       NodeUtil().get_node_long_name(self._nodes[0]),
+                                                       NodeUtil().get_node_long_name(self._node),
                                                        self._config.get('OTHER', 'doi_publisher'),
                                                        self._dry_run)
             # warnings

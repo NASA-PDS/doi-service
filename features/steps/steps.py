@@ -31,7 +31,7 @@ def get_temporary_output_filename():
     return 'temp_doi_label.xml'
 
 def save_doi_to_temporary_file(doi_label):
-    # Save doi_label to disk so it can be compared to historical in next step.
+    # Save doi_label to disk so it can be compared to reference in next step.
     temporary_file_name = get_temporary_output_filename()
     temporary_file_ptr = open(temporary_file_name,"w+") 
     temporary_file_ptr.write(doi_label + "\n")
@@ -48,7 +48,7 @@ def draft_action_run(node_value,input_value):
     o_doi_label = _action.run(input=input_value,
                           node=node_value,
                           submitter='my_user@my_node.gov',force=True)
-    # Save o_doi_label to disk so it can be compared to historical in next step
+    # Save o_doi_label to disk so it can be compared to reference in next step
     logger.info(f"success input_value {input_value}")
     return save_doi_to_temporary_file(o_doi_label)
 
@@ -71,7 +71,7 @@ def file_output_compare(output_file, ref_output_value):
     # Function compare two XML files created from 'draft' or 'reserve' actions.
     # Assumption(s): 
     #   1.  The name of the new XML file is defined in get_temporary_output_filename().
-    #   2.  The name of the historical name is ref_output_value
+    #   2.  The name of the reference name is ref_output_value
     logger.info(f"output_file,ref_output_value {output_file},{ref_output_value}")
 
     o_fields_differ_list, o_values_differ_list, o_record_index_differ_list = DOIDiffer.doi_xml_differ(ref_output_value,
@@ -92,22 +92,18 @@ def given_valid_action_input(context, input_value):
     logger.info(f"given {input_value}")
     context.input_value = input_value  # Don't forget to set the input_value in context to be available for other functions.
 
-@given('an invalid PDS4 label at input_type,input_value {input_type},{input_value}')
-def given_invalid_pds4(context, input_type, input_value):
-    logger.info(f'an invalid PDS4 label at input_type,input_value {input_type},{input_value}')
-
-@given('an invalid reserve PDS4 label at input_value {input_value}')
-def given_invalid_reserve_pds4(context, input_value):
+@given('an invalid PDS4 label at {input_value}')
+def given_invalid_pds4(context, input_value):
     logger.info(f'an invalid reserve PDS4 label at input_value {input_value}')
     context.input_value = input_value  # Don't forget to set the input_value in context to be available for other functions.
 
-@when('create draft DOI for node {node_value} from {input_value}')
-def when_create_draft_impl(context, node_value, input_value):
+@when('create draft DOI for node {node_value}')
+def when_create_draft_impl(context, node_value):
     logger.info(f"when create DOI draft ")
-    logger.info(f"input_value {input_value}")
+    logger.info(f"input_value {context.input_value}")
 
     try:
-        context.output_file = draft_action_run(node_value,input_value)
+        context.output_file = draft_action_run(node_value,context.input_value)
 
     except CriticalDOIException as e:
         logger.info(str(e))
@@ -184,17 +180,17 @@ def step_doi_label_is_submitted_impl(context):
     else:
         logger.info(f"g_submit_flag is False")
 
-@when('historical record is drafted for node {node_value} from {input_subdir}')
-def when_historical_is_drafted_from_impl(context,node_value,input_subdir):
+@when('reference record is drafted for node {node_value} from {input_subdir}')
+def when_reference_is_drafted_from_impl(context,node_value,input_subdir):
     input_dir = os.path.join(context.transaction_dir, input_subdir)
     context.output_file = draft_action_run(node_value, input_dir)
 
-@given('historical transactions in {transaction_dir}')
-def step_historical_impl(context,transaction_dir):
+@given('reference transactions in {transaction_dir}')
+def given_reference_dir_impl(context,transaction_dir):
     context.transaction_dir = transaction_dir
 
-@when('historical record is reserved with node {node_value} with {input_value}')
-def step_historical_is_reserved_at_input_impl(context,node_value,input_value):
+@when('reference record is reserved with node {node_value} with {input_value}')
+def step_reference_is_reserved_at_input_impl(context,node_value,input_value):
     transaction_dir = context.transaction_dir
     input_dir = os.path.join(transaction_dir,input_value)
     context.output_file = reserve_action_run(node_value,input_dir)

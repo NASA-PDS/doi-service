@@ -122,11 +122,10 @@ class DOICoreActionDraft(DOICoreAction):
                     raise InputFormatException(msg)
 
             else:
-                msg = f"Expecting .xml files only, encountering {input_file}"
+                msg = f"File {input_file} is not processed, only .xml are parsed"
                 logger.warning(msg)
                 return None, o_doi
-                #logger.error(msg)
-                #raise InputFormatException(msg)
+
         else:
             # A URL gets read into memory.
             response = requests.get(input_file)

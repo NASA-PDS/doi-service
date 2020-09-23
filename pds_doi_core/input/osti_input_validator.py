@@ -15,7 +15,7 @@ from lxml import isoschematron
 
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
-from pds_doi_core.input.exceptions import InputFormatException
+from pds_doi_core.input.exceptions import InputFormatException, CriticalDOIException
 
 logger = get_logger('pds_doi_core.input.osti_input_util')
 
