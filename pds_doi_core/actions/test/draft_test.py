@@ -8,6 +8,14 @@ from pds_doi_core.util.general_util import get_logger
 
 logger = get_logger(__name__)
 
+def create_temporary_output_file(doi_label,filename):
+    # Save doi_label so it can be compared to.
+    temporary_file_name = filename
+    temporary_file_ptr = open(temporary_file_name,"w+")
+    temporary_file_ptr.write(doi_label + "\n")
+    temporary_file_ptr.close()
+    return temporary_file_name
+
 class MyTestCase(unittest.TestCase):
     db_name = 'doi_temp.db'
     # Because validation has been added to each action, the force_flag=True is required as the command line is not parsed for unit test.
@@ -63,7 +71,6 @@ class MyTestCase(unittest.TestCase):
                                     input='https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml',
                                     node='img', submitter='my_user@my_node.gov',force_flag=True)
         logger.info(osti_doi)
-
 
     def test_remote_browse_collection(self):
         logger.info("test remote browse collection")

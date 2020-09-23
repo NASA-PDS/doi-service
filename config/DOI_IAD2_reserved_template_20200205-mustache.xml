@@ -2,20 +2,66 @@
 <records>
     {{#dois}}
     <record status="{{status}}"> 
+        {{#id}}
+        <id>{{id}}</id>
+        {{/id}}
+        {{^id}}
+        <id></id>
+        {{/id}}
         <title>{{title}}</title>
+        {{#doi}}
+        <doi>{{doi}}</doi>
+        {{/doi}}
+        <availability></availability>
+        <publication_date>{{publication_date}}</publication_date>
+        {{#site_url}}
+        <site_url>{{site_url}}</site_url>
+        {{/site_url}}
+        {{^site_url}}
+        <site_url> </site_url>
+        {{/site_url}}
+        <product_type>{{product_type}}</product_type>
+        <product_type_specific>{{product_type_specific}}</product_type_specific>
+        <date_record_added>{{date_record_added}}</date_record_added>
+        <keywords>PDS; PDS4;</keywords>
         <authors>
             {{#authors}}
              <author>
-                <first_name>{{first_name}}</first_name>
+                {{#last_name}}
                 <last_name>{{last_name}}</last_name>
+                {{/last_name}}
+                {{#first_name}}
+                <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#middle_name}}
+                <middle>{{middle_name}}</middle_name>
+                {{/middle_name}}
+                {{#full_name}}
                 <full_name>{{full_name}}</full_name>
+                {{/full_name}}
             </author>
             {{/authors}}
         </authors>
-        <publication_date>{{publication_date}}</publication_date>
-        <product_type>{{product_type}}</product_type>
-        <product_type_specific>{{product_type_specific}}</product_type_specific>
-
+        <contributors>
+            {{#contributors}}
+            <contributor>
+                {{#last_name}}
+                <last_name>{{last_name}}</last_name>
+                {{/last_name}}
+                {{#first_name}}
+                <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#middle_name}}
+                <middle>{{middle_name}}</middle_name>
+                {{/middle_name}}
+                {{#full_name}}
+                <full_name>{{full_name}}</full_name>
+                {{/full_name}}
+                <contributor_type>DataCurator</contributor_type>
+                <affiliations/>
+            </contributor>
+            {{/contributors}}
+        </contributors>
         <related_identifiers>
             <related_identifier>
                 <identifier_type>URN</identifier_type>
@@ -23,6 +69,10 @@
                 <relation_type>IsIdenticalTo</relation_type>
             </related_identifier>
         </related_identifiers>        
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
     </record>
     {{/dois}}
 </records>

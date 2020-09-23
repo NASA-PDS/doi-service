@@ -12,6 +12,7 @@ from pds_doi_core.input.exceptions import UnknownNodeException, InputFormatExcep
     UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, IllegalDOIActionException, WarningDOIException, \
     CriticalDOIException
 from pds_doi_core.input.osti_input_validator import OSTIInputValidator
+from pds_doi_core.outputs.osti import DOIOutputOsti
 from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_core.util.doi_validator import DOIValidator
@@ -81,6 +82,10 @@ class DOICoreActionRelease(DOICoreAction):
 
             for doi in dois:
                 doi.status = 'Registered'  # Add 'status' field so the ranking in the workflow can be determined.
+                single_doi_label = DOIOutputOsti().create_osti_doi_release_record(doi)
+                if self._config.get('OTHER', 'release_validate_against_xsd_flag').lower() == 'true':
+                    self._doi_validator.validate_against_xsd(single_doi_label)
+
                 # Validate the label to ensure that no rules are violated.
                 self._doi_validator.validate_release(doi)
 
@@ -98,12 +103,17 @@ class DOICoreActionRelease(DOICoreAction):
         try:
             try:
                 contributor_value = NodeUtil().get_node_long_name(self._node)
-
-                OSTIInputValidator().validate(self._input)
-
                 o_doi_label = self._parse_input(self._input)
 
+                # Validate the input content against database for any step violation.
                 self._validate_doi(o_doi_label)
+
+                # Validate the input content against schematron for correctness.
+                # If the input is correct no exception is thrown and code can proceed to next step.
+                # Also note that the check against schematron is done after XSD above so any bad dates
+                # would have been caught already.
+
+                OSTIInputValidator().validate_from_file(self._input)
 
             # warnings
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,

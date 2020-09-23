@@ -7,6 +7,8 @@
 #
 #------------------------------
 
+from lxml import etree
+
 from pds_doi_core.db.doi_database import DOIDataBase
 from pds_doi_core.entities.doi import Doi
 from pds_doi_core.input.exceptions import DuplicatedTitleDOIException,  \
@@ -59,7 +61,17 @@ class DOIValidator:
         if rows_with_different_lidvid:
             lidvids = ','.join([self.__lidvid(columns, row) for row in rows_with_different_lidvid])
             status = ','.join([row[columns.index('status')] for row in rows_with_different_lidvid])
-            dois = ','.join([row[columns.index('doi') if 'doi' in columns else ''] for row in rows_with_different_lidvid])
+
+            # Note that it is possible for rows_with_different_lidvid to have some elements while
+            # 'doi' field is None.  It needs to be checked.
+            dois = ""
+            # Due to the fact that 'doi' field can be None, each field must be inspected before the join operation otherwise will cause indexing error.
+            for row in rows_with_different_lidvid:
+                if row[columns.index('doi')]:
+                    dois = dois + ',' + row[columns.index('doi')]
+                else:
+                    dois = dois + ',' + 'None'
+
             msg = f"The title: '{doi.title}' has already been used for a DOI by lidvid(s):{lidvids}, status: {status}, doi: {dois} . You must use a different title."
             logger.error(msg)
             raise DuplicatedTitleDOIException(msg)
@@ -134,6 +146,36 @@ class DOIValidator:
                       f"Are you sure you want to restart the workflow from step: {doi.status} for the lidvid: {doi.related_identifier}?"
                 logger.error(msg)
                 raise UnexpectedDOIActionException(msg)
+
+        return 1
+
+    def validate_against_xsd(self, doi_label):
+        # Given a DOI label, validate it against the XSD.
+        xml_file = etree.fromstring(doi_label.encode())  # The fromstring() requires the parameter type to be bytes.  The encode() convert str to bytes.
+        xsd_filename = self._config.get('OSTI', 'input_xsd')
+        xml_validator = etree.XMLSchema(file=xsd_filename)
+
+        # Perform the XSD validation.  The validate() function does not throw an exception,
+        # but merely return True or False.
+        is_valid = xml_validator.validate(xml_file)
+        logger.info(f"xsd_filename,is_valid {xsd_filename,is_valid}")
+
+        # If DOI is not valid, use another method to get exactly where the error(s) occurred.
+        #use_alternate_validation_method = False
+        use_alternate_validation_method = True
+        if not is_valid and use_alternate_validation_method:
+            import xmlschema
+            schema = xmlschema.XMLSchema(xsd_filename)
+            # Save doi_label to disk so it can be compared to historical in next step.
+            temporary_file_name = 'temp_doi_label_from_validate_against_xsd.xml'
+            temporary_file_ptr = open(temporary_file_name,"w+")
+            temporary_file_ptr.write(doi_label + "\n")
+            temporary_file_ptr.close()
+            logger.info(f"xsd_filename,is_valid,temporary_file_name {xsd_filename,is_valid,temporary_file_name}")
+
+            # If the XSD fail to validate the DOI label, it will throw an exception and exit.
+            # It will report where the error occurred.  The error will have to be fixed.
+            schema.validate(temporary_file_name)
 
         return 1
 

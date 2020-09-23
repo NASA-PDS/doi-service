@@ -25,15 +25,15 @@ class MyTestCase(unittest.TestCase):
     # and will cause "Exception: Database error: disk I/O error"
 
     @classmethod
-    def setUp(self):
-        self._action = DOICoreActionRelease(db_name=self.db_name)
-        logger.info(f"Instantiate DOICoreActionRelease with database file {self.db_name}")
+    def setUp(cls):
+        cls._action = DOICoreActionRelease(db_name=cls.db_name)
+        logger.info(f"Instantiate DOICoreActionRelease with database file {cls.db_name}")
 
     @classmethod
-    def tearDown(self):
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
-            logger.info(f"Removed test artifact database file {self.db_name}")
+    def tearDown(cls):
+        if os.path.isfile(cls.db_name):
+            #os.remove(self.db_name)
+            logger.info(f"Removed test artifact database file {cls.db_name}")
 
     def test_reserve(self):
         # Instantiate DOICoreActionRelease() here so a new database file is created and removed for each test.

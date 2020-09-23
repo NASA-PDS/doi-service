@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- IAD 1.0 XML schema 
+     Created: 2020-AUG-05 by Neal Ensor
+-->
+
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- define simple elements -->
+
+    <xs:annotation>
+        <xs:documentation>This XML schema file has been generated from the
+            Information Model.</xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="records" type="records"> </xs:element>
+    
+    <xs:simpleType name="type_date_record_added">
+        <xs:annotation>
+            <xs:documentation>
+                Date when record was added.
+            </xs:documentation>
+        </xs:annotation>        
+        <xs:restriction base="xs:string">
+            <xs:minLength value="10"/>
+            <xs:maxLength value="10"/>
+         </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_date_record_updated">
+        <xs:annotation>
+            <xs:documentation>
+                Date when record was updated.
+            </xs:documentation>
+        </xs:annotation>        
+        <xs:restriction base="xs:string">
+            <xs:minLength value="10"/>
+            <xs:maxLength value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_id">
+        <xs:annotation>
+            <xs:documentation>
+                Provide the ID of a record for editing.  Omit this value for new records.
+            </xs:documentation>
+        </xs:annotation>  
+        <!--
+        <xs:restriction base="xs:unsignedInt">
+        </xs:restriction>
+        -->
+        
+            <xs:union>
+                <xs:simpleType>
+                    <xs:restriction base='xs:string'>
+                        <xs:length value="0"/>
+                    </xs:restriction>
+                </xs:simpleType>
+                <xs:simpleType>
+                    <xs:restriction base='xs:unsignedInt' />
+                </xs:simpleType>
+            </xs:union>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="type_title">
+        <xs:annotation>
+            <xs:documentation>
+                Title of the publication.
+            </xs:documentation>
+        </xs:annotation>        
+        <xs:restriction base="xs:string">
+            <xs:minLength value="10"/>
+            <xs:maxLength value="500"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_doi">
+        <xs:annotation>
+            <xs:documentation>The doi attribute provides the Digital Object
+                Identifier for an object, assigned by the appropriate DOI System
+                Registration Agency.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ASCII_DOI">
+            <!-- format="10.ssss/sss" -->
+            <xs:pattern value='10\.\S+/\S+'/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="ASCII_DOI">
+        <xs:restriction base="xs:string">
+            <xs:pattern value='10\.\S+/\S+'/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_identifier_type">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates the type of the related identifier value.
+            </xs:documentation>
+        </xs:annotation>
+             <xs:restriction base="xs:string">
+                <xs:enumeration value="ARK" />
+                <xs:enumeration value="ARXIV" />
+                <xs:enumeration value="BIBCODE" />
+                <xs:enumeration value="DOI" />
+                <xs:enumeration value="EAN13" />
+                <xs:enumeration value="EISSN" />
+                <xs:enumeration value="HANDLE" />
+                <xs:enumeration value="IGSN" />
+                <xs:enumeration value="ISBN" />
+                <xs:enumeration value="ISSN" />
+                <xs:enumeration value="ISTC" />
+                <xs:enumeration value="LISSN" />
+                <xs:enumeration value="LSID" />
+                <xs:enumeration value="PMID" />
+                <xs:enumeration value="PURL" />
+                <xs:enumeration value="UPC" />
+                <xs:enumeration value="URL" />
+                <xs:enumeration value="URN" />
+                <xs:enumeration value="W3ID" />
+            </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_identifier_value">
+        <xs:annotation>
+            <xs:documentation>
+                The related identifier value.
+            </xs:documentation>
+        </xs:annotation>
+              <xs:restriction base="xs:string">
+                <xs:maxLength value="1000" />
+            </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_relation_type">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates the type of relation between this record and this related identifier.
+            </xs:documentation>
+        </xs:annotation>
+             <xs:restriction base="xs:string">
+                <xs:enumeration value="IsCitedBy" />
+                <xs:enumeration value="Cites" />
+                <xs:enumeration value="IsSupplementTo" />
+                <xs:enumeration value="IsSupplementedBy" />
+                <xs:enumeration value="IsContinuedBy" />
+                <xs:enumeration value="Continues" />
+                <xs:enumeration value="HasMetadata" />
+                <xs:enumeration value="IsMetadataFor" />
+                <xs:enumeration value="IsNewVersionOf" />
+                <xs:enumeration value="isPreviousVersionOf" />
+                <xs:enumeration value="IsPartOf" />
+                <xs:enumeration value="HasPart" />
+                <xs:enumeration value="Describes" />
+                <xs:enumeration value="IsDescribedBy" />
+                <xs:enumeration value="HasVersion" />
+                <xs:enumeration value="IsVersionOf" />
+                <xs:enumeration value="IsReferencedBy" />
+                <xs:enumeration value="References" />
+                <xs:enumeration value="IsDocumentedBy" />
+                <xs:enumeration value="Documents" />
+                <xs:enumeration value="IsCompiledBy" />
+                <xs:enumeration value="Compiles" />
+                <xs:enumeration value="IsVariantFormOf" />
+                <xs:enumeration value="IsOriginalFormOf" />
+                <xs:enumeration value="IsIdenticalTo" />
+                <xs:enumeration value="IsRevewiedBy" />
+                <xs:enumeration value="Reviews" />
+                <xs:enumeration value="IsDerivedFrom" />
+                <xs:enumeration value="IsSourceOf" />
+                <xs:enumeration value="IsRequiredBy" />
+                <xs:enumeration value="Requires" />
+                <xs:enumeration value="IsObsoletedBy" />
+                <xs:enumeration value="Obsoletes" />
+            </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_sponsoring_organization">
+        <xs:annotation>
+            <xs:documentation>
+                Provide the name of the funding or sponsoring organization.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="400" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_accession_number">
+        <xs:annotation>
+            <xs:documentation>
+                Indicate a client-specific unique identifier if any in your own system. May be used in place
+                of specifying ID in future edits if desired.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_publisher">
+        <xs:annotation>
+            <xs:documentation>
+                The publisher of the record.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="1000"></xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_availability">
+        <xs:annotation>
+            <xs:documentation>
+                Description of the document's availability, any restrictions on use or other information pertinent to its 
+                dissemination.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="1000"></xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_publication_date">
+        <xs:annotation>
+            <xs:documentation>
+                The date of publication of this information.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:date">
+        </xs:restriction>        
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_country">
+        <xs:annotation>
+            <xs:documentation>
+                The country of publication for this document.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_description">
+        <xs:annotation>
+            <xs:documentation>
+                The abstract or description for the publication.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+        </xs:restriction>          
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_site_url">
+        <xs:annotation>
+            <xs:documentation>
+                The URL to the landing page of this publication, or direct to its full text.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:anyURI">
+            <xs:maxLength value="250"></xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_site_code">
+        <xs:annotation>
+            <xs:documentation>
+                The URL to the landing page of this publication, or direct to its full text.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:anyURI">
+            <xs:maxLength value="250"></xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_product_type">
+        <xs:annotation>
+            <xs:documentation>
+                Used to specify the type of information contained in this record, one of the indicated required values.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Collection" />
+            <xs:enumeration value="Dataset" />
+            <xs:enumeration value="Event" />
+            <xs:enumeration value="Image" />
+            <xs:enumeration value="InteractiveResource" />
+            <xs:enumeration value="Model" />
+            <xs:enumeration value="PhysicalObject" />
+            <xs:enumeration value="Service" />
+            <xs:enumeration value="Software" />
+            <xs:enumeration value="Sound" />
+            <xs:enumeration value="Text" />
+            <xs:enumeration value="Workflow" />
+            <xs:enumeration value="Other" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_product_type_specific">
+        <xs:annotation>
+            <xs:documentation>
+                Describes the product type in more general terms, to further explain the type of information contained 
+                within the record.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="250" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_keywords">
+        <xs:annotation>
+            <xs:documentation>
+                One or more keywords describing the information in general terms.  Multiple values should be semi-colon 
+                delimited.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="4000" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_affiliation">
+        <xs:annotation>
+            <xs:documentation>
+                Author or contributor affiliation agency, organization, or laboratory name.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="250" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!--
+    <contact_name>PDS OPERATOR</contact_name>
+    <contact_org>PDS</contact_org>
+    <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+    <contact_phone>818.393.7165</contact_phone>
+    -->
+
+    <xs:simpleType name="type_contact_name">
+        <xs:annotation>
+            <xs:documentation>
+                The name of the contact.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="255" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="type_contact_org">
+        <xs:annotation>
+            <xs:documentation>
+                The name of the organization to contact.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="255" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_contact_email">
+        <xs:annotation>
+            <xs:documentation>
+                A contact email address.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="255" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type_contact_phone">
+        <xs:annotation>
+            <xs:documentation>
+                A contact email address.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- define Complex Types -->
+
+    <xs:complexType name="records">
+        <xs:annotation>
+            <xs:documentation>The Zip class describes a zip
+                file.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="record" type="type_record" minOccurs="1" maxOccurs="1"> </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+
+    <xs:complexType name="type_record_status">
+        <xs:annotation>
+            <xs:documentation>The Modification_History class tracks the
+                history of changes made to the product once it enters the
+                registry system.</xs:documentation>
+        </xs:annotation>
+        
+        <xs:complexContent>
+            <xs:restriction base="xs:anyType">
+                <xs:attribute name="status" type="xs:string" use="optional"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="type_record">
+        <xs:annotation>
+            <xs:documentation>The Modification_History class tracks the
+                history of changes made to the product once it enters the
+                registry system.</xs:documentation>
+        </xs:annotation>
+        
+        <xs:complexContent>
+            <xs:extension base="type_record_status">
+                <xs:sequence>
+                    <xs:element name="id" type="type_id" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="title" type="type_title" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="doi" type="type_doi" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="sponsoring_organization" type="type_sponsoring_organization" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="accession_number" type="type_accession_number" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="publisher" type="type_publisher" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="availability" type="type_availability" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="publication_date" type="type_publication_date" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="country" type="type_country" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="description" type="type_description" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="site_url" type="type_site_url" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="site_code" type="type_site_code" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="product_type" type="type_product_type" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="product_type_specific" type="type_product_type_specific" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="date_record_added" type="type_date_record_added" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="date_record_updated" type="type_date_record_updated" minOccurs="0" maxOccurs="1"> </xs:element>
+                    <xs:element name="keywords" type="type_keywords" minOccurs="1" maxOccurs="1"> </xs:element>
+                    
+                    <xs:element name="authors" type="type_authors" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="contributors" type="type_contributors" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="related_identifiers" type="type_related_identifiers" minOccurs="1" maxOccurs="1"> </xs:element>    
+      
+                    <!--
+                    <contact_name>PDS OPERATOR</contact_name>
+                    <contact_org>PDS</contact_org>
+                    <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+                    <contact_phone>818.393.7165</contact_phone>
+                    -->
+                    <xs:element name="contact_name" type="type_contact_name" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="contact_org" type="type_contact_org" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="contact_email" type="type_contact_email" minOccurs="1" maxOccurs="1"> </xs:element>
+                    <xs:element name="contact_phone" type="type_contact_phone" minOccurs="1" maxOccurs="1"> </xs:element>
+                    
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>          
+    </xs:complexType>
+
+    <xs:complexType name="type_authors">
+        <xs:annotation>
+            <xs:documentation>The Zip class describes a zip
+                file.</xs:documentation>
+        </xs:annotation>        
+        <xs:sequence>
+            <xs:element name="author" type="type_person_info" minOccurs="1" maxOccurs="unbounded"> </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="type_contributors">
+        <xs:annotation>
+            <xs:documentation>The Zip class describes a zip
+                file.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="contributor" type="type_contributor_info" minOccurs="0" maxOccurs="unbounded"> </xs:element>
+        </xs:sequence>
+    </xs:complexType> 
+    
+    <xs:complexType name="type_related_identifiers">
+        <xs:annotation>
+            <xs:documentation>The Zip class describes a zip
+                file.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="related_identifier" type="type_related_identifier" minOccurs="1" maxOccurs="unbounded"> </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="type_related_identifier">
+        <xs:annotation>
+            <xs:documentation>The Zip class describes a zip
+                file.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="identifier_type" type="type_identifier_type" minOccurs="1" maxOccurs="1"> </xs:element>
+            <xs:element name="identifier_value" type="type_identifier_value" minOccurs="1" maxOccurs="1"> </xs:element>
+            <xs:element name="relation_type" type="type_relation_type" minOccurs="1" maxOccurs="1"> </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+       
+    <xs:element name="affiliation">
+        <xs:annotation>
+            <xs:documentation>
+            Author or contributor affiliation agency, organization, or laboratory name.
+        </xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:maxLength value="250" />
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+ 
+
+    
+    <!-- define complex element references; authors and contributor types -->
+    <xs:group name="group_person_shared_info">
+        <xs:annotation>
+            <xs:documentation>
+                Base type for contributors or authors with common attributes of both.  Note that either full_name OR first_name/last_name should be specified.
+                For organizations or other non-person entities, use the full_name.
+            </xs:documentation>
+        </xs:annotation>
+        
+        <xs:sequence>
+            <xs:element name="email" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        A contact email address.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="640" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>                      
+         </xs:sequence>        
+    </xs:group>
+    
+    <xs:group name="group_person_fullname_info">
+        <xs:annotation>
+            <xs:documentation>
+                Base type for contributors or authors with common attributes of both.  Note that either full_name OR first_name/last_name should be specified.
+                For organizations or other non-person entities, use the full_name.
+            </xs:documentation>
+        </xs:annotation>
+
+        <xs:sequence>
+            <!--
+            <xs:element name="email" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        A contact email address.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="640" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>           
+            -->
+            
+            <xs:element name="full_name" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's or organization's full name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            
+            <!--
+            <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's middle name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="50" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            -->
+            
+        </xs:sequence>        
+    </xs:group>
+
+    <!--
+    <xs:complexType name="type_person_fullname_info">
+        <xs:annotation>
+            <xs:documentation>
+                Base type for contributors or authors with common attributes of both.  Note that either full_name OR first_name/last_name should be specified.
+                For organizations or other non-person entities, use the full_name.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="email" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        A contact email address.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="640" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>           
+            
+            <xs:element name="full_name" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's or organization's full name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            
+            <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's middle name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="50" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            
+        </xs:sequence>
+    </xs:complexType>
+    -->
+
+    <xs:group name="group_person_info">
+        <xs:annotation>
+            <xs:documentation>
+                Base type for contributors or authors with common attributes of both.  Note that either full_name OR first_name/last_name should be specified.
+                For organizations or other non-person entities, use the full_name.
+            </xs:documentation>
+        </xs:annotation>
+        
+        <xs:sequence>            
+            <xs:element name="last_name" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's last or family name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="first_name" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The first or given name of the person.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="500" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="middle_name" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's middle name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="50" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            
+            <!--
+            <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's middle name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="50" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            -->            
+        </xs:sequence>        
+    </xs:group>
+    
+    <xs:complexType name="type_person_info">
+        <xs:annotation>
+            <xs:documentation>
+            Base type for contributors or authors with common attributes of both.  Note that either full_name OR first_name/last_name should be specified.
+            For organizations or other non-person entities, use the full_name.
+        </xs:documentation>
+        </xs:annotation>
+
+        <xs:sequence>
+            <xs:element name="email" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        A contact email address.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="640" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>    
+            
+            <xs:choice minOccurs="1" maxOccurs="1">                               
+                 <xs:group ref="group_person_fullname_info" />
+                <xs:group ref="group_person_info" />    
+            </xs:choice> 
+            
+            <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's middle name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="50" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>  
+            
+        </xs:sequence>
+
+    </xs:complexType>
+    
+    
+    <xs:complexType name="type_contributor_info">
+        <xs:annotation>
+            <xs:documentation>
+                Base type for contributors or authors with common attributes of both.  Note that either full_name OR first_name/last_name should be specified.
+                For organizations or other non-person entities, use the full_name.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="email" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        A contact email address.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="640" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>    
+
+            <xs:choice minOccurs="1" maxOccurs="1">                               
+                <xs:group ref="group_person_fullname_info" />
+                <xs:group ref="group_person_info" />    
+            </xs:choice> 
+                      
+            <xs:element name="contributor_type">
+                <xs:annotation>
+                    <xs:documentation>
+                        Indicates the contributor's type or role.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="DataCollector" />
+                        <xs:enumeration value="DataCurator" />
+                        <xs:enumeration value="DataManager" />
+                        <xs:enumeration value="Distributor" />
+                        <xs:enumeration value="Editor" />
+                        <xs:enumeration value="HostingInstitution" />
+                        <xs:enumeration value="Producer" />
+                        <xs:enumeration value="ProjectLeader" />
+                        <xs:enumeration value="ProjectManager" />
+                        <xs:enumeration value="ProjectMember" />
+                        <xs:enumeration value="RegistrationAgency" />
+                        <xs:enumeration value="RegistrationAuthority" />
+                        <xs:enumeration value="RelatedPerson" />
+                        <xs:enumeration value="Researcher" />
+                        <xs:enumeration value="ResearchGroup" />
+                        <xs:enumeration value="RightsHolder" />
+                        <xs:enumeration value="Sponsor" />
+                        <xs:enumeration value="Supervisor" />
+                        <xs:enumeration value="WorkPackageLeader" />
+                        <xs:enumeration value="Other" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            
+            <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The person's middle name.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="50" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            
+        </xs:sequence>
+    </xs:complexType>
+        
+</xs:schema>

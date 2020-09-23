@@ -1,0 +1,1 @@
+Input value tests/data/invalid_bundle.xml cannot be drafted or reserved.
