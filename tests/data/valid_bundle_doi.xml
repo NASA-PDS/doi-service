@@ -10,11 +10,11 @@
     <country>USA</country>
     <description>InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
         </description>
-    <site_url>https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
+    <site_url>https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
     <product_type>Dataset</product_type>
     <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
-    <date_record_added>2020-09-15</date_record_added>
-    <keywords>PDS; PDS4; Insight Lander Insight Context Camera Insight Deployment Camera; Mars; Science; Context; Camera; InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products; Insight; Cartography and Imaging Sciences Discipline; Lander; Raw; Deployment</keywords>
+    <date_record_added>2020-09-24</date_record_added>
+    <keywords>PDS; PDS4; raw; science; experiment; lander; reduced; insight; product; record; deployment; camera; Cartography and Imaging Sciences Discipline; rdr; mar; data; context; edr</keywords>
     <authors>
       <author>
         <last_name>Deen</last_name>
@@ -39,13 +39,6 @@
         <contributor_type>DataCurator</contributor_type>
       </contributor>
     </contributors>
-    <related_identifiers>
-      <related_identifier>
-        <identifier_type>URN</identifier_type>
-        <identifier_value>urn:nasa:pds:insight_cameras::1.0</identifier_value>
-        <relation_type>IsIdenticalTo</relation_type>
-      </related_identifier>
-    </related_identifiers>
     <!--product_nos>urn:nasa:pds:insight_cameras::1.0</product_nos-->
     <contact_name>PDS Operator</contact_name>
     <contact_org>PDS</contact_org>
