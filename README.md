@@ -3,40 +3,14 @@
 This tools provides services for PDS operators to mint DOIs.
 
 
-
-
 ## Prerequisites
 
 - python 3
 - a login to OSTI server
 
-## Usage 
+## User Documentation 
 
-    pds-doi-cmd --help
-
-    pds-doi-cmd draft -c 'Cartography and Imaging Sciences Discipline' -i 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml'
-    pds-doi-cmd draft -c 'Cartography and Imaging Sciences Discipline' -i input/bundle_in_with_contributors.xml 
-    pds-doi-cmd draft -c 'Cartography and Imaging Sciences Discipline' -i 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml'
-
-    pds-doi-cmd reserve -c 'Cartography and Imaging Sciences Discipline' -i input/DOI_Reserved_GEO_200318.xlsx
-    pds-doi-cmd reserve -c 'Cartography and Imaging Sciences Discipline' -i input/DOI_Reserved_GEO_200318.csv
-    pds-doi-cmd reserve -c 'Cartography and Imaging Sciences Discipline' -i input/OSTI_IAD_submitted_records_Reserved-only_20200304.csv 
-
-### Supported inputs
-
-#### PDS4 Label
-
-- Bundle - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml
-- Data Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml
-- Browse Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml
-- Calibration Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml
-- Document Collection - https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml
-
-#### tables
-For reserved dois, `xlsx` and `csv` inputs are supported.
-
-#### osti format
-The osti format can be used as an input for release.
+    https://nasa-pds.github.io/pds-doi-service/ 
 
 ## Developers
 
@@ -55,14 +29,14 @@ Install virtual env
 
 Deploy dependancies:
 
-    pip install -r requirements.txt
+    pip install -r requirements_dev.txt
     
 or
     
     pip intall -e .
     
     
-## Launch server
+## Launch api server (to be re-worked)
 
     pds-doi-start-dev
     
@@ -73,42 +47,44 @@ or
 
     python setup.py test
 
-The service, in a browser http://127.0.0.1:5000/create_osti_label?target_url=%22https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml%22&contributor=%22Cartography+and+Imaging+Sciences+Discipline%22
+### Behavioral testing
 
-### Behaviroal testing
+You first need to get some reference datasets, in the project base directory:
+
+    curl https://pds.nasa.gov/software/test-data/pds-doi-service/aaDOI_production_submitted_labels.zip > aaDOI_production_submitted_labels.zip
+    unzip aaDOI_production_submitted_labels.zip
+
+Then you can run the behavioral tests:
 
     behave
+
+You can also run them for a nicer reporting:
+
+    behave -f allure_behave.formatter:AllureFormatter -o ./allure ./features 
+    allure service allure
     
+## Documentation management
 
+### Design :
 
+See in this repository:
 
-## Build
+https://github.com/NASA-PDS/pds-doi-service/tree/master/docs
 
-### Development build 
+### User documentation
 
-A development build is publish for every push on the "dev" branch
-
-It is available in the release section of gitHub
-
-### Release
-
-To be completed
-
-
-## Deploy    
-
-Deploy the package and launch the API server (for demo or test purpose):
-
-    pip install  --upgrade --force-reinstall https://github.com/NASA-PDS-Incubator/pds-doi-service/releases/download/0.0.1%2Bdev/pds_doi_core-0.0.1+dev-py3-none-any.whl
-    pds-doi-start-dev
-    
-## Generate documentation
+Managed with sphynx
 
     brew install sphinx-doc
-    pip install -r requirements.txt
+    pip install -r requirements_dev.txt
     cd docs
-    sphinx-build -b html source build -a
-    
+    sphinx-build -b html source build -a 
+
+
+      
+## Build & Release
+
+The build and release process is managed in github actions.
     
 
    
