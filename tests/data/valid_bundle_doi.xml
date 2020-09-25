@@ -14,7 +14,7 @@
     <product_type>Dataset</product_type>
     <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
     <date_record_added>2020-09-24</date_record_added>
-    <keywords>PDS; PDS4; raw; science; experiment; lander; reduced; insight; product; record; deployment; camera; Cartography and Imaging Sciences Discipline; rdr; mar; data; context; edr</keywords>
+    <keywords>PDS; PDS4; record; science; experiment; camera; product; deployment; insight; Cartography and Imaging Sciences Discipline; context; mar; data; lander; edr; reduced; rdr; raw</keywords>
     <authors>
       <author>
         <last_name>Deen</last_name>

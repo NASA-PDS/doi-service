@@ -14,7 +14,7 @@
     <product_type>Dataset</product_type>
     <product_type_specific>PDS4 Refereed Data Collection</product_type_specific>
     <date_record_added>2020-09-24</date_record_added>
-    <keywords>PDS; PDS4; lander; insight; product; deployment; camera; Cartography and Imaging Sciences Discipline; collection; mar; data; context</keywords>
+    <keywords>PDS; PDS4; collection; camera; deployment; Cartography and Imaging Sciences Discipline; insight; context; mar; data; lander; product</keywords>
     <authors>
       <author>
         <last_name>Deen</last_name>

@@ -46,7 +46,7 @@
             {{/authors}}
         </authors>
         <contributors>
-            {{#contributors}}
+            {{#editors}}
             <contributor>
                 <email/>
                 {{#last_name}}
@@ -64,7 +64,11 @@
                 <contributor_type>DataCurator</contributor_type>
                 <affiliations/>
             </contributor>
-            {{/contributors}}
+            {{/editors}}
+            <contributor>
+                <full_name>Planetary Data System: {{contributor}} Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
         </contributors>
         <contact_name>PDS Operator</contact_name>
         <contact_org>PDS</contact_org>
