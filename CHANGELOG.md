@@ -1,8 +1,13 @@
 # Changelog
 
-## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-09-10)
+## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-09-29)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.8-dev)
+
+**Improvements:**
+
+- Revise DOI Service Requirements [\#65](https://github.com/NASA-PDS/pds-doi-service/issues/65)
+- Develop operational documentation and test suite [\#40](https://github.com/NASA-PDS/pds-doi-service/issues/40)
 
 **Defects:**
 
@@ -10,9 +15,14 @@
 
 **Other closed issues:**
 
+- Revise requirements to ensure scope is being met [\#64](https://github.com/NASA-PDS/pds-doi-service/issues/64)
+- Develop DOI Service Scope [\#63](https://github.com/NASA-PDS/pds-doi-service/issues/63)
 - Add configuration documentation [\#60](https://github.com/NASA-PDS/pds-doi-service/issues/60)
 - create full\_name when first/last name cannot be parsed [\#58](https://github.com/NASA-PDS/pds-doi-service/issues/58)
+- validate the submitted OSTI record against a schema [\#56](https://github.com/NASA-PDS/pds-doi-service/issues/56)
+- Perform benchmark tests between original prototype software and new system [\#44](https://github.com/NASA-PDS/pds-doi-service/issues/44)
 - Update documentation for operational installation and usage [\#42](https://github.com/NASA-PDS/pds-doi-service/issues/42)
+- Develop simple regression test suite for deployment [\#41](https://github.com/NASA-PDS/pds-doi-service/issues/41)
 - Develop DOI metadata automated validation component [\#18](https://github.com/NASA-PDS/pds-doi-service/issues/18)
 
 ## [0.0.3](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.3) (2020-07-31)
