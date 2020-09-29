@@ -31,3 +31,6 @@ class CriticalDOIException(Exception):
 class WarningDOIException(Exception):
     pass
 
+class SiteURNotExistException(Exception):
+    pass
+

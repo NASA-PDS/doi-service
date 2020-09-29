@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
     # Due to addition of validation of existing 'title', 'lidvid' and 'doi' fields from local database,
     # the DOICoreActionReserve must be instantiated per test and the tear down per test as well to remove temporary database.
 
-    # Because validation has been added to each action, the force_flag=True is required as the command line is not parsed for unit test.
+    # Because validation has been added to each action, the force=True is required as the command line is not parsed for unit test.
     db_name = 'doi_temp.db'
 
     def setUp(self):
@@ -37,7 +37,7 @@ class MyTestCase(unittest.TestCase):
         self._action.run(
             input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             node='img', submitter='my_user@my_node.gov',
-            dry_run=True,force_flag=True)
+            dry_run=True,force=True)
 
         # The tearDown() function is called per test.
 
@@ -49,7 +49,7 @@ class MyTestCase(unittest.TestCase):
         self._action.run(
             input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
             node='img', submitter='my_user@my_node.gov',
-            dry_run=True,force_flag=True)
+            dry_run=True,force=True)
 
         # The tearDown() function is called per test.
 
@@ -60,7 +60,7 @@ class MyTestCase(unittest.TestCase):
         osti_doi = self._action.run(
             input='input/DOI_Reserved_GEO_200318.csv',
             node='img', submitter='my_user@my_node.gov',
-            dry_run=True,force_flag=True)
+            dry_run=True,force=True)
         logger.info(osti_doi)
 
     def test_reserve_csv_and_submit(self):
@@ -68,7 +68,7 @@ class MyTestCase(unittest.TestCase):
         osti_doi = self._action.run(
             input='input/DOI_Reserved_GEO_200318.csv',
             node='img', submitter='my_user@my_node.gov',
-            dry_run=False,force_flag=True)
+            dry_run=False,force=True)
         logger.info(osti_doi)
 
         # The tearDown() function is called per test.

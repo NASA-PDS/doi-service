@@ -9,10 +9,12 @@
 
 from lxml import etree
 
+import requests
+
 from pds_doi_core.db.doi_database import DOIDataBase
 from pds_doi_core.entities.doi import Doi
 from pds_doi_core.input.exceptions import DuplicatedTitleDOIException,  \
-    IllegalDOIActionException, UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException
+    IllegalDOIActionException, UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, SiteURNotExistException
 from pds_doi_core.util.config_parser import DOIConfigUtil
 from pds_doi_core.util.general_util import get_logger
 
@@ -45,6 +47,32 @@ class DOIValidator:
     @staticmethod
     def __lidvid(columns, row):
         return f"{row[columns.index('lid')]}::{row[columns.index('vid')]}"
+
+    def _check_field_site_url(self, doi: Doi):
+        """ If the site_url field exist in doi object, check to see if it is online.  If the site is not online, an exception will be thrown.
+        """
+
+        logger.debug(f"doi {doi}")
+        logger.info(f"doi.site_url {doi.site_url}")
+
+        if doi.site_url:
+            try:
+                response = requests.get(doi.site_url,timeout=5)
+                status_code = response.status_code
+                logger.debug(f"from_request:status_code,site_url {status_code,doi.site_url}")
+                # Handle cases when a connection can be made to the server but the status is greater than or equal to 400.
+                if status_code >= 400:
+                    # Need to check its an 404, 503, 500, 403 etc.
+                    raise requests.HTTPError(f"status_code,site_url {status_code,doi.site_url}")
+                else:
+                    logger.debug(f"site_url {doi.site_url} indeed exist")
+            except (requests.exceptions.ConnectionError, Exception) as e:
+                error_message = f"site_url {doi.site_url} not reachable"
+                # Although not being able to connect is an error, the message printed is a warning.
+                logger.warning(error_message)
+                raise SiteURNotExistException(error_message)
+
+        return 1
 
     def _check_field_title_duplicate(self, doi: Doi):
         """ Check if the same title exist already in local database for a different lidvid
@@ -188,6 +216,8 @@ class DOIValidator:
 
         # TO DO check id and doi fields are consistent.
 
+        # Validate the site_url first to give the user a chance to make the correction.
+        self._check_field_site_url(doi)
         self._check_field_title_duplicate(doi)
         self._check_field_title_content(doi)
         self._check_field_workflow(doi)

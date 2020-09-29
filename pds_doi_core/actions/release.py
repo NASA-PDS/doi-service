@@ -9,7 +9,7 @@
 
 from pds_doi_core.actions.action import DOICoreAction, logger
 from pds_doi_core.input.exceptions import UnknownNodeException, InputFormatException, DuplicatedTitleDOIException, \
-    UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, IllegalDOIActionException, WarningDOIException, \
+    UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, SiteURNotExistException, IllegalDOIActionException, WarningDOIException, \
     CriticalDOIException
 from pds_doi_core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_core.outputs.osti import DOIOutputOsti
@@ -70,6 +70,30 @@ class DOICoreActionRelease(DOICoreAction):
 
         return o_doi_label
 
+    def _collect_exception_classes_and_messages(self, single_exception, io_exception_classes, io_exception_messages):
+        # Given a single exception, collect the exception class name and message.
+        # The variables io_exception_classes and io_exception_messages are both input and output.
+
+        actual_class_name = type(single_exception).__name__
+        logger.debug(f"actual_class_name,type(actual_class_name)  {actual_class_name},{type(actual_class_name)}")
+
+        io_exception_classes.append (actual_class_name)     # SiteURNotExistException
+        io_exception_messages.append(str(single_exception)) # site_url http://mysite.example.com/link/to/my-dataset-id-25901.html not exist
+
+        return io_exception_classes, io_exception_messages
+
+    def _raise_warn_exceptions(self, exception_classes, exception_messages):
+        # Raise a WarningDOIException with all the class names and messages.
+
+        message_to_raise = '' 
+        for ii in range(len(exception_classes)):
+            if ii == 0:
+                message_to_raise = message_to_raise +        exception_classes[ii] + ':' + exception_messages[ii]
+            else:
+                # Add a comma after every message.
+                message_to_raise = message_to_raise + ', ' + exception_classes[ii] + ':' + exception_messages[ii]
+        raise WarningDOIException(message_to_raise)
+
     def _validate_doi(self, doi_label):
         """
          Before submitting the user input, it has to be validated against the database so a Doi object need to be built.
@@ -77,6 +101,8 @@ class DOICoreActionRelease(DOICoreAction):
         :param doi_label:
         :return:
         """
+        exception_classes  = [] 
+        exception_messages = [] 
         try:
             dois = DOIOstiWebParser().response_get_parse_osti_xml(doi_label)
 
@@ -87,15 +113,28 @@ class DOICoreActionRelease(DOICoreAction):
                     self._doi_validator.validate_against_xsd(single_doi_label)
 
                 # Validate the label to ensure that no rules are violated.
-                self._doi_validator.validate_osti_submission(doi)
-
+                # Put validate_osti_submission() within a try/except clause to catch all the exceptions instead of
+                # exiting after the first exception.  This allow the user to see all the things that are wrong with
+                # all the DOIs instead of just the first one.
+                try:
+                    self._doi_validator.validate_osti_submission(doi)
+                except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
+                    TitleDoesNotMatchProductTypeException, SiteURNotExistException, WarningDOIException) as e:
+                    (exception_classes, exception_messages) = self._collect_exception_classes_and_messages(e, 
+                                                                  exception_classes, exception_messages)
         except Exception as e:
             raise  # Re-raise all exceptions.
+
+        # If there is at least one exception caught, raise a WarningDOIException with all the messages.
+        if len(exception_classes) > 0:
+            self._raise_warn_exceptions(exception_classes,exception_messages)
+
+        return 1
 
     def run(self, **kwargs):
         """
         Function performs a release of a DOI that has been previously reserved.  The input is a
-        XML text file contains previously return output from a 'reserved' action.  The only
+        XML text file contains previously return output from a 'reserve' or 'draft' action.  The only
         required field is 'id'.  Any other fields included will be considered a replace action.
         """
         self.parse_arguments(kwargs)
@@ -117,9 +156,9 @@ class DOICoreActionRelease(DOICoreAction):
 
             # warnings
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException) as e:
+                    TitleDoesNotMatchProductTypeException, SiteURNotExistException, WarningDOIException) as e:
                 if not self._force:
-                    # If the user did not use force_flag, re-raise the exception.
+                    # If the user did not use --force parameter, re-raise the exception.
                     raise WarningDOIException(str(e))
             # errors
             except (IllegalDOIActionException, UnknownNodeException, InputFormatException) as e:

@@ -59,8 +59,21 @@ class DOIInputUtil:
         doi_records = []
 
         for index, row in xl_sheet.iterrows():
+            logger.debug(f"row {row}")
+            # It is possible that the length of row['publication_date'] is more than needed, we only need to get the first 10 characters
+            #   '2020-08-01' from '2020-08-01 00:00:00' 
+            if len(row['publication_date']) >= 10:
+                # It is possible that the format provided is not expected, put try/except clause to catch that.
+                try:
+                    publication_date_value =  datetime.strptime(row['publication_date'][0:10], '%Y-%m-%d')
+                except Exception:
+                    logger.error("Expecting publication_date [" + row['publication_date'] + "] with format YYYY-mm-dd")
+                    raise InputFormatException("Expecting publication_date [" + row['publication_date'] + "] with format YYYY-mm-dd")
+            else:
+                raise InputFormatException("Expecting publication_date to be at least 10 characters: [" + row['publication_date'] + "]")
+
             doi = Doi(title=row['title'],
-                      publication_date=datetime.fromisoformat(row['publication_date']),
+                      publication_date=publication_date_value,
                       product_type='Collection',
                       product_type_specific=row['product_type_specific'],
                       related_identifier=row['related_resource'],

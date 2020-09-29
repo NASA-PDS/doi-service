@@ -15,10 +15,14 @@ class MyTestCase(unittest.TestCase):
     # to demonstrate that they have new status of 'Pending' or 'Registered'.  If for some reason the server has been wiped clean, this unit test will still run
     # but won't show any status changed to 'Registered'.
     #
-    # Because validation has been added to each action, the force_flag=True is required as the command line is not parsed for unit test.
+    # Because validation has been added to each action, the force=True is required as the command line is not parsed for unit test.
 
     db_name = 'doi_temp.db'
     logger.info("Creating test artifact database file {self.db_name}")
+    # Remove db_name if exist to have a fresh start otherwise exception will be raised about using existing lidvid.
+    if os.path.isfile(db_name):
+        os.remove(db_name)
+        logger.info(f"Removed test artifact database file {db_name}")
 
     # Release some DOIs.
     # Move instantation of DOICoreActionRelease() object inside tests since the temporary file is removed after each test
@@ -39,7 +43,7 @@ class MyTestCase(unittest.TestCase):
         # Instantiate DOICoreActionRelease() here so a new database file is created and removed for each test.
         # The setUp() function is called per test.
         logger.info("test release of document from 'reserve' action.  This test would only work if the authentication for OSTI has been set up and DOIs exist.")
-        result_list = self._action.run(input='input/DOI_Release_20200727_from_reserve.xml',node='img',submitter='Qui.T.Chau@jpl.nasa.gov',force_flag=True)
+        result_list = self._action.run(input='input/DOI_Release_20200727_from_reserve.xml',node='img',submitter='Qui.T.Chau@jpl.nasa.gov',force=True)
 
         logger.info(result_list)
         # The tearDown() function is called per test.
@@ -49,7 +53,7 @@ class MyTestCase(unittest.TestCase):
         # The setUp() function is called per test.
         logger.info("test release of document from 'release' output.  This test would only work if the authentication for OSTI has been set up and DOIs exist.")
         result_list = []
-        result_list = self._action.run(input='input/DOI_Release_20200727_from_draft.xml',node='img',submitter='Qui.T.Chau@jpl.nasa.gov',force_flag=True)
+        result_list = self._action.run(input='input/DOI_Release_20200727_from_draft.xml',node='img',submitter='Qui.T.Chau@jpl.nasa.gov',force=True)
 
         logger.info(result_list)
         # The tearDown() function is called per test.
