@@ -224,7 +224,7 @@ list (extract doi descriptions with criteria),</p>
 <h5>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h5>
 <dl class="option-list">
 <dt><kbd>-n, --node</kbd></dt>
-<dd><p>The pds discipline node in charge of the submission of the DOI.  Authorized values are: atm,eng,geo,img,naif,ppi,rms,sbn</p>
+<dd><p>The pds node in charge of the submission of the DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rms,sbn</p>
 </dd>
 <dt><kbd>-f, --force</kbd></dt>
 <dd><p>If provided the reserve action will succeed even if warnings are raised</p>
@@ -237,7 +237,7 @@ list (extract doi descriptions with criteria),</p>
 <dd><p>The email address of the user reserving the DOIs</p>
 </dd>
 <dt><kbd>-d, --dry-run</kbd></dt>
-<dd><p>Does not submit the record to OSTI, record stays in a status ‘reserved_not_sbmitted’</p>
+<dd><p>Does not submit the record to OSTI, record stays in a status ‘reserved_not_submitted’</p>
 <p>Default: False</p>
 </dd>
 </dl>
@@ -247,7 +247,7 @@ list (extract doi descriptions with criteria),</p>
 <h4>draft<a class="headerlink" href="#draft" title="Permalink to this headline">¶</a></h4>
 <p>create a draft of OSTI records, from PDS4 label or list of PDS4 labels input</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">draft</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">bundle_in_with_contributors</span><span class="o">.</span><span class="n">xml</span>
-                  <span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">osti</span><span class="p">]</span>
+                  <span class="p">[</span><span class="o">-</span><span class="n">k</span> <span class="s2">&quot;Image&quot;</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">osti</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="section" id="Named Arguments_repeat1">
@@ -262,6 +262,9 @@ list (extract doi descriptions with criteria),</p>
 </dd>
 <dt><kbd>-i, --input</kbd></dt>
 <dd><p>A pds4 label local or on http, or a list of them separated by “,”</p>
+</dd>
+<dt><kbd>-k, --keyword</kbd></dt>
+<dd><p>Extra keywords separated by “,”</p>
 </dd>
 <dt><kbd>-s, --submitter</kbd></dt>
 <dd><p>The email address of the user creating the draft</p>
