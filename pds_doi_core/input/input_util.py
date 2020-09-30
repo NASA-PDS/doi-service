@@ -24,9 +24,6 @@ class DOIInputUtil:
 
         logger.info("i_filepath" + " " + i_filepath)
 
-        doi_directory_pathname = os.path.join('.', 'output')
-        os.makedirs(doi_directory_pathname, exist_ok=True)
-
         xl_wb = pd.ExcelFile(i_filepath)
         actual_sheet_name = xl_wb.sheet_names[0]  # We only want the first sheet.
         xl_sheet = pd.read_excel(i_filepath, actual_sheet_name, converters={'publication_date': str,
@@ -88,9 +85,6 @@ class DOIInputUtil:
         """Function receives a URI containing CSV format and create one external file per row to output directory."""
 
         logger.info("i_filepath" + " " + i_filepath)
-
-        doi_directory_pathname = os.path.join('.', 'output')
-        os.makedirs(doi_directory_pathname, exist_ok=True)
 
         # Read the CSV file into memory.
 

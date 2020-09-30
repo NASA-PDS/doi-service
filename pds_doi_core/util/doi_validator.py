@@ -225,6 +225,7 @@ class DOIValidator:
         return 1
 
     def validate_osti_submission(self, doi: Doi):
-
-        self.validate(doi)
+        # do first the critical error check
         self._check_field_lidvid_update(doi)
+        self.validate(doi)
+

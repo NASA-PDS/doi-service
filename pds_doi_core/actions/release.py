@@ -94,7 +94,7 @@ class DOICoreActionRelease(DOICoreAction):
                 message_to_raise = message_to_raise + ', ' + exception_classes[ii] + ':' + exception_messages[ii]
         raise WarningDOIException(message_to_raise)
 
-    def _validate_doi(self, doi_label):
+    def _validate_doi(self, doi_label, force=False):
         """
          Before submitting the user input, it has to be validated against the database so a Doi object need to be built.
          Since the format of o_doi_label is same as a response from OSTI, the same parser can be used.
@@ -104,24 +104,24 @@ class DOICoreActionRelease(DOICoreAction):
         exception_classes  = [] 
         exception_messages = [] 
         try:
+
             dois = DOIOstiWebParser().response_get_parse_osti_xml(doi_label)
 
             for doi in dois:
-                doi.status = 'Registered'  # Add 'status' field so the ranking in the workflow can be determined.
-                single_doi_label = DOIOutputOsti().create_osti_doi_release_record(doi)
-                if self._config.get('OTHER', 'release_validate_against_xsd_flag').lower() == 'true':
-                    self._doi_validator.validate_against_xsd(single_doi_label)
-
-                # Validate the label to ensure that no rules are violated.
-                # Put validate_osti_submission() within a try/except clause to catch all the exceptions instead of
-                # exiting after the first exception.  This allow the user to see all the things that are wrong with
-                # all the DOIs instead of just the first one.
                 try:
+                    doi.status = 'Registered'  # Add 'status' field so the ranking in the workflow can be determined.
+                    single_doi_label = DOIOutputOsti().create_osti_doi_release_record(doi)
+                    if self._config.get('OTHER', 'release_validate_against_xsd_flag').lower() == 'true':
+                        self._doi_validator.validate_against_xsd(single_doi_label)
+
                     self._doi_validator.validate_osti_submission(doi)
+
                 except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException, SiteURNotExistException, WarningDOIException) as e:
-                    (exception_classes, exception_messages) = self._collect_exception_classes_and_messages(e, 
-                                                                  exception_classes, exception_messages)
+                        TitleDoesNotMatchProductTypeException, SiteURNotExistException) as e:
+                    (exception_classes, exception_messages) = \
+                        self._collect_exception_classes_and_messages(e,
+                                                                     exception_classes,
+                                                                     exception_messages)
         except Exception as e:
             raise  # Re-raise all exceptions.
 

@@ -1,15 +1,16 @@
 Feature: reserve a OSTI DOI
+
+  @testrail-C372603
   @non-regression
   Scenario Outline: Reserve an OSTI DOI with valid PDS4 label
-    Given a valid PDS4 label at <input_value>
+    Given a valid input at <input_value>
     When reserve DOI in OSTI format at <node_value>
-    Then OSTI DOI label is created at input_value,node_value <input_value>,<node_value>
-    Then The OSTI DOI is submitted to the OSTI server
-    Examples: Valid PDS4 labels
-      | input_type   | node_value | input_value                       |
-      | bundle       | img        | input/DOI_Reserved_GEO_200318.csv |
+    Then produced osti record is similar to reference osti <ref_output_value>
+    Examples: Valid reserve spreadsheets
+      | input_type   | node_value | input_value                       | ref_output_value  |
+      | bundle       | img        | input/DOI_Reserved_GEO_200318.csv | tests/reserve_ok/output.xml  |
 
-
+  @testrail-C372604
   Scenario Outline: Reserve an OSTI DOI with an invalid PDS4 label
     Given an invalid PDS4 label at <input_value>
     When reserve DOI in OSTI format at <node_value>
@@ -18,20 +19,21 @@ Feature: reserve a OSTI DOI
       | input_type   | node_value | input_value                   | error_report  |
       | bundle       | img        | tests/data/invalid_bundle.xml | tests/data/reserve_error_report.txt |
 
+  @testrail-C372605
   Scenario Outline: Verify reference reserve transactions match
     Given reference transactions in <transaction_dir>
-    When reference record is reserved with node <node_value> with <input_value>
+    When reference record is reserved for node <node_value> with <input_value>
     Then produced osti record is similar to reference osti <output_value>
 
     Examples: reference reserve transactions
       | transaction_dir                       |node_value | input_value                                                            | output_value |
 
-      | aaDOI_production_submitted_labels     | atm        | ATMOS_reserve_Insight_Bundle_20200624/aaaSubmitted_by_ATMOS_reserve_2020624/DOI_Requests_ATM-2020-06-30.xlsx | ATMOS_reserve_Insight_Bundle_20200624/aaRegistered_by_EN/DOI_reserved_all_records.xml |
-      | aaDOI_production_submitted_labels     | geo        | GEO_APXS_reserve_Bundle_20200710/aaaSubmitted_by_GEO_reserve_20200710/DOI_Reserved_template_20200709.xlsx | GEO_APXS_reserve_Bundle_20200710/aaRegistered_by_EN/DOI_reserved_all_records.xml |
-      | aaDOI_production_submitted_labels     | geo        | GEO_Apollo_Bundles_reserve_20200316/aaaSubmitted_by_GEO_reserve_20200316/DOI_GEO_Apollo_Reserved_Bundles_20200316.xlsx | GEO_Apollo_Bundles_reserve_20200316/aaaRegistered_by_EN_reserve_allrecords_20200416/DOI_reserved_all_records.xml |
-      | aaDOI_production_submitted_labels     | geo        | GEO_reserve_Bundle_20200706/aaaSubmitted_by_GEO_reserve_20200706/DOI_Reserved_template_20200702.xlsx | GEO_reserve_Bundle_20200706/aaRegistered_by_EN/DOI_reserved_all_records.xml |
-      | aaDOI_production_submitted_labels     | geo        | GEO_reserve_Lunar_Space_weather_20200730/aaaSubmitted_by_GEO_reserve_20200730/DOI_Reserved_template_20200729.xlsx | GEO_reserve_Lunar_Space_weather_20200730/aaRegistered_by_EN_reserve/DOI_reserved_all_records.xml |
-      | aaDOI_production_submitted_labels     | rms        | RINGS_Jupiter_occs_20200609/aaaSubmitted_by_RINGS_reserve_2020609/DOI_RMS_U-occs-Reserved-2020-06-08.xlsx | RINGS_Jupiter_occs_20200609/aaRegistered_by_EN/DOI_reserved_all_records.xml |
+      | tests/aaDOI_production_submitted_labels     | atm        | ATMOS_reserve_Insight_Bundle_20200624/aaaSubmitted_by_ATMOS_reserve_2020624/DOI_Requests_ATM-2020-06-30.xlsx | ATMOS_reserve_Insight_Bundle_20200624/aaRegistered_by_EN/DOI_reserved_all_records.xml |
+      | tests/aaDOI_production_submitted_labels     | geo        | GEO_APXS_reserve_Bundle_20200710/aaaSubmitted_by_GEO_reserve_20200710/DOI_Reserved_template_20200709.xlsx | GEO_APXS_reserve_Bundle_20200710/aaRegistered_by_EN/DOI_reserved_all_records.xml |
+      | tests/aaDOI_production_submitted_labels     | geo        | GEO_Apollo_Bundles_reserve_20200316/aaaSubmitted_by_GEO_reserve_20200316/DOI_GEO_Apollo_Reserved_Bundles_20200316.xlsx | GEO_Apollo_Bundles_reserve_20200316/aaaRegistered_by_EN_reserve_allrecords_20200416/DOI_reserved_all_records.xml |
+      | tests/aaDOI_production_submitted_labels     | geo        | GEO_reserve_Bundle_20200706/aaaSubmitted_by_GEO_reserve_20200706/DOI_Reserved_template_20200702.xlsx | GEO_reserve_Bundle_20200706/aaRegistered_by_EN/DOI_reserved_all_records.xml |
+      | tests/aaDOI_production_submitted_labels     | geo        | GEO_reserve_Lunar_Space_weather_20200730/aaaSubmitted_by_GEO_reserve_20200730/DOI_Reserved_template_20200729.xlsx | GEO_reserve_Lunar_Space_weather_20200730/aaRegistered_by_EN_reserve/DOI_reserved_all_records.xml |
+      | tests/aaDOI_production_submitted_labels     | rms        | RINGS_Jupiter_occs_20200609/aaaSubmitted_by_RINGS_reserve_2020609/DOI_RMS_U-occs-Reserved-2020-06-08.xlsx | RINGS_Jupiter_occs_20200609/aaRegistered_by_EN/DOI_reserved_all_records.xml |
 
 
 # Future tests:

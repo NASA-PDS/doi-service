@@ -63,6 +63,24 @@ You can also run them for a nicer reporting:
     behave -f allure_behave.formatter:AllureFormatter -o ./allure ./features 
     allure service allure
     
+#### To report to testrail
+
+Test report can be pushed to testrail: https://cae-testrail.jpl.nasa.gov/testrail/
+
+Project: Planetary Data System (PDS)
+Test suite: pds-doi-service
+
+Set you environment:
+
+    export TESTRAIL_USER=<your email in testrail>
+    export TESTRAIL_KEY=<your API key in tesrail>
+    
+Run the tests:
+
+    behave
+    
+See the results in https://cae-testrail.jpl.nasa.gov/testrail/index.php?/projects/overview/168
+    
 ## Documentation management
 
 ### Design :

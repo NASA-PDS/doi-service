@@ -175,9 +175,10 @@ class DOICoreActionReserve(DOICoreAction):
             dois_out = []
             for doi in dois:
                 if dry_run:
-                    self._doi_validator.validate_osti_submission(doi)
-                else:
                     self._doi_validator.validate(doi)
+                else:
+                    self._doi_validator.validate_osti_submission(doi)
+
                 dois_out.append(doi)
             return dois_out
 
@@ -246,7 +247,6 @@ class DOICoreActionReserve(DOICoreAction):
             # errors
             except (UnknownNodeException, InputFormatException) as e:
                 raise CriticalDOIException(e)
-
 
             o_doi_label = DOIOutputOsti().create_osti_doi_reserved_record(dois)
 

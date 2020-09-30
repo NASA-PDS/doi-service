@@ -20,6 +20,6 @@ def get_logger(module_name=''):
     logging.basicConfig(format=my_format,
                         filemode='a')
 
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     return logger
 

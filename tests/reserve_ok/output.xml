@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    <record status="reserved_not_submitted">
+        <id></id>
+        <title>Laboratory Shocked Feldspars Collection #1</title>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>urn:nasa:pds:lab_shocked_feldspars::2.0</accession_number>
+        <publisher>NASA Planetary Data System</publisher>
+        <availability></availability>
+        <publication_date>2020-03-11</publication_date>
+        <site_url>N/A</site_url>
+        <product_type>Collection</product_type>
+        <product_type_specific>PDS4 Collection</product_type_specific>
+        <date_record_added>2020-10-01</date_record_added>
+        <keywords>PDS; PDS4;</keywords>
+        <authors>
+             <author>
+                <last_name>Johnson</last_name>
+                <first_name>J. R.</first_name>
+            </author>
+        </authors>
+        <contributors>
+            <contributor>
+                <full_name>Planetary Data System: Cartography and Imaging Sciences Discipline Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
+    <record status="reserved_not_submitted">
+        <id></id>
+        <title>Laboratory Shocked Feldspars Collection #2</title>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>urn:nasa:pds:lab_shocked_feldspars_2::2.0</accession_number>
+        <publisher>NASA Planetary Data System</publisher>
+        <availability></availability>
+        <publication_date>2020-03-12</publication_date>
+        <site_url>N/A</site_url>
+        <product_type>Collection</product_type>
+        <product_type_specific>PDS4 Collection</product_type_specific>
+        <date_record_added>2020-10-01</date_record_added>
+        <keywords>PDS; PDS4;</keywords>
+        <authors>
+             <author>
+                <last_name>Johnson_2</last_name>
+                <first_name>J2. R2.</first_name>
+            </author>
+        </authors>
+        <contributors>
+            <contributor>
+                <full_name>Planetary Data System: Cartography and Imaging Sciences Discipline Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
+    <record status="reserved_not_submitted">
+        <id></id>
+        <title>Laboratory Shocked Feldspars Collection #3</title>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>urn:nasa:pds:lab_shocked_feldspars_3::2.0</accession_number>
+        <publisher>NASA Planetary Data System</publisher>
+        <availability></availability>
+        <publication_date>2020-03-12</publication_date>
+        <site_url>N/A</site_url>
+        <product_type>Collection</product_type>
+        <product_type_specific>PDS4 Collection</product_type_specific>
+        <date_record_added>2020-10-01</date_record_added>
+        <keywords>PDS; PDS4;</keywords>
+        <authors>
+             <author>
+                <last_name>Johnson_3</last_name>
+                <first_name>J3. R3.</first_name>
+            </author>
+        </authors>
+        <contributors>
+            <contributor>
+                <full_name>Planetary Data System: Cartography and Imaging Sciences Discipline Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
+</records>

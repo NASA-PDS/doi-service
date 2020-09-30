@@ -1,0 +1,7 @@
+base_url: https://cae-testrail.jpl.nasa.gov/testrail
+projects:
+  -
+    name: 'Test run {branch}'
+    id: 168
+    suite_id: 4412
+    allowed_branch_pattern: '^(master|release\/\d+([\.\d]+)?)$'

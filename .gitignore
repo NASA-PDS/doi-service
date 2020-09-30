@@ -21,5 +21,12 @@ build/
 doi.db
 output/
 transaction_history/
+.eggs/
+docs/Makefile
+docs/design/PDS-technical-architecture.pdf
+docs/make.bat
+doi_temp.db
+tests/aaDOI_production_submitted_labels.zip
+tests/aaDOI_production_submitted_labels/
 
 

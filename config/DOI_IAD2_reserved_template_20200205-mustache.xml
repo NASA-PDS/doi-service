@@ -21,7 +21,7 @@
         <site_url>{{site_url}}</site_url>
         {{/site_url}}
         {{^site_url}}
-        <site_url></site_url>
+        <site_url>N/A</site_url>
         {{/site_url}}
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>

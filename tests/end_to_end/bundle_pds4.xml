@@ -1,0 +1,124 @@
+<Product_Bundle xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B10.xsd"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns="http://pds.nasa.gov/pds4/pds/v1">
+<Identification_Area>
+<logical_identifier>{{random_lid}}</logical_identifier>
+<version_id>1.0</version_id>
+<title>InSight Cameras Bundle</title>
+<information_model_version>1.11.1.0</information_model_version>
+<product_class>Product_Bundle</product_class>
+<Citation_Information>
+<author_list>R. Deen, H. Abarca, P. Zamani, J.Maki</author_list>
+
+
+<!-- <editor_list>Williams, D.R.; McLaughlin, S.A.</editor_list> -->
+<editor_list>Smith, P. H.; Lemmon, M.; Beebe, R. F.</editor_list>
+
+
+
+<publication_year>2019</publication_year>
+<description>
+InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
+</description>
+</Citation_Information>
+</Identification_Area>
+<Context_Area>
+<comment>Observational Intent</comment>
+<Time_Coordinates>
+<start_date_time>2019-10-02T04:36:06.728Z</start_date_time>
+<stop_date_time>2020-01-01T14:57:01.214Z</stop_date_time>
+</Time_Coordinates>
+<Primary_Result_Summary>
+<purpose>Science</purpose>
+<processing_level>Raw</processing_level>
+<Science_Facets>
+<wavelength_range>Visible</wavelength_range>
+<domain>Surface</domain>
+<discipline_name>Imaging</discipline_name>
+</Science_Facets>
+</Primary_Result_Summary>
+<Investigation_Area>
+<name>Insight</name>
+<type>Mission</type>
+<Internal_Reference>
+<lid_reference>urn:nasa:pds:context:investigation:mission.insight</lid_reference>
+<reference_type>bundle_to_investigation</reference_type>
+</Internal_Reference>
+</Investigation_Area>
+<Observing_System>
+<Observing_System_Component>
+<name>Insight Lander</name>
+<type>Spacecraft</type>
+<Internal_Reference>
+<lid_reference>
+urn:nasa:pds:context:instrument_host:spacecraft.insight
+</lid_reference>
+<reference_type>is_instrument_host</reference_type>
+<comment>Reference to the Insight spacecraft.</comment>
+</Internal_Reference>
+</Observing_System_Component>
+<Observing_System_Component>
+<name>Insight Context Camera</name>
+<type>Instrument</type>
+<Internal_Reference>
+<lid_reference>urn:nasa:pds:context:instrument:icc.insight</lid_reference>
+<reference_type>is_instrument</reference_type>
+<comment>
+Reference to the InSight Context Camera instrument onboard the InSight spacecraft.
+</comment>
+</Internal_Reference>
+</Observing_System_Component>
+<Observing_System_Component>
+<name>Insight Deployment Camera</name>
+<type>Instrument</type>
+<Internal_Reference>
+<lid_reference>urn:nasa:pds:context:instrument:idc.insight</lid_reference>
+<reference_type>is_instrument</reference_type>
+<comment>
+Reference to the InSight Deployment Camera instrument onboard the InsSight spacecraft.
+</comment>
+</Internal_Reference>
+</Observing_System_Component>
+</Observing_System>
+<Target_Identification>
+<name>Mars</name>
+<type>Planet</type>
+<Internal_Reference>
+<lid_reference>urn:nasa:pds:context:target:planet.mars</lid_reference>
+<reference_type>document_to_target</reference_type>
+<comment>Reference to the Planet - Mars target</comment>
+</Internal_Reference>
+</Target_Identification>
+</Context_Area>
+<Bundle>
+<bundle_type>Archive</bundle_type>
+<description>This Bundle contains InSight camera data. </description>
+</Bundle>
+<Bundle_Member_Entry>
+<lid_reference>urn:nasa:pds:insight_cameras:browse</lid_reference>
+<member_status>Primary</member_status>
+<reference_type>bundle_has_browse_collection</reference_type>
+</Bundle_Member_Entry>
+<Bundle_Member_Entry>
+<lid_reference>urn:nasa:pds:insight_cameras:calibration</lid_reference>
+<member_status>Primary</member_status>
+<reference_type>bundle_has_calibration_collection</reference_type>
+</Bundle_Member_Entry>
+<Bundle_Member_Entry>
+<lid_reference>urn:nasa:pds:insight_cameras:data</lid_reference>
+<member_status>Primary</member_status>
+<reference_type>bundle_has_data_collection</reference_type>
+</Bundle_Member_Entry>
+<Bundle_Member_Entry>
+</Bundle_Member_Entry>
+<Bundle_Member_Entry>
+<lid_reference>urn:nasa:pds:insight_cameras:miscellaneous</lid_reference>
+<member_status>Primary</member_status>
+<reference_type>bundle_has_document_collection</reference_type>
+</Bundle_Member_Entry>
+<Bundle_Member_Entry>
+<lid_reference>urn:nasa:pds:insight_cameras:xml_schema</lid_reference>
+<member_status>Primary</member_status>
+<reference_type>bundle_has_schema_collection</reference_type>
+</Bundle_Member_Entry>
+</Product_Bundle>
