@@ -103,8 +103,12 @@ class DOIOstiWebClient:
         if query_dict:
             initial_payload.update(query_dict)
             # Do a sanity check and only fetchs valid field names.
-            query_dict = self._web_parser.validate_field_names(query_dict)
+            query_dict = self._web_parser.validate_field_names(initial_payload)
+        else:
+            query_dict = initial_payload
         logger.debug(f"initial_payload {initial_payload}")
+        logger.debug(f"query_dict {query_dict}")
+        logger.debug(f"i_url {i_url}")
 
         osti_response = requests.get(i_url,
                                      auth=auth,

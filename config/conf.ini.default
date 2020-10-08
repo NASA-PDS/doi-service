@@ -33,3 +33,4 @@ emailer_receivers  = pdsen-doi-test@jpl.nasa.gov
 draft_validate_against_xsd_flag = True
 release_validate_against_xsd_flag = True
 reserve_validate_against_xsd_flag = True
+pds_registration_doi_token = 10.17189
