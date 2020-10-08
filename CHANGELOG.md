@@ -1,6 +1,23 @@
 # Changelog
 
-## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-09-29)
+## [Unreleased](https://github.com/NASA-PDS/pds-doi-service/tree/HEAD)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.8-dev...HEAD)
+
+**Improvements:**
+
+- Write procedure documentation [\#83](https://github.com/NASA-PDS/pds-doi-service/issues/83)
+
+**Defects:**
+
+- node is not provided as contributor in the reserve records [\#72](https://github.com/NASA-PDS/pds-doi-service/issues/72) [[medium](https://github.com/NASA-PDS/pds-doi-service/labels/medium)]
+
+**Other closed issues:**
+
+- End to end behave test [\#82](https://github.com/NASA-PDS/pds-doi-service/issues/82)
+- add check to ensure landing page is online prior to DOI release [\#70](https://github.com/NASA-PDS/pds-doi-service/issues/70)
+
+## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-10-05)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.8-dev)
 
