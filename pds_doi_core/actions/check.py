@@ -23,7 +23,7 @@ from pds_doi_core.util.emailer import Emailer
 
 class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
-    _description = 'check DOI pending status at OSTI'
+    _description = 'check DOI pending status at OSTI and uppdate local database. Should be run regularly, for example in a crontab.'
     _order = 30
     _run_arguments = ('submitter', 'email', 'attachment')
 
