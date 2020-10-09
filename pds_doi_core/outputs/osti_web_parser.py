@@ -83,7 +83,7 @@ class DOIOstiWebParser:
 
         return o_contributors_list
 
-    def parse_optional_fields(self,io_doi,i_status,single_record_element):
+    def parse_optional_fields(self,io_doi,single_record_element):
         """ Given a single record element, parse for optional fields that may not be present from the OSTI response:
                 'id', 'site_url', 'doi', 'date_record_added', 'date_record_updated', 'doi_message', 'authors'."""
 
@@ -130,7 +130,7 @@ class DOIOstiWebParser:
             logger.debug(f"Adding optional field 'contributors' {io_doi.id}")
             io_doi.contributors = DOIOstiWebParser().parse_contributor_names(single_record_element.xpath('contributors'))
 
-        io_doi.related_identifier = DOIOstiWebParser.get_lidvid(single_record_element,id=io_doi.id,status=i_status)
+        io_doi.related_identifier = DOIOstiWebParser.get_lidvid(single_record_element)
 
         logger.debug(f"io_doi) {io_doi}")
 
@@ -151,7 +151,7 @@ class DOIOstiWebParser:
         return  lid_value + '::' + vid_value
 
     @staticmethod
-    def get_lidvid(record, id=None, status=''):
+    def get_lidvid(record):
         # Depending on versions, lidvid has been stored in different locations
         if record.xpath("accession_number"):
             return record.xpath("accession_number")[0].text
@@ -169,7 +169,7 @@ class DOIOstiWebParser:
             return lid_vid_value
         else:
             # For now, do not consider it an error if cannot get the lidvid.
-            logger.warning(f"Cannot find identifier_value.  Expecting one of ['accession_number','identifier_type','report_numbers'] tags from id {id}, status = {status}")
+            logger.debug(f"Cannot find identifier_value.  Expecting one of ['accession_number','identifier_type','report_numbers'] tags")
             return None
             #raise InputFormatException("Cannot find identifier_value.  Expecting one of ['accession_number','identifier_type','report_numbers'] tags")
 
@@ -194,20 +194,27 @@ class DOIOstiWebParser:
                     logger.error(f"ERROR OSTI RECORD {single_record_element.text}")
                     continue
                 else:
-                    # Move the fetching of identifier_type in parse_optional_fields() function.
-                    # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
-                    #     ['id','doi','date_record_added',date_record_updated']
-                    doi = Doi(title=single_record_element.xpath('title')[0].text,
-                              publication_date=single_record_element.xpath('publication_date')[0].text,
-                              product_type=single_record_element.xpath('product_type')[0].text,
-                              product_type_specific=single_record_element.xpath('product_type_specific')[0].text,
-                              related_identifier=None, # Set to None here and will be set to a valid value later.
-                              status=status)
+                    lidvid = DOIOstiWebParser.get_lidvid(single_record_element);
+                    if lidvid:
+                        # Move the fetching of identifier_type in parse_optional_fields() function.
+                        # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
+                        #     ['id','doi','date_record_added',date_record_updated']
+                        doi = Doi(title=single_record_element.xpath('title')[0].text,
+                                  publication_date=single_record_element.xpath('publication_date')[0].text,
+                                  product_type=single_record_element.xpath('product_type')[0].text,
+                                  product_type_specific=single_record_element.xpath('product_type_specific')[0].text,
+                                  related_identifier=lidvid, # Set to None here and will be set to a valid value later.
+                                  status=status)
 
-                    # Parse for some optional fields that may not be present in every record from OSTI.
-                    doi= DOIOstiWebParser().parse_optional_fields(doi,status,single_record_element)
+                        # Parse for some optional fields that may not be present in every record from OSTI.
+                        doi= DOIOstiWebParser().parse_optional_fields(doi, single_record_element)
+                        dois.append(doi)
+                    else:
+                        logger.warning(f"no lidvid reference found in doi {single_record_element.xpath('doi')[0].text}")
 
-                    dois.append(doi)
+
+
+
         # end for single_record_element in my_root.iter():
 
         return dois

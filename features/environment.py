@@ -3,6 +3,7 @@ import logging
 import requests
 import shutil
 import zipfile
+from pygit2 import Repository
 from behave_testrail_reporter import TestrailReporter
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,7 +32,7 @@ def before_all(context):
 
     download_file('https://pds.nasa.gov/software/test-data/pds-doi-service/aaDOI_production_submitted_labels.zip')
 
-    current_branch = 'master' # Change this to get the current build branch of your CI system
+    current_branch = Repository('.').head.shorthand
     testrail_reporter = TestrailReporter(current_branch)
     context.config.reporters.append(testrail_reporter)
 
