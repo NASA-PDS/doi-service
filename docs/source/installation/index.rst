@@ -53,6 +53,11 @@ Create a file `pds-doi-core/conf.ini`
 
 You can override in this file any option set in the file `pds-doi-core/conf.ini.default`
 
+If you want to create production DOIs update the OSTI API server url::
+
+   [OSTI]
+    url = https://www.osti.gov/iad2/api/records
+
 You MUST set the OSTI service user and password to be able to reserve or release a DOI::
 
     [OSTI]
