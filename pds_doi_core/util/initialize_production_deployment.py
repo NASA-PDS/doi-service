@@ -245,8 +245,8 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
     for doi in dois:
 
         if use_doi_filtering_flag:
-            if not k_doi_params['doi'].startswith(o_pds_doi_token):
-                logger.debug(f"SKIPPING_NON_PDS_DOI {k_doi_params['doi']}")
+            if hasattr(doi, 'doi') and not doi.doi.startswith(o_pds_doi_token):
+                logger.debug(f"SKIPPING_NON_PDS_DOI {doi.doi}")
                 o_records_dois_skipped += 1
                 o_records_processed += 1
                 item_index += 1
@@ -255,7 +255,7 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
         # If the field 'related_identifier' is None, we cannot proceed since database writing does not allow a None value.
         lidvid = [None] 
         if doi.related_identifier is None:
-                logger.debug(f"SKIPPING_NONE_RELATED_IDENTIFIER {k_doi_params['doi']}")
+                logger.debug(f"SKIPPING_NONE_RELATED_IDENTIFIER {doi.doi}")
                 o_records_dois_skipped += 1
                 o_records_processed += 1
                 item_index += 1
