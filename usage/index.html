@@ -197,7 +197,7 @@ A later version will provide a web API, a web UI and a cmd API client to enable 
 reserve (create or update a DOI before the data is published),
 draft (prepare a OSTI record from a PDS4 labels),
 release (create or update a DOI on OSTI server),
-check (check DOI pending status at OSTI),
+check (check DOI pending status at OSTI and uppdate local database. Should be run regularly, for example in a crontab.),
 list (extract doi descriptions with criteria),</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">{</span><span class="n">reserve</span><span class="p">,</span><span class="n">draft</span><span class="p">,</span><span class="n">release</span><span class="p">,</span><span class="n">check</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span> <span class="o">...</span>
