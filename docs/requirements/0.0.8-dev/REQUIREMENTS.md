@@ -34,19 +34,14 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
-## The software shall validate a minimum set of metadata is provided when reserving, releasing, or updating a DOI. This minimum set of metadata will be defined by the PDS DOI Working Group. ([#12](https://github.com/NASA-PDS/pds-doi-service/issues/12)) :boom:
+## The software shall validate a minimum set of metadata is provided when reserving, releasing, or updating a DOI. This minimum set of metadata will be defined by the PDS DOI Working Group. ([#12](https://github.com/NASA-PDS/pds-doi-service/issues/12)) 
 
 
-The enhancements which impact this requirements are:
-- Develop DOI metadata automated validation component ([#18](https://github.com/NASA-PDS/pds-doi-service/issues/18))
-- Reserve a DOI capability ([#21](https://github.com/NASA-PDS/pds-doi-service/issues/21))
-
-## The software shall validate the DOI metadata when reserving, releasing, or updating a DOI. ([#13](https://github.com/NASA-PDS/pds-doi-service/issues/13)) :boom:
+This requirement is not impacted by the current version
+## The software shall validate the DOI metadata when reserving, releasing, or updating a DOI. ([#13](https://github.com/NASA-PDS/pds-doi-service/issues/13)) 
 
 
-The enhancements which impact this requirements are:
-- Develop DOI metadata automated validation component ([#18](https://github.com/NASA-PDS/pds-doi-service/issues/18))
-
+This requirement is not impacted by the current version
 #  DOI interface support
 
 ## The software shall maintain a database of PDS DOIs and their current state. ([#14](https://github.com/NASA-PDS/pds-doi-service/issues/14)) 
