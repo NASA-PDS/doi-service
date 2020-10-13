@@ -1,37 +1,25 @@
 # Changelog
 
-## [Unreleased](https://github.com/NASA-PDS/pds-doi-service/tree/HEAD)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.8-dev...HEAD)
-
-**Improvements:**
-
-- Write procedure documentation [\#83](https://github.com/NASA-PDS/pds-doi-service/issues/83)
-
-**Defects:**
-
-- node is not provided as contributor in the reserve records [\#72](https://github.com/NASA-PDS/pds-doi-service/issues/72) [[medium](https://github.com/NASA-PDS/pds-doi-service/labels/medium)]
-
-**Other closed issues:**
-
-- End to end behave test [\#82](https://github.com/NASA-PDS/pds-doi-service/issues/82)
-- add check to ensure landing page is online prior to DOI release [\#70](https://github.com/NASA-PDS/pds-doi-service/issues/70)
-
-## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-10-05)
+## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-10-12)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.8-dev)
 
 **Improvements:**
 
+- Write procedure documentation [\#83](https://github.com/NASA-PDS/pds-doi-service/issues/83)
+- initialize production deployment with pre-existing dois [\#71](https://github.com/NASA-PDS/pds-doi-service/issues/71)
 - Revise DOI Service Requirements [\#65](https://github.com/NASA-PDS/pds-doi-service/issues/65)
 - Develop operational documentation and test suite [\#40](https://github.com/NASA-PDS/pds-doi-service/issues/40)
 
 **Defects:**
 
+- node is not provided as contributor in the reserve records [\#72](https://github.com/NASA-PDS/pds-doi-service/issues/72) [[medium](https://github.com/NASA-PDS/pds-doi-service/labels/medium)]
 - Update default DOI metadata according to changes in requirements [\#55](https://github.com/NASA-PDS/pds-doi-service/issues/55)
 
 **Other closed issues:**
 
+- End to end behave test [\#82](https://github.com/NASA-PDS/pds-doi-service/issues/82)
+- add check to ensure landing page is online prior to DOI release [\#70](https://github.com/NASA-PDS/pds-doi-service/issues/70)
 - Revise requirements to ensure scope is being met [\#64](https://github.com/NASA-PDS/pds-doi-service/issues/64)
 - Develop DOI Service Scope [\#63](https://github.com/NASA-PDS/pds-doi-service/issues/63)
 - Add configuration documentation [\#60](https://github.com/NASA-PDS/pds-doi-service/issues/60)
