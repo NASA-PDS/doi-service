@@ -7,6 +7,8 @@
 #
 #------------------------------
 
+import os
+from os.path import abspath, dirname, isabs, join
 from lxml import etree
 
 import requests
@@ -34,11 +36,14 @@ class DOIValidator:
                         'registered': 4}
 
     def __init__(self,db_name=None):
+        self._root_dir = abspath(join(dirname(__file__), os.pardir, os.pardir))
         self._config = self.m_doi_config_util.get_config()
+
         if db_name:
-            self.m_default_db_file    = db_name # If database name is specified from user, use it.
+            self.m_default_db_file = db_name # If database name is specified from user, use it.
         else:
-            self.m_default_db_file    = self._config.get('OTHER','db_file')   # Default name of the database.
+            self.m_default_db_file = self._config.get('OTHER','db_file')   # Default name of the database.
+
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
     def get_database_name(self):
@@ -182,8 +187,13 @@ class DOIValidator:
 
     def validate_against_xsd(self, doi_label):
         # Given a DOI label, validate it against the XSD.
-        xml_file = etree.fromstring(doi_label.encode())  # The fromstring() requires the parameter type to be bytes.  The encode() convert str to bytes.
+        # The fromstring() requires the parameter type to be bytes. The encode() convert str to bytes.
+        xml_file = etree.fromstring(doi_label.encode())
         xsd_filename = self._config.get('OSTI', 'input_xsd')
+
+        if not isabs(xsd_filename):
+            xsd_filename = join(self._root_dir, xsd_filename)
+
         xml_validator = etree.XMLSchema(file=xsd_filename)
 
         # Perform the XSD validation.  The validate() function does not throw an exception,

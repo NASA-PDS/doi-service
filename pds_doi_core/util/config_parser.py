@@ -5,9 +5,10 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-#------------------------------                                                                                                 
+#------------------------------
 
 import os
+from os.path import abspath, dirname, exists, join
 import sys
 from xml.etree import ElementTree
 import configparser
@@ -28,7 +29,8 @@ class DOIConfigUtil:
         parser = configparser.ConfigParser()
         candidates = ['conf.ini.default',
                       'conf.ini', ]
-        candidates_full_path = [os.path.join(os.getcwd(), "config", f) for f in
+        dev_root = abspath(join(dirname(__file__), os.pardir, os.pardir))
+        candidates_full_path = [join(dev_root, "config", f) for f in
                                 candidates]  # for development deployment
         candidates_full_path.extend(
             [os.path.join(sys.prefix, "pds_doi_core", f) for f in candidates])  # for real deployment
@@ -42,7 +44,7 @@ class DOIConfigUtil:
     #------------------------------
         function_name = self.m_module_name + 'get_config_file_metadata:'
 
-        if (not os.path.exists(i_filename)):
+        if not exists(i_filename):
             print("exiting: configuration file not found - " + i_filename)
             sys.exit(1)
 

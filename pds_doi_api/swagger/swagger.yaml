@@ -1,0 +1,326 @@
+openapi: 3.0.0
+info:
+  title: Planetary Data System DOI Service API
+  description: PDS API for managing DOI registration with OSTI service.
+  version: "0.1"
+servers:
+- url : http://localhost:8080/PDS_APIs/pds_doi_api/0.1
+  description: Local host
+- url: https://virtserver.swaggerhub.com/PDS_APIs/pds_doi_api/0.1
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: dois
+  description: PDS DOI Core function restFull API
+paths:
+  /dois:
+    get:
+      tags:
+      - dois
+      description: List the DOI requests within the transaction database
+      operationId: get_dois
+      parameters:
+      - name: doi
+        in: query
+        description: List of DOIs to fetch from transaction database.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+        example: 10.17189/21734
+      - name: submitter
+        in: query
+        description: List of submitter email addresses to filter DOIs by.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+        example: my.email@node.gov
+      - name: node
+        in: query
+        description: List of PDS node names cited as contributor of the DOI to filter
+          by. Each identifier must be one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+        example: eng
+      - name: lid
+        in: query
+        description: List of LIDs to filter DOIs by. An LID may include the VID appended
+          to the end.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+        examples:
+          lid:
+            value: 'urn:nasa:pds:lab_shocked_feldspars'
+          lidvid:
+            value: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/doi_summary'
+                x-content-type: application/json
+        "500":
+          description: Internal error
+      x-openapi-router-controller: pds_doi_api.controllers.dois_controller
+    post:
+      tags:
+      - dois
+      description: Submit a DOI in reserve or draft status. The payload includes URLs
+        for one or more  records to be submitted. Record URLs must resolve to PDS4
+        label files (xml).
+      operationId: post_dois
+      parameters:
+      - name: action
+        in: query
+        description: The submission action to perform. Must be one of "reserve" or
+          "draft".
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+        example: reserve
+      - name: submitter
+        in: query
+        description: Email address of the submission requester.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+        example: my.email@node.gov
+      - name: node
+        in: query
+        description: The PDS node name to cite as contributor of the DOI. Must be
+          one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+        example: eng
+      - name: url
+        in: query
+        description: URL to provide as the record to register a DOI for. URL must
+          start with either "http://" or "https://" and resolve to a valid PDS4 label
+          in XML format.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/doi_record'
+        "201":
+          description: Success
+        "400":
+          description: Invalid Argument
+        "500":
+          description: Internal error
+      x-openapi-router-controller: pds_doi_api.controllers.dois_controller
+  /dois/{doi_prefix}/{doi_suffix}:
+    get:
+      tags:
+      - dois
+      description: Get the status of a DOI from the transaction database.
+      operationId: get_doi_from_id
+      parameters:
+      - name: doi_prefix
+        in: path
+        description: The prefix of the DOI identifier.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "10.17189"
+      - name: doi_suffix
+        in: path
+        description: The suffix of the DOI identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "21734"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/doi_record'
+        "404":
+          description: Not existing
+        "500":
+          description: Internal error
+      x-openapi-router-controller: pds_doi_api.controllers.dois_controller
+    put:
+      tags:
+      - dois
+      description: Update the record associated with an existing DOI.
+      operationId: put_doi_from_id
+      parameters:
+      - name: doi_prefix
+        in: path
+        description: The prefix of the DOI identifier.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "10.17189"
+      - name: doi_suffix
+        in: path
+        description: The suffix of the DOI identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "21734"
+      - name: submitter
+        in: query
+        description: Email address of the DOI update requester.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+        example: my.email@node.gov
+      - name: node
+        in: query
+        description: The PDS node name to cite as contributor of the DOI. Must be
+          one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+        example: eng
+      - name: url
+        in: query
+        description: URL to provide as the record to update the DOI with. URL must
+          start with either "http://" or "https://" and resolve to a valid PDS4 label
+          in XML format.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/doi_record'
+        "400":
+          description: Invalid Argument
+        "404":
+          description: Not existing
+        "500":
+          description: Internal error
+      x-openapi-router-controller: pds_doi_api.controllers.dois_controller
+  /dois/{doi_prefix}/{doi_suffix}/release:
+    post:
+      tags:
+      - dois
+      description: Move a DOI record from draft/reserve status to "release".
+      operationId: post_release_doi
+      parameters:
+      - name: doi_prefix
+        in: path
+        description: The prefix of the DOI identifier.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "10.17189"
+      - name: doi_suffix
+        in: path
+        description: The suffix of the DOI identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "21734"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/doi_record'
+        "400":
+          description: Can not be released
+        "404":
+          description: Not existing
+        "500":
+          description: Internal error
+      x-openapi-router-controller: pds_doi_api.controllers.dois_controller
+components:
+  schemas:
+    doi_summary:
+      type: object
+      properties:
+        doi:
+          type: string
+        lid:
+          type: string
+        vid:
+          type: string
+        submitter:
+          type: string
+        status:
+          type: string
+        creation_date:
+          type: string
+          format: date-time
+        update_date:
+          type: string
+          format: date-time
+      example:
+        vid: 1.0
+        submitter: my.email@node.gov
+        lid: urn:nasa:pds:lab_shocked_feldspars
+        creation_date: 2000-08-22T12:00:00.000+00:00
+        update_date: 2001-01-23T04:56:07.000+00:00
+        doi: 10.17189/21734
+        status: Pending
+    doi_record:
+      allOf:
+      - $ref: '#/components/schemas/doi_summary'
+      - type: object
+        properties:
+          record:
+            type: string
+          message:
+            type: string
