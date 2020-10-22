@@ -5,7 +5,7 @@ This tools provides services for PDS operators to mint DOIs.
 
 ## Prerequisites
 
-- python 3
+- python 3.6 or above
 - a login to OSTI server
 
 ## User Documentation 
@@ -49,14 +49,11 @@ or
 
 ### Behavioral testing
 
-You first need to get some reference datasets, in the project base directory:
-
-    curl https://pds.nasa.gov/software/test-data/pds-doi-service/aaDOI_production_submitted_labels.zip > aaDOI_production_submitted_labels.zip
-    unzip aaDOI_production_submitted_labels.zip
-
 Then you can run the behavioral tests:
 
     behave
+
+Note this will download reference test data. If they need to be updated you have to first remove your local copy of the reference data (`test/aaDOI_production_submitted_labels`)
 
 You can also run them for a nicer reporting:
 
