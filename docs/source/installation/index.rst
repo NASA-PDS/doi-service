@@ -10,8 +10,7 @@ Requirements
 Prior to installing this software, ensure your system meets the following
 requirements:
 
-•  Python_ 3. This software requires Python 3; it will work with 3.6, 3.7, or
-   3.8.  Python 2 will absolutely *not* work.
+•  Python_ 3.6 or above. Python 2 will absolutely *not* work.
 •  ``libxml2`` version 2.9.2; later 2.9 versions are fine.  Run ``xml2-config
    --version`` to find out.
 
