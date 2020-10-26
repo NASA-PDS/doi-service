@@ -50,6 +50,20 @@ jobs:
                 with:
                     lfs: true
             -
+                name: Update default configuration
+                run: |
+                    import sys
+                    import os
+                    from pathlib import Path
+                    conf_dir = os.path.join(sys.prefix, "pds_doi_service")
+                    Path(conf_dir).mkdir(parents=True, exist_ok=True)
+                    conf_file = os.path.join(conf_dir, "conf.ini")
+                    print(f"Create config file for unit test {conf_file}")
+                    with open(conf_file, "w") as f:
+                        f.write("[OSTI]\n")
+                        f.write("user = {}\n".format("${{secrets.osti_login}}"))
+                        f.write("password = {}\n".format("${{secrets.osti_password}}"))
+            -
                 name: 🤠 Roundup
                 uses: NASA-PDS/roundup-action@master
                 with:

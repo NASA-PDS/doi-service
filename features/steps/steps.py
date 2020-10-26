@@ -8,13 +8,13 @@ import uuid
 
 import logging
 
-from pds_doi_core.input.exceptions import InputFormatException, CriticalDOIException, IllegalDOIActionException
-from pds_doi_core.util.doi_xml_differ import DOIDiffer
-from pds_doi_core.actions.draft import DOICoreActionDraft
-from pds_doi_core.actions.reserve import DOICoreActionReserve
-from pds_doi_core.actions.release import DOICoreActionRelease
-from pds_doi_core.outputs.osti_web_client import DOIOstiWebClient
-from pds_doi_core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException, IllegalDOIActionException
+from pds_doi_service.core.util.doi_xml_differ import DOIDiffer
+from pds_doi_service.core.actions.draft import DOICoreActionDraft
+from pds_doi_service.core.actions.reserve import DOICoreActionReserve
+from pds_doi_service.core.actions.release import DOICoreActionRelease
+from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
