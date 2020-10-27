@@ -50,16 +50,13 @@ jobs:
                 with:
                     lfs: true
             -
-                name: Install conf update pre-requisites
-                run: pip install pathlib
-            -
                 name: Update default configuration
                 run: |
                     import sys
                     import os
-                    from pathlib import Path
+                    print("Running python version {}".format(sys.version))
                     conf_dir = os.path.join(sys.prefix, "pds_doi_service")
-                    Path(conf_dir).mkdir(parents=True, exist_ok=True)
+                    os.makedirs(conf_dir)
                     conf_file = os.path.join(conf_dir, "conf.ini")
                     print("Create config file for unit test {}".format(conf_file))
                     with open(conf_file, "w") as f:
