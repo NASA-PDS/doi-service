@@ -40,9 +40,10 @@ setuptools.setup(
     ],
     python_requires='>=3.7',  # pds_doi_service.core package requires Dataclasses
     install_requires=pip_requirements,
-    extras_require={
-        'dev': pip_dev_requirements
-    },
+    # TO DO if this is th proper wy to handle dev/test dependencies in the CI/CD pipeline
+    #extras_require={
+    #    'test': pip_dev_requirements
+    #},
     scripts=[],
     entry_points={
         'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',

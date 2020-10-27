@@ -26,9 +26,16 @@ requests>=2.23
 six>=1.14
 soupsieve>=2.0
 urllib3>=1.25
-#Werkzeug==0.16.0
+Werkzeug==0.16.0
 xlrd>=1.2
 xmltodict>=0.12
 zipp>=3.1
+## Dev/test requirements
+flask_testing==0.6.1
+sphinx-rtd-theme==0.5.0
+sphinx-argparse==0.2.5
+behave==1.2.6
+allure-behave==2.8.13
+behave-testrail-reporter==0.4.0
 
 
