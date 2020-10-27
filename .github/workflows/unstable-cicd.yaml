@@ -63,7 +63,7 @@ jobs:
                         f.write("[OSTI]\n")
                         f.write("user = {}\n".format("${{secrets.osti_login}}"))
                         f.write("password = {}\n".format("${{secrets.osti_password}}"))
-                shell: python
+                shell: python3
             -
                 name: 🤠 Roundup
                 uses: NASA-PDS/roundup-action@master
