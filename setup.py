@@ -13,6 +13,10 @@ version = result.group(1)
 with open('requirements.txt', 'r') as f:
     pip_requirements = f.readlines()
 
+with open('requirements_dev.txt', 'r') as f:
+    pip_dev_requirements = f.readlines()
+
+
 setuptools.setup(
     name=PACKAGE, # Replace with your own username
     version=version,
@@ -36,6 +40,9 @@ setuptools.setup(
     ],
     python_requires='>=3.7',  # pds_doi_service.core package requires Dataclasses
     install_requires=pip_requirements,
+    extras_require={
+        'dev': pip_dev_requirements
+    },
     scripts=[],
     entry_points={
         'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',
