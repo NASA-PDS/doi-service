@@ -58,7 +58,7 @@ jobs:
                     conf_dir = os.path.join(sys.prefix, "pds_doi_service")
                     Path(conf_dir).mkdir(parents=True, exist_ok=True)
                     conf_file = os.path.join(conf_dir, "conf.ini")
-                    print(f"Create config file for unit test {conf_file}")
+                    print("Create config file for unit test {}".format(conf_file))
                     with open(conf_file, "w") as f:
                         f.write("[OSTI]\n")
                         f.write("user = {}\n".format("${{secrets.osti_login}}"))
