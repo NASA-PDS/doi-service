@@ -50,6 +50,9 @@ jobs:
                 with:
                     lfs: true
             -
+                name: Install conf update pre-requisites
+                run: pip install pathlib
+            -
                 name: Update default configuration
                 run: |
                     import sys
@@ -63,7 +66,7 @@ jobs:
                         f.write("[OSTI]\n")
                         f.write("user = {}\n".format("${{secrets.osti_login}}"))
                         f.write("password = {}\n".format("${{secrets.osti_password}}"))
-                shell: python3
+                shell: python
             -
                 name: 🤠 Roundup
                 uses: NASA-PDS/roundup-action@master
