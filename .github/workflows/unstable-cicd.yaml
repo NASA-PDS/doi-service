@@ -50,6 +50,10 @@ jobs:
                 with:
                     lfs: true
             -
+                name: Install application
+                run: |
+                    sudo apt-get install python3.8
+                    pip install .
                 name: Update default configuration
                 run: |
                     import sys
