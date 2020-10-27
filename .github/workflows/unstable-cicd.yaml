@@ -54,6 +54,7 @@ jobs:
                 run: |
                     sudo apt-get install python3.8
                     pip install .
+            -
                 name: Update default configuration
                 run: |
                     import sys
