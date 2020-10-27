@@ -50,19 +50,12 @@ jobs:
                 with:
                     lfs: true
             -
-                name: Install application
-                run: |
-                    sudo apt-get install python3.8
-                    pip install .
-            -
                 name: Update default configuration
                 run: |
                     import sys
                     import os
                     print("Running python version {}".format(sys.version))
-                    conf_dir = os.path.join(sys.prefix, "pds_doi_service")
-                    os.makedirs(conf_dir)
-                    conf_file = os.path.join(conf_dir, "conf.ini")
+                    conf_file = os.path.join("config", "conf.ini")
                     print("Create config file for unit test {}".format(conf_file))
                     with open(conf_file, "w") as f:
                         f.write("[OSTI]\n")
