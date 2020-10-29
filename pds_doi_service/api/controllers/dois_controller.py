@@ -13,18 +13,20 @@ dois_controller.py
 Contains the request handlers for the PDS DOI API.
 """
 
+import csv
 from datetime import datetime
 import json
+from tempfile import NamedTemporaryFile
 
 import connexion
 from flask import current_app
 
-from pds_doi_service.api.models import DoiRecord
-from pds_doi_service.api.models import DoiSummary
+from pds_doi_service.api.models import DoiRecord, DoiSummary
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.input.exceptions import WarningDOIException
+from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
 
@@ -48,6 +50,31 @@ def _get_db_name():
         db_name = connexion.request.args.get('db_name')
 
     return db_name
+
+
+def _write_csv_from_labels(temp_file, labels):
+    """
+    Writes the provided list of labels in CSV format to the open temporary
+    file handle. The contents are flushed to disk before this function returns.
+
+    Parameters
+    ----------
+    temp_file : tempfile.NamedTemporaryFile
+        The open temporary file to write CSV contents to.
+    labels : list of dict
+        List of labels to be written out in CSV format.
+
+    """
+    csv_writer = csv.DictWriter(
+        temp_file, fieldnames=DOIInputUtil.MANDATORY_COLUMNS
+    )
+
+    csv_writer.writeheader()
+
+    for label in labels:
+        csv_writer.writerow(label)
+
+    temp_file.flush()
 
 
 def get_dois(doi=None, submitter=None, node=None, lid=None):
@@ -125,11 +152,11 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
     return records, 200
 
 
-def post_dois(action, submitter, node, url):
+def post_dois(action, submitter, node, url=None, body=None):
     """
-    Submit a DOI in reserve or draft status. The payload includes a URLs for
-    one record to be submitted. Record URLs must resolve to PDS4 label
-    files (xml).
+    Submit a DOI in reserve or draft status. The input to the action may be
+    either a JSON labels payload (for reserve or draft), or a URL to a PDS4
+    XML label file (draft only).
 
     Parameters
     ----------
@@ -140,48 +167,79 @@ def post_dois(action, submitter, node, url):
     node : str
         The PDS node name to cite as contributor of the DOI. Must be one of the
         valid PDS steward IDs.
-    url : str
+    url : str, optional
         URL to provide as the record to register a DOI for. URL must start with
         either "http://" or "https://" and resolve to a valid PDS4 label in XML
-        format.
+        format. Only used when action is set to "draft".
+    body : str or dict
+        requestBody contents. If provided, should contain an PSD4 label (for
+        draft) or one or more LabelPayload structures (for reserve). Required if
+        the action is set to "reserve", otherwise it can be used optionally in
+        lieu of url when the action is set to "draft".
 
     Returns
     -------
     record : DoiRecord
         A record of the DOI submission request.
+    response_code : int
+        The HTTP response code corresponding to the result.
 
     """
     try:
-        # TODO: reserve action allows multiple bundles to be specified as
-        #       comma-delimited list, whereas draft can only accept a single
-        #       path. For now this means both are limited to a single path at
-        #       a time.
-
         if action == 'reserve':
+            # Extract the list of labels from the requestBody, if one was provided
+            if not connexion.request.is_json:
+                raise ValueError('No JSON requestBody provided for reserve POST '
+                                 'request.')
+            else:
+                body = connexion.request.get_json()
+
             reserve_action = DOICoreActionReserve(db_name=_get_db_name())
 
             # If we're unit testing, don't submit anything to OSTI
             dry_run = current_app.config['TESTING']
 
-            # TODO: expose dry_run/force flags at API level?
-            reserve_kwargs = {
-                'node': node,
-                'submitter': submitter,
-                'input': url,
-                'dry_run': dry_run
-            }
+            with NamedTemporaryFile('w', prefix='labels_', suffix='.csv') as csv_file:
+                _write_csv_from_labels(csv_file, body['labels'])
 
-            result = reserve_action.run(**reserve_kwargs)
+                # TODO: expose dry_run/force flags at API level?
+                reserve_kwargs = {
+                    'node': node,
+                    'submitter': submitter,
+                    'input': csv_file.name,
+                    'dry_run': dry_run
+                }
+
+                result = reserve_action.run(**reserve_kwargs)
         elif action == 'draft':
+            if not body and not url:
+                raise ValueError('No requestBody or URL parameter provided '
+                                 'as input to draft request. One or the other '
+                                 'must be provided.')
+
             draft_action = DOICoreActionDraft(db_name=_get_db_name())
 
-            draft_kwargs = {
-                'node': node,
-                'submitter': submitter,
-                'input': url
-            }
+            # Determine how the input label(s) was sent
+            if body:
+                with NamedTemporaryFile('wb', prefix='labels_', suffix='.xml') as xml_file:
+                    xml_file.write(body)
+                    xml_file.flush()
 
-            result = draft_action.run(**draft_kwargs)
+                    draft_kwargs = {
+                        'node': node,
+                        'submitter': submitter,
+                        'input': xml_file.name
+                    }
+
+                    result = draft_action.run(**draft_kwargs)
+            else:
+                draft_kwargs = {
+                    'node': node,
+                    'submitter': submitter,
+                    'input': url
+                }
+
+                result = draft_action.run(**draft_kwargs)
         else:
             raise ValueError('Action must be either "draft" or "reserve". '
                              'Received "{}"'.format(action))
@@ -194,21 +252,27 @@ def post_dois(action, submitter, node, url):
         return str(err), 500
 
     # Parse the OSTI XML string back into a list of DOIs
-    result = bytes(result, encoding='utf-8')
-    dois = DOIOstiWebParser().response_get_parse_osti_xml(result)
+    dois = DOIOstiWebParser().response_get_parse_osti_xml(
+        bytes(result, encoding='utf-8')
+    )
 
     records = []
 
     for doi in dois:
-        lid, vid = doi.related_identifier.split('::')
+        # Check if we got a vid back with the identifier
+        if '::' in doi.related_identifier:
+            lid, vid = doi.related_identifier.split('::')
+        else:
+            lid = doi.related_identifier
+            vid = None
+
         records.append(
             DoiRecord(
                 doi=doi.doi, lid=lid, vid=vid,
                 submitter=submitter, status=doi.status,
                 creation_date=doi.date_record_added,
                 update_date=doi.date_record_updated,
-                # TODO: not sure what record refers to in results
-                record=None,
+                record=result,
                 message=doi.message
             )
         )

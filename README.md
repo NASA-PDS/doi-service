@@ -38,7 +38,7 @@ or
     
 ## Launch api server (to be re-worked)
 
-    pds-doi-start-dev
+    pds_doi_api
     
     
 ## Test 

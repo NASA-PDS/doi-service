@@ -4,7 +4,7 @@ info:
   description: PDS API for managing DOI registration with OSTI service.
   version: "0.1"
 servers:
-- url : http://localhost:8080/PDS_APIs/pds_doi_api/0.1
+- url: http://localhost:8080/PDS_APIs/pds_doi_api/0.1
   description: Local host
 - url: https://virtserver.swaggerhub.com/PDS_APIs/pds_doi_api/0.1
   description: SwaggerHub API Auto Mocking
@@ -123,12 +123,31 @@ paths:
         in: query
         description: URL to provide as the record to register a DOI for. URL must
           start with either "http://" or "https://" and resolve to a valid PDS4 label
-          in XML format.
-        required: true
+          in XML format. This value is only utilized when request is set to "draft".
+        required: false
         style: form
         explode: true
         schema:
           type: string
+      requestBody:
+        description: Payload containing one or more labels in JSON or XML (PDS4) format.
+          Required for reserve requests, but optional for draft.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/labels_payload'
+            example:
+              labels:
+              - status: Reserved
+                title: Laboratory Shocked Feldspars Bundle
+                publication_date: 2020-03-11
+                product_type_specific: PDS4 Collection
+                author_last_name: Johnson
+                author_first_name: J. R.
+                related_resource: urn:nasa:pds:lab_shocked_feldspars
+          application/xml:
+            schema:
+              type: string
       responses:
         "200":
           description: Success
@@ -288,6 +307,29 @@ paths:
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
 components:
   schemas:
+    label_payload:
+      properties:
+        status:
+          type: string
+        title:
+          type: string
+        publication_date:
+          type: string
+          format: date-time
+        product_type_specific:
+          type: string
+        author_last_name:
+          type: string
+        author_first_name:
+          type: string
+        related_resource:
+          type: string
+    labels_payload:
+      properties:
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/label_payload'
     doi_summary:
       type: object
       properties:
@@ -322,5 +364,6 @@ components:
         properties:
           record:
             type: string
+            description: full OSTI XML label
           message:
             type: string
