@@ -174,8 +174,7 @@
 <p>Prior to installing this software, ensure your system meets the following
 requirements:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://www.python.org/">Python</a> 3. This software requires Python 3; it will work with 3.6, 3.7, or
-3.8.  Python 2 will absolutely <em>not</em> work.</p></li>
+<li><p><a class="reference external" href="https://www.python.org/">Python</a> 3.6 or above. Python 2 will absolutely <em>not</em> work.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">libxml2</span></code> version 2.9.2; later 2.9 versions are fine.  Run <code class="docutils literal notranslate"><span class="pre">xml2-config</span>
 <span class="pre">--version</span></code> to find out.</p></li>
 </ul>
@@ -198,9 +197,9 @@ you can run <code class="docutils literal notranslate"><span class="pre">pip3</s
 you can also use a <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environment</a>  for your deployment.
 To do so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p $HOME/.virtualenvs
-python3 -m venv $HOME/.virtualenvs/pds-deep-archive
-source $HOME/.virtualenvs/pds-deep-archive/bin/activate
-pip3 install pds.deeparchive
+python3 -m venv $HOME/.virtualenvs/pds-doi-service
+source $HOME/.virtualenvs/pds-doi-service/bin/activate
+pip3 install pds-doi-core
 </pre></div>
 </div>
 </div>

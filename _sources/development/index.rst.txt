@@ -11,7 +11,7 @@ Get the code, work on a new branch
     git checkout -b "#<issue number>"
 
 
-Install virtual env
+Install virtual env, use python 3.6.
 
     pip install virtualenv
     python -m venv venv
