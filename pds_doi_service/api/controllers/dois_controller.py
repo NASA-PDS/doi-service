@@ -16,16 +16,21 @@ Contains the request handlers for the PDS DOI API.
 import csv
 from datetime import datetime
 import json
+from os.path import exists, join
 from tempfile import NamedTemporaryFile
 
 import connexion
 from flask import current_app
 
+from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.api.models import DoiRecord, DoiSummary
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
+from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
-from pds_doi_service.core.input.exceptions import WarningDOIException
+from pds_doi_service.core.input.exceptions import (UnknownLIDVIDException,
+                                                   NoTransactionHistoryForLIDVIDException,
+                                                   WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
@@ -75,6 +80,44 @@ def _write_csv_from_labels(temp_file, labels):
         csv_writer.writerow(label)
 
     temp_file.flush()
+
+
+def _records_from_dois(dois, submitter=None, osti_record=None):
+    """
+    Reformats a list of DOI objects into a corresponding list of DoiRecord
+    objects.
+
+    Parameters
+    ----------
+    dois : list of Doi
+        The list of pds_doi_service.core.entities.doi.Doi objects to reformat
+        into DoiRecords.
+    submitter : str, optional
+        Submitter email address to associate with each record.
+    osti_record : str, optional
+        OSTI XML record to associate with each record.
+
+    Returns
+    -------
+    records : list of DoiRecord
+        The records produced from the provided Doi objects.
+
+    """
+    records = []
+
+    for doi in dois:
+        records.append(
+            DoiRecord(
+                doi=doi.doi, lidvid=doi.related_identifier,
+                submitter=submitter, status=doi.status,
+                creation_date=doi.date_record_added,
+                update_date=doi.date_record_updated,
+                record=osti_record,
+                message=doi.message
+            )
+        )
+
+    return records
 
 
 def get_dois(doi=None, submitter=None, node=None, lid=None):
@@ -133,14 +176,18 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
         'node': node
     }
 
-    results = list_action.run(**list_kwargs)
+    try:
+        results = list_action.run(**list_kwargs)
+    except Exception as err:
+        # Treat any unexpected Exception as an "Internal Error" and report back
+        return format_exceptions(err), 500
 
     records = []
 
     for result in json.loads(results):
         records.append(
             DoiSummary(
-                doi=result['doi'], lid=result['lid'], vid=result['vid'],
+                doi=result['doi'], lidvid='::'.join([result['lid'], result['vid']]),
                 submitter=result['submitter'], status=result['status'],
                 # TODO: unsure where to find creation_date, not provided in
                 #       the results from list action
@@ -152,7 +199,7 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
     return records, 200
 
 
-def post_dois(action, submitter, node, url=None, body=None):
+def post_dois(action, submitter, node, url=None, body=None, force=False):
     """
     Submit a DOI in reserve or draft status. The input to the action may be
     either a JSON labels payload (for reserve or draft), or a URL to a PDS4
@@ -176,6 +223,9 @@ def post_dois(action, submitter, node, url=None, body=None):
         draft) or one or more LabelPayload structures (for reserve). Required if
         the action is set to "reserve", otherwise it can be used optionally in
         lieu of url when the action is set to "draft".
+    force : bool
+        If true, forces a reserve request to completion, ignoring any warnings
+        encountered. Has no effect for draft requests.
 
     Returns
     -------
@@ -196,21 +246,17 @@ def post_dois(action, submitter, node, url=None, body=None):
 
             reserve_action = DOICoreActionReserve(db_name=_get_db_name())
 
-            # If we're unit testing, don't submit anything to OSTI
-            dry_run = current_app.config['TESTING']
-
             with NamedTemporaryFile('w', prefix='labels_', suffix='.csv') as csv_file:
                 _write_csv_from_labels(csv_file, body['labels'])
 
-                # TODO: expose dry_run/force flags at API level?
                 reserve_kwargs = {
                     'node': node,
                     'submitter': submitter,
                     'input': csv_file.name,
-                    'dry_run': dry_run
+                    'force': force
                 }
 
-                result = reserve_action.run(**reserve_kwargs)
+                osti_label = reserve_action.run(**reserve_kwargs)
         elif action == 'draft':
             if not body and not url:
                 raise ValueError('No requestBody or URL parameter provided '
@@ -231,7 +277,7 @@ def post_dois(action, submitter, node, url=None, body=None):
                         'input': xml_file.name
                     }
 
-                    result = draft_action.run(**draft_kwargs)
+                    osti_label = draft_action.run(**draft_kwargs)
             else:
                 draft_kwargs = {
                     'node': node,
@@ -239,57 +285,39 @@ def post_dois(action, submitter, node, url=None, body=None):
                     'input': url
                 }
 
-                result = draft_action.run(**draft_kwargs)
+                osti_label = draft_action.run(**draft_kwargs)
         else:
             raise ValueError('Action must be either "draft" or "reserve". '
                              'Received "{}"'.format(action))
     # These exceptions indicate some kind of input error, so return the
     # Invalid Argument code
     except (WarningDOIException, ValueError) as err:
-        return str(err), 400
+        return format_exceptions(err), 400
     # For everything else, return the Internal Error code
     except Exception as err:
-        return str(err), 500
+        return format_exceptions(err), 500
 
     # Parse the OSTI XML string back into a list of DOIs
-    dois = DOIOstiWebParser().response_get_parse_osti_xml(
-        bytes(result, encoding='utf-8')
+    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
+        bytes(osti_label, encoding='utf-8')
     )
 
-    records = []
-
-    for doi in dois:
-        # Check if we got a vid back with the identifier
-        if '::' in doi.related_identifier:
-            lid, vid = doi.related_identifier.split('::')
-        else:
-            lid = doi.related_identifier
-            vid = None
-
-        records.append(
-            DoiRecord(
-                doi=doi.doi, lid=lid, vid=vid,
-                submitter=submitter, status=doi.status,
-                creation_date=doi.date_record_added,
-                update_date=doi.date_record_updated,
-                record=result,
-                message=doi.message
-            )
-        )
+    records = _records_from_dois(dois, submitter=submitter, osti_record=osti_label)
 
     return records, 200
 
 
-def post_release_doi(doi_prefix, doi_suffix):  # noqa: E501
+def post_release_doi(lidvid, force=False):
     """
     Move a DOI record from draft/reserve status to "release".
 
     Parameters
     ----------
-    doi_prefix : str
-        The prefix of the DOI identifier.
-    doi_suffix : str
-        The suffix of the DOI identifier.
+    lidvid : str
+        The LIDVID associated with the record to release.
+    force : bool, optional
+        If true, forces a release request to completion, ignoring any warnings
+        encountered.
 
     Returns
     -------
@@ -297,7 +325,75 @@ def post_release_doi(doi_prefix, doi_suffix):  # noqa: E501
         Record of the DOI release action.
 
     """
-    return 'Not Implemented', 200
+    try:
+        list_action = DOICoreActionList(db_name=_get_db_name())
+
+        list_kwargs = {'lidvid': lidvid}
+
+        # Look up the provided LID and parse results back to a list
+        list_results = json.loads(list_action.run(**list_kwargs))
+
+        # Make sure we got something back
+        if not list_results:
+            raise UnknownLIDVIDException(
+                'No record(s) could be found for LIDVID {}'.format(lidvid)
+            )
+
+        # Extract the latest record from all those returned
+        list_record = next(filter(lambda list_result: list_result['is_latest'],
+                                  list_results))
+
+        # Make sure we can locate the output OSTI label associated with this
+        # transaction
+        # TODO: output.xml could contain multiple records, task #116 created
+        #       to extract appropriate one based on LID
+        transaction_location = list_record['transaction_key']
+        osti_label_file = join(transaction_location, 'output.xml')
+
+        if not exists(osti_label_file):
+            raise NoTransactionHistoryForLIDVIDException(
+                'Could not find an OSTI Label associated with LIDVID {}. '
+                'The database and transaction history location may be out of sync. '
+                'Please try resubmitting the record in reserve or draft.'
+                .format(lidvid)
+            )
+
+        # Prepare the release action
+        release_action = DOICoreActionRelease(db_name=_get_db_name())
+
+        release_kwargs = {
+            'node': list_record['node_id'],
+            'submitter': list_record['submitter'],
+            'input': osti_label_file,
+            'force': force
+        }
+
+        osti_release_label = release_action.run(**release_kwargs)
+
+        dois, errors = DOIOstiWebParser().response_get_parse_osti_xml(
+            bytes(osti_release_label, encoding='utf-8')
+        )
+
+        # Propagate any errors returned from OSTI in a single exception
+        if errors:
+            raise WarningDOIException(
+                'Received the following errors from the release request to OSTI:\n'
+                '{}'.format('\n'.join(errors))
+            )
+    except (ValueError, WarningDOIException) as err:
+        # Some warning or error prevented release of the DOI
+        return format_exceptions(err), 400
+    except (UnknownLIDVIDException, NoTransactionHistoryForLIDVIDException) as err:
+        # Could not find an entry for the requested LIDVID
+        return format_exceptions(err), 404
+    except Exception as err:
+        # Treat any unexpected Exception as an "Internal Error" and report back
+        return format_exceptions(err), 500
+
+    records = _records_from_dois(dois, submitter=list_record['submitter'],
+                                 osti_record=osti_release_label)
+
+    return records, 200
 
 
 def get_doi_from_id(doi_prefix, doi_suffix):  # noqa: E501

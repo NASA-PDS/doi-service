@@ -8,6 +8,14 @@ class UnknownNodeException(Exception):
     pass
 
 
+class UnknownLIDVIDException(Exception):
+    pass
+
+
+class NoTransactionHistoryForLIDVIDException(Exception):
+    pass
+
+
 class DuplicatedTitleDOIException(Exception):
     pass
 
@@ -31,6 +39,7 @@ class CriticalDOIException(Exception):
 class WarningDOIException(Exception):
     pass
 
-class SiteURNotExistException(Exception):
+
+class SiteURLNotExistException(Exception):
     pass
 

@@ -129,6 +129,16 @@ paths:
         explode: true
         schema:
           type: string
+      - name: force
+        in: query
+        description: If true, forces a reserve request to completion, ignoring any
+          warnings encountered. Has no effect for draft requests.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Payload containing one or more labels in JSON or XML (PDS4) format.
           Required for reserve requests, but optional for draft.
@@ -266,31 +276,32 @@ paths:
         "500":
           description: Internal error
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
-  /dois/{doi_prefix}/{doi_suffix}/release:
+  /dois/{lidvid}/release:
     post:
       tags:
       - dois
       description: Move a DOI record from draft/reserve status to "release".
       operationId: post_release_doi
       parameters:
-      - name: doi_prefix
+      - name: lidvid
         in: path
-        description: The prefix of the DOI identifier.
+        description: The LIDVID associated with the record to release.
         required: true
         style: simple
         explode: false
         schema:
           type: string
-        example: "10.17189"
-      - name: doi_suffix
-        in: path
-        description: The suffix of the DOI identifier
-        required: true
-        style: simple
-        explode: false
+        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
+      - name: force
+        in: query
+        description: If true, forces a release request to completion, ignoring any
+          warnings encountered.
+        required: false
+        style: form
+        explode: true
         schema:
-          type: string
-        example: "21734"
+          type: boolean
+          default: false
       responses:
         "200":
           description: Success
@@ -335,9 +346,7 @@ components:
       properties:
         doi:
           type: string
-        lid:
-          type: string
-        vid:
+        lidvid:
           type: string
         submitter:
           type: string
@@ -350,9 +359,8 @@ components:
           type: string
           format: date-time
       example:
-        vid: 1.0
         submitter: my.email@node.gov
-        lid: urn:nasa:pds:lab_shocked_feldspars
+        lidvid: urn:nasa:pds:lab_shocked_feldspars::1.0
         creation_date: 2000-08-22T12:00:00.000+00:00
         update_date: 2001-01-23T04:56:07.000+00:00
         doi: 10.17189/21734

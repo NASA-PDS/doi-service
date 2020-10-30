@@ -12,17 +12,15 @@ class DoiSummary(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, doi: str = None, lid: str = None, vid: str = None,
+    def __init__(self, doi: str = None, lidvid: str = None,
                  submitter: str = None, status: str = None,
                  creation_date: datetime = None, update_date: datetime = None):  # noqa: E501
         """DoiSummary - a model defined in Swagger
 
         :param doi: The doi of this DoiSummary.  # noqa: E501
         :type doi: str
-        :param lid: The lid of this DoiSummary.  # noqa: E501
-        :type lid: str
-        :param vid: The vid of this DoiSummary.  # noqa: E501
-        :type vid: str
+        :param lidvid: The lidvid of this DoiSummary.  # noqa: E501
+        :type lidvid: str
         :param submitter: The submitter of this DoiSummary.  # noqa: E501
         :type submitter: str
         :param status: The status of this DoiSummary.  # noqa: E501
@@ -34,8 +32,7 @@ class DoiSummary(Model):
         """
         self.swagger_types = {
             'doi': str,
-            'lid': str,
-            'vid': str,
+            'lidvid': str,
             'submitter': str,
             'status': str,
             'creation_date': datetime,
@@ -44,16 +41,14 @@ class DoiSummary(Model):
 
         self.attribute_map = {
             'doi': 'doi',
-            'lid': 'lid',
-            'vid': 'vid',
+            'lidvid': 'lidvid',
             'submitter': 'submitter',
             'status': 'status',
             'creation_date': 'creation_date',
             'update_date': 'update_date'
         }
         self._doi = doi
-        self._lid = lid
-        self._vid = vid
+        self._lidvid = lidvid
         self._submitter = submitter
         self._status = status
         self._creation_date = creation_date
@@ -92,46 +87,25 @@ class DoiSummary(Model):
         self._doi = doi
 
     @property
-    def lid(self) -> str:
-        """Gets the lid of this DoiSummary.
+    def lidvid(self) -> str:
+        """Gets the lidvid of this DoiSummary.
 
 
-        :return: The lid of this DoiSummary.
+        :return: The lidvid of this DoiSummary.
         :rtype: str
         """
-        return self._lid
+        return self._lidvid
 
-    @lid.setter
-    def lid(self, lid: str):
-        """Sets the lid of this DoiSummary.
+    @lidvid.setter
+    def lidvid(self, lidvid: str):
+        """Sets the lidvid of this DoiSummary.
 
 
-        :param lid: The lid of this DoiSummary.
-        :type lid: str
+        :param lidvid: The lidvid of this DoiSummary.
+        :type lidvid: str
         """
 
-        self._lid = lid
-
-    @property
-    def vid(self) -> str:
-        """Gets the vid of this DoiSummary.
-
-
-        :return: The vid of this DoiSummary.
-        :rtype: str
-        """
-        return self._vid
-
-    @vid.setter
-    def vid(self, vid: str):
-        """Sets the vid of this DoiSummary.
-
-
-        :param vid: The vid of this DoiSummary.
-        :type vid: str
-        """
-
-        self._vid = vid
+        self._lidvid = lidvid
 
     @property
     def submitter(self) -> str:

@@ -1,7 +1,65 @@
+#
+#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
+#  use must be negotiated with the Office of Technology Transfer at the
+#  California Institute of Technology.
+#
+
+"""
+=======
+util.py
+=======
+
+Utility functions for the PDS DOI API service.
+This module is adapted from the SwaggerHub auto-generated util.py.
+"""
+
 import datetime
 
+from collections import Iterable
 import six
 import typing
+
+
+def format_exceptions(exceptions):
+    """
+    Formats a listing of exceptions into a JSON-friendly representation suitable
+    for return in an HTTP response.
+
+    Parameters
+    ----------
+    exceptions : Exception or list or tuple of Exception
+        The listing of exceptions to format. A single Exception instance may
+        be provided as well.
+
+    Returns
+    -------
+    formatted_exceptions : dict
+        The provided exceptions in the following format:
+
+        ```python
+        {
+            'errors': [
+                {
+                    'name': <Exception class name>,
+                    'message': <Exception message>
+                },
+                ...
+            ]
+        }
+        ```
+
+    """
+    # Check if we were given a single exception, rather than a listing
+    if not isinstance(exceptions, Iterable):
+        exceptions = [exceptions]
+
+    return {
+        'errors': [
+            {'name': type(exception).__name__, 'message': str(exception)}
+            for exception in exceptions
+        ]
+    }
 
 
 def _deserialize(data, klass):

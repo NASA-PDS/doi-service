@@ -11,7 +11,7 @@
 #
 # Parameters to this script:
 #
-#    The -s (required) is email of the PDS operator: -s pds-operator@jpl.nasa.gov 
+#    The -s (required) is email of the PDS operator: -s pds-operator@jpl.nasa.gov
 #    The -i is optional. If the input is provided and is a file, parse from it, otherwise query from the URL input: -i https://www.osti.gov/iad2/api/records
 #        The format of input XML file is the same format of text returned from querying the OSTI server via a browser or curl command.
 #        If provided and a URL of the OSTI server, this will override the url in the config file.
@@ -85,7 +85,7 @@ def _read_from_local_xml(path):
             doi_xml = f.read()
     except Exception as e:
         raise CriticalDOIException(str(e))
-    dois = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
+    dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
     return dois
 
 def _read_from_path(path):
@@ -119,11 +119,11 @@ def get_dois_from_osti(target_url):
                                                          query_dict,
                                                          i_username=m_config.get('OSTI', 'user'),
                                                          i_password=m_config.get('OSTI', 'password'))
-        dois = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
+        dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
 
         logger.info(f"o_server_url,len(dois) {o_server_url,len(dois)}")
 
-        return dois, o_server_url 
+        return dois, o_server_url
 
 def _get_node_id_from_contributors(doi_field):
     # Given a doi object, attempt to extract the node_id from contributors field.  If not able to, return 'eng' as default.
@@ -190,7 +190,7 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
     # If set to True, the parameter pds_registration_doi_token in config/conf.ini should be set to 10.17189.
     use_doi_filtering_flag = False
     if use_doi_filtering_flag:
-        o_pds_doi_token = m_config.get('OTHER','pds_registration_doi_token') 
+        o_pds_doi_token = m_config.get('OTHER','pds_registration_doi_token')
 
     # If flag skip_db_write_flag set to True, will skip writing of records to database.  Use by developer to skip database write action.
     # For normal operation, skip_db_write_flag should be set to False.
@@ -203,7 +203,7 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
     # If db_name is not provided, get one from config file:
     if db_name is None:
         # This is the local database (the metadata from OSTI) will be written to.
-        o_db_name = m_config.get('OTHER','db_file') 
+        o_db_name = m_config.get('OTHER','db_file')
         # TODO: remove next line once done testing.
         #o_db_name = 'temp_doi_temp.db'
     else:
@@ -227,10 +227,10 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
         dois, o_server_url = get_dois_from_osti(input)
 
     o_records_found = len(dois)
-    
+
     logger.info(f"input,o_server_url,o_records_found {input,o_server_url,o_records_found}")
 
-    transaction_dir = m_config.get('OTHER','transaction_dir') 
+    transaction_dir = m_config.get('OTHER','transaction_dir')
     transaction_time = datetime.now()
 
     # Because the database requires transaction_key to be non-null, we build one here for 'eng' node for all transactions.
@@ -251,7 +251,7 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
                 continue # Skip this record because it is not associated with the DOI group given to PDS.
 
         # If the field 'related_identifier' is None, we cannot proceed since database writing does not allow a None value.
-        lidvid = [None] 
+        lidvid = [None]
         if doi.related_identifier is None:
                 logger.debug(f"SKIPPING_NONE_RELATED_IDENTIFIER {doi.doi}")
                 o_records_dois_skipped += 1
@@ -321,7 +321,7 @@ def main():
     if arguments.submitter_email is None: # Value of arguments.submitter_email can be None if -s parameter becomes optional.
         submitter_email = 'pds-operator@jpl.nasa.gov'  # Use default value
     else:
-        submitter_email = arguments.submitter_email 
+        submitter_email = arguments.submitter_email
     dry_run = False
     # Note that the parameter --dry-run (with dash) is now dry_run (with underscore) in arguments object.
     if arguments.dry_run is not None and arguments.dry_run == True:

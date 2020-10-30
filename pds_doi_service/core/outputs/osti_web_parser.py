@@ -55,9 +55,9 @@ class DOIOstiWebParser:
             else:
                 if first_name and last_name:
                     if middle_name:
-                        author_dict = {'first_name': first_name[0].text, 'middle_name' : middle_name[0].text, 'last_name' : last_name[0].text} 
+                        author_dict = {'first_name': first_name[0].text, 'middle_name' : middle_name[0].text, 'last_name' : last_name[0].text}
                     else:
-                        author_dict = {'first_name': first_name[0].text, 'last_name' : last_name[0].text} 
+                        author_dict = {'first_name': first_name[0].text, 'last_name' : last_name[0].text}
             # It is possible that the record contains no authors.
             if author_dict:
                 o_authors_list.append(author_dict)
@@ -104,7 +104,7 @@ class DOIOstiWebParser:
             logger.debug(f"Adding optional field 'date_record_added' {io_doi.id}")
             # It is possible have bad date format.
             try:
-                io_doi.date_record_added = datetime.strptime(single_record_element.xpath('date_record_added')[0].text, '%Y-%m-%d') 
+                io_doi.date_record_added = datetime.strptime(single_record_element.xpath('date_record_added')[0].text, '%Y-%m-%d')
             except Exception as e:
                 logger.error(f"Cannot parse field 'date_record_added'.  Expecting format '%Y-%m-%d'.  Received {single_record_element.xpath('date_record_added')[0].text}")
                 raise InputFormatException(f"Cannot parse field 'date_record_added'.  Expecting format '%Y-%m-%d'.  Received {single_record_element.xpath('date_record_added')[0].text}")
@@ -113,7 +113,7 @@ class DOIOstiWebParser:
             logger.debug(f"Adding optional field 'date_record_updated' {io_doi.id}")
             # It is possible have bad date format.
             try:
-                io_doi.date_record_updated = datetime.strptime(single_record_element.xpath('date_record_updated')[0].text, '%Y-%m-%d') 
+                io_doi.date_record_updated = datetime.strptime(single_record_element.xpath('date_record_updated')[0].text, '%Y-%m-%d')
             except Exception as e:
                 logger.error(f"Cannot parse field 'date_record_updated'.  Expecting format '%Y-%m-%d'.  Received {single_record_element.xpath('date_record_updated')[0].text}")
                 raise InputFormatException(f"Cannot parse field 'date_record_updated'.  Expecting format '%Y-%m-%d'.  Received {single_record_element.xpath('date_record_updated')[0].text}")
@@ -124,7 +124,7 @@ class DOIOstiWebParser:
 
         if single_record_element.xpath('authors'):
             logger.debug(f"Adding optional field 'authors' {io_doi.id}")
-            io_doi.authors = DOIOstiWebParser().parse_author_names(single_record_element.xpath('authors')) 
+            io_doi.authors = DOIOstiWebParser().parse_author_names(single_record_element.xpath('authors'))
 
         if single_record_element.xpath('contributors'):
             logger.debug(f"Adding optional field 'contributors' {io_doi.id}")
@@ -180,6 +180,7 @@ class DOIOstiWebParser:
            Specific fields are extracted from input.  Not all fields in XML are used."""
 
         dois = []
+        errors = []
 
         doc     = etree.fromstring(osti_response_text)
         my_root = doc.getroottree()
@@ -192,9 +193,16 @@ class DOIOstiWebParser:
                     # The 'error' record is parsed differently and does not have all the attributes we desire.
                     # Get the entire text and save it in 'error' key.  Print a WARN only since it is not related to any particular 'doi' or 'id' action.
                     logger.error(f"ERROR OSTI RECORD {single_record_element.text}")
-                    continue
+
+                    # Check for any errors reported back from OSTI and save
+                    # them off to be returned
+                    errors_element = single_record_element.xpath('errors')
+
+                    if len(errors_element):
+                        for error_element in errors_element[0]:
+                            errors.append(error_element.text)
                 else:
-                    lidvid = DOIOstiWebParser.get_lidvid(single_record_element);
+                    lidvid = DOIOstiWebParser.get_lidvid(single_record_element)
                     if lidvid:
                         # Move the fetching of identifier_type in parse_optional_fields() function.
                         # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
@@ -212,12 +220,9 @@ class DOIOstiWebParser:
                     else:
                         logger.warning(f"no lidvid reference found in doi {single_record_element.xpath('doi')[0].text}")
 
-
-
-
         # end for single_record_element in my_root.iter():
 
-        return dois
+        return dois, errors
 
     def response_get_parse_osti_json(self,osti_response):
         """Function parse a response from a query to the OSTI server (in JSON format) and return a JSON object.

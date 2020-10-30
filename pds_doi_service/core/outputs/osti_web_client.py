@@ -60,8 +60,9 @@ class DOIOstiWebClient:
                                  data=payload,
                                  headers=headers)
 
-        # Re-use the parse function response_get_parse_osti_xml() from DOIOstiWebParser class instead of duplicating code.
-        doi = self._web_parser.response_get_parse_osti_xml(response.text)
+        # Re-use the parse function response_get_parse_osti_xml() from
+        # DOIOstiWebParser class instead of duplicating code.
+        doi, _ = self._web_parser.response_get_parse_osti_xml(response.text)
 
         logger.debug(f"o_status {doi}")
 

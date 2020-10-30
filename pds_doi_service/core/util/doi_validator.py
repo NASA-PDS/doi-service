@@ -16,7 +16,7 @@ import requests
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.input.exceptions import DuplicatedTitleDOIException,  \
-    IllegalDOIActionException, UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, SiteURNotExistException
+    IllegalDOIActionException, UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, SiteURLNotExistException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -74,7 +74,7 @@ class DOIValidator:
                 error_message = f"site_url {doi.site_url} not reachable"
                 # Although not being able to connect is an error, the message printed is a warning.
                 logger.warning(error_message)
-                raise SiteURNotExistException(error_message)
+                raise SiteURLNotExistException(error_message)
 
         return 1
 

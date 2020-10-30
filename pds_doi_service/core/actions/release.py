@@ -9,7 +9,7 @@
 
 from pds_doi_service.core.actions.action import DOICoreAction, logger
 from pds_doi_service.core.input.exceptions import UnknownNodeException, InputFormatException, DuplicatedTitleDOIException, \
-    UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, SiteURNotExistException, IllegalDOIActionException, WarningDOIException, \
+    UnexpectedDOIActionException, TitleDoesNotMatchProductTypeException, SiteURLNotExistException, IllegalDOIActionException, WarningDOIException, \
     CriticalDOIException
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
@@ -85,7 +85,7 @@ class DOICoreActionRelease(DOICoreAction):
     def _raise_warn_exceptions(self, exception_classes, exception_messages):
         # Raise a WarningDOIException with all the class names and messages.
 
-        message_to_raise = '' 
+        message_to_raise = ''
         for ii in range(len(exception_classes)):
             if ii == 0:
                 message_to_raise = message_to_raise +        exception_classes[ii] + ':' + exception_messages[ii]
@@ -101,11 +101,11 @@ class DOICoreActionRelease(DOICoreAction):
         :param doi_label:
         :return:
         """
-        exception_classes  = [] 
-        exception_messages = [] 
+        exception_classes  = []
+        exception_messages = []
         try:
 
-            dois = DOIOstiWebParser().response_get_parse_osti_xml(doi_label)
+            dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(doi_label)
 
             for doi in dois:
                 try:
@@ -117,7 +117,7 @@ class DOICoreActionRelease(DOICoreAction):
                     self._doi_validator.validate_osti_submission(doi)
 
                 except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                        TitleDoesNotMatchProductTypeException, SiteURNotExistException) as e:
+                        TitleDoesNotMatchProductTypeException, SiteURLNotExistException) as e:
                     (exception_classes, exception_messages) = \
                         self._collect_exception_classes_and_messages(e,
                                                                      exception_classes,
@@ -156,7 +156,7 @@ class DOICoreActionRelease(DOICoreAction):
 
             # warnings
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException, SiteURNotExistException, WarningDOIException) as e:
+                    TitleDoesNotMatchProductTypeException, SiteURLNotExistException, WarningDOIException) as e:
                 if not self._force:
                     # If the user did not use --force parameter, re-raise the exception.
                     raise WarningDOIException(str(e))

@@ -3,9 +3,12 @@
 from __future__ import absolute_import
 
 from datetime import datetime
+import json
 import os
 from os.path import abspath, dirname, exists, join
+from unittest.mock import patch
 
+import pds_doi_service.api.controllers.dois_controller
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
                                         LabelsPayload, LabelPayload)
@@ -14,6 +17,9 @@ from pds_doi_service.api.test import BaseTestCase
 
 class TestDoisController(BaseTestCase):
     """DoisController integration test stubs"""
+    # This attribute is defined at class level so it may be accessed
+    # by patched methods
+    test_data_dir = None
 
     @classmethod
     def setUpClass(cls):
@@ -78,10 +84,24 @@ class TestDoisController(BaseTestCase):
         summary = DoiSummary.from_dict(records[0])
 
         self.assertEqual(summary.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(summary.lid, 'urn:nasa:pds:insight_cameras')
-        self.assertEqual(summary.vid, '1.1')
+        self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(summary.status, 'Draft')
 
+    def draft_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionDraft.run()
+
+        Returns body of an OSTI XML label corresponding to a successful draft
+        request.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, 'draft_osti_record.xml')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft,
+        'run', draft_action_run_patch)
     def test_post_dois_draft_w_url(self):
         """Test a draft POST with url input"""
         # We can use a file system path since were working with a local server
@@ -108,12 +128,14 @@ class TestDoisController(BaseTestCase):
         draft_record = DoiRecord.from_dict(draft_response.json[0])
 
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(draft_record.lid, 'urn:nasa:pds:insight_cameras')
-        self.assertEqual(draft_record.vid, '1.1')
+        self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
         # the object sent to transaction database has 'Draft' status
         self.assertEqual(draft_record.status, 'Pending')
 
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft,
+        'run', draft_action_run_patch)
     def test_post_dois_draft_w_payload(self):
         """Test a draft POST with requestBody input"""
         input_bundle = join(self.test_data_dir, 'bundle_in.xml')
@@ -141,6 +163,27 @@ class TestDoisController(BaseTestCase):
         # fields
         draft_record = DoiRecord.from_dict(draft_response.json[0])
 
+        self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        # Note we get Pending back from the parsed label, however
+        # the object sent to transaction database has 'Draft' status
+        self.assertEqual(draft_record.status, 'Pending')
+
+    def reserve_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionReserve.run()
+
+        Returns body of an OSTI XML label corresponding to a successful reserve
+        (dry-run) request.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, 'reserve_osti_record.xml')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionReserve,
+        'run', reserve_action_run_patch)
     def test_post_dois_reserve(self):
         """Test dry-run reserve POST"""
         # Submit a new bundle in reserve (not submitted) status
@@ -175,56 +218,8 @@ class TestDoisController(BaseTestCase):
         reserve_record = DoiRecord.from_dict(reserve_response.json[0])
 
         self.assertEqual(reserve_record.submitter, 'img-submitter@jpl.nasa.gov')
-        self.assertEqual(reserve_record.lid, 'urn:nasa:pds:lab_shocked_feldspars')
+        self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(reserve_record.status, 'reserved_not_submitted')
-
-    def test_post_dois_invalid_draft_to_reserve(self):
-        # We can use a file system path since were working with a local server
-        input_bundle = join(self.test_data_dir, 'bundle_in.xml')
-
-        # Start by submitting a draft request
-        query_string = [('action', 'draft'),
-                        ('submitter', 'eng-submitter@jpl.nasa.gov'),
-                        ('node', 'eng'),
-                        ('url', input_bundle),
-                        ('db_name', self.temp_db)]
-
-        reserve_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
-                                            method='POST',
-                                            query_string=query_string)
-
-        self.assert200(
-            reserve_response,
-            'Response body is : ' + reserve_response.data.decode('utf-8')
-        )
-
-        # Try to move draft status to reserve_not_submitted, without the
-        # force flag this should return an Invalid Argument code
-        body = LabelsPayload(
-            [LabelPayload(status='Reserved',
-                          title='Insight Cameras Bundle',
-                          publication_date=datetime.now(),
-                          product_type_specific='PDS4 Bundle',
-                          author_last_name='Johnson',
-                          author_first_name='J. R.',
-                          related_resource='urn:nasa:pds:insight_cameras::1.1')]
-        )
-
-        query_string = [('action', 'reserve'),
-                        ('submitter', 'eng-submitter@jpl.nasa.gov'),
-                        ('node', 'eng'),
-                        ('db_name', self.temp_db)]
-
-        reserve_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
-                                            method='POST',
-                                            data=JSONEncoder().encode(body),
-                                            content_type='application/json',
-                                            query_string=query_string)
-
-        self.assert400(
-            reserve_response,
-            'Response body is : ' + reserve_response.data.decode('utf-8')
-        )
 
     def test_post_dois_invalid_requests(self):
         """Test invalid POST requests"""
@@ -277,6 +272,213 @@ class TestDoisController(BaseTestCase):
             'Response body is : ' + error_response.data.decode('utf-8')
         )
 
+    def list_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionList.run()
+
+        Returns a JSON string corresponding to a successful search.
+        The transaction_key is modified to point to the local test data
+        directory.
+        """
+        return json.dumps(
+            [
+                {"status": "Draft", "update_date": 1603227852.560568,
+                 "submitter": "eng-submitter@jpl.nasa.gov",
+                 "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
+                 "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
+                 "lid": "urn:nasa:pds:insight_cameras", "vid": "1.1",
+                 "doi": None, "release_date": None,
+                 "transaction_key": TestDoisController.test_data_dir,
+                 "is_latest": 1}
+            ]
+        )
+
+    def release_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionRelease.run()
+
+        Returns body of an OSTI XML label corresponding to a successful release
+        request.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, 'release_osti_record.xml')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
+        'run', release_action_run_patch)
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
+    def test_post_release(self):
+        """Test the release endpoint"""
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        release_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert200(
+            release_response,
+            'Response body is : ' + release_response.data.decode('utf-8')
+        )
+
+        # Recreate a DoiRecord from the response JSON and examine the
+        # fields
+        release_record = DoiRecord.from_dict(release_response.json[0])
+
+        self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(release_record.status, 'Released')
+        self.assertEqual(release_record.doi, '10.17189/21734')
+
+        # Record field should match what we provided via patch method
+        self.assertEqual(release_record.record, self.release_action_run_patch())
+
+    def release_action_run_w_error_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionRelease.run()
+
+        Returns body of an OSTI XML label corresponding to errors returned
+        from OSTI.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, 'error_osti_record.xml')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
+        'run', release_action_run_w_error_patch)
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
+    def test_post_release_w_errors(self):
+        """
+        Test the release endpoint where errors are received back from the
+        release action.
+        """
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert400(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains all the errors
+        # provided from the original XML
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'WarningDOIException')
+        self.assertIn('Title is required', errors[0]['message'])
+        self.assertIn('A publication date is required', errors[0]['message'])
+        self.assertIn('A site URL is required', errors[0]['message'])
+        self.assertIn('A product type is required', errors[0]['message'])
+        self.assertIn('A specific product type is required for non-dataset types',
+                      errors[0]['message'])
+
+    def list_action_run_patch_missing(self, **kwargs):
+        """
+        Patch for DOICoreActionList.run()
+
+        Returns a result corresponding to an unsuccessful search.
+        """
+        return '[]'
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch_missing)
+    def test_post_release_missing_lid(self):
+        """
+        Test the release endpoint where no existing entry for the requested
+        LID exists.
+        """
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert404(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains the expected
+        # error message
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'UnknownLIDVIDException')
+        self.assertIn(
+            'No record(s) could be found for LIDVID '
+            'urn:nasa:pds:insight_cameras::1.1',
+            errors[0]['message']
+        )
+
+    def list_action_run_patch_no_transaction_history(self, **kwargs):
+        """
+        Patch for DOICoreActionList.run()
+
+        Returns a result corresponding to an entry where the listed
+        transaction_key location no longer exists.
+        """
+        return json.dumps(
+            [
+                {"transaction_key": '/dev/null', "is_latest": 1}
+            ]
+        )
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch_no_transaction_history)
+    def test_post_release_missing_transaction_history(self):
+        """
+        Test the release endpoint where the requested LID returns an entry
+        with a missing transaction_key location.
+        """
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert404(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains the expected
+        # error message
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
+        self.assertIn(
+            'Could not find an OSTI Label associated with LIDVID '
+            'urn:nasa:pds:insight_cameras::1.1',
+            errors[0]['message']
+        )
+
     def test_get_doi_from_id(self):
         """Test case for get_doi_from_id"""
         response = self.client.open(
@@ -284,15 +486,6 @@ class TestDoisController(BaseTestCase):
             .format(doi_prefix='doi_prefix_example', doi_suffix='doi_suffix_example'),
             method='GET'
         )
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-    def test_post_release_doi(self):
-        """Test case for post_release_doi"""
-        response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{doi_prefix}/{doi_suffix}/release'
-            .format(doi_prefix='doi_prefix_example', doi_suffix='doi_suffix_example'),
-            method='POST')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

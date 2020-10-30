@@ -1,0 +1,43 @@
+<records total="2" errors="1">
+  <record status="Error" index="1">
+    <site_code>NASA-PDS</site_code>
+    <errors>
+      <error>Title is required.</error>
+      <error>A publication date is required.</error>
+      <error>A site URL is required.</error>
+      <error>A product type is required.</error>
+      <error>A specific product type is required for non-dataset types.</error>
+    </errors>
+  </record>
+  <record status="Reserved" index="2">
+    <id>28606</id>
+    <site_code>NASA-PDS</site_code>
+    <title>Laboratory Shocked Feldspars Bundle</title>
+    <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+    <accession_number>urn:nasa:pds:lab_shocked_feldspars</accession_number>
+    <doi>10.17189/28606</doi>
+    <publisher>NASA Planetary Data System</publisher>
+    <publication_date>2020-11-05</publication_date>
+    <site_url>N/A</site_url>
+    <product_type>Collection</product_type>
+    <product_type_specific>PDS4 Bundle</product_type_specific>
+    <date_record_added>2020-11-05</date_record_added>
+    <date_record_updated>2020-11-05</date_record_updated>
+    <keywords>PDS; PDS4;</keywords>
+    <authors>
+      <author>
+        <first_name>Reginald P.</first_name>
+        <last_name>Linux</last_name>
+        <affiliations/>
+      </author>
+    </authors>
+    <contributors>
+      <contributor>
+        <full_name>Planetary Data System: Cartography and Imaging Sciences Discipline Node</full_name>
+        <contributor_type>DataCurator</contributor_type>
+        <affiliations/>
+      </contributor>
+    </contributors>
+    <related_identifiers/>
+  </record>
+</records>

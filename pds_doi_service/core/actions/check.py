@@ -67,7 +67,7 @@ class DOICoreActionCheck(DOICoreAction):
                                                          query_dict,
                                                          i_username=self._config.get('OSTI', 'user'),
                                                          i_password=self._config.get('OSTI', 'password'))
-        dois = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
+        dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
 
         if dois:
             doi = dois[0]

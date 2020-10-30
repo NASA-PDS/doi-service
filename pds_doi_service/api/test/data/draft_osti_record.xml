@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    <record status='Pending'>
+        <id></id>
+        <title>InSight Cameras Bundle 1.1</title>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>urn:nasa:pds:insight_cameras::1.1</accession_number>
+        <publisher>NASA Planetary Data System</publisher>
+        <availability>NASA Planetary Data System</availability>
+        <publication_date>2019-01-01</publication_date>
+        <country>USA</country>
+        <description>InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
+        </description>
+        <site_url>https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.1</site_url>
+        <product_type>Dataset</product_type>
+        <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
+        <date_record_added>2020-11-10</date_record_added>
+        <keywords>PDS; PDS4; raw; context; lander; science; insight; reduced; rdr; data; edr; camera; product; Engineering; experiment; mar; record; deployment</keywords>
+        <authors>
+             <author>
+                <last_name>Deen</last_name>
+                <first_name>R.</first_name>
+            </author>
+             <author>
+                <last_name>Abarca</last_name>
+                <first_name>H.</first_name>
+            </author>
+             <author>
+                <last_name>Zamani</last_name>
+                <first_name>P.</first_name>
+            </author>
+             <author>
+                <last_name>Maki</last_name>
+                <first_name>J.</first_name>
+            </author>
+        </authors>
+        <contributors>
+            <contributor>
+                <full_name>Planetary Data System: Engineering Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <!--product_nos>urn:nasa:pds:insight_cameras::1.1</product_nos-->
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
+</records>
+
