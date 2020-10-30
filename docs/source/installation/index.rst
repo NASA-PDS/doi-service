@@ -37,9 +37,9 @@ you can also use a `virtual environment`_  for your deployment.
 To do so::
 
     mkdir -p $HOME/.virtualenvs
-    python3 -m venv $HOME/.virtualenvs/pds-deep-archive
-    source $HOME/.virtualenvs/pds-deep-archive/bin/activate
-    pip3 install pds.deeparchive
+    python3 -m venv $HOME/.virtualenvs/pds-doi-service
+    source $HOME/.virtualenvs/pds-doi-service/bin/activate
+    pip3 install pds-doi-core
 
 
 Configure
