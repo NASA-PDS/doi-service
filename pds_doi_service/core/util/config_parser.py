@@ -29,11 +29,13 @@ class DOIConfigUtil:
         parser = configparser.ConfigParser()
         candidates = ['conf.ini.default',
                       'conf.ini', ]
-        dev_root = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir))
-        candidates_full_path = [join(dev_root, "config", f) for f in
-                                candidates]  # for development deployment
-        candidates_full_path.extend(
-            [os.path.join(sys.prefix, "pds_doi_core", f) for f in candidates])  # for real deployment
+        # default configuration
+        conf_default = 'conf.ini.default'
+        conf_default_path = abspath(join(dirname(__file__), conf_default))
+        conf_user = 'pds_doi_service.ini'
+        conf_user_prod_path = os.path.join(sys.prefix, conf_user)
+        conf_user_dev_path = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user))
+        candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
         logger.info(f"search configuration files in {candidates_full_path}")
         found = parser.read(candidates_full_path)
         logger.info(f"used configuration following files {found}")

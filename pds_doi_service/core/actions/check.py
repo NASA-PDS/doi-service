@@ -150,10 +150,12 @@ class DOICoreActionCheck(DOICoreAction):
 
         # Build the email first part containing: Date: 07/01/2020\n 3 records.
         header_dict = {'my_date': today.strftime("%m/%d/%Y"), 'my_records_count': len(i_dicts_per_submitter)}
-        email_part_1 = renderer.render_path('config/emailer_template_part_1-mustache.json', header_dict)
+        email_part1_template = os.path.join(os.path.dirname(__file__), 'emailer_template_part_1-mustache.json')
+        email_part_1 = renderer.render_path(email_part1_template, header_dict)
 
         # Build the email second part containing the table of DOIs with status changed: "1  21940  Laboratory Shocked Feldspars Bundle  10.17189/21940  Pending  Reserved"
-        email_part_2 = renderer.render_path('config/emailer_template_part_2-mustache.json',
+        email_part2_template = os.path.join(os.path.dirname(__file__), 'emailer_template_part_2-mustache.json')
+        email_part_2 = renderer.render_path(email_part2_template,
                                             {'dois': i_dicts_per_submitter})
 
         o_email_entire_message = email_part_1 + "\n" + email_part_2

@@ -26,18 +26,9 @@ class OSTIInputValidator:
     m_doi_config_util = DOIConfigUtil()
 
     def __init__(self):
-        self._root_dir = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir))
-        self._config = self.m_doi_config_util.get_config()
 
-        # Parse default schematron from config directory.
-        # The self._schematron will be available for multiple calls to validate_release() function.
-        # May need to make distinction later on if the schematron is for 'release' or 'deactivate'.
-        self._default_schematron = self._config.get('OSTI', 'release_input_schematron')
-
-        if not isabs(self._default_schematron):
-            self._default_schematron = join(self._root_dir, self._default_schematron)
-
-        sct_doc = etree.parse(self._default_schematron)
+        schematron_file = join(dirname(__file__), 'IAD3_scheematron.sch')
+        sct_doc = etree.parse(schematron_file)
         self._schematron = isoschematron.Schematron(sct_doc, store_report=True)
 
     def validate_from_file(self, input_as_file):

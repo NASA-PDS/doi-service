@@ -23,7 +23,7 @@ class DOIOutputOsti:
         doi_fields['publication_date'] = doi.publication_date.strftime('%Y-%m-%d')
         doi_fields['keywords'] = "; ".join(doi.keywords)
         renderer = pystache.Renderer()
-        template_path = join(self._root_dir, 'config', 'DOI_template_20200407-mustache.xml')
+        template_path = join(dirname(__file__), 'DOI_template_20200407-mustache.xml')
         return renderer.render_path(template_path, doi_fields)
 
     def create_osti_doi_reserved_record(self, dois: list):
@@ -38,7 +38,7 @@ class DOIOutputOsti:
             doi_fields_list.append(doi_fields)
 
         renderer = pystache.Renderer()
-        template_path = join(self._root_dir, 'config', 'DOI_IAD2_reserved_template_20200205-mustache.xml')
+        template_path = join(dirname(__file__), 'DOI_IAD2_reserved_template_20200205-mustache.xml')
         return renderer.render_path(template_path, {'dois': doi_fields_list})
 
     def create_osti_doi_release_record(self, doi: Doi):
@@ -50,5 +50,5 @@ class DOIOutputOsti:
         else:
             doi_fields['date_record_added'] = datetime.date.today().strftime('%Y-%m-%d')
 
-        template_path = join(self._root_dir, 'config', 'DOI_template_20200407-mustache.xml')
+        template_path = join(dirname(__file__), 'DOI_template_20200407-mustache.xml')
         return renderer.render_path(template_path, doi_fields)

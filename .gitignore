@@ -10,7 +10,7 @@
 
 # other stuff
 dist/
-config/conf.ini
+pds_doi_service.ini
 .DS_Store
 allure/
 pds_doi_service/api/pds_doi_api.egg-info/

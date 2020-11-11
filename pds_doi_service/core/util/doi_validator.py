@@ -188,11 +188,8 @@ class DOIValidator:
         # Given a DOI label, validate it against the XSD.
         # The fromstring() requires the parameter type to be bytes. The encode() convert str to bytes.
         xml_file = etree.fromstring(doi_label.encode())
-        xsd_filename = self._config.get('OSTI', 'input_xsd')
 
-        if not isabs(xsd_filename):
-            xsd_filename = join(self._root_dir, xsd_filename)
-
+        xsd_filename = join(dirname(__file__), 'iad_schema.xsd')
         xml_validator = etree.XMLSchema(file=xsd_filename)
 
         # Perform the XSD validation.  The validate() function does not throw an exception,

@@ -113,7 +113,7 @@ class DOICoreActionDraft(DOICoreAction):
             # Only process .xml files and print WARNING for any other files, then continue.
             if input_file.endswith('.xml'):
                 try:
-                   xml_tree = etree.parse(input_file)
+                    xml_tree = etree.parse(input_file)
                 except OSError as e:
                     msg = f'Error reading file {input_file}'
                     logger.error(msg)

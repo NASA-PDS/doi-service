@@ -29,7 +29,14 @@ setuptools.setup(
     url="https://github.com/NASA-PDS/pds-template-python",
     download_url = "https://github.com/NASA-PDS/pds-template-python/releases/download/....",
     packages=setuptools.find_packages(),
-    package_data={'': ['pds_doi_service/api/swagger/swagger.yaml']},
+    package_data={'pds_doi_service': ['api/swagger/swagger.yaml',
+                                      'core/util/conf.ini.default',
+                                      'core/actions/emailer_template_part_1-mustache.json',
+                                      'core/actions/emailer_template_part_2-mustache.json',
+                                      'core/outputs/DOI_template_20200407-mustache.xml',
+                                      'core/outputs/DOI_IAD2_reserved_template_20200205-mustache.xml',
+                                      'core/input/IAD3_scheematron.sch',
+                                      'core/util/iad_schema.xsd']},
     include_package_data=True,
     keywords=['pds', 'doi', 'osti', 'dataCite'],
 
@@ -47,13 +54,8 @@ setuptools.setup(
     scripts=[],
     entry_points={
         'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',
-                            'pds-doi-cmd=pds_doi_core.cmd.pds_doi_cmd:main',
+                            'pds-doi-cmd=pds_doi_service.core.cmd.pds_doi_cmd:main',
                             'pds_doi_api=pds_doi_service.api.__main__:main'],
     },
-    data_files=[('pds_doi_service',
-                     ['config/conf.ini.default']
-                     )
-                ]
-
 
 )

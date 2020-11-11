@@ -1,10 +1,10 @@
 import re
 import nltk
 
-nltk.download('stopwords')
+nltk.download('stopwords', quiet=True)
 from nltk.corpus import stopwords
 
-nltk.download('wordnet')
+nltk.download('wordnet', quiet=True)
 from nltk.stem.wordnet import WordNetLemmatizer
 from pds_doi_service.core.util.general_util import get_logger
 

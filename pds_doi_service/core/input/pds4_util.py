@@ -51,13 +51,14 @@ class DOIPDS4LabelUtil:
             # Desire only the 'name' field
             'target_identication': '/*/pds4:Context_Area/pds4:Target_Identification/pds4:name',
             'primary_result_summary':  '/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*',
+            'doi': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi'
 
         }
 
         for key, xpath in xpath_dict.items():
             elmts = xml_tree.xpath(xpath, namespaces=pds4_namespace)
             if elmts:
-                pds4_field_value_dict[key] = ' '.join([elmt.text.strip() for elmt in elmts]).strip()
+                pds4_field_value_dict[key] = ' '.join([elmt.text.strip() for elmt in elmts if elmt.text]).strip()
 
         return pds4_field_value_dict
 
@@ -168,6 +169,12 @@ class DOIPDS4LabelUtil:
             logger.error(f"o_best_method,pds4_fields['authors'] {o_best_method,pds4_fields['authors']}")
             raise InputFormatException("Cannot split the authors using comma or semi-colon.")
 
+        if 'doi' in pds4_fields.keys():
+            doi_prefix_suffix = pds4_fields['doi'].split('/')
+            osti_id = doi_prefix_suffix[1] if len(doi_prefix_suffix)==2 else None
+        else:
+            osti_id = None
+
         doi = Doi(title=pds4_fields['title'],
                   description=pds4_fields['description'],
                   publication_date=self.get_publication_date(pds4_fields),
@@ -178,7 +185,8 @@ class DOIPDS4LabelUtil:
                   authors=self.get_author_names(authors_list),
                   editors=editors,
                   keywords=self.get_keywords(pds4_fields),
-                  date_record_added=self.get_record_added_date(pds4_fields)
+                  date_record_added=self.get_record_added_date(pds4_fields),
+                  id=osti_id
                   )
 
         return doi
