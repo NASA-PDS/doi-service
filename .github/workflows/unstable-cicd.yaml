@@ -55,7 +55,7 @@ jobs:
                     import sys
                     import os
                     print("Running python version {}".format(sys.version))
-                    conf_file = os.path.join("config", "conf.ini")
+                    conf_file = "pds_doi_service.ini"
                     print("Create config file for unit test {}".format(conf_file))
                     with open(conf_file, "w") as f:
                         f.write("[OSTI]\n")
