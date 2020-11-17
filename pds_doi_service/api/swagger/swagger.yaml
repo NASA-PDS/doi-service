@@ -172,31 +172,22 @@ paths:
         "500":
           description: Internal error
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
-  /dois/{doi_prefix}/{doi_suffix}:
+  /dois/{lidvid}:
     get:
       tags:
       - dois
       description: Get the status of a DOI from the transaction database.
       operationId: get_doi_from_id
       parameters:
-      - name: doi_prefix
+      - name: lidvid
         in: path
-        description: The prefix of the DOI identifier.
+        description: The LIDVID associated with the record to status or update.
         required: true
         style: simple
         explode: false
         schema:
           type: string
-        example: "10.17189"
-      - name: doi_suffix
-        in: path
-        description: The suffix of the DOI identifier
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-        example: "21734"
+        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
       responses:
         "200":
           description: Success
@@ -215,24 +206,15 @@ paths:
       description: Update the record associated with an existing DOI.
       operationId: put_doi_from_id
       parameters:
-      - name: doi_prefix
+      - name: lidvid
         in: path
-        description: The prefix of the DOI identifier.
+        description: The LIDVID associated with the record to status or update.
         required: true
         style: simple
         explode: false
         schema:
           type: string
-        example: "10.17189"
-      - name: doi_suffix
-        in: path
-        description: The suffix of the DOI identifier
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-        example: "21734"
+        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
       - name: submitter
         in: query
         description: Email address of the DOI update requester.
