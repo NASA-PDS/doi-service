@@ -69,6 +69,30 @@ paths:
             value: 'urn:nasa:pds:lab_shocked_feldspars'
           lidvid:
             value: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
+      - name: start_date
+        in: query
+        description: A start date to filter resulting DOI records by. Only records
+          with an update time after this date will be returned. Value must be of the
+          form \<YYYY\>-\<mm\>-\<dd\>T\<HH\>:\<MM\>:\<SS\>.\<ms\>
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date-time
+        example: 2020-01-01T19:02:15.000000
+      - name: end_date
+        in: query
+        description: An end date to filter resulting DOI records by. Only records
+          with an update time prior to this date will be returned. Value must be of
+          the form \<YYYY\>-\<mm\>-\<dd\>T\<HH\>:\<SS\>.\<ms\>
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date-time
+        example: 2020-12-311T23:59:00.000000
       responses:
         "200":
           description: Success
@@ -79,6 +103,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/doi_summary'
                 x-content-type: application/json
+        "400":
+          description: Invalid Argument
         "500":
           description: Internal error
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller

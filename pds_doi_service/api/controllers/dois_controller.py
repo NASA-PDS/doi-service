@@ -120,7 +120,8 @@ def _records_from_dois(dois, submitter=None, osti_record=None):
     return records
 
 
-def get_dois(doi=None, submitter=None, node=None, lid=None):
+def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
+             end_date=None):
     """
     List the DOI requests within the transaction database which match
     the specified criteria. If no criteria are provided, all database entries
@@ -138,7 +139,14 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
     lid : list of str, optional
         List of LIDs to filter DOIs by. An LID may include the VID appended to
         the end.
-
+    start_date : str
+        A start date to filter resulting DOI records by. Only records with an
+        update time after this date will be returned. Value must be of the form
+        <YYYY>-<mm>-<dd>T<HH>:<MM>:<SS>.<ms>
+    end_date : str
+        An end date to filter resulting DOI records by. Only records with an
+        update time prior to this date will be returned. Value must be of the
+        form <YYYY>-<mm>-<dd>T<HH>:<SS>.<ms>
     Returns
     -------
     records : list of DoiSummary
@@ -173,11 +181,17 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
         'lid': lid,
         'lidvid': lidvid,
         'submitter': submitter,
-        'node': node
+        'node': node,
+        'start_update': start_date,
+        'end_update': end_date
     }
 
     try:
         results = list_action.run(**list_kwargs)
+    except ValueError as err:
+        # Most likely from an malformed start/end date. Report back "Invalid
+        # argument" code
+        return format_exceptions(err), 400
     except Exception as err:
         # Treat any unexpected Exception as an "Internal Error" and report back
         return format_exceptions(err), 500

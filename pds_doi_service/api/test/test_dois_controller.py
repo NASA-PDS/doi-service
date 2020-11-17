@@ -87,6 +87,46 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(summary.status, 'Draft')
 
+        # Test filtering by start/end date
+        query_string = [('start_date', '2020-10-20T14:04:13.000000'),
+                        ('end_date', '2020-10-20T14:04:14.000000'),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Should only get one of the records back
+        records = response.json
+        self.assertEqual(len(records), 1)
+
+        # Reformat JSON result into a DoiSummary object so we can check fields
+        summary = DoiSummary.from_dict(records[0])
+
+        self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
+        self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(summary.status, 'reserved_not_submitted')
+
+        # Finally, test with a malformed start/end date and ensure we
+        # get "invalid argument" code back
+        query_string = [('start_date', '2020-10-20 14:04:13.000000'),
+                        ('end_date', '2020-10-20T14:04'),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert400(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
     def draft_action_run_patch(self, **kwargs):
         """
         Patch for DOICoreActionDraft.run()
@@ -482,8 +522,8 @@ class TestDoisController(BaseTestCase):
     def test_get_doi_from_id(self):
         """Test case for get_doi_from_id"""
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{doi_prefix}/{doi_suffix}'
-            .format(doi_prefix='doi_prefix_example', doi_suffix='doi_suffix_example'),
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='lidvid_example'),
             method='GET'
         )
         self.assert200(response,
@@ -495,8 +535,8 @@ class TestDoisController(BaseTestCase):
                         ('node', 'node_example'),
                         ('url', 'url_example')]
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{doi_prefix}/{doi_suffix}'
-            .format(doi_prefix='doi_prefix_example', doi_suffix='doi_suffix_example'),
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='lidvid_example'),
             method='PUT',
             query_string=query_string)
         self.assert200(response,
