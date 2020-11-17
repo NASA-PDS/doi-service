@@ -21,6 +21,7 @@ from tempfile import NamedTemporaryFile
 
 import connexion
 from flask import current_app
+from lxml import etree
 
 from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.api.models import DoiRecord, DoiSummary
@@ -120,7 +121,55 @@ def _records_from_dois(dois, submitter=None, osti_record=None):
     return records
 
 
-def get_dois(doi=None, submitter=None, node=None, lid=None):
+def _get_record_for_lidvid(osti_label_file, lidvid):
+    """
+    Returns the record entry corresponding to the provided LIDVID from the
+    OSTI XML label file.
+
+    Parameters
+    ----------
+    osti_label_file : str
+        Path to the OSTI XML label file to search.
+    lidvid : str
+        The LIDVID of the record to return from the OSTI label.
+
+    Returns
+    -------
+    record : str
+        The single found record embedded in a <records> tag. This string is
+        suitable to be written to disk as a new OSTI label.
+
+    Raises
+    ------
+    UnknownLIDVIDException
+        If no record for the requested LIDVID is found in the provided OSTI
+        label file.
+
+    """
+    root = etree.parse(osti_label_file).getroot()
+
+    records = root.xpath('record')
+
+    for record in records:
+        if DOIOstiWebParser.get_lidvid(record) == lidvid:
+            result = record
+            break
+    else:
+        raise UnknownLIDVIDException(
+            f'Could not find entry for lidvid "{lidvid}" in OSTI label file '
+            f'{osti_label_file}.'
+        )
+
+    new_root = etree.Element('records')
+    new_root.append(result)
+
+    return etree.tostring(
+        new_root, pretty_print=True, xml_declaration=True, encoding='UTF-8'
+    ).decode('utf-8')
+
+
+def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
+             end_date=None):
     """
     List the DOI requests within the transaction database which match
     the specified criteria. If no criteria are provided, all database entries
@@ -138,7 +187,14 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
     lid : list of str, optional
         List of LIDs to filter DOIs by. An LID may include the VID appended to
         the end.
-
+    start_date : str
+        A start date to filter resulting DOI records by. Only records with an
+        update time after this date will be returned. Value must be of the form
+        <YYYY>-<mm>-<dd>T<HH>:<MM>:<SS>.<ms>
+    end_date : str
+        An end date to filter resulting DOI records by. Only records with an
+        update time prior to this date will be returned. Value must be of the
+        form <YYYY>-<mm>-<dd>T<HH>:<SS>.<ms>
     Returns
     -------
     records : list of DoiSummary
@@ -173,11 +229,17 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
         'lid': lid,
         'lidvid': lidvid,
         'submitter': submitter,
-        'node': node
+        'node': node,
+        'start_update': start_date,
+        'end_update': end_date
     }
 
     try:
         results = list_action.run(**list_kwargs)
+    except ValueError as err:
+        # Most likely from an malformed start/end date. Report back "Invalid
+        # argument" code
+        return format_exceptions(err), 400
     except Exception as err:
         # Treat any unexpected Exception as an "Internal Error" and report back
         return format_exceptions(err), 500
@@ -185,9 +247,15 @@ def get_dois(doi=None, submitter=None, node=None, lid=None):
     records = []
 
     for result in json.loads(results):
+        lidvid = result['lid']
+
+        # Check if we got back a vid to append to the lid
+        if result['lid'] and result['vid']:
+            lidvid = '::'.join([result['lid'], result['vid']])
+
         records.append(
             DoiSummary(
-                doi=result['doi'], lidvid='::'.join([result['lid'], result['vid']]),
+                doi=result['doi'], lidvid=lidvid,
                 submitter=result['submitter'], status=result['status'],
                 # TODO: unsure where to find creation_date, not provided in
                 #       the results from list action
@@ -345,8 +413,6 @@ def post_release_doi(lidvid, force=False):
 
         # Make sure we can locate the output OSTI label associated with this
         # transaction
-        # TODO: output.xml could contain multiple records, task #116 created
-        #       to extract appropriate one based on LID
         transaction_location = list_record['transaction_key']
         osti_label_file = join(transaction_location, 'output.xml')
 
@@ -358,17 +424,23 @@ def post_release_doi(lidvid, force=False):
                 .format(lidvid)
             )
 
-        # Prepare the release action
-        release_action = DOICoreActionRelease(db_name=_get_db_name())
+        # An output OSTI label may contain entries other than the requested
+        # LIDVID, extract only the appropriate record into its own temporary
+        # XML file and feed it to the release action
+        with NamedTemporaryFile('w', prefix='output_', suffix='.xml') as xml_file:
+            xml_file.write(_get_record_for_lidvid(osti_label_file, lidvid))
 
-        release_kwargs = {
-            'node': list_record['node_id'],
-            'submitter': list_record['submitter'],
-            'input': osti_label_file,
-            'force': force
-        }
+            # Prepare the release action
+            release_action = DOICoreActionRelease(db_name=_get_db_name())
 
-        osti_release_label = release_action.run(**release_kwargs)
+            release_kwargs = {
+                'node': list_record['node_id'],
+                'submitter': list_record['submitter'],
+                'input': xml_file.name,
+                'force': force
+            }
+
+            osti_release_label = release_action.run(**release_kwargs)
 
         dois, errors = DOIOstiWebParser().response_get_parse_osti_xml(
             bytes(osti_release_label, encoding='utf-8')
@@ -383,7 +455,7 @@ def post_release_doi(lidvid, force=False):
     except (ValueError, WarningDOIException) as err:
         # Some warning or error prevented release of the DOI
         return format_exceptions(err), 400
-    except (UnknownLIDVIDException, NoTransactionHistoryForLIDVIDException) as err:
+    except UnknownLIDVIDException as err:
         # Could not find an entry for the requested LIDVID
         return format_exceptions(err), 404
     except Exception as err:
@@ -396,42 +468,93 @@ def post_release_doi(lidvid, force=False):
     return records, 200
 
 
-def get_doi_from_id(doi_prefix, doi_suffix):  # noqa: E501
+def get_doi_from_id(lidvid):  # noqa: E501
     """
     Get the status of a DOI from the transaction database.
 
     Parameters
     ----------
-    doi_prefix : str
-        The prefix of the DOI identifier.
-    doi_suffix : str
-        The suffix of the DOI identifier
+    lidvid : str
+        The LIDVID associated with the record to status.
 
     Returns
     -------
     record : DoiRecord
-        The record for the requested DOI.
+        The record for the requested LIDVID.
 
     """
-    return 'Not Implemented', 200
+    list_action = DOICoreActionList(db_name=_get_db_name())
+
+    # Check for full lidvid vs. just a lid and map the list action arg accordingly
+    list_kwargs = {
+        'lidvid' if '::' in lidvid else 'lid': lidvid
+    }
+
+    try:
+        list_results = json.loads(list_action.run(**list_kwargs))
+
+        if not list_results:
+            raise UnknownLIDVIDException(
+                'No record(s) could be found for LIDVID {}'.format(lidvid)
+            )
+
+        # Extract the latest record from all those returned
+        list_record = next(filter(lambda list_result: list_result['is_latest'],
+                                  list_results))
+
+        # Make sure we can locate the output OSTI label associated with this
+        # transaction
+        transaction_location = list_record['transaction_key']
+        osti_label_file = join(transaction_location, 'output.xml')
+
+        if not exists(osti_label_file):
+            raise NoTransactionHistoryForLIDVIDException(
+                'Could not find an OSTI Label associated with LIDVID {}. '
+                'The database and transaction history location may be out of sync. '
+                'Please try resubmitting the record in reserve or draft.'
+                .format(lidvid)
+            )
+
+        # Get only the record corresponding to the requested LIDVID
+        osti_label_for_lidvid = _get_record_for_lidvid(osti_label_file, lidvid)
+    except UnknownLIDVIDException as err:
+        # Return "not found" code
+        return format_exceptions(err), 404
+    except Exception as err:
+        # Treat any unexpected Exception as an "Internal Error" and report back
+        return format_exceptions(err), 500
+
+    record = DoiRecord(
+        doi=list_record['doi'], lidvid=lidvid,
+        submitter=list_record['submitter'], status=list_record['status'],
+        # TODO: unsure where to find creation_date, not provided in
+        #       the results from list action
+        # creation_date=None,
+        update_date=datetime.fromtimestamp(list_record['update_date']),
+        record=osti_label_for_lidvid
+    )
+
+    return record, 200
 
 
-def put_doi_from_id(doi_prefix, doi_suffix, submitter, node, url):  # noqa: E501
+def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
     """
     Update the record associated with an existing DOI.
 
+    Notes
+    -----
+    This endpoint has deprecated in favor of the GET /dois endpoint.
+
     Parameters
     ----------
-    doi_prefix : str
-        The prefix of the DOI identifier.
-    doi_suffix : str
-        The suffix of the DOI identifier.
-    submitter : str
+    lidvid : str
+        The LIDVID associated with the record to update.
+    submitter : str, optional
         Email address of the DOI update requester.
-    node : str
+    node : str, optional
         The PDS node name to cite as contributor of the DOI. Must be one of the
         valid PDS steward IDs.
-    url : str
+    url : str, optional
         URL to provide as the record to update the DOI with. URL must start with
         either "http://" or "https://" and resolve to a valid PDS4 label in XML
         format.
@@ -442,4 +565,7 @@ def put_doi_from_id(doi_prefix, doi_suffix, submitter, node, url):  # noqa: E501
         A record of the DOI update transaction.
 
     """
-    return 'Not Implemented', 200
+    return format_exceptions(
+        NotImplementedError('Please use the POST /dois/{lidvid} endpoint for record '
+                            'update')
+    ), 501

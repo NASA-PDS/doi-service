@@ -8,6 +8,8 @@ import os
 from os.path import abspath, dirname, exists, join
 from unittest.mock import patch
 
+from lxml import etree
+
 import pds_doi_service.api.controllers.dois_controller
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
@@ -59,9 +61,8 @@ class TestDoisController(BaseTestCase):
 
         records = response.json
 
-        # Test database should contain 2 records (matching those that are
-        # submitted in test_post_dois)
-        self.assertEqual(len(records), 2)
+        # Test database should contain 3 records
+        self.assertEqual(len(records), 3)
 
         # Now use a query string to ensure we can get specific records back
         query_string = [('node', 'eng'),
@@ -86,6 +87,71 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(summary.status, 'Draft')
+
+        # Test filtering by start/end date
+        query_string = [('start_date', '2020-10-20T14:04:13.000000'),
+                        ('end_date', '2020-10-20T14:04:14.000000'),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Should only get one of the records back
+        records = response.json
+        self.assertEqual(len(records), 1)
+
+        # Reformat JSON result into a DoiSummary object so we can check fields
+        summary = DoiSummary.from_dict(records[0])
+
+        self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
+        self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(summary.status, 'reserved_not_submitted')
+
+        # Test fetching of a record that only has an LID (no VID) associated to it
+        query_string = [('node', 'img'),
+                        ('lid', 'urn:nasa:pds:lab_shocked_feldspars'),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Should only get one of the records back
+        records = response.json
+        self.assertEqual(len(records), 1)
+
+        # Reformat JSON result into a DoiSummary object so we can check fields
+        summary = DoiSummary.from_dict(records[0])
+
+        self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
+        self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
+        self.assertEqual(summary.status, 'reserved_not_submitted')
+
+        # Finally, test with a malformed start/end date and ensure we
+        # get "invalid argument" code back
+        query_string = [('start_date', '2020-10-20 14:04:13.000000'),
+                        ('end_date', '2020-10-20T14:04'),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert400(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
 
     def draft_action_run_patch(self, **kwargs):
         """
@@ -463,7 +529,7 @@ class TestDoisController(BaseTestCase):
             query_string=query_string
         )
 
-        self.assert404(
+        self.assert500(
             error_response,
             'Response body is : ' + error_response.data.decode('utf-8')
         )
@@ -479,28 +545,148 @@ class TestDoisController(BaseTestCase):
             errors[0]['message']
         )
 
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
     def test_get_doi_from_id(self):
         """Test case for get_doi_from_id"""
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{doi_prefix}/{doi_suffix}'
-            .format(doi_prefix='doi_prefix_example', doi_suffix='doi_suffix_example'),
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='GET'
         )
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Recreate a DoiRecord from the response JSON and examine the
+        # fields
+        record = DoiRecord.from_dict(response.json)
+
+        self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(record.status, 'Draft')
+
+        # Make sure we only got one record back
+        root = etree.fromstring(bytes(record.record, encoding='utf-8'))
+        records = root.xpath('record')
+
+        self.assertEqual(len(records), 1)
+
+        # Test again with an LID only, should get the same result back
+        response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras'),
+            method='GET'
+        )
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        record = DoiRecord.from_dict(response.json)
+
+        self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras')
+        self.assertEqual(record.status, 'Draft')
+
+        # Make sure we only got one record back
+        root = etree.fromstring(bytes(record.record, encoding='utf-8'))
+        records = root.xpath('record')
+
+        self.assertEqual(len(records), 1)
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch_missing)
+    def test_get_doi_missing_id(self):
+        """Test get_doi_from_id where requested LIDVID is not found"""
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='GET'
+        )
+
+        self.assert404(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains the expected
+        # error message
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'UnknownLIDVIDException')
+        self.assertIn(
+            'No record(s) could be found for LIDVID '
+            'urn:nasa:pds:insight_cameras::1.1',
+            errors[0]['message']
+        )
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch_no_transaction_history)
+    def test_get_doi_missing_transaction_history(self):
+        """
+        Test get_doi_from_id where transaction history for LIDVID cannot be
+        found
+        """
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='GET'
+        )
+
+        self.assert500(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains the expected
+        # error message
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
+        self.assertIn(
+            'Could not find an OSTI Label associated with LIDVID '
+            'urn:nasa:pds:insight_cameras::1.1',
+            errors[0]['message']
+        )
 
     def test_put_doi_from_id(self):
         """Test case for put_doi_from_id"""
-        query_string = [('submitter', 'submitter_example'),
-                        ('node', 'node_example'),
-                        ('url', 'url_example')]
+        query_string = [('submitter', 'img-submitter@jpl.nasa.gov'),
+                        ('node', 'img'),
+                        ('url', 'http://fake.url.net')]
+
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{doi_prefix}/{doi_suffix}'
-            .format(doi_prefix='doi_prefix_example', doi_suffix='doi_suffix_example'),
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='PUT',
-            query_string=query_string)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            query_string=query_string
+        )
+
+        # Should return a Not Implemented code
+        self.assertEqual(response.status_code, 501)
+
+        errors = response.json['errors']
+        self.assertEqual(errors[0]['name'], 'NotImplementedError')
+        self.assertIn(
+            'Please use the POST /dois/{lidvid} endpoint for record update',
+            errors[0]['message']
+        )
+
+        # Try again with no query parameters, should still return not implemented
+        response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='PUT'
+        )
+
+        self.assertEqual(response.status_code, 501)
 
 
 if __name__ == '__main__':

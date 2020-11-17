@@ -69,6 +69,30 @@ paths:
             value: 'urn:nasa:pds:lab_shocked_feldspars'
           lidvid:
             value: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
+      - name: start_date
+        in: query
+        description: A start date to filter resulting DOI records by. Only records
+          with an update time after this date will be returned. Value must be of the
+          form \<YYYY\>-\<mm\>-\<dd\>T\<HH\>:\<MM\>:\<SS\>.\<ms\>
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date-time
+        example: 2020-01-01T19:02:15.000000
+      - name: end_date
+        in: query
+        description: An end date to filter resulting DOI records by. Only records
+          with an update time prior to this date will be returned. Value must be of
+          the form \<YYYY\>-\<mm\>-\<dd\>T\<HH\>:\<SS\>.\<ms\>
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date-time
+        example: 2020-12-311T23:59:00.000000
       responses:
         "200":
           description: Success
@@ -79,6 +103,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/doi_summary'
                 x-content-type: application/json
+        "400":
+          description: Invalid Argument
         "500":
           description: Internal error
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
@@ -172,31 +198,22 @@ paths:
         "500":
           description: Internal error
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
-  /dois/{doi_prefix}/{doi_suffix}:
+  /dois/{lidvid}:
     get:
       tags:
       - dois
       description: Get the status of a DOI from the transaction database.
       operationId: get_doi_from_id
       parameters:
-      - name: doi_prefix
+      - name: lidvid
         in: path
-        description: The prefix of the DOI identifier.
+        description: The LIDVID associated with the record to status or update.
         required: true
         style: simple
         explode: false
         schema:
           type: string
-        example: "10.17189"
-      - name: doi_suffix
-        in: path
-        description: The suffix of the DOI identifier
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-        example: "21734"
+        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
       responses:
         "200":
           description: Success
@@ -215,28 +232,19 @@ paths:
       description: Update the record associated with an existing DOI.
       operationId: put_doi_from_id
       parameters:
-      - name: doi_prefix
+      - name: lidvid
         in: path
-        description: The prefix of the DOI identifier.
+        description: The LIDVID associated with the record to status or update.
         required: true
         style: simple
         explode: false
         schema:
           type: string
-        example: "10.17189"
-      - name: doi_suffix
-        in: path
-        description: The suffix of the DOI identifier
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-        example: "21734"
+        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
       - name: submitter
         in: query
         description: Email address of the DOI update requester.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -246,7 +254,7 @@ paths:
         in: query
         description: The PDS node name to cite as contributor of the DOI. Must be
           one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -257,24 +265,14 @@ paths:
         description: URL to provide as the record to update the DOI with. URL must
           start with either "http://" or "https://" and resolve to a valid PDS4 label
           in XML format.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
           type: string
       responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/doi_record'
-        "400":
-          description: Invalid Argument
-        "404":
-          description: Not existing
-        "500":
-          description: Internal error
+        "501":
+          description: Not Implemented
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
   /dois/{lidvid}/release:
     post:
