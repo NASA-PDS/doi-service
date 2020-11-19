@@ -462,36 +462,84 @@ def post_release_doi(lidvid, force=False):
     return records, 200
 
 
-def get_doi_from_id(doi_prefix, doi_suffix):  # noqa: E501
+def get_doi_from_id(lidvid):  # noqa: E501
     """
     Get the status of a DOI from the transaction database.
 
     Parameters
     ----------
-    doi_prefix : str
-        The prefix of the DOI identifier.
-    doi_suffix : str
-        The suffix of the DOI identifier
+    lidvid : str
+        The LIDVID associated with the record to status.
 
     Returns
     -------
     record : DoiRecord
-        The record for the requested DOI.
+        The record for the requested LIDVID.
 
     """
-    return 'Not Implemented', 200
+    list_action = DOICoreActionList(db_name=_get_db_name())
+
+    list_kwargs = {'lidvid': lidvid}
+
+    try:
+        list_results = json.loads(list_action.run(**list_kwargs))
+
+        if not list_results:
+            raise UnknownLIDVIDException(
+                'No record(s) could be found for LIDVID {}'.format(lidvid)
+            )
+
+        # Extract the latest record from all those returned
+        list_record = next(filter(lambda list_result: list_result['is_latest'],
+                                  list_results))
+
+        # Make sure we can locate the output OSTI label associated with this
+        # transaction
+        transaction_location = list_record['transaction_key']
+        osti_label_file = join(transaction_location, 'output.xml')
+
+        if not exists(osti_label_file):
+            raise NoTransactionHistoryForLIDVIDException(
+                'Could not find an OSTI Label associated with LIDVID {}. '
+                'The database and transaction history location may be out of sync. '
+                'Please try resubmitting the record in reserve or draft.'
+                .format(lidvid)
+            )
+
+        # Get only the record corresponding to the requested LIDVID
+        osti_label_for_lidvid = _get_record_for_lidvid(osti_label_file, lidvid)
+    except UnknownLIDVIDException as err:
+        # Return "not found" code
+        return format_exceptions(err), 404
+    except Exception as err:
+        # Treat any unexpected Exception as an "Internal Error" and report back
+        return format_exceptions(err), 500
+
+    record = DoiRecord(
+        doi=list_record['doi'], lidvid=lidvid,
+        submitter=list_record['submitter'], status=list_record['status'],
+        # TODO: unsure where to find creation_date, not provided in
+        #       the results from list action
+        # creation_date=None,
+        update_date=datetime.fromtimestamp(list_record['update_date']),
+        record=osti_label_for_lidvid
+    )
+
+    return record, 200
 
 
-def put_doi_from_id(doi_prefix, doi_suffix, submitter, node, url):  # noqa: E501
+def put_doi_from_id(lidvid, submitter, node, url):  # noqa: E501
     """
     Update the record associated with an existing DOI.
 
+    Notes
+    -----
+    This endpoint has deprecated in favor of the GET /dois endpoint.
+
     Parameters
     ----------
-    doi_prefix : str
-        The prefix of the DOI identifier.
-    doi_suffix : str
-        The suffix of the DOI identifier.
+    lidvid : str
+        The LIDVID associated with the record to update.
     submitter : str
         Email address of the DOI update requester.
     node : str
@@ -508,4 +556,6 @@ def put_doi_from_id(doi_prefix, doi_suffix, submitter, node, url):  # noqa: E501
         A record of the DOI update transaction.
 
     """
-    return 'Not Implemented', 200
+    return format_exceptions(
+        NotImplementedError('Please use the GET /dois endpoint for record retrieval')
+    ), 501
