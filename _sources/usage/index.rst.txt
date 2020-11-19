@@ -30,7 +30,7 @@ Usage Information
 -----------------
 
 .. argparse::
-   :module: pds_doi_core.actions
+   :module: pds_doi_service.core.actions
    :func: create_parser
    :prog: pds-doi-cmd
 

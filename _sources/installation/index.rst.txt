@@ -48,9 +48,9 @@ In the python installation directory, that you can find with command::
 
     python -c "import sys;print(sys.prefix)"
 
-Create a file `pds-doi-core/conf.ini`
+Create a file `pds_doi_service.ini`
 
-You can override in this file any option set in the file `pds-doi-core/conf.ini.default`
+You can override in this file any option set in the file `pds_doi_service/core/util/conf.ini.default` found in package
 
 If you want to create production DOIs update the OSTI API server url::
 

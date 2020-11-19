@@ -90,7 +90,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">📦 Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">🏃‍♀️ Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage-information">Usage Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage-information">Usage Information</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Sub-commands:">Sub-commands:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#reserve">reserve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#draft">draft</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#release">release</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#check">check</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#list">list</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../development/index.html">👩‍💻 Development</a></li>
@@ -182,6 +193,180 @@ A later version will provide a web API, a web UI and a cmd API client to enable 
 </div>
 <div class="section" id="usage-information">
 <h2>Usage Information<a class="headerlink" href="#usage-information" title="Permalink to this headline">¶</a></h2>
+<p><p>PDS core command for DOI management. The available subcommands are:
+reserve (create or update a DOI before the data is published),
+draft (prepare a OSTI record from a PDS4 labels),
+release (create or update a DOI on OSTI server),
+check (check DOI pending status at OSTI and uppdate local database. Should be run regularly, for example in a crontab.),
+list (extract doi descriptions with criteria),</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">{</span><span class="n">reserve</span><span class="p">,</span><span class="n">draft</span><span class="p">,</span><span class="n">release</span><span class="p">,</span><span class="n">check</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span> <span class="o">...</span>
+</pre></div>
+</div>
+<div class="section" id="Positional Arguments">
+<h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>subcommand</kbd></dt>
+<dd><p>Possible choices: reserve, draft, release, check, list</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Sub-commands:">
+<h3>Sub-commands:<a class="headerlink" href="#Sub-commands:" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="reserve">
+<h4>reserve<a class="headerlink" href="#reserve" title="Permalink to this headline">¶</a></h4>
+<p>create a DOI for a unpublished dataset. The input is a spreadsheet or csv file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">reserve</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">DOI_Reserved_GEO_200318</span><span class="o">.</span><span class="n">csv</span> <span class="o">-</span><span class="n">s</span>
+                    <span class="s2">&quot;my.email@node.gov&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-n, --node</kbd></dt>
+<dd><p>The pds node in charge of the submission of the DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rms,sbn</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>If provided the reserve action will succeed even if warnings are raised</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-i, --input</kbd></dt>
+<dd><p>A PDS4 label or a XLS spreadsheet or CSV file with the following columns: status,title,publication_date,product_type_specific,author_last_name,author_first_name,related_resource</p>
+</dd>
+<dt><kbd>-s, --submitter-email</kbd></dt>
+<dd><p>The email address of the user reserving the DOIs</p>
+</dd>
+<dt><kbd>-d, --dry-run</kbd></dt>
+<dd><p>Does not submit the record to OSTI, record stays in a status ‘reserved_not_submitted’</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="draft">
+<h4>draft<a class="headerlink" href="#draft" title="Permalink to this headline">¶</a></h4>
+<p>create a draft of OSTI records, from PDS4 label or list of PDS4 labels input</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">draft</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">bundle_in_with_contributors</span><span class="o">.</span><span class="n">xml</span>
+                  <span class="p">[</span><span class="o">-</span><span class="n">k</span> <span class="s2">&quot;Image&quot;</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">osti</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments_repeat1">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat1" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-n, --node</kbd></dt>
+<dd><p>The pds discipline node in charge of the DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rms,sbn</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>If provided, will force an action to proceed even if the workflow step is less than in database</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-i, --input</kbd></dt>
+<dd><p>A pds4 label local or on http, or a list of them separated by “,”</p>
+</dd>
+<dt><kbd>-k, --keyword</kbd></dt>
+<dd><p>Extra keywords separated by “,”</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>The email address of the user creating the draft</p>
+</dd>
+<dt><kbd>-t, --target</kbd></dt>
+<dd><p>The system target to mint the DOI (only OSTI supported)</p>
+<p>Default: “osti”</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="release">
+<h4>release<a class="headerlink" href="#release" title="Permalink to this headline">¶</a></h4>
+<p>register a new DOI or update an existing DOI on OSTI server</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">release</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">DOI_Update_GEO_200318</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">s</span>
+                    <span class="s2">&quot;my.email@node.gov&quot;</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments_repeat2">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat2" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-n, --node</kbd></dt>
+<dd><p>The pds discipline node in charge of the released DOI.  Authorized values are: atm,eng,geo,img,naif,ppi,rms,sbn</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>If provided the release action will succeed even if warning are raised: duplicated title or release a DOI which has already been previously released.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-i, --input</kbd></dt>
+<dd><p>A file containing a list of doi metadata to update/releasein OSTI XML format (see <a class="reference external" href="https://www.osti.gov/iad2/docs#record-model)The">https://www.osti.gov/iad2/docs#record-model)The</a> input can be produced by reserve and draft subcommands</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>The email address of the user performing the release</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="check">
+<h4>check<a class="headerlink" href="#check" title="Permalink to this headline">¶</a></h4>
+<p>Undocumented</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">check</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="s2">&quot;my.email@node.gov&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments_repeat3">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat3" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-e, --email</kbd></dt>
+<dd><p>If provided the check action will send results to default recipients and pending dois submitters</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-a, --attachement</kbd></dt>
+<dd><p>If provided the check action will send results as an email attachment</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-r, --submitter</kbd></dt>
+<dd><p>The email address of the user who will be registered as author of the check action</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="list">
+<h4>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h4>
+<p>extract the submitted DOI from the local transaction log, with following selection criteria</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="nb">list</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img,eng&quot;</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">JSON</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">doi</span> <span class="mf">10.17189</span><span class="o">/</span><span class="mi">21734</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">lid</span> <span class="n">urn</span><span class="p">:</span><span class="n">nasa</span><span class="p">:</span><span class="n">pds</span><span class="p">:</span><span class="n">lab_shocked_feldspars</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">lidvid</span> <span class="n">urn</span><span class="p">:</span><span class="n">nasa</span><span class="p">:</span><span class="n">pds</span><span class="p">:</span><span class="n">lab_shocked_feldspars</span><span class="p">::</span><span class="mf">1.0</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">start</span> <span class="mi">2020</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T19</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mf">15.000000</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">end</span> <span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">311</span><span class="n">T23</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mf">00.000000</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments_repeat4">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat4" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-n, --node</kbd></dt>
+<dd><p>A list of node names comma separated to return the matching DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rms,sbn</p>
+</dd>
+<dt><kbd>-f, --format</kbd></dt>
+<dd><p>The format of the output from the databasequery. Default is JSON if not specified</p>
+<p>Default: “JSON”</p>
+</dd>
+<dt><kbd>-doi, --doi</kbd></dt>
+<dd><p>A list of DOIs comma separated to pass as input to the database query.</p>
+</dd>
+<dt><kbd>-lid, --lid</kbd></dt>
+<dd><p>A list of LIDs comma separated to pass as input to the database query.</p>
+</dd>
+<dt><kbd>-lidvid, --lidvid</kbd></dt>
+<dd><p>A list of LIDVIDs comma separated to pass as input to the database query.</p>
+</dd>
+<dt><kbd>-start, --start-update</kbd></dt>
+<dd><p>The start time for record update to pass as input to the database query.</p>
+</dd>
+<dt><kbd>-end, --end-update</kbd></dt>
+<dd><p>The end time for record update time to pass as input to the database query.</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>A list of email addresses comma separated to pass as input to the database query</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
 </div>
 </div>
 
