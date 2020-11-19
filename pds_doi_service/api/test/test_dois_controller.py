@@ -8,6 +8,8 @@ import os
 from os.path import abspath, dirname, exists, join
 from unittest.mock import patch
 
+from lxml import etree
+
 import pds_doi_service.api.controllers.dois_controller
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
@@ -519,28 +521,115 @@ class TestDoisController(BaseTestCase):
             errors[0]['message']
         )
 
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
     def test_get_doi_from_id(self):
         """Test case for get_doi_from_id"""
         response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='lidvid_example'),
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='GET'
         )
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Recreate a DoiRecord from the response JSON and examine the
+        # fields
+        record = DoiRecord.from_dict(response.json)
+
+        self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(record.status, 'Draft')
+
+        # Make sure we only got one record back
+        root = etree.fromstring(bytes(record.record, encoding='utf-8'))
+        records = root.xpath('record')
+
+        self.assertEqual(len(records), 1)
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch_missing)
+    def test_get_doi_missing_id(self):
+        """Test get_doi_from_id where requested LIDVID is not found"""
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='GET'
+        )
+
+        self.assert404(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains the expected
+        # error message
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'UnknownLIDVIDException')
+        self.assertIn(
+            'No record(s) could be found for LIDVID '
+            'urn:nasa:pds:insight_cameras::1.1',
+            errors[0]['message']
+        )
+
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch_no_transaction_history)
+    def test_get_doi_missing_transaction_history(self):
+        """
+        Test get_doi_from_id where transaction history for LIDVID cannot be
+        found
+        """
+        error_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='GET'
+        )
+
+        self.assert500(
+            error_response,
+            'Response body is : ' + error_response.data.decode('utf-8')
+        )
+
+        # Check the error response and make sure it contains the expected
+        # error message
+        errors = error_response.json['errors']
+
+        self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
+        self.assertIn(
+            'Could not find an OSTI Label associated with LIDVID '
+            'urn:nasa:pds:insight_cameras::1.1',
+            errors[0]['message']
+        )
 
     def test_put_doi_from_id(self):
         """Test case for put_doi_from_id"""
-        query_string = [('submitter', 'submitter_example'),
-                        ('node', 'node_example'),
-                        ('url', 'url_example')]
+        query_string = [('submitter', 'img-submitter@jpl.nasa.gov'),
+                        ('node', 'img'),
+                        ('url', 'http://fake.url.net')]
+
         response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='lidvid_example'),
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='PUT',
-            query_string=query_string)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            query_string=query_string
+        )
+
+        # Should return a Not Implemented code
+        self.assertEqual(response.status_code, 501)
+
+        errors = response.json['errors']
+        self.assertEqual(errors[0]['name'], 'NotImplementedError')
+        self.assertIn(
+            'Please use the GET /dois endpoint for record retrieval',
+            errors[0]['message']
+        )
 
 
 if __name__ == '__main__':
