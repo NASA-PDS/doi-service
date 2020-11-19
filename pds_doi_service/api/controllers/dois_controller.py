@@ -21,6 +21,7 @@ from tempfile import NamedTemporaryFile
 
 import connexion
 from flask import current_app
+from lxml import etree
 
 from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.api.models import DoiRecord, DoiSummary
@@ -118,6 +119,53 @@ def _records_from_dois(dois, submitter=None, osti_record=None):
         )
 
     return records
+
+
+def _get_record_for_lidvid(osti_label_file, lidvid):
+    """
+    Returns the record entry corresponding to the provided LIDVID from the
+    OSTI XML label file.
+
+    Parameters
+    ----------
+    osti_label_file : str
+        Path to the OSTI XML label file to search.
+    lidvid : str
+        The LIDVID of the record to return from the OSTI label.
+
+    Returns
+    -------
+    record : str
+        The single found record embedded in a <records> tag. This string is
+        suitable to be written to disk as a new OSTI label.
+
+    Raises
+    ------
+    UnknownLIDVIDException
+        If no record for the requested LIDVID is found in the provided OSTI
+        label file.
+
+    """
+    root = etree.parse(osti_label_file).getroot()
+
+    records = root.xpath('record')
+
+    for record in records:
+        if DOIOstiWebParser.get_lidvid(record) == lidvid:
+            result = record
+            break
+    else:
+        raise UnknownLIDVIDException(
+            f'Could not find entry for lidvid "{lidvid}" in OSTI label file '
+            f'{osti_label_file}.'
+        )
+
+    new_root = etree.Element('records')
+    new_root.append(result)
+
+    return etree.tostring(
+        new_root, pretty_print=True, xml_declaration=True, encoding='UTF-8'
+    ).decode('utf-8')
 
 
 def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
@@ -359,8 +407,6 @@ def post_release_doi(lidvid, force=False):
 
         # Make sure we can locate the output OSTI label associated with this
         # transaction
-        # TODO: output.xml could contain multiple records, task #116 created
-        #       to extract appropriate one based on LID
         transaction_location = list_record['transaction_key']
         osti_label_file = join(transaction_location, 'output.xml')
 
@@ -372,17 +418,23 @@ def post_release_doi(lidvid, force=False):
                 .format(lidvid)
             )
 
-        # Prepare the release action
-        release_action = DOICoreActionRelease(db_name=_get_db_name())
+        # An output OSTI label may contain entries other than the requested
+        # LIDVID, extract only the appropriate record into its own temporary
+        # XML file and feed it to the release action
+        with NamedTemporaryFile('w', prefix='output_', suffix='.xml') as xml_file:
+            xml_file.write(_get_record_for_lidvid(osti_label_file, lidvid))
 
-        release_kwargs = {
-            'node': list_record['node_id'],
-            'submitter': list_record['submitter'],
-            'input': osti_label_file,
-            'force': force
-        }
+            # Prepare the release action
+            release_action = DOICoreActionRelease(db_name=_get_db_name())
 
-        osti_release_label = release_action.run(**release_kwargs)
+            release_kwargs = {
+                'node': list_record['node_id'],
+                'submitter': list_record['submitter'],
+                'input': xml_file.name,
+                'force': force
+            }
+
+            osti_release_label = release_action.run(**release_kwargs)
 
         dois, errors = DOIOstiWebParser().response_get_parse_osti_xml(
             bytes(osti_release_label, encoding='utf-8')
@@ -397,7 +449,7 @@ def post_release_doi(lidvid, force=False):
     except (ValueError, WarningDOIException) as err:
         # Some warning or error prevented release of the DOI
         return format_exceptions(err), 400
-    except (UnknownLIDVIDException, NoTransactionHistoryForLIDVIDException) as err:
+    except UnknownLIDVIDException as err:
         # Could not find an entry for the requested LIDVID
         return format_exceptions(err), 404
     except Exception as err:

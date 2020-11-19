@@ -503,7 +503,7 @@ class TestDoisController(BaseTestCase):
             query_string=query_string
         )
 
-        self.assert404(
+        self.assert500(
             error_response,
             'Response body is : ' + error_response.data.decode('utf-8')
         )
