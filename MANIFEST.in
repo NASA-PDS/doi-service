@@ -1,0 +1,10 @@
+# Copyright © 2019–2019 California Institute of Technology ("Caltech").
+# ALL RIGHTS RESERVED. U.S. Government sponsorship acknowledged.
+
+graft pds_doi_service
+graft docs
+graft features
+graft inputs
+graft tests
+include *.rst *.sch *.xslx *.csv *.xml *.xsd *.pdf *.txt *.default
+global-exclude *.pyc *.pyo
