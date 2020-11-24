@@ -45,7 +45,7 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.7',  # pds_doi_service.core package requires Dataclasses
+    python_requires='>=3.6',  # pds_doi_service.core package requires Dataclasses
     install_requires=pip_requirements,
     # TO DO if this is th proper wy to handle dev/test dependencies in the CI/CD pipeline
     #extras_require={
