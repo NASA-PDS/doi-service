@@ -30,7 +30,7 @@ The easiest way to install this software is to use Pip_, the Python Package
 Installer. If you have Python on your system, you probably already have Pip;
 you can run ``pip3 --help`` to check. Then run::
 
-    pip3 install pds-doi-core
+    pip3 install pds-doi-service
 
 If you don't want the package dependencies to interfere with your local system
 you can also use a `virtual environment`_  for your deployment.
@@ -39,7 +39,7 @@ To do so::
     mkdir -p $HOME/.virtualenvs
     python3 -m venv $HOME/.virtualenvs/pds-doi-service
     source $HOME/.virtualenvs/pds-doi-service/bin/activate
-    pip3 install pds-doi-core
+    pip3 install pds-doi-service
 
 
 Configure
@@ -91,7 +91,7 @@ To check and install an upgrade to the software, run the following command in yo
 virtual environment::
 
   source $HOME/.virtualenvs/pds-deep-archive/bin/activate
-  pip install pds-doi-core --upgrade
+  pip install pds-doi-service --upgrade
 
 
 .. References:
