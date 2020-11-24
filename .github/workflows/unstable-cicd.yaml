@@ -67,6 +67,7 @@ jobs:
                 uses: NASA-PDS/roundup-action@master
                 with:
                     assembly: unstable
+                    packages: g++
                 env:
                     pypi_username: ${{secrets.TEST_PYPI_USERNAME}}
                     pypi_password: ${{secrets.TEST_PYPI_PASSWORD}}
