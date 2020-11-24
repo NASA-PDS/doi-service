@@ -190,7 +190,7 @@ using a <a class="reference external" href="https://docs.conda.io/projects/conda
 <p>The easiest way to install this software is to use <a class="reference external" href="https://pip.pypa.io/en/stable/">Pip</a>, the Python Package
 Installer. If you have Python on your system, you probably already have Pip;
 you can run <code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">--help</span></code> to check. Then run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">core</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span>
 </pre></div>
 </div>
 <p>If you don’t want the package dependencies to interfere with your local system
@@ -199,7 +199,7 @@ To do so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p $HOME/.virtualenvs
 python3 -m venv $HOME/.virtualenvs/pds-doi-service
 source $HOME/.virtualenvs/pds-doi-service/bin/activate
-pip3 install pds-doi-core
+pip3 install pds-doi-service
 </pre></div>
 </div>
 </div>
@@ -243,7 +243,7 @@ To install former releases, you can do:</p>
 <p>To check and install an upgrade to the software, run the following command in your
 virtual environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>source $HOME/.virtualenvs/pds-deep-archive/bin/activate
-pip install pds-doi-core --upgrade
+pip install pds-doi-service --upgrade
 </pre></div>
 </div>
 </div>

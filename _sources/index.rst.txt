@@ -5,7 +5,7 @@ The PDS DOI Service enable management of DOI for PDS with the following operatio
 
 The PDS DOIs are registered through the `OSTI`_ infrastructure. OSTI registers PDS DOI on `DataCite`_ infrastructure
 
-Currently, this service can be deployed as a python package 'pds-doi-core' and is executed through a command line `pds-doi-cmd`
+Currently, this service can be deployed as a python package 'pds-doi-service' and is executed through a command line `pds-doi-cmd`
 
 
 .. toctree::
