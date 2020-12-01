@@ -61,9 +61,8 @@ class TestDoisController(BaseTestCase):
 
         records = response.json
 
-        # Test database should contain 2 records (matching those that are
-        # submitted in test_post_dois)
-        self.assertEqual(len(records), 2)
+        # Test database should contain 3 records
+        self.assertEqual(len(records), 3)
 
         # Now use a query string to ensure we can get specific records back
         query_string = [('node', 'eng'),
@@ -112,6 +111,31 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(summary.status, 'reserved_not_submitted')
+
+        # Test fetching of a record that only has an LID (no VID) associated to it
+        query_string = [('node', 'img'),
+                        ('lid', 'urn:nasa:pds:lab_shocked_feldspars'),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Should only get one of the records back
+        records = response.json
+        self.assertEqual(len(records), 1)
+
+        # Reformat JSON result into a DoiSummary object so we can check fields
+        summary = DoiSummary.from_dict(records[0])
+
+        self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
+        self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(summary.status, 'reserved_not_submitted')
 
         # Finally, test with a malformed start/end date and ensure we

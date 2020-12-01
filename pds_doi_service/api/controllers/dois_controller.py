@@ -247,9 +247,15 @@ def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
     records = []
 
     for result in json.loads(results):
+        lidvid = result['lid']
+
+        # Check if we got back a vid to append to the lid
+        if result['lid'] and result['vid']:
+            lidvid = '::'.join([result['lid'], result['vid']])
+
         records.append(
             DoiSummary(
-                doi=result['doi'], lidvid='::'.join([result['lid'], result['vid']]),
+                doi=result['doi'], lidvid=lidvid,
                 submitter=result['submitter'], status=result['status'],
                 # TODO: unsure where to find creation_date, not provided in
                 #       the results from list action
