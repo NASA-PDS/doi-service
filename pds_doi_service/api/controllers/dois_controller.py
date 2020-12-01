@@ -537,7 +537,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
     return record, 200
 
 
-def put_doi_from_id(lidvid, submitter, node, url):  # noqa: E501
+def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
     """
     Update the record associated with an existing DOI.
 
@@ -549,12 +549,12 @@ def put_doi_from_id(lidvid, submitter, node, url):  # noqa: E501
     ----------
     lidvid : str
         The LIDVID associated with the record to update.
-    submitter : str
+    submitter : str, optional
         Email address of the DOI update requester.
-    node : str
+    node : str, optional
         The PDS node name to cite as contributor of the DOI. Must be one of the
         valid PDS steward IDs.
-    url : str
+    url : str, optional
         URL to provide as the record to update the DOI with. URL must start with
         either "http://" or "https://" and resolve to a valid PDS4 label in XML
         format.
@@ -566,5 +566,6 @@ def put_doi_from_id(lidvid, submitter, node, url):  # noqa: E501
 
     """
     return format_exceptions(
-        NotImplementedError('Please use the GET /dois endpoint for record retrieval')
+        NotImplementedError('Please use the GET /dois endpoint for record '
+                            'retrieval')
     ), 501

@@ -679,6 +679,15 @@ class TestDoisController(BaseTestCase):
             errors[0]['message']
         )
 
+        # Try again with no query parameters, should still return not implemented
+        response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='PUT'
+        )
+
+        self.assertEqual(response.status_code, 501)
+
 
 if __name__ == '__main__':
     import unittest

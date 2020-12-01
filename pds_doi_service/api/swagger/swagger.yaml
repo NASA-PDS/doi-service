@@ -244,7 +244,7 @@ paths:
       - name: submitter
         in: query
         description: Email address of the DOI update requester.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -254,7 +254,7 @@ paths:
         in: query
         description: The PDS node name to cite as contributor of the DOI. Must be
           one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -265,24 +265,14 @@ paths:
         description: URL to provide as the record to update the DOI with. URL must
           start with either "http://" or "https://" and resolve to a valid PDS4 label
           in XML format.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
           type: string
       responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/doi_record'
-        "400":
-          description: Invalid Argument
-        "404":
-          description: Not existing
-        "500":
-          description: Internal error
+        "501":
+          description: Not Implemented
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
   /dois/{lidvid}/release:
     post:
