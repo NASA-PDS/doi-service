@@ -485,7 +485,10 @@ def get_doi_from_id(lidvid):  # noqa: E501
     """
     list_action = DOICoreActionList(db_name=_get_db_name())
 
-    list_kwargs = {'lidvid': lidvid}
+    # Check for full lidvid vs. just a lid and map the list action arg accordingly
+    list_kwargs = {
+        'lidvid' if '::' in lidvid else 'lid': lidvid
+    }
 
     try:
         list_results = json.loads(list_action.run(**list_kwargs))

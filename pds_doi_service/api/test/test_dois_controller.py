@@ -575,6 +575,30 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(len(records), 1)
 
+        # Test again with an LID only, should get the same result back
+        response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            .format(lidvid='urn:nasa:pds:insight_cameras'),
+            method='GET'
+        )
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        record = DoiRecord.from_dict(response.json)
+
+        self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras')
+        self.assertEqual(record.status, 'Draft')
+
+        # Make sure we only got one record back
+        root = etree.fromstring(bytes(record.record, encoding='utf-8'))
+        records = root.xpath('record')
+
+        self.assertEqual(len(records), 1)
+
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
         'run', list_action_run_patch_missing)
