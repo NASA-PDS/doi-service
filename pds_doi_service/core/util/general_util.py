@@ -8,6 +8,7 @@
 #------------------------------
 import logging
 
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 # Put the function get_logger here in the beginning of the file so we can call it.
 def get_logger(module_name=''):
@@ -20,6 +21,7 @@ def get_logger(module_name=''):
     logging.basicConfig(format=my_format,
                         filemode='a')
 
-    logger.setLevel(logging.INFO)
+    config = DOIConfigUtil().get_config()
+    logger.setLevel(getattr(logging, config.get('OTHER', 'logging_level')))
     return logger
 

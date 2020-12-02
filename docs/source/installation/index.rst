@@ -65,6 +65,14 @@ You MUST set the OSTI service user and password to be able to reserve or release
 
 Ask the code to pds-operator@jpl.nasa.gov
 
+You can also change the log level by changing the configuration::
+
+    [OTHER]
+    logging_level=DEBUG
+
+Authorized values are DEBUG, INFO, ERROR... (see https://docs.python.org/3/library/logging.html#logging-levels)
+
+
 
 Start using the tool
 ^^^^^^^^^^^^^^^^^^^^
