@@ -566,6 +566,6 @@ def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
 
     """
     return format_exceptions(
-        NotImplementedError('Please use the GET /dois endpoint for record '
-                            'retrieval')
+        NotImplementedError('Please use the POST /dois/{lidvid} endpoint for record'
+                            'update')
     ), 501
