@@ -85,10 +85,22 @@ The DOI Service a RESTful web service that provides the ability to perform the f
 * Update a DOI
 * Deactivate a DOI
 
+
 Besides a service will automatically raise alerts on DOIs which have been for too long in given status.
 
 ---
 
+#### Basic State Diagram
+
+![PDS DOI Service States](pds-doi-service-workflow.png)
+
+---
+
+#### Ops Workflow
+
+![PDS DOI Service Ops Workflow](pds-doi-service-ops-workflow.png)
+
+---
 
 #### Reserve a DOI
 
