@@ -675,7 +675,7 @@ class TestDoisController(BaseTestCase):
         errors = response.json['errors']
         self.assertEqual(errors[0]['name'], 'NotImplementedError')
         self.assertIn(
-            'Please use the GET /dois endpoint for record retrieval',
+            'Please use the POST /dois/{lidvid} endpoint for record update',
             errors[0]['message']
         )
 
