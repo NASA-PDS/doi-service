@@ -84,6 +84,7 @@ class TestDoisController(BaseTestCase):
         # Reformat JSON result into a DoiSummary object so we can check fields
         summary = DoiSummary.from_dict(records[0])
 
+        self.assertEqual(summary.node, 'eng')
         self.assertEqual(summary.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(summary.status, 'Draft')
@@ -109,6 +110,7 @@ class TestDoisController(BaseTestCase):
         # Reformat JSON result into a DoiSummary object so we can check fields
         summary = DoiSummary.from_dict(records[0])
 
+        self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
         self.assertEqual(summary.status, 'reserved_not_submitted')
@@ -134,6 +136,7 @@ class TestDoisController(BaseTestCase):
         # Reformat JSON result into a DoiSummary object so we can check fields
         summary = DoiSummary.from_dict(records[0])
 
+        self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(summary.status, 'reserved_not_submitted')
@@ -193,6 +196,7 @@ class TestDoisController(BaseTestCase):
         # fields
         draft_record = DoiRecord.from_dict(draft_response.json[0])
 
+        self.assertEqual(draft_record.node, 'eng')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
@@ -229,6 +233,7 @@ class TestDoisController(BaseTestCase):
         # fields
         draft_record = DoiRecord.from_dict(draft_response.json[0])
 
+        self.assertEqual(draft_record.node, 'eng')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
@@ -283,6 +288,7 @@ class TestDoisController(BaseTestCase):
         # fields
         reserve_record = DoiRecord.from_dict(reserve_response.json[0])
 
+        self.assertEqual(reserve_record.node, 'img')
         self.assertEqual(reserve_record.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(reserve_record.status, 'reserved_not_submitted')
@@ -398,6 +404,7 @@ class TestDoisController(BaseTestCase):
         # fields
         release_record = DoiRecord.from_dict(release_response.json[0])
 
+        self.assertEqual(release_record.node, 'eng')
         self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(release_record.status, 'Released')
@@ -565,9 +572,10 @@ class TestDoisController(BaseTestCase):
         # fields
         record = DoiRecord.from_dict(response.json)
 
+        self.assertEqual(record.node, 'eng')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(record.status, 'Draft')
+        self.assertEqual(record.status, 'Pending')
 
         # Make sure we only got one record back
         root = etree.fromstring(bytes(record.record, encoding='utf-8'))
@@ -589,9 +597,10 @@ class TestDoisController(BaseTestCase):
 
         record = DoiRecord.from_dict(response.json)
 
+        self.assertEqual(record.node, 'eng')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras')
-        self.assertEqual(record.status, 'Draft')
+        self.assertEqual(record.status, 'Pending')
 
         # Make sure we only got one record back
         root = etree.fromstring(bytes(record.record, encoding='utf-8'))
