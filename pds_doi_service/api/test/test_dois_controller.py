@@ -90,8 +90,11 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.status, 'Draft')
 
         # Test filtering by start/end date
-        query_string = [('start_date', '2020-10-20T14:04:13.000000'),
-                        ('end_date', '2020-10-20T14:04:14.000000'),
+        # Note: this test was originally developed on PDT, so its important
+        #       to include the correct time zone offset as part of the query
+        #       to ensure this test works correctly in other tz's.
+        query_string = [('start_date', '2020-10-20T14:04:13.000000-07:00'),
+                        ('end_date', '2020-10-20T14:04:14.000000-07:00'),
                         ('db_name', test_db)]
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
@@ -144,7 +147,7 @@ class TestDoisController(BaseTestCase):
         # Finally, test with a malformed start/end date and ensure we
         # get "invalid argument" code back
         query_string = [('start_date', '2020-10-20 14:04:13.000000'),
-                        ('end_date', '2020-10-20T14:04'),
+                        ('end_date', '10-20-2020 14:04'),
                         ('db_name', test_db)]
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
@@ -354,7 +357,8 @@ class TestDoisController(BaseTestCase):
         """
         return json.dumps(
             [
-                {"status": "Draft", "update_date": 1603227852.560568,
+                {"status": "Draft",
+                 "update_date": '2020-10-20T14:04:12.560568-07:00',
                  "submitter": "eng-submitter@jpl.nasa.gov",
                  "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
                  "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
