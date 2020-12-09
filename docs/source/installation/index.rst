@@ -65,6 +65,13 @@ You MUST set the OSTI service user and password to be able to reserve or release
 
 Ask the code to pds-operator@jpl.nasa.gov
 
+The tool uses a local database and file system space to store transactions. The default location for these files is the sys.prefix, however it can be updated as follow in the configuration::
+
+    [OTHER]
+    transaction_dir = <directory absolute path>
+    db_file = <database absolute path>/doi.db
+
+
 You can also change the log level by changing the configuration::
 
     [OTHER]
