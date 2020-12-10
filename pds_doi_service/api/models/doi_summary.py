@@ -12,46 +12,46 @@ class DoiSummary(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, doi: str = None, lidvid: str = None,
+    def __init__(self, doi: str = None, lidvid: str = None, node: str = None,
                  submitter: str = None, status: str = None,
-                 creation_date: datetime = None, update_date: datetime = None):  # noqa: E501
+                 update_date: datetime = None):  # noqa: E501
         """DoiSummary - a model defined in Swagger
 
         :param doi: The doi of this DoiSummary.  # noqa: E501
         :type doi: str
         :param lidvid: The lidvid of this DoiSummary.  # noqa: E501
         :type lidvid: str
+        :param node: The node of this DoiSummary.  # noqa: E501
+        :type node: str
         :param submitter: The submitter of this DoiSummary.  # noqa: E501
         :type submitter: str
         :param status: The status of this DoiSummary.  # noqa: E501
         :type status: str
-        :param creation_date: The creation_date of this DoiSummary.  # noqa: E501
-        :type creation_date: datetime
         :param update_date: The update_date of this DoiSummary.  # noqa: E501
         :type update_date: datetime
         """
         self.swagger_types = {
             'doi': str,
             'lidvid': str,
+            'node': str,
             'submitter': str,
             'status': str,
-            'creation_date': datetime,
             'update_date': datetime
         }
 
         self.attribute_map = {
             'doi': 'doi',
             'lidvid': 'lidvid',
+            'node': 'node',
             'submitter': 'submitter',
             'status': 'status',
-            'creation_date': 'creation_date',
             'update_date': 'update_date'
         }
         self._doi = doi
         self._lidvid = lidvid
+        self._node = node
         self._submitter = submitter
         self._status = status
-        self._creation_date = creation_date
         self._update_date = update_date
 
     @classmethod
@@ -108,6 +108,27 @@ class DoiSummary(Model):
         self._lidvid = lidvid
 
     @property
+    def node(self) -> str:
+        """Gets the node of this DoiSummary.
+
+
+        :return: The node of this DoiSummary.
+        :rtype: str
+        """
+        return self._node
+
+    @node.setter
+    def node(self, node: str):
+        """Sets the node of this DoiSummary.
+
+
+        :param node: The node of this DoiSummary.
+        :type node: str
+        """
+
+        self._node = node
+
+    @property
     def submitter(self) -> str:
         """Gets the submitter of this DoiSummary.
 
@@ -148,27 +169,6 @@ class DoiSummary(Model):
         """
 
         self._status = status
-
-    @property
-    def creation_date(self) -> datetime:
-        """Gets the creation_date of this DoiSummary.
-
-
-        :return: The creation_date of this DoiSummary.
-        :rtype: datetime
-        """
-        return self._creation_date
-
-    @creation_date.setter
-    def creation_date(self, creation_date: datetime):
-        """Sets the creation_date of this DoiSummary.
-
-
-        :param creation_date: The creation_date of this DoiSummary.
-        :type creation_date: datetime
-        """
-
-        self._creation_date = creation_date
 
     @property
     def update_date(self) -> datetime:

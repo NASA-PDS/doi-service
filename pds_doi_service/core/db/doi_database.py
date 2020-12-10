@@ -281,7 +281,7 @@ class DOIDataBase:
         logger.debug(f"DEFAULT_DB_NAME {self.get_database_name()}")
 
         data_tuple = (status, product_type, product_type_specific, True, lid, vid, doi,
-                      submitter, transaction_date.timestamp(), discipline_node, title, transaction_key)
+                      submitter, transaction_date.replace(tzinfo=datetime.timezone.utc).timestamp(), discipline_node, title, transaction_key)
 
         logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
@@ -381,11 +381,11 @@ class DOIDataBase:
 
     @staticmethod
     def _get_query_criteria_start_update(v):
-        return ' AND update_date >= :start_update', {'start_update': v.timestamp()}
+        return ' AND update_date >= :start_update', {'start_update': v.replace(tzinfo=datetime.timezone.utc).timestamp()}
 
     @staticmethod
     def _get_query_criteria_end_update(v):
-        return ' AND update_date <= :end_update', {'end_update': v.timestamp()}
+        return ' AND update_date <= :end_update', {'end_update': v.replace(tzinfo=datetime.timezone.utc).timestamp()}
 
     @staticmethod
     def parse_criteria(query_criterias):
