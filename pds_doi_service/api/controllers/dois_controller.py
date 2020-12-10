@@ -14,7 +14,6 @@ Contains the request handlers for the PDS DOI API.
 """
 
 import csv
-from datetime import datetime
 import json
 from os.path import exists, join
 from tempfile import NamedTemporaryFile
@@ -83,7 +82,7 @@ def _write_csv_from_labels(temp_file, labels):
     temp_file.flush()
 
 
-def _records_from_dois(dois, submitter=None, osti_record=None):
+def _records_from_dois(dois, node=None, submitter=None, osti_record=None):
     """
     Reformats a list of DOI objects into a corresponding list of DoiRecord
     objects.
@@ -93,6 +92,8 @@ def _records_from_dois(dois, submitter=None, osti_record=None):
     dois : list of Doi
         The list of pds_doi_service.core.entities.doi.Doi objects to reformat
         into DoiRecords.
+    node : str, optional,
+        The PDS node to associate with each record.
     submitter : str, optional
         Submitter email address to associate with each record.
     osti_record : str, optional
@@ -109,7 +110,7 @@ def _records_from_dois(dois, submitter=None, osti_record=None):
     for doi in dois:
         records.append(
             DoiRecord(
-                doi=doi.doi, lidvid=doi.related_identifier,
+                doi=doi.doi, lidvid=doi.related_identifier, node=node,
                 submitter=submitter, status=doi.status,
                 creation_date=doi.date_record_added,
                 update_date=doi.date_record_updated,
@@ -255,12 +256,9 @@ def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
 
         records.append(
             DoiSummary(
-                doi=result['doi'], lidvid=lidvid,
+                doi=result['doi'], lidvid=lidvid, node=result['node_id'],
                 submitter=result['submitter'], status=result['status'],
-                # TODO: unsure where to find creation_date, not provided in
-                #       the results from list action
-                # creation_date=None,
-                update_date=datetime.fromtimestamp(result['update_date'])
+                update_date=result['update_date']
             )
         )
 
@@ -370,7 +368,9 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         bytes(osti_label, encoding='utf-8')
     )
 
-    records = _records_from_dois(dois, submitter=submitter, osti_record=osti_label)
+    records = _records_from_dois(
+        dois, node=node, submitter=submitter, osti_record=osti_label
+    )
 
     return records, 200
 
@@ -462,8 +462,10 @@ def post_release_doi(lidvid, force=False):
         # Treat any unexpected Exception as an "Internal Error" and report back
         return format_exceptions(err), 500
 
-    records = _records_from_dois(dois, submitter=list_record['submitter'],
-                                 osti_record=osti_release_label)
+    records = _records_from_dois(
+        dois, node=list_record['node_id'], submitter=list_record['submitter'],
+        osti_record=osti_release_label
+    )
 
     return records, 200
 
@@ -524,17 +526,18 @@ def get_doi_from_id(lidvid):  # noqa: E501
         # Treat any unexpected Exception as an "Internal Error" and report back
         return format_exceptions(err), 500
 
-    record = DoiRecord(
-        doi=list_record['doi'], lidvid=lidvid,
-        submitter=list_record['submitter'], status=list_record['status'],
-        # TODO: unsure where to find creation_date, not provided in
-        #       the results from list action
-        # creation_date=None,
-        update_date=datetime.fromtimestamp(list_record['update_date']),
-        record=osti_label_for_lidvid
+    # Parse the label associated with the lidvid so we can return a full DoiRecord
+    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
+        bytes(osti_label_for_lidvid, encoding='utf-8')
     )
 
-    return record, 200
+    records = _records_from_dois(
+        dois, node=list_record['node_id'], submitter=list_record['submitter'],
+        osti_record=osti_label_for_lidvid
+    )
+
+    # Should only ever be one record since we filtered by lidvid
+    return records[0], 200
 
 
 def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501

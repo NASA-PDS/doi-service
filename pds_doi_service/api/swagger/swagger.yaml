@@ -346,20 +346,19 @@ components:
           type: string
         lidvid:
           type: string
+        node:
+          type: string
         submitter:
           type: string
         status:
           type: string
-        creation_date:
-          type: string
-          format: date-time
         update_date:
           type: string
           format: date-time
       example:
+        node: eng
         submitter: my.email@node.gov
         lidvid: urn:nasa:pds:lab_shocked_feldspars::1.0
-        creation_date: 2000-08-22T12:00:00.000+00:00
         update_date: 2001-01-23T04:56:07.000+00:00
         doi: 10.17189/21734
         status: Pending
@@ -371,5 +370,9 @@ components:
           record:
             type: string
             description: full OSTI XML label
+          creation_date:
+            type: string
+            description: Creation date of the DOI record in iso8601 format
+            format: date-time
           message:
             type: string

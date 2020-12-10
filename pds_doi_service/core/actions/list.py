@@ -7,7 +7,7 @@
 #
 # ------------------------------
 
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import json
 
 from pds_doi_service.core.actions.action import DOICoreAction, logger
@@ -79,10 +79,10 @@ class DOICoreActionList(DOICoreAction):
             self._query_criterias['status'] = status.lstrip().rstrip().split(',')
 
         if start_update:
-            self._query_criterias['start_update'] = datetime.strptime(start_update, '%Y-%m-%dT%H:%M:%S.%f')
+            self._query_criterias['start_update'] = datetime.fromisoformat(start_update)
 
         if end_update:
-            self._query_criterias['end_update'] = datetime.strptime(end_update, '%Y-%m-%dT%H:%M:%S.%f')
+            self._query_criterias['end_update'] = datetime.fromisoformat(end_update)
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -153,6 +153,14 @@ class DOICoreActionList(DOICoreAction):
             if self._format == 'JSON':
                 result_json = []
                 for row in rows:
+                    # Convert the update time from Unix epoch to iso8601 including tz
+                    row = list(row)
+                    update_date = row[columns.index('update_date')]
+                    update_date = datetime.fromtimestamp(update_date, tz=timezone.utc)\
+                        .replace(tzinfo=timezone(timedelta(hours=--8.0))) \
+                        .isoformat()
+                    row[columns.index('update_date')] = update_date
+
                     result_json.append({columns[i]: row[i]
                                         for i in range(len(columns))})
                 o_query_result = json.dumps(result_json)

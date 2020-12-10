@@ -12,7 +12,7 @@ class DoiRecord(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, doi: str = None, lidvid: str = None,
+    def __init__(self, doi: str = None, lidvid: str = None, node: str = None,
                  submitter: str = None, status: str = None,
                  creation_date: datetime = None, update_date: datetime = None,
                  record: str = None, message: str = None):  # noqa: E501
@@ -22,6 +22,8 @@ class DoiRecord(Model):
         :type doi: str
         :param lidvid: The lidvid of this DoiRecord.  # noqa: E501
         :type lidvid: str
+        :param node: The node of this DoiRecord.  # noqa: E501
+        :type node: str
         :param submitter: The submitter of this DoiRecord.  # noqa: E501
         :type submitter: str
         :param status: The status of this DoiRecord.  # noqa: E501
@@ -38,6 +40,7 @@ class DoiRecord(Model):
         self.swagger_types = {
             'doi': str,
             'lidvid': str,
+            'node': str,
             'submitter': str,
             'status': str,
             'creation_date': datetime,
@@ -49,6 +52,7 @@ class DoiRecord(Model):
         self.attribute_map = {
             'doi': 'doi',
             'lidvid': 'lidvid',
+            'node': 'node',
             'submitter': 'submitter',
             'status': 'status',
             'creation_date': 'creation_date',
@@ -58,6 +62,7 @@ class DoiRecord(Model):
         }
         self._doi = doi
         self._lidvid = lidvid
+        self._node = node
         self._submitter = submitter
         self._status = status
         self._creation_date = creation_date
@@ -117,6 +122,27 @@ class DoiRecord(Model):
         """
 
         self._lidvid = lidvid
+
+    @property
+    def node(self) -> str:
+        """Gets the node of this DoiRecord.
+
+
+        :return: The node of this DoiRecord.
+        :rtype: str
+        """
+        return self._node
+
+    @node.setter
+    def node(self, node: str):
+        """Sets the node of this DoiRecord.
+
+
+        :param node: The node of this DoiRecord.
+        :type node: str
+        """
+
+        self._node = node
 
     @property
     def submitter(self) -> str:

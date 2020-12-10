@@ -84,13 +84,17 @@ class TestDoisController(BaseTestCase):
         # Reformat JSON result into a DoiSummary object so we can check fields
         summary = DoiSummary.from_dict(records[0])
 
+        self.assertEqual(summary.node, 'eng')
         self.assertEqual(summary.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(summary.status, 'Draft')
 
         # Test filtering by start/end date
-        query_string = [('start_date', '2020-10-20T14:04:13.000000'),
-                        ('end_date', '2020-10-20T14:04:14.000000'),
+        # Note: this test was originally developed on PDT, so its important
+        #       to include the correct time zone offset as part of the query
+
+        query_string = [('start_date', '2020-10-20T21:04:13.000000+08:00'),
+                        ('end_date', '2020-10-20T21:04:14.000000+08:00'),
                         ('db_name', test_db)]
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
@@ -109,6 +113,7 @@ class TestDoisController(BaseTestCase):
         # Reformat JSON result into a DoiSummary object so we can check fields
         summary = DoiSummary.from_dict(records[0])
 
+        self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
         self.assertEqual(summary.status, 'reserved_not_submitted')
@@ -134,6 +139,7 @@ class TestDoisController(BaseTestCase):
         # Reformat JSON result into a DoiSummary object so we can check fields
         summary = DoiSummary.from_dict(records[0])
 
+        self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(summary.status, 'reserved_not_submitted')
@@ -141,7 +147,7 @@ class TestDoisController(BaseTestCase):
         # Finally, test with a malformed start/end date and ensure we
         # get "invalid argument" code back
         query_string = [('start_date', '2020-10-20 14:04:13.000000'),
-                        ('end_date', '2020-10-20T14:04'),
+                        ('end_date', '10-20-2020 14:04'),
                         ('db_name', test_db)]
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
@@ -193,6 +199,7 @@ class TestDoisController(BaseTestCase):
         # fields
         draft_record = DoiRecord.from_dict(draft_response.json[0])
 
+        self.assertEqual(draft_record.node, 'eng')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
@@ -229,6 +236,7 @@ class TestDoisController(BaseTestCase):
         # fields
         draft_record = DoiRecord.from_dict(draft_response.json[0])
 
+        self.assertEqual(draft_record.node, 'eng')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
@@ -283,6 +291,7 @@ class TestDoisController(BaseTestCase):
         # fields
         reserve_record = DoiRecord.from_dict(reserve_response.json[0])
 
+        self.assertEqual(reserve_record.node, 'img')
         self.assertEqual(reserve_record.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(reserve_record.status, 'reserved_not_submitted')
@@ -348,7 +357,8 @@ class TestDoisController(BaseTestCase):
         """
         return json.dumps(
             [
-                {"status": "Draft", "update_date": 1603227852.560568,
+                {"status": "Draft",
+                 "update_date": '2020-10-20T14:04:12.560568-07:00',
                  "submitter": "eng-submitter@jpl.nasa.gov",
                  "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
                  "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
@@ -398,6 +408,7 @@ class TestDoisController(BaseTestCase):
         # fields
         release_record = DoiRecord.from_dict(release_response.json[0])
 
+        self.assertEqual(release_record.node, 'eng')
         self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(release_record.status, 'Released')
@@ -565,9 +576,10 @@ class TestDoisController(BaseTestCase):
         # fields
         record = DoiRecord.from_dict(response.json)
 
+        self.assertEqual(record.node, 'eng')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(record.status, 'Draft')
+        self.assertEqual(record.status, 'Pending')
 
         # Make sure we only got one record back
         root = etree.fromstring(bytes(record.record, encoding='utf-8'))
@@ -589,9 +601,10 @@ class TestDoisController(BaseTestCase):
 
         record = DoiRecord.from_dict(response.json)
 
+        self.assertEqual(record.node, 'eng')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras')
-        self.assertEqual(record.status, 'Draft')
+        self.assertEqual(record.status, 'Pending')
 
         # Make sure we only got one record back
         root = etree.fromstring(bytes(record.record, encoding='utf-8'))
