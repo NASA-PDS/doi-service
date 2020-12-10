@@ -35,7 +35,7 @@ zipp>=3.1
 ## Dev/test requirements
 jsonschema==2.6.0
 flask_testing==0.8.0
-flask-cors-3.0.9
+flask-cors==3.0.9
 sphinx-rtd-theme==0.5.0
 sphinx-argparse==0.2.5
 behave==1.2.6
