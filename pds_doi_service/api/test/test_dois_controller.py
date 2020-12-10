@@ -92,9 +92,9 @@ class TestDoisController(BaseTestCase):
         # Test filtering by start/end date
         # Note: this test was originally developed on PDT, so its important
         #       to include the correct time zone offset as part of the query
-        #       to ensure this test works correctly in other tz's.
-        query_string = [('start_date', '2020-10-20T14:04:13.000000-07:00'),
-                        ('end_date', '2020-10-20T14:04:14.000000-07:00'),
+
+        query_string = [('start_date', '2020-10-20T21:04:13.000000+08:00'),
+                        ('end_date', '2020-10-20T21:04:14.000000+08:00'),
                         ('db_name', test_db)]
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',

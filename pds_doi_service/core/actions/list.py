@@ -7,7 +7,7 @@
 #
 # ------------------------------
 
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import json
 
 from pds_doi_service.core.actions.action import DOICoreAction, logger
@@ -156,7 +156,9 @@ class DOICoreActionList(DOICoreAction):
                     # Convert the update time from Unix epoch to iso8601 including tz
                     row = list(row)
                     update_date = row[columns.index('update_date')]
-                    update_date = datetime.fromtimestamp(update_date).astimezone().isoformat()
+                    update_date = datetime.fromtimestamp(update_date, tz=timezone.utc)\
+                        .replace(tzinfo=timezone(timedelta(hours=--8.0))) \
+                        .isoformat()
                     row[columns.index('update_date')] = update_date
 
                     result_json.append({columns[i]: row[i]
