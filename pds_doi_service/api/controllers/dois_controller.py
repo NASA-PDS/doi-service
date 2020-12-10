@@ -321,7 +321,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     'node': node,
                     'submitter': submitter,
                     'input': csv_file.name,
-                    'force': force
+                    'force': force,
+                    'dry_run': False
                 }
 
                 osti_label = reserve_action.run(**reserve_kwargs)
