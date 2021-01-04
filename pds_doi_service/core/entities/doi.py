@@ -8,6 +8,15 @@ class productTypeEnum(Enum):
     Collection = 0
     Bundle = 1
 
+
+class doiStatus(Enum):
+    Reserved_not_submitted = 'reserved_not_submitted'  # reserved DOI in local database, not published to OSTI, not used in production
+    Reserved = 'reserved'                              # reserved DOI submitted to OSTI (OSTI did not published it), incomplete metadata
+    Draft = 'draft'                                    # DOI metadata being completed by the Discipline Node, in local database, not published to OSTI
+    Review = 'review'                                  # DOI metadata completed by the Discipline Node, ready for review by Engineeting Node
+    Pending = 'pending'                                # DOI metadata validated by Engineering Node, submitted to OSTI but not validated yet
+    Registered = 'registered'                          # DOI metadata published by OSTI
+
 @dataclass
 class Doi:
     title: str

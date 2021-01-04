@@ -160,14 +160,19 @@ class DOIPDS4LabelUtil:
         editors = self.get_editor_names(pds4_fields['editors'].split(';')) if 'editors' in pds4_fields.keys() else None
 
         # The 'authors' field is inconsistent on the use of separators.  Try to make a best guess on which method is better.
-        o_best_method =  self._make_best_guess_method_to_parse_authors(pds4_fields['authors'])
-        if o_best_method == BestParserMethod.BY_COMMA:
-            authors_list = pds4_fields['authors'].split(',')
-        elif o_best_method == BestParserMethod.BY_SEMI_COLON:
-            authors_list = pds4_fields['authors'].split(';')
+        if 'authors' in pds4_fields.keys():
+            o_best_method =  self._make_best_guess_method_to_parse_authors(pds4_fields['authors'])
+            if o_best_method == BestParserMethod.BY_COMMA:
+                authors_list = pds4_fields['authors'].split(',')
+            elif o_best_method == BestParserMethod.BY_SEMI_COLON:
+                authors_list = pds4_fields['authors'].split(';')
+            else:
+                logger.error(f"o_best_method,pds4_fields['authors'] {o_best_method,pds4_fields['authors']}")
+                raise InputFormatException("Cannot split the authors using comma or semi-colon.")
         else:
-            logger.error(f"o_best_method,pds4_fields['authors'] {o_best_method,pds4_fields['authors']}")
-            raise InputFormatException("Cannot split the authors using comma or semi-colon.")
+            msg = "missing author in pds4 input, please complete it"
+            logger.error(msg)
+            raise InputFormatException(msg)
 
         if 'doi' in pds4_fields.keys():
             doi_prefix_suffix = pds4_fields['doi'].split('/')
