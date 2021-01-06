@@ -8,7 +8,7 @@
 from lxml import etree
 from datetime import datetime
 
-from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import Doi, DoiStatus
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -175,52 +175,59 @@ class DOIOstiWebParser:
 
     @staticmethod
     def response_get_parse_osti_xml(osti_response_text):
-        """Function parse a response from a GET (query) or a PUT to the OSTI server (in XML query format) and return a list of dictionaries.
-           By default, all possible fields are extracted.  If desire to only extract smaller set of fields, they should be specified accordingly.
-           Specific fields are extracted from input.  Not all fields in XML are used."""
+        """
+        Parses a response from a GET (query) or a PUT to the OSTI server
+        (in XML query format) and return a list of dictionaries.
+
+        By default, all possible fields are extracted. If desire to only extract
+        smaller set of fields, they should be specified accordingly.
+        Specific fields are extracted from input. Not all fields in XML are used.
+        """
 
         dois = []
         errors = []
 
-        doc     = etree.fromstring(osti_response_text)
+        doc = etree.fromstring(osti_response_text)
         my_root = doc.getroottree()
 
         # Trim down input to just fields we want.
-        for single_record_element in my_root.iter():
-            if single_record_element.tag == 'record':
-                status = single_record_element.get('status')
-                if status is not None and status.lower() == 'error':
-                    # The 'error' record is parsed differently and does not have all the attributes we desire.
-                    # Get the entire text and save it in 'error' key.  Print a WARN only since it is not related to any particular 'doi' or 'id' action.
-                    logger.error(f"ERROR OSTI RECORD {single_record_element.text}")
+        for single_record_element in my_root.findall('record'):
+            status = single_record_element.get('status')
+            if status is not None and status.lower() == 'error':
+                # The 'error' record is parsed differently and does not have all
+                # the attributes we desire.
+                # Get the entire text and save it in 'error' key. Print a WARN
+                # only since it is not related to any particular 'doi' or 'id' action.
+                logger.error(f"ERROR OSTI RECORD {single_record_element.text}")
 
-                    # Check for any errors reported back from OSTI and save
-                    # them off to be returned
-                    errors_element = single_record_element.xpath('errors')
+                # Check for any errors reported back from OSTI and save
+                # them off to be returned
+                errors_element = single_record_element.xpath('errors')
 
-                    if len(errors_element):
-                        for error_element in errors_element[0]:
-                            errors.append(error_element.text)
+                if len(errors_element):
+                    for error_element in errors_element[0]:
+                        errors.append(error_element.text)
+            else:
+                lidvid = DOIOstiWebParser.get_lidvid(single_record_element)
+                if lidvid:
+                    # Move the fetching of identifier_type in parse_optional_fields() function.
+                    # The following 4 fields were deleted from constructor of Doi
+                    # to inspect individually since the code was failing:
+                    #     ['id','doi','date_record_added',date_record_updated']
+                    doi = Doi(title=single_record_element.xpath('title')[0].text,
+                              publication_date=single_record_element.xpath('publication_date')[0].text,
+                              product_type=single_record_element.xpath('product_type')[0].text,
+                              product_type_specific=single_record_element.xpath('product_type_specific')[0].text,
+                              related_identifier=lidvid,  # Set to None here and will be set to a valid value later.
+                              status=DoiStatus(status.lower()))
+
+                    # Parse for some optional fields that may not be present in every record from OSTI.
+                    doi= DOIOstiWebParser().parse_optional_fields(doi, single_record_element)
+                    dois.append(doi)
                 else:
-                    lidvid = DOIOstiWebParser.get_lidvid(single_record_element)
-                    if lidvid:
-                        # Move the fetching of identifier_type in parse_optional_fields() function.
-                        # The following 4 fields were deleted from constructor of Doi to inspect individually since the code was failing:
-                        #     ['id','doi','date_record_added',date_record_updated']
-                        doi = Doi(title=single_record_element.xpath('title')[0].text,
-                                  publication_date=single_record_element.xpath('publication_date')[0].text,
-                                  product_type=single_record_element.xpath('product_type')[0].text,
-                                  product_type_specific=single_record_element.xpath('product_type_specific')[0].text,
-                                  related_identifier=lidvid, # Set to None here and will be set to a valid value later.
-                                  status=status)
+                    logger.warning(f"no lidvid reference found in doi {single_record_element.xpath('doi')[0].text}")
 
-                        # Parse for some optional fields that may not be present in every record from OSTI.
-                        doi= DOIOstiWebParser().parse_optional_fields(doi, single_record_element)
-                        dois.append(doi)
-                    else:
-                        logger.warning(f"no lidvid reference found in doi {single_record_element.xpath('doi')[0].text}")
-
-        # end for single_record_element in my_root.iter():
+        # end for single_record_element in my_root.findall('record'):
 
         return dois, errors
 
