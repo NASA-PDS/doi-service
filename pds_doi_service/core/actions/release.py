@@ -22,8 +22,9 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    SiteURLNotExistException,
                                                    IllegalDOIActionException,
-                                                   WarningDOIException,
-                                                   CriticalDOIException)
+                                                   CriticalDOIException,
+                                                   collect_exception_classes_and_messages,
+                                                   raise_warn_exceptions)
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
@@ -92,45 +93,6 @@ class DOICoreActionRelease(DOICoreAction):
 
         return o_doi_label
 
-    def _collect_exception_classes_and_messages(self, single_exception,
-                                                io_exception_classes,
-                                                io_exception_messages):
-        """
-        Given a single exception, collect the exception class name and message.
-        The variables io_exception_classes and io_exception_messages are both
-        input and output.
-        """
-        # ex: SiteURNotExistException
-        actual_class_name = type(single_exception).__name__
-        logger.debug("actual_class_name,type(actual_class_name) "
-                     f"{actual_class_name},{type(actual_class_name)}")
-
-        io_exception_classes.append(actual_class_name)
-
-        # ex: "site_url http://mysite.example.com/link/to/my-dataset-id-25901.html not exist"
-        io_exception_messages.append(str(single_exception))
-
-        return io_exception_classes, io_exception_messages
-
-    def _raise_warn_exceptions(self, exception_classes, exception_messages):
-        """
-        Raise a WarningDOIException with all the class names and messages.
-        """
-        message_to_raise = ''
-
-        for ii in range(len(exception_classes)):
-            if ii == 0:
-                message_to_raise = (message_to_raise
-                                    + exception_classes[ii]
-                                    + ':' + exception_messages[ii])
-            else:
-                # Add a comma after every message.
-                message_to_raise = (message_to_raise
-                                    + ', ' + exception_classes[ii]
-                                    + ':' + exception_messages[ii])
-
-        raise WarningDOIException(message_to_raise)
-
     def _validate_doi(self, doi_label):
         """
         Before submitting the user input, it has to be validated against the
@@ -160,14 +122,15 @@ class DOICoreActionRelease(DOICoreAction):
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
                     TitleDoesNotMatchProductTypeException, SiteURLNotExistException) as err:
                 (exception_classes,
-                 exception_messages) = self._collect_exception_classes_and_messages(
+                 exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages
                 )
 
         # If there is at least one exception caught, raise a WarningDOIException
-        # with all the messages.
-        if len(exception_classes) > 0:
-            self._raise_warn_exceptions(exception_classes, exception_messages)
+        # with all the messages, provided the force flag is not set
+        if len(exception_classes) > 0 and not self._force:
+            raise_warn_exceptions(exception_classes, exception_messages)
+
 
     def run(self, **kwargs):
         """
@@ -211,13 +174,7 @@ class DOICoreActionRelease(DOICoreAction):
             transaction.log()
 
             return response_str
-        # Catch warnings and promote them to exceptions if the force flag is not set
-        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                TitleDoesNotMatchProductTypeException, SiteURLNotExistException,
-                WarningDOIException) as err:
-            if not self._force:
-                raise WarningDOIException(str(err))
-        # Convert other errors into a CriticalDOIException to report back
+        # Convert errors into a CriticalDOIException to report back
         except (IllegalDOIActionException, UnknownNodeException,
                 InputFormatException) as err:
             raise CriticalDOIException(str(err))

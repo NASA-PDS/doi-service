@@ -27,7 +27,8 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException,
                                                    UnknownNodeException,
-                                                   WarningDOIException)
+                                                   collect_exception_classes_and_messages,
+                                                   raise_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
@@ -192,6 +193,9 @@ class DOICoreActionReserve(DOICoreAction):
             raise InputFormatException(f"Error reading file {input_file}")
 
     def complete_and_validate_dois(self, dois, contributor, publisher, dry_run):
+        exception_classes = []
+        exception_messages = []
+
         # Note that it is important to fill in the doi.status for all dois in
         # case an exception occurs in the validate() function.
         # If an exception occurs, the value of dois now has the correct
@@ -212,17 +216,27 @@ class DOICoreActionReserve(DOICoreAction):
             # Add field 'date_record_added' because the XSD requires it.
             doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
 
-        dois_out = []
-
         for doi in dois:
-            if dry_run:
-                self._doi_validator.validate(doi)
-            else:
-                self._doi_validator.validate_osti_submission(doi)
+            try:
+                if dry_run:
+                    self._doi_validator.validate(doi)
+                else:
+                    self._doi_validator.validate_osti_submission(doi)
+            # Collect all warnings and exceptions so they can be combined into
+            # a single WarningDOIException
+            except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
+                    TitleDoesNotMatchProductTypeException) as err:
+                (exception_classes,
+                 exception_messages) = collect_exception_classes_and_messages(
+                    err, exception_classes, exception_messages
+                )
 
-            dois_out.append(doi)
+        # If there is at least one exception caught, raise a WarningDOIException
+        # with all the messages, provided the force flag is not set
+        if len(exception_classes) > 0 and not self._force:
+            raise_warn_exceptions(exception_classes, exception_messages)
 
-        return dois_out
+        return dois
 
     def _validate_against_schematron_as_batch(self, dois, dry_run):
         # Because the function schematron validator only works on one record,
@@ -300,11 +314,6 @@ class DOICoreActionReserve(DOICoreAction):
             logger.debug(f"reserve_response {o_doi_label}")
             logger.debug(f"_input,self,_dry_run {self._input, self._dry_run}")
             return o_doi_label
-        # Catch warnings and promote them to exceptions if the force flag is not set
-        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                TitleDoesNotMatchProductTypeException) as err:
-            if not self._force:
-                raise WarningDOIException(err)
         # Convert other errors into a CriticalDOIException to report back
         except (UnknownNodeException, InputFormatException) as err:
             raise CriticalDOIException(err)
