@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    <record status="review">
+        <id></id>
+        <title>InSight Cameras Bundle 0</title>
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>urn:nasa:pds:insight_cameras::2.0</accession_number>
+        <publisher></publisher>
+        <availability></availability>
+        <publication_date>2019-01-01</publication_date>
+        <site_url>https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
+        <product_type>Dataset</product_type>
+        <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
+        <date_record_added></date_record_added>
+        <keywords>PDS; PDS4;</keywords>
+        <authors>
+             <author>
+                <last_name>Deen</last_name>
+                <first_name>R.</first_name>
+            </author>
+        </authors>
+        <contributors>
+            <contributor>
+                <full_name>Planetary Data System:  Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
+</records>
