@@ -412,7 +412,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(release_record.node, 'eng')
         self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(release_record.status, DoiStatus.Released)
+        self.assertEqual(release_record.status, DoiStatus.Review)
         self.assertEqual(release_record.doi, '10.17189/21734')
 
         # Record field should match what we provided via patch method

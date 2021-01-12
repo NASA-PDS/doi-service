@@ -47,9 +47,7 @@ class DoiStatus(str, Enum):
             DOI request has been reviewed by Engineering Node and released
             (submitted to OSTI), but not yet published (by OSTI).
         Registered -
-            DOI request has been registered with OSTI, but not yet published.
-        Released -
-            DOI request has been published by OSTI.
+            DOI request has been registered with OSTI.
 
     """
     Unknown = 'unknown'
@@ -59,7 +57,6 @@ class DoiStatus(str, Enum):
     Review = 'review'
     Pending = 'pending'
     Registered = 'registered'
-    Released = 'released'
 
 
 @dataclass
