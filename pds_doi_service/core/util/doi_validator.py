@@ -41,8 +41,9 @@ class DOIValidator:
         DoiStatus.Reserved_not_submitted: 0,
         DoiStatus.Reserved: 1,
         DoiStatus.Draft: 2,
-        DoiStatus.Pending: 3,
-        DoiStatus.Registered: 4
+        DoiStatus.Review: 3,
+        DoiStatus.Pending: 4,
+        DoiStatus.Registered: 5
     }
 
     def __init__(self,db_name=None):
@@ -212,13 +213,15 @@ class DOIValidator:
         if rows:
             row = rows[0]
             doi_str = row[columns.index('doi')]
-            status = row[columns.index('status')]
+            prev_status = row[columns.index('status')]
 
             # A status tuple of ('Pending',3) is higher than ('Draft',2) will cause an error.
-            if self.m_workflow_order[status.lower()] > self.m_workflow_order[doi.status.lower()]:
-                msg = (f"There is a DOI record {doi_str} with status: '{status.lower()}'. "
-                       f"Are you sure you want to restart the workflow from step "
-                       f"'{doi.status}' for the lidvid: {doi.related_identifier}?")
+            if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:
+                msg = (
+                    f"There is a DOI record {doi_str} with status: '{prev_status.lower()}'. "
+                    f"Are you sure you want to restart the workflow from step "
+                    f"'{doi.status}' for the lidvid: {doi.related_identifier}?"
+                )
 
                 logger.error(msg)
                 raise UnexpectedDOIActionException(msg)
