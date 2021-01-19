@@ -29,6 +29,7 @@ Install virtual env
 
 Deploy dependancies:
 
+    pip install -r requirements.txt
     pip install -r requirements_dev.txt
     
 or
