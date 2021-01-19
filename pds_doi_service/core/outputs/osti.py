@@ -1,6 +1,5 @@
 
-import os
-from os.path import abspath, dirname, join
+from os.path import dirname, join
 import pystache
 import copy
 import datetime
@@ -36,6 +35,20 @@ class DOIOutputOsti:
             if 'str' not in str(type(doi_fields['publication_date'])):
                 doi_fields['publication_date'] = doi_fields['publication_date'].strftime('%Y-%m-%d')
             doi_fields_list.append(doi_fields)
+
+        renderer = pystache.Renderer()
+
+        return renderer.render_path(self._reserve_template_path, {'dois': doi_fields_list})
+
+    def create_osti_doi_review_record(self, dois: list):
+        doi_fields_list = []
+
+        for doi in dois:
+            # Filter out any keys with None as the value, so the string literal
+            # "None" is not written out as an XML tag's text body
+            doi_fields_list.append(
+                dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
+            )
 
         renderer = pystache.Renderer()
 

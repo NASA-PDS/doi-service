@@ -13,6 +13,7 @@ import sqlite3
 from sqlite3 import Error
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
@@ -38,12 +39,12 @@ class DOIDataBase:
     def close_database(self):
         ''' Close database connection to a SQLite database. '''
 
-        logger.debug(f"Closing database {self.m_database_name}") 
+        logger.debug(f"Closing database {self.m_database_name}")
 
         if self.m_my_conn:
             self.m_my_conn.close()
 
-            # Set m_database_name to None to signify that there is no connection. 
+            # Set m_database_name to None to signify that there is no connection.
             self.m_database_name = None
         else:
             logger.warn(f"Database connection has not been started or is already closed:m_database_name [{self.m_database_name}]")
@@ -83,7 +84,7 @@ class DOIDataBase:
             logger.warn(f"Connection is None in database {self.get_database_name}")
             self.m_my_conn = self.create_connection(self.m_database_name)
         table_pointer = self.m_my_conn.cursor()
-            
+
         # Get the count of tables with the given name.
         query_string = "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='" + self.m_default_table_name + "'"
         table_pointer.execute(query_string)
@@ -112,14 +113,14 @@ class DOIDataBase:
         o_query_string += ',submitter TEXT '    # email of the submitter of the DOI
         o_query_string += ',title TEXT '        # title used for the DOI
         o_query_string += ',type TEXT '         # product type
-        o_query_string += ',subtype TEXT'      # subtype of the product 
+        o_query_string += ',subtype TEXT'      # subtype of the product
         o_query_string += ',node_id TEXT NOT NULL'      # steward discipline node ID
         o_query_string += ',lid TEXT '
         o_query_string += ',vid TEXT '
         o_query_string += ',doi TEXT'                   # DOI provided by the provider (may be null if pending or draft)
         o_query_string += ',release_date INT '  # as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
-        o_query_string += ',transaction_key TEXT NOT NULL' # transaction (key is node id /datetime) 
-        o_query_string += ',is_latest BOOLEAN NULL); ' # when the transaction is the latest 
+        o_query_string += ',transaction_key TEXT NOT NULL' # transaction (key is node id /datetime)
+        o_query_string += ',is_latest BOOLEAN NULL); ' # when the transaction is the latest
         logger.debug(f"o_query_string {o_query_string}")
 
         return o_query_string
@@ -256,7 +257,7 @@ class DOIDataBase:
                       dict_row['lid'],              # 8
                       dict_row['vid'],              # 9
                       dict_row['doi'],              # 10
-                      dict_row['release_date'],     # 11 
+                      dict_row['release_date'],     # 11
                       dict_row['transaction_key'],  # 12
                       dict_row['is_latest'])        # 13
 
@@ -273,37 +274,43 @@ class DOIDataBase:
 
         return 1
 
-    def write_doi_info_to_database(self, lid, vid, transaction_key, doi=None, transaction_date=datetime.datetime.now(), status='unknown',
-                                   title='', product_type='', product_type_specific='', submitter='', discipline_node=''):
-        '''Write some DOI info from 'reserve' or 'draft' request to database.'''
+    def write_doi_info_to_database(self, lid, vid, transaction_key, doi=None,
+                                   transaction_date=datetime.datetime.now(),
+                                   status=DoiStatus.Unknown, title='',
+                                   product_type='', product_type_specific='',
+                                   submitter='', discipline_node=''):
+        """Write some DOI info from 'reserve' or 'draft' request to database."""
 
         self.m_my_conn = self.get_connection()
         logger.debug(f"DEFAULT_DB_NAME {self.get_database_name()}")
 
-        data_tuple = (status, product_type, product_type_specific, True, lid, vid, doi,
-                      submitter, transaction_date.replace(tzinfo=datetime.timezone.utc).timestamp(), discipline_node, title, transaction_key)
+        data_tuple = (
+            status, product_type, product_type_specific, True, lid, vid,
+            doi, submitter, transaction_date.replace(tzinfo=datetime.timezone.utc).timestamp(),
+            discipline_node, title, transaction_key
+        )
 
         logger.debug(f"TRANSACTION_INFO:data_tuple {data_tuple}")
 
+        # Create and execute the query to unset latest for record same lid/vid and doi fields.
+        query_string = self.create_q_string_for_transaction_update_is_latest_field()
+
         try:
-            # Create and execute the query to unset latest for record same lid/vid and doi fields.
-            query_string = self.create_q_string_for_transaction_update_is_latest_field()
             self.m_my_conn.execute(query_string, (lid, vid, doi if doi else 'NULL' ))
 
             # Combine the insert and update here so the commit can be applied to both actions.
             query_string = self.create_q_string_for_transaction_insert()
+
             logger.debug(f"query_string {query_string}")
-            self.m_my_conn.execute(query_string,data_tuple)
+            self.m_my_conn.execute(query_string, data_tuple)
             self.m_my_conn.commit()
         except sqlite3.Error as e:
-            logger.error("Database error: %s" % e)
+            logger.error("Database error: %s", e)
             logger.error(f"query_string {query_string}")
-            raise Exception("Database error: %s" % e) from None
+            raise Exception("Database error: %s" % e)
         except Exception as e:
-            logger.error("Exception in _query: %s" % e)
-            raise Exception("Exception in _query: %s" % e) from None
-
-        return 1
+            logger.error("Exception in _query: %s", e)
+            raise Exception("Exception in _query: %s" % e)
 
     def select_row_one(self, db_name, table_name, query_criterias):
         ''' Select rows based on a criteria.'''

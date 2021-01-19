@@ -15,6 +15,7 @@ from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
                                         LabelsPayload, LabelPayload)
 from pds_doi_service.api.test import BaseTestCase
+from pds_doi_service.core.entities.doi import DoiStatus
 
 
 class TestDoisController(BaseTestCase):
@@ -87,7 +88,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.node, 'eng')
         self.assertEqual(summary.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(summary.status, 'Draft')
+        self.assertEqual(summary.status, DoiStatus.Draft)
 
         # Test filtering by start/end date
         # Note: this test was originally developed on PDT, so its important
@@ -116,7 +117,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
-        self.assertEqual(summary.status, 'reserved_not_submitted')
+        self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
 
         # Test fetching of a record that only has an LID (no VID) associated to it
         query_string = [('node', 'img'),
@@ -142,7 +143,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
-        self.assertEqual(summary.status, 'reserved_not_submitted')
+        self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
 
         # Finally, test with a malformed start/end date and ensure we
         # get "invalid argument" code back
@@ -204,7 +205,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
         # the object sent to transaction database has 'Draft' status
-        self.assertEqual(draft_record.status, 'Pending')
+        self.assertEqual(draft_record.status, DoiStatus.Pending)
 
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft,
@@ -241,7 +242,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         # Note we get Pending back from the parsed label, however
         # the object sent to transaction database has 'Draft' status
-        self.assertEqual(draft_record.status, 'Pending')
+        self.assertEqual(draft_record.status, DoiStatus.Pending)
 
     def reserve_action_run_patch(self, **kwargs):
         """
@@ -262,7 +263,7 @@ class TestDoisController(BaseTestCase):
         """Test dry-run reserve POST"""
         # Submit a new bundle in reserve (not submitted) status
         body = LabelsPayload(
-            [LabelPayload(status='Reserved',
+            [LabelPayload(status=DoiStatus.Reserved,
                           title='Laboratory Shocked Feldspars Bundle',
                           publication_date=datetime.now(),
                           product_type_specific='PDS4 Bundle',
@@ -294,7 +295,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(reserve_record.node, 'img')
         self.assertEqual(reserve_record.submitter, 'img-submitter@jpl.nasa.gov')
         self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
-        self.assertEqual(reserve_record.status, 'reserved_not_submitted')
+        self.assertEqual(reserve_record.status, DoiStatus.Reserved_not_submitted)
 
     def test_post_dois_invalid_requests(self):
         """Test invalid POST requests"""
@@ -357,7 +358,7 @@ class TestDoisController(BaseTestCase):
         """
         return json.dumps(
             [
-                {"status": "Draft",
+                {"status": DoiStatus.Draft,
                  "update_date": '2020-10-20T14:04:12.560568-07:00',
                  "submitter": "eng-submitter@jpl.nasa.gov",
                  "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
@@ -411,7 +412,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(release_record.node, 'eng')
         self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(release_record.status, 'Released')
+        self.assertEqual(release_record.status, DoiStatus.Review)
         self.assertEqual(release_record.doi, '10.17189/21734')
 
         # Record field should match what we provided via patch method
@@ -579,7 +580,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.node, 'eng')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(record.status, 'Pending')
+        self.assertEqual(record.status, DoiStatus.Pending)
 
         # Make sure we only got one record back
         root = etree.fromstring(bytes(record.record, encoding='utf-8'))
@@ -604,7 +605,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.node, 'eng')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras')
-        self.assertEqual(record.status, 'Pending')
+        self.assertEqual(record.status, DoiStatus.Pending)
 
         # Make sure we only got one record back
         root = etree.fromstring(bytes(record.record, encoding='utf-8'))
