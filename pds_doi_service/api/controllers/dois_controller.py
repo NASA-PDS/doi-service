@@ -376,7 +376,32 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     return records, 200
 
 
-def post_release_doi(lidvid, force=False):
+def post_submit_doi(lidvid, force=None):
+    """
+    Move a DOI record from draft/reserve status to "review".
+
+    Parameters
+    ----------
+    lidvid : str
+        The LIDVID associated with the record to submit for review.
+    force : bool, optional
+        If true, forces a submit request to completion, ignoring any warnings
+        encountered.
+
+    Returns
+    -------
+    record : DoiRecord
+        Record of the DOI submit action.
+
+    """
+    # A submit action is the same as invoking the release endpoint with
+    # --no-review set to False
+    kwargs = {'lidvid': lidvid, 'force': force, 'no_review': False}
+
+    return post_release_doi(**kwargs)
+
+
+def post_release_doi(lidvid, force=False, **kwargs):
     """
     Move a DOI record from draft/reserve status to "release".
 
@@ -387,6 +412,8 @@ def post_release_doi(lidvid, force=False):
     force : bool, optional
         If true, forces a release request to completion, ignoring any warnings
         encountered.
+    kwargs : dict
+        Additional keyword arguments to forward to the DOI release action.
 
     Returns
     -------
@@ -430,6 +457,7 @@ def post_release_doi(lidvid, force=False):
         # XML file and feed it to the release action
         with NamedTemporaryFile('w', prefix='output_', suffix='.xml') as xml_file:
             xml_file.write(_get_record_for_lidvid(osti_label_file, lidvid))
+            xml_file.flush()
 
             # Prepare the release action
             release_action = DOICoreActionRelease(db_name=_get_db_name())
@@ -438,7 +466,10 @@ def post_release_doi(lidvid, force=False):
                 'node': list_record['node_id'],
                 'submitter': list_record['submitter'],
                 'input': xml_file.name,
-                'force': force
+                'force': force,
+                # Default for this endpoint should be to skip review and release
+                # directly to OSTI
+                'no_review': kwargs.get('no_review', True)
             }
 
             osti_release_label = release_action.run(**release_kwargs)
