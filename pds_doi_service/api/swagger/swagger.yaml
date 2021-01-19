@@ -272,34 +272,33 @@ paths:
           type: string
       responses:
         "501":
-          description: Not Implemented
+          description: Not implemented
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
-  /dois/{lidvid}/release:
+  /dois/{lidvid}/submit:
     post:
       tags:
       - dois
-      description: Move a DOI record from draft/reserve status to "release".
-      operationId: post_release_doi
+      description: Move a DOI record from draft/reserve status to "review".
+      operationId: post_submit_doi
       parameters:
       - name: lidvid
         in: path
-        description: The LIDVID associated with the record to release.
+        description: The LIDVID associated with the record to submit for review.
         required: true
         style: simple
         explode: false
         schema:
           type: string
-        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
+        example: urn:nasa:pds:lab_shocked_feldspars::1.0
       - name: force
         in: query
-        description: If true, forces a release request to completion, ignoring any
+        description: If true, forces a submit request to completion, ignoring any
           warnings encountered.
         required: false
         style: form
         explode: true
         schema:
           type: boolean
-          default: false
       responses:
         "200":
           description: Success
