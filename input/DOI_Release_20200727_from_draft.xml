@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <records>
     <record status='Pending'>
-        <title>InSight Cameras Bundle 0</title>
-        <accession_number>urn:nasa:pds:insight_cameras::2.0</accession_number>
+        <title>InSight Cameras Bundle 4</title>
+        <accession_number>urn:nasa:pds:insight_cameras::4.0</accession_number>
         <authors>
              <author>
                 <first_name>R.</first_name>

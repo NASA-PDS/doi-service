@@ -8,11 +8,11 @@ from unittest.mock import patch
 import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.outputs.osti import DOIOutputOsti
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
-
 
 class MyTestCase(unittest.TestCase):
     # As of 07/13/2020, OSTI has the below ID records (['22831','22832','22833'])
@@ -54,11 +54,16 @@ class MyTestCase(unittest.TestCase):
         Allows a no-review release to occur without actually submitting
         anything to the OSTI test server.
         """
-        # Just return the parsed DOI's from the input label, along with the
-        # input label itself
+        # Parse the DOI's from the input label, update status to 'pending',
+        # and create the output label
         dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(payload)
 
-        return dois, payload.decode('utf-8')
+        for doi in dois:
+            doi.status = DoiStatus.Pending
+
+        o_doi_label = DOIOutputOsti().create_osti_doi_review_record(dois)
+
+        return dois, o_doi_label
 
     def test_reserve_release_to_review(self):
         """Test release to review status with a reserved DOI entry"""
@@ -150,6 +155,56 @@ class MyTestCase(unittest.TestCase):
         # Should get one DOI back with status 'pending'
         self.assertEqual(len(dois), 1)
         self.assertEqual(dois[0].status, DoiStatus.Pending)
+
+    def test_review_release_to_review(self):
+        """
+        Test release to review status with a review DOI entry
+
+        This is essentially a no-op, but it should work regardless
+        """
+
+        release_args = {
+            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
+            'node': 'img',
+            'submitter': 'img-submitter@jpl.nasa.gov',
+            'force': True,
+            'no_review': False
+        }
+
+        o_doi_label = self._action.run(**release_args)
+
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
+            bytes(o_doi_label, encoding='utf-8')
+        )
+
+        # Should get one DOI back with status 'review'
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(dois[0].status, DoiStatus.Review)
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
+        'webclient_submit_existing_content', webclient_submit_patch)
+    def test_review_release_to_osti(self):
+        """Test release directly to OSTI with a review DOI entry"""
+
+        release_args = {
+            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
+            'node': 'img',
+            'submitter': 'img-submitter@jpl.nasa.gov',
+            'force': True,
+            'no_review': True
+        }
+
+        o_doi_label = self._action.run(**release_args)
+
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
+            bytes(o_doi_label, encoding='utf-8')
+        )
+
+        # Should get one DOI back with status 'pending'
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(dois[0].status, DoiStatus.Pending)
+
 
 if __name__ == '__main__':
     unittest.main()
