@@ -35,6 +35,15 @@ or
     
     pip intall -e .
     
+
+Update your local configuration to access the OSTI test server
+
+Create a file in the base directory of the project `pds_doi_service.ini`
+
+    [OSTI]
+    user = <ask  pds-operator@jpl.nasa.gov>
+    password = <ask  pds-operator@jpl.nasa.gov>
+
     
 ## Launch api server (to be re-worked)
 
@@ -43,11 +52,11 @@ or
     
 ## Test 
 
-### Unit tests:
+### Unit tests (for developers) :
 
     python setup.py test
 
-### Behavioral testing
+### Behavioral testing (for Integration & Testing)
 
 Then you can run the behavioral tests:
 

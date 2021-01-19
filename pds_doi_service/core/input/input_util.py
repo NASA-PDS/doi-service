@@ -22,7 +22,7 @@ class DOIInputUtil:
 
         logger.info("i_filepath" + " " + i_filepath)
 
-        xl_wb = pd.ExcelFile(i_filepath)
+        xl_wb = pd.ExcelFile(i_filepath, engine='openpyxl')
         actual_sheet_name = xl_wb.sheet_names[0]  # We only want the first sheet.
         xl_sheet = pd.read_excel(i_filepath, actual_sheet_name, converters={'publication_date': str,
                                                                        'publication_date (yyyy-mm-dd)': str})
