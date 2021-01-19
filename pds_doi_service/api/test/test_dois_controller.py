@@ -371,6 +371,36 @@ class TestDoisController(BaseTestCase):
             ]
         )
 
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
+    def test_post_submit(self):
+        """Test the submit endpoint"""
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        release_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/submit'
+                .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert200(
+            release_response,
+            'Response body is : ' + release_response.data.decode('utf-8')
+        )
+
+        # Recreate a DoiRecord from the response JSON and examine the
+        # fields
+        submit_record = DoiRecord.from_dict(release_response.json[0])
+
+        self.assertEqual(submit_record.node, 'eng')
+        self.assertEqual(submit_record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(submit_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(submit_record.status, DoiStatus.Review)
+        self.assertIsNone(submit_record.doi)
+
     def release_action_run_patch(self, **kwargs):
         """
         Patch for DOICoreActionRelease.run()
