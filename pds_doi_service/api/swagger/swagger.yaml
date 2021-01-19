@@ -310,10 +310,53 @@ paths:
         "400":
           description: Can not be released
         "404":
-          description: Not existing
+          description: No entry found for LIDVID
         "500":
           description: Internal error
       x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
+# TODO: This routing endpoint has been commented out to effectively block access
+#       to the API's release endpoint until an authentication scheme can
+#       be incorporated to ensure only the Engineering node has access.
+#  /dois/{lidvid}/release:
+#    post:
+#      tags:
+#      - dois
+#      description: Move a DOI record from draft/reserve/review status to "release".
+#      operationId: post_release_doi
+#      parameters:
+#      - name: lidvid
+#        in: path
+#        description: The LIDVID associated with the record to release.
+#        required: true
+#        style: simple
+#        explode: false
+#        schema:
+#          type: string
+#        example: 'urn:nasa:pds:lab_shocked_feldspars::1.0'
+#      - name: force
+#        in: query
+#        description: If true, forces a release request to completion, ignoring any
+#          warnings encountered.
+#        required: false
+#        style: form
+#        explode: true
+#        schema:
+#          type: boolean
+#          default: false
+#      responses:
+#        "200":
+#          description: Success
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/doi_record'
+#        "400":
+#          description: Can not be released
+#        "404":
+#          description: No entry found for LIDVID
+#        "500":
+#          description: Internal error
+#      x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
 components:
   schemas:
     label_payload:
