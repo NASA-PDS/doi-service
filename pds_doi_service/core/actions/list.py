@@ -19,10 +19,11 @@ import json
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.input.exceptions import UnknownLIDVIDException
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_core.actions.list')
+logger = get_logger('pds_doi_service.core.actions.list')
 
 
 class DOICoreActionList(DOICoreAction):
@@ -140,6 +141,41 @@ class DOICoreActionList(DOICoreAction):
             help='A list of email addresses comma separated to pass as input to '
                  'the database query.'
         )
+
+    def transaction_for_lidvid(self, lidvid):
+        """
+        Returns the latest transaction record for the provided LIDVID.
+
+        Parameters
+        ----------
+        lidvid : str
+            The LIDVID to search for.
+
+        Returns
+        -------
+        record : dict
+            Latest Transaction Database record for the given LIDVID.
+
+        Raises
+        ------
+        UnknownLIDVIDException
+            If no entry can be found in the transaction database for the
+            provided LIDVID.
+
+        """
+        list_kwargs = {'lidvid': lidvid}
+        list_results = json.loads(self.run(**list_kwargs))
+
+        if not list_results:
+            raise UnknownLIDVIDException(
+                f'No record(s) could be found for LIDVID {lidvid}.'
+            )
+
+        # Extract the latest record from all those returned
+        record = next(filter(lambda list_result: list_result['is_latest'],
+                             list_results))
+
+        return record
 
     def run(self, **kwargs):
         """

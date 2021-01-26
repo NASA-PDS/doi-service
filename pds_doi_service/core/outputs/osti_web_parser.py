@@ -206,6 +206,53 @@ class DOIOstiWebParser:
             #raise InputFormatException("Cannot find identifier_value.  Expecting one of ['accession_number','identifier_type','report_numbers'] tags")
 
     @staticmethod
+    def get_record_for_lidvid(osti_label_file, lidvid):
+        """
+        Returns the record entry corresponding to the provided LIDVID from the
+        OSTI XML label file.
+
+        Parameters
+        ----------
+        osti_label_file : str
+            Path to the OSTI XML label file to search.
+        lidvid : str
+            The LIDVID of the record to return from the OSTI label.
+
+        Returns
+        -------
+        record : str
+            The single found record embedded in a <records> tag. This string is
+            suitable to be written to disk as a new OSTI label.
+
+        Raises
+        ------
+        UnknownLIDVIDException
+            If no record for the requested LIDVID is found in the provided OSTI
+            label file.
+
+        """
+        root = etree.parse(osti_label_file).getroot()
+
+        records = root.xpath('record')
+
+        for record in records:
+            if DOIOstiWebParser.get_lidvid(record) == lidvid:
+                result = record
+                break
+        else:
+            raise UnknownLIDVIDException(
+                f'Could not find entry for lidvid "{lidvid}" in OSTI label file '
+                f'{osti_label_file}.'
+            )
+
+        new_root = etree.Element('records')
+        new_root.append(result)
+
+        return etree.tostring(
+            new_root, pretty_print=True, xml_declaration=True, encoding='UTF-8'
+        ).decode('utf-8')
+
+    @staticmethod
     def response_get_parse_osti_xml(osti_response_text):
         """
         Parses a response from a GET (query) or a PUT to the OSTI server
