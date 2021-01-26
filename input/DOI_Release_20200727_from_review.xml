@@ -14,14 +14,26 @@
         <date_record_added></date_record_added>
         <keywords>PDS; PDS4;</keywords>
         <authors>
-             <author>
-                <last_name>Deen</last_name>
+            <author>
                 <first_name>R.</first_name>
+                <last_name>Deen</last_name>
+            </author>
+             <author>
+                <first_name>H.</first_name>
+                <last_name>Abarca</last_name>
+            </author>
+             <author>
+                <first_name>P.</first_name>
+                <last_name>Zamani</last_name>
+            </author>
+             <author>
+                <first_name>J.</first_name>
+                <last_name>Maki</last_name>
             </author>
         </authors>
         <contributors>
             <contributor>
-                <full_name>Planetary Data System:  Node</full_name>
+                <full_name>Planetary Data System: Engineering Node</full_name>
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>

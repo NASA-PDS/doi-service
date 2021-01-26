@@ -3,8 +3,10 @@
 import os
 from os.path import abspath, dirname, join
 import unittest
+import tempfile
 
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
+from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
@@ -13,19 +15,18 @@ class DraftActionTestCase(unittest.TestCase):
     # Because validation has been added to each action, the force=True is
     # required for each test as the command line is not parsed.
 
-    @classmethod
-    def setUpClass(cls):
-        cls.test_dir = abspath(dirname(__file__))
-        cls.input_dir = abspath(
-            join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
+    def setUp(self):
+        self.test_dir = abspath(dirname(__file__))
+        self.input_dir = abspath(
+            join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
-        cls.db_name = 'doi_temp.db'
-        cls._action = DOICoreActionDraft(db_name=cls.db_name)
+        self.db_name = join(self.test_dir, 'doi_temp.db')
+        self._draft_action = DOICoreActionDraft(db_name=self.db_name)
+        self._review_action = DOICoreActionRelease(db_name=self.db_name)
 
-    @classmethod
-    def tearDownClass(cls):
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+    def tearDown(self):
+        if os.path.isfile(self.db_name):
+            os.remove(self.db_name)
 
     def test_local_dir_one_file(self):
         """Test draft request with local dir containing one file"""
@@ -36,7 +37,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -61,7 +62,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -88,7 +89,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -113,7 +114,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -138,7 +139,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -163,7 +164,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -190,7 +191,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -217,7 +218,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._action.run(**kwargs)
+        osti_doi = self._draft_action.run(**kwargs)
 
         dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
 
@@ -234,6 +235,66 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(doi.description,
                          'Collection of DOCUMENT products.')
         self.assertEqual(doi.status, DoiStatus.Pending)
+
+    def test_move_lidvid_to_draft(self):
+        """Test moving a review record back to draft via its lidvid"""
+        # Start by drafting a PDS label
+        draft_kwargs = {
+            'input': join(self.input_dir, 'bundle_in_with_contributors.xml'),
+            'node': 'img',
+            'submitter': 'my_user@my_node.gov',
+            'force': True
+        }
+
+        draft_osti_doi = self._draft_action.run(**draft_kwargs)
+
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(draft_osti_doi)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+        self.assertEqual(dois[0].status, DoiStatus.Pending)
+
+        # Move the draft to review
+        with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
+            xml_file.write(draft_osti_doi)
+            xml_file.flush()
+
+            review_kwargs = {
+                'input': xml_file.name,
+                'node': 'img',
+                'submitter': 'my_user@my_node.gov',
+                'force': True
+            }
+
+            review_osti_doi = self._review_action.run(**review_kwargs)
+
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(
+            bytes(review_osti_doi, encoding='utf-8')
+        )
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+
+        doi = dois[0]
+        self.assertEqual(doi.status, DoiStatus.Review)
+
+        # Finally, move the review record back to draft with the lidvid option
+        draft_kwargs = {
+            'lidvid': doi.related_identifier,
+            'node': 'img',
+            'submitter': 'my_user@my_node.gov',
+            'force': True
+        }
+
+        draft_osti_doi = self._draft_action.run(**draft_kwargs)
+
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(
+            bytes(draft_osti_doi, encoding='utf-8')
+        )
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+        self.assertEqual(dois[0].status, DoiStatus.Pending)
 
 
 if __name__ == '__main__':
