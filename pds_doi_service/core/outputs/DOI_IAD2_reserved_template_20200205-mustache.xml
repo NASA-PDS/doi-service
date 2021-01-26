@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <records>
     {{#dois}}
-    <record status="{{status}}"> 
+    <record status="{{status}}">
         {{#id}}
         <id>{{id}}</id>
         {{/id}}
@@ -9,14 +9,16 @@
         <id></id>
         {{/id}}
         <title>{{title}}</title>
+        {{#doi}}
+        <doi>{{doi}}</doi>
+        {{/doi}}
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
         <accession_number>{{related_identifier}}</accession_number>
         <publisher>{{publisher}}</publisher>
-          {{#doi}}
-        <doi>{{doi}}</doi>
-        {{/doi}}
-        <availability></availability>
+        <availability>NASA Planetary Data System</availability>
         <publication_date>{{publication_date}}</publication_date>
+        <country>USA</country>
+        <description>{{description}}</description>
         {{#site_url}}
         <site_url>{{site_url}}</site_url>
         {{/site_url}}
@@ -26,7 +28,7 @@
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
         <date_record_added>{{date_record_added}}</date_record_added>
-        <keywords>PDS; PDS4;</keywords>
+        <keywords>{{keywords}}</keywords>
         <authors>
             {{#authors}}
              <author>
@@ -61,7 +63,7 @@
                 {{#full_name}}
                 <full_name>{{full_name}}</full_name>
                 {{/full_name}}
-                <contributor_type>DataCurator</contributor_type>
+                <contributor_type>Editor</contributor_type>
                 <affiliations/>
             </contributor>
             {{/editors}}
@@ -77,5 +79,3 @@
     </record>
     {{/dois}}
 </records>
-
-
