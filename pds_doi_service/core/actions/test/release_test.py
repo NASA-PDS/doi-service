@@ -10,12 +10,9 @@ from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.util.general_util import get_logger
-
-logger = get_logger(__name__)
 
 
-class MyTestCase(unittest.TestCase):
+class ReleaseActionTestCase(unittest.TestCase):
     # As of 07/13/2020, OSTI has the below ID records (['22831','22832','22833'])
     # in their test server so this test will work to demonstrate that they have
     # new status of 'Pending' or 'Registered'. If for some reason the server has
@@ -34,18 +31,15 @@ class MyTestCase(unittest.TestCase):
         # raised about using existing lidvid.
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
-            logger.info(f"Removed test artifact database file {cls.db_name}")
 
         # Because validation has been added to each action, the force=True is
         # required as the command line is not parsed for unit test.
         cls._action = DOICoreActionRelease(db_name=cls.db_name)
-        logger.info(f"Instantiated DOICoreActionRelease with database file {cls.db_name}")
 
     @classmethod
     def tearDownClass(cls):
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
-            logger.info(f"Removed test artifact database file {cls.db_name}")
 
     def webclient_submit_patch(self, payload, i_url=None,
                                i_username=None, i_password=None):
