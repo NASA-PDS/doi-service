@@ -139,6 +139,9 @@ class DOICoreActionRelease(DOICoreAction):
                 # Add 'status' field so the ranking in the workflow can be determined.
                 doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
 
+                # Make sure correct contributor field is set
+                doi.contributor = NodeUtil().get_node_long_name(self._node)
+
                 single_doi_label = DOIOutputOsti().create_osti_doi_release_record(doi)
 
                 if self._config.get('OTHER', 'release_validate_against_xsd_flag').lower() == 'true':

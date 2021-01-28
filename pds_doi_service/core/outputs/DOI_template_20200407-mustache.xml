@@ -17,8 +17,7 @@
         <availability>NASA Planetary Data System</availability>
         <publication_date>{{publication_date}}</publication_date>
         <country>USA</country>
-        <description>{{description}}
-        </description>
+        <description>{{description}}</description>
         <site_url>{{site_url}}</site_url>
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
@@ -45,21 +44,21 @@
         <contributors>
             {{#editors}}
             <contributor>
-                    <email/>
-                    {{#last_name}}
-                    <last_name>{{last_name}}</last_name>
-                    {{/last_name}}
-                    {{#first_name}}
-                    <first_name>{{first_name}}</first_name>
-                    {{/first_name}}
-                    {{#middle_name}}
-                    <middle_name>{{middle_name}}</middle_name>
-                    {{/middle_name}}
-                    {{#full_name}}
-                    <full_name>{{full_name}}</full_name>
-                    {{/full_name}}
-                    <contributor_type>Editor</contributor_type>
-                    <affiliations/>
+                <email/>
+                {{#last_name}}
+                <last_name>{{last_name}}</last_name>
+                {{/last_name}}
+                {{#first_name}}
+                <first_name>{{first_name}}</first_name>
+                {{/first_name}}
+                {{#middle_name}}
+                <middle_name>{{middle_name}}</middle_name>
+                {{/middle_name}}
+                {{#full_name}}
+                <full_name>{{full_name}}</full_name>
+                {{/full_name}}
+                <contributor_type>Editor</contributor_type>
+                <affiliations/>
             </contributor>
             {{/editors}}
             <contributor>
@@ -67,11 +66,9 @@
                 <contributor_type>DataCurator</contributor_type>
             </contributor>
         </contributors>
-        <!--product_nos>{{related_identifier}}</product_nos-->
         <contact_name>PDS Operator</contact_name>
         <contact_org>PDS</contact_org>
         <contact_email>pds-operator@jpl.nasa.gov</contact_email>
         <contact_phone>818.393.7165</contact_phone>
     </record>
 </records>
-

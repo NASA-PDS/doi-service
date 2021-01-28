@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import os
 from os.path import abspath, dirname, exists, join
+import unittest
 from unittest.mock import patch
 
 from lxml import etree
@@ -370,6 +371,36 @@ class TestDoisController(BaseTestCase):
             ]
         )
 
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
+    def test_post_submit(self):
+        """Test the submit endpoint"""
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        release_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/submit'
+                .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert200(
+            release_response,
+            'Response body is : ' + release_response.data.decode('utf-8')
+        )
+
+        # Recreate a DoiRecord from the response JSON and examine the
+        # fields
+        submit_record = DoiRecord.from_dict(release_response.json[0])
+
+        self.assertEqual(submit_record.node, 'eng')
+        self.assertEqual(submit_record.submitter, 'eng-submitter@jpl.nasa.gov')
+        self.assertEqual(submit_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(submit_record.status, DoiStatus.Review)
+        self.assertIsNone(submit_record.doi)
+
     def release_action_run_patch(self, **kwargs):
         """
         Patch for DOICoreActionRelease.run()
@@ -382,6 +413,30 @@ class TestDoisController(BaseTestCase):
         with open(draft_record_file, 'r') as infile:
             return infile.read()
 
+    def test_disabled_release_endpoint(self):
+        """
+        Test to ensure that the dois/{lidvid}/release is not reachable.
+
+        Note that this test should be removed if the dois/{lidvid}/release
+        endpoint is ever re-enabled, along with the @unittest.skip decorators
+        for the corresponding unit tests.
+        """
+        query_string = [('force', False),
+                        ('db_name', self.temp_db)]
+
+        release_response = self.client.open(
+            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
+                .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            method='POST',
+            query_string=query_string
+        )
+
+        self.assert404(
+            release_response,
+            'Response body is : ' + release_response.data.decode('utf-8')
+        )
+
+    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
         'run', release_action_run_patch)
@@ -412,7 +467,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(release_record.node, 'eng')
         self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(release_record.status, DoiStatus.Review)
+        self.assertEqual(release_record.status, DoiStatus.Pending)
         self.assertEqual(release_record.doi, '10.17189/21734')
 
         # Record field should match what we provided via patch method
@@ -430,6 +485,7 @@ class TestDoisController(BaseTestCase):
         with open(draft_record_file, 'r') as infile:
             return infile.read()
 
+    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
         'run', release_action_run_w_error_patch)
@@ -476,6 +532,7 @@ class TestDoisController(BaseTestCase):
         """
         return '[]'
 
+    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
         'run', list_action_run_patch_missing)
@@ -523,6 +580,7 @@ class TestDoisController(BaseTestCase):
             ]
         )
 
+    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
         'run', list_action_run_patch_no_transaction_history)

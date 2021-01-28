@@ -20,7 +20,6 @@ from tempfile import NamedTemporaryFile
 
 import connexion
 from flask import current_app
-from lxml import etree
 
 from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.api.models import DoiRecord, DoiSummary
@@ -120,53 +119,6 @@ def _records_from_dois(dois, node=None, submitter=None, osti_record=None):
         )
 
     return records
-
-
-def _get_record_for_lidvid(osti_label_file, lidvid):
-    """
-    Returns the record entry corresponding to the provided LIDVID from the
-    OSTI XML label file.
-
-    Parameters
-    ----------
-    osti_label_file : str
-        Path to the OSTI XML label file to search.
-    lidvid : str
-        The LIDVID of the record to return from the OSTI label.
-
-    Returns
-    -------
-    record : str
-        The single found record embedded in a <records> tag. This string is
-        suitable to be written to disk as a new OSTI label.
-
-    Raises
-    ------
-    UnknownLIDVIDException
-        If no record for the requested LIDVID is found in the provided OSTI
-        label file.
-
-    """
-    root = etree.parse(osti_label_file).getroot()
-
-    records = root.xpath('record')
-
-    for record in records:
-        if DOIOstiWebParser.get_lidvid(record) == lidvid:
-            result = record
-            break
-    else:
-        raise UnknownLIDVIDException(
-            f'Could not find entry for lidvid "{lidvid}" in OSTI label file '
-            f'{osti_label_file}.'
-        )
-
-    new_root = etree.Element('records')
-    new_root.append(result)
-
-    return etree.tostring(
-        new_root, pretty_print=True, xml_declaration=True, encoding='UTF-8'
-    ).decode('utf-8')
 
 
 def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
@@ -376,7 +328,32 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     return records, 200
 
 
-def post_release_doi(lidvid, force=False):
+def post_submit_doi(lidvid, force=None):
+    """
+    Move a DOI record from draft/reserve status to "review".
+
+    Parameters
+    ----------
+    lidvid : str
+        The LIDVID associated with the record to submit for review.
+    force : bool, optional
+        If true, forces a submit request to completion, ignoring any warnings
+        encountered.
+
+    Returns
+    -------
+    record : DoiRecord
+        Record of the DOI submit action.
+
+    """
+    # A submit action is the same as invoking the release endpoint with
+    # --no-review set to False
+    kwargs = {'lidvid': lidvid, 'force': force, 'no_review': False}
+
+    return post_release_doi(**kwargs)
+
+
+def post_release_doi(lidvid, force=False, **kwargs):
     """
     Move a DOI record from draft/reserve status to "release".
 
@@ -387,6 +364,8 @@ def post_release_doi(lidvid, force=False):
     force : bool, optional
         If true, forces a release request to completion, ignoring any warnings
         encountered.
+    kwargs : dict
+        Additional keyword arguments to forward to the DOI release action.
 
     Returns
     -------
@@ -397,20 +376,8 @@ def post_release_doi(lidvid, force=False):
     try:
         list_action = DOICoreActionList(db_name=_get_db_name())
 
-        list_kwargs = {'lidvid': lidvid}
-
-        # Look up the provided LID and parse results back to a list
-        list_results = json.loads(list_action.run(**list_kwargs))
-
-        # Make sure we got something back
-        if not list_results:
-            raise UnknownLIDVIDException(
-                'No record(s) could be found for LIDVID {}'.format(lidvid)
-            )
-
-        # Extract the latest record from all those returned
-        list_record = next(filter(lambda list_result: list_result['is_latest'],
-                                  list_results))
+        # Get the latest transaction record for this LIDVID
+        list_record = list_action.transaction_for_lidvid(lidvid)
 
         # Make sure we can locate the output OSTI label associated with this
         # transaction
@@ -429,7 +396,8 @@ def post_release_doi(lidvid, force=False):
         # LIDVID, extract only the appropriate record into its own temporary
         # XML file and feed it to the release action
         with NamedTemporaryFile('w', prefix='output_', suffix='.xml') as xml_file:
-            xml_file.write(_get_record_for_lidvid(osti_label_file, lidvid))
+            xml_file.write(DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid))
+            xml_file.flush()
 
             # Prepare the release action
             release_action = DOICoreActionRelease(db_name=_get_db_name())
@@ -438,7 +406,10 @@ def post_release_doi(lidvid, force=False):
                 'node': list_record['node_id'],
                 'submitter': list_record['submitter'],
                 'input': xml_file.name,
-                'force': force
+                'force': force,
+                # Default for this endpoint should be to skip review and release
+                # directly to OSTI
+                'no_review': kwargs.get('no_review', True)
             }
 
             osti_release_label = release_action.run(**release_kwargs)
@@ -519,7 +490,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
             )
 
         # Get only the record corresponding to the requested LIDVID
-        osti_label_for_lidvid = _get_record_for_lidvid(osti_label_file, lidvid)
+        osti_label_for_lidvid = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
     except UnknownLIDVIDException as err:
         # Return "not found" code
         return format_exceptions(err), 404
