@@ -18,10 +18,13 @@ from datetime import datetime
 from enum import Enum, unique
 
 
-class ProductTypeEnum(Enum):
+@unique
+class ProductType(str, Enum):
     """Enumerates the types of products that can be assigned a DOI."""
-    Collection = 0
-    Bundle = 1
+    Collection = 'Collection'
+    Bundle = 'Bundle'
+    Text = 'Text'
+    Dataset = 'Dataset'
 
 
 @unique
@@ -64,7 +67,7 @@ class Doi:
     """The dataclass definition for a Doi object."""
     title: str
     publication_date: datetime
-    product_type: ProductTypeEnum
+    product_type: ProductType
     product_type_specific: str
     related_identifier: str
     authors: list = None
