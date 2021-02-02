@@ -45,7 +45,10 @@ class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
     _description = 'Prepare an OSTI record from PDS4 labels'
     _order = 10
-    _run_arguments = ('input', 'node', 'submitter', 'lidvid', 'force', 'keyword')
+    _run_arguments = ('input', 'node', 'submitter', 'lidvid', 'force', 'keywords')
+
+    DEFAULT_KEYWORDS = ['PDS', 'PDS4']
+    """Default keywords added to each new draft request."""
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
@@ -58,7 +61,7 @@ class DOICoreActionDraft(DOICoreAction):
         self._lidvid = None
         self._force = False
         self._target = None
-        self._keyword = None
+        self._keywords = ''
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -99,7 +102,7 @@ class DOICoreActionDraft(DOICoreAction):
                  'treated as fatal exceptions.',
         )
         action_parser.add_argument(
-            '-k', '--keyword', required=False, metavar='"Image"',
+            '-k', '--keywords', required=False, metavar='"Image"', default='',
             help='Extra keywords to associate with the Draft record. Multiple '
                  'keywords must be separated by ",". Ignored when used with the '
                  '--lidvid option.'
@@ -206,8 +209,6 @@ class DOICoreActionDraft(DOICoreAction):
 
         """
         try:
-            contributor_value = NodeUtil().get_node_long_name(self._node)
-
             # The value of input can be a list of names, or a directory.
             # Resolve that to a list of names.
             list_of_names = self._resolve_input_into_list_of_names(inputs)
@@ -219,8 +220,8 @@ class DOICoreActionDraft(DOICoreAction):
             # then concatenate that record to o_doi_label to return.
             for input_file in list_of_names:
                 doi_label = self._run_single_file(
-                    input_file, self._node, self._submitter, contributor_value,
-                    self._force, self._keyword
+                    input_file, self._node, self._submitter, self._force,
+                    self._keywords
                 )
 
                 # It is possible that the value of doi_label is None if the file
@@ -231,11 +232,10 @@ class DOICoreActionDraft(DOICoreAction):
                 # Concatenate each label to o_doi_labels to return.
                 doc = etree.fromstring(doi_label.encode())
 
-                for element in doc.iter():
-                    # OSTI uses 'record' tag for each record.
-                    if element.tag == 'record':
-                        # Add the 'record' element
-                        o_doi_labels.append(copy.copy(element))
+                # OSTI uses 'record' tag for each record.
+                for element in doc.findall('record'):
+                    # Add the 'record' element
+                    o_doi_labels.append(copy.copy(element))
 
             # Make the output nice by indenting it.
             etree.indent(o_doi_labels)
@@ -283,16 +283,21 @@ class DOICoreActionDraft(DOICoreAction):
         """
         Adds any extra keywords to the already produced DOI object.
         """
-        # The keywords are comma separated. The io_doi.keywords field is a set.
-        tokens = keywords.split(',')
+        # Add in the default set of keywords.
+        io_doi.keywords |= set(self.DEFAULT_KEYWORDS)
 
-        for one_keyword in tokens:
-            io_doi.keywords.add(one_keyword.strip())
+        # Add the node long name (contributor) as a keyword as well.
+        io_doi.keywords.add(io_doi.contributor.lower())
+
+        # The keywords are comma separated. The io_doi.keywords field is a set.
+        if keywords:
+            keyword_tokens = set(map(str.strip, keywords.split(',')))
+
+            io_doi.keywords |= keyword_tokens
 
         return io_doi
 
-    def _transform_pds4_label_into_osti_record(self, input_file,
-                                               contributor_value, keywords):
+    def _transform_pds4_label_into_osti_record(self, input_file, keywords):
         """
         Receives an XML PDS4 input file and transforms it into an OSTI record.
         """
@@ -328,17 +333,13 @@ class DOICoreActionDraft(DOICoreAction):
 
         o_doi = label_util.get_doi_fields_from_pds4(xml_tree)
         o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
-        o_doi.contributor = contributor_value
+        o_doi.contributor = NodeUtil().get_node_long_name(self._node)
 
         # Add 'status' field so the ranking in the workflow can be determined.
         o_doi.status = DoiStatus.Draft
 
-        # Add any extra keywords provided by the user.
-        if keywords:
-            self._add_extra_keywords(keywords, o_doi)
-
-        # Add the node long name (contributor) as a keyword as well.
-        o_doi.keywords.add(contributor_value)
+        # Add any default keywords or extra keywords provided by the user.
+        self._add_extra_keywords(keywords, o_doi)
 
         # Generate the output OSTI record
         o_doi_label = DOIOutputOsti().create_osti_doi_record(o_doi)
@@ -347,15 +348,14 @@ class DOICoreActionDraft(DOICoreAction):
         # all values parsed.
         return o_doi_label, o_doi
 
-    def _run_single_file(self, input_file, node, submitter, contributor_value,
-                         force_flag, keywords=None):
+    def _run_single_file(self, input_file, node, submitter, force_flag, keywords):
         logger.info(f"input_file {input_file}")
         logger.debug(f"force_flag,input_file {force_flag, input_file}")
 
         try:
             # Transform the PDS4 label to an OSTI record.
             doi_label, doi_obj = self._transform_pds4_label_into_osti_record(
-                input_file, contributor_value, keywords
+                input_file, keywords
             )
 
             if doi_label:

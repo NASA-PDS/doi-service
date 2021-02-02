@@ -15,6 +15,7 @@ pds_doi_service.ini
 allure/
 pds_doi_service/api/pds_doi_api.egg-info/
 pds_doi_core.egg-info/
+pds_doi_service.egg-info/
 pds_doi_service/core/.DS_Store
 venv/
 WhereAmI.py

@@ -10,10 +10,11 @@ from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
 
+
 class KeywordTokenizer():
     def __init__(self):
         logger.debug('initialize keyword tokenizer')
-        self.pos_dict = {'pds'}
+        self.pos_dict = {'pds', 'mars'}
         self._stop_words = set(stopwords.words("english"))
         self._keywords = set()
 
@@ -34,16 +35,16 @@ class KeywordTokenizer():
         # remove special characters
         text = re.sub("(\|\\W)+", " ", text)
 
-        ##Convert to list from string
+        # Convert to list from string
         text = text.split()
 
         # Lemmatisation
         lem = WordNetLemmatizer()
-        text = [word if word in self.pos_dict else lem.lemmatize(word)
-                for word in text if word not in self._stop_words]
+        keyword_set = set([word if word in self.pos_dict else lem.lemmatize(word)
+                           for word in text if word not in self._stop_words])
 
-        for word in text:
-            self._keywords.add(word)
+        self._keywords |= keyword_set
+
         logger.debug(f'new keyword list is {self._keywords}')
 
     def get_keywords(self):
