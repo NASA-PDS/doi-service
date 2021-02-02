@@ -90,7 +90,7 @@ class OSTIInputValidator:
         # Check 2. Bad tag(s) in <record> element, e.g. status='Release'.
         # It should only be in possible_status_list variable.
         possible_status_list = [
-            DoiStatus.Reserved, DoiStatus.Reserved_not_submitted,
+            DoiStatus.Draft, DoiStatus.Reserved, DoiStatus.Reserved_not_submitted,
             DoiStatus.Review, DoiStatus.Pending, DoiStatus.Registered
         ]
         record_count = 1  # In the world of OSTI, record_count starts at 1.
