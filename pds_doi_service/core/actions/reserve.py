@@ -248,9 +248,7 @@ class DOICoreActionReserve(DOICoreAction):
             # Add field 'date_record_added' because the XSD requires it.
             doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
 
-            # The function create_osti_doi_reserved_record works off a list so
-            # put doi in a list of 1: [doi]
-            single_doi_label = DOIOutputOsti().create_osti_doi_reserved_record([doi])
+            single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
             logger.debug(f'produced osti label is {single_doi_label}')
 
             # Validate the doi_label content against schematron for correctness.
@@ -268,9 +266,7 @@ class DOICoreActionReserve(DOICoreAction):
             # Add field 'date_record_added' because the XSD requires it.
             doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
 
-            # The function create_osti_doi_reserved_record works off a list so
-            # put doi in a list of 1: [doi]
-            single_doi_label = DOIOutputOsti().create_osti_doi_reserved_record([doi])
+            single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
             logger.debug(f"single_doi_label {single_doi_label}")
 
             # Validate the single_doi_label against the XSD.
@@ -293,7 +289,7 @@ class DOICoreActionReserve(DOICoreAction):
                 dois, NodeUtil().get_node_long_name(self._node),
                 self._config.get('OTHER', 'doi_publisher'), self._dry_run
             )
-            o_doi_label = DOIOutputOsti().create_osti_doi_reserved_record(dois)
+            o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
 
             if not self._dry_run:
                 dois, o_doi_label = DOIOstiWebClient().webclient_submit_existing_content(

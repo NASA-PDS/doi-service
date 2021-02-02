@@ -167,8 +167,11 @@ class DOICoreActionDraft(DOICoreAction):
         doi.previous_status = doi.status
         doi.status = DoiStatus.Draft
 
+        # Update the contributor
+        doi.contributor = NodeUtil().get_node_long_name(self._node)
+
         # Update the output label to reflect new draft status
-        doi_label = DOIOutputOsti().create_osti_doi_draft_record(doi)
+        doi_label = DOIOutputOsti().create_osti_doi_record(doi)
 
         # Re-commit transaction to official roll DOI back to draft status
         transaction = self.m_transaction_builder.prepare_transaction(
@@ -338,7 +341,7 @@ class DOICoreActionDraft(DOICoreAction):
         o_doi.keywords.add(contributor_value)
 
         # Generate the output OSTI record
-        o_doi_label = DOIOutputOsti().create_osti_doi_draft_record(o_doi)
+        o_doi_label = DOIOutputOsti().create_osti_doi_record(o_doi)
 
         # Return the label (which is text) and a dictionary 'o_doi' representing
         # all values parsed.

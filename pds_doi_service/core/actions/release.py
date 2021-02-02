@@ -142,7 +142,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # Make sure correct contributor field is set
                 doi.contributor = NodeUtil().get_node_long_name(self._node)
 
-                single_doi_label = DOIOutputOsti().create_osti_doi_release_record(doi)
+                single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
 
                 if self._config.get('OTHER', 'release_validate_against_xsd_flag').lower() == 'true':
                     self._doi_validator.validate_against_xsd(single_doi_label)
@@ -223,7 +223,7 @@ class DOICoreActionRelease(DOICoreAction):
             # from the parsed DOI's that have the "review" status assigned.
             # This becomes the label associated with the transaction database entry.
             else:
-                o_doi_label = DOIOutputOsti().create_osti_doi_review_record(dois)
+                o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
                 logger.debug(f"o_review_result {o_doi_label}")
 
             transaction = self.m_transaction_builder.prepare_transaction(

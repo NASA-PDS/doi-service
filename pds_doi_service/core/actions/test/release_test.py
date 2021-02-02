@@ -56,7 +56,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         for doi in dois:
             doi.status = DoiStatus.Pending
 
-        o_doi_label = DOIOutputOsti().create_osti_doi_review_record(dois)
+        o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
 
         return dois, o_doi_label
 
