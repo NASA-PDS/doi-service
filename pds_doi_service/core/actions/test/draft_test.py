@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from datetime import datetime
 import os
 from os.path import abspath, dirname, join
 import unittest
@@ -7,7 +8,7 @@ import tempfile
 
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
-from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
 
@@ -47,11 +48,14 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
+        self.assertEqual(len(doi.editors), 3)
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras::1.0')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_local_dir_two_files(self):
         """Test draft request with local dir containing two files"""
@@ -71,9 +75,11 @@ class DraftActionTestCase(unittest.TestCase):
 
         for doi in dois:
             self.assertEqual(len(doi.authors), 4)
-            self.assertEqual(len(doi.contributors), 1)
             self.assertEqual(len(doi.keywords), 18)
-            self.assertEqual(doi.status, DoiStatus.Pending)
+            self.assertEqual(doi.status, DoiStatus.Draft)
+            self.assertEqual(doi.product_type, ProductType.Dataset)
+            self.assertIsInstance(doi.publication_date, datetime)
+            self.assertIsInstance(doi.date_record_added, datetime)
 
         self.assertEqual(dois[0].related_identifier,
                          'urn:nasa:pds:insight_cameras::1.1')
@@ -99,11 +105,14 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
+        self.assertEqual(len(doi.editors), 3)
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras::1.0')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_remote_bundle(self):
         """Test draft request with a remote bundle URL"""
@@ -124,11 +133,13 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras::1.0')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_remote_collection(self):
         """Test draft request with a remote collection URL"""
@@ -149,11 +160,13 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
         self.assertEqual(len(doi.keywords), 12)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras:data::1.0')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_remote_browse_collection(self):
         """Test draft request with a remote browse collection URL"""
@@ -174,13 +187,15 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
         self.assertEqual(len(doi.keywords), 12)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras:browse::1.0')
         self.assertEqual(doi.description,
                          'Collection of BROWSE products.')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_remote_calibration_collection(self):
         """Test draft request with remote calibration collection URL"""
@@ -201,13 +216,15 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
         self.assertEqual(len(doi.keywords), 14)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras:calibration::1.0')
         self.assertEqual(doi.description,
                          'Collection of CALIBRATION files/products to include in the archive.')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_remote_document_collection(self):
         """Test draft request with remote document collection URL"""
@@ -228,13 +245,15 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.contributors), 1)
         self.assertEqual(len(doi.keywords), 12)
         self.assertEqual(doi.related_identifier,
                          'urn:nasa:pds:insight_cameras:document::1.0')
         self.assertEqual(doi.description,
                          'Collection of DOCUMENT products.')
-        self.assertEqual(doi.status, DoiStatus.Pending)
+        self.assertEqual(doi.status, DoiStatus.Draft)
+        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertIsInstance(doi.publication_date, datetime)
+        self.assertIsInstance(doi.date_record_added, datetime)
 
     def test_move_lidvid_to_draft(self):
         """Test moving a review record back to draft via its lidvid"""
@@ -252,7 +271,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
-        self.assertEqual(dois[0].status, DoiStatus.Pending)
+        self.assertEqual(dois[0].status, DoiStatus.Draft)
 
         # Move the draft to review
         with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
@@ -294,7 +313,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
-        self.assertEqual(dois[0].status, DoiStatus.Pending)
+        self.assertEqual(dois[0].status, DoiStatus.Draft)
 
 
 if __name__ == '__main__':
