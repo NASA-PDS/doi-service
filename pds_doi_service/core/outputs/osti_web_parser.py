@@ -16,7 +16,7 @@ Contains classes and functions for parsing OSTI XML labels.
 from datetime import datetime
 from lxml import etree
 
-from pds_doi_service.core.entities.doi import Doi, DoiStatus
+from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException, UnknownLIDVIDException
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -88,35 +88,50 @@ class DOIOstiWebParser:
             # It is possible that the record contains no authors.
             if author_dict:
                 o_authors_list.append(author_dict)
-            else:
-                logger.warning(f"Record contains no author tag {single_author}")
 
         return o_authors_list
 
     @staticmethod
-    def parse_contributor_names(contributors_element):
+    def parse_editor_names(contributors_element):
         """
-        Given a list of contributors elements, parse for individual 'full_name'
-        fields.
+        Given a list of contributors elements, parse the individual 'first_name',
+        'middle_name', 'last_name' or 'full_name' fields for any contributors
+        with type "Editor".
         """
-        o_contributors_list = []
+        o_editors_list = []
 
-        # If they exist, collect all the contributor name fields into a list of dictionaries.
+        # If they exist, collect all the editor contributor fields into a list
+        # of dictionaries.
         for single_contributor in contributors_element:
+            first_name = single_contributor.xpath('first_name')
+            last_name = single_contributor.xpath('last_name')
             full_name = single_contributor.xpath('full_name')
+            middle_name = single_contributor.xpath('middle_name')
+            contributor_type = single_contributor.xpath('contributor_type')
 
-            contributor_dict = {}
+            # We only care about parsing Editor contributor types, since
+            # this should be the only type to carry over (the DataCurator entry
+            # is ignored here since it's hardcoded into the OSTI template).
+            if contributor_type and contributor_type[0].text == 'Editor':
+                editor_dict = {}
 
-            if full_name:
-                contributor_dict['full_name'] = full_name[0].text
+                if full_name:
+                    editor_dict['full_name'] = full_name[0].text
+                else:
+                    if first_name and last_name:
+                        editor_dict.update(
+                            {'first_name': first_name[0].text,
+                             'last_name': last_name[0].text}
+                        )
 
-            # It is possible that the record contains no contributor.
-            if contributor_dict:
-                o_contributors_list.append(contributor_dict)
-            else:
-                logger.warning(f"Record contains no contributor tag {single_contributor}")
+                    if middle_name:
+                        editor_dict.update({'middle_name': middle_name[0].text})
 
-        return o_contributors_list
+                # It is possible that the record contains no contributor.
+                if editor_dict:
+                    o_editors_list.append(editor_dict)
+
+        return o_editors_list
 
     @staticmethod
     def parse_optional_fields(io_doi, single_record_element):
@@ -137,26 +152,44 @@ class DOIOstiWebParser:
         for optional_field in optional_fields:
             optional_field_element = single_record_element.xpath(optional_field)
 
-            if optional_field_element:
-                if optional_field == 'keywords' and optional_field_element[0].text is not None:
-                    io_doi.keywords = optional_field_element[0].text.split('; ')
+            if optional_field_element and optional_field_element[0].text is not None:
+                if optional_field == 'keywords':
+                    io_doi.keywords = set(optional_field_element[0].text.split('; '))
+                    logger.debug(f"Adding optional field 'keywords': "
+                                 f"{io_doi.keywords}")
                 elif optional_field == 'authors':
                     io_doi.authors = DOIOstiWebParser.parse_author_names(
                         optional_field_element[0]
                     )
+                    logger.debug(f"Adding optional field 'authors': "
+                                 f"{io_doi.authors}")
                 elif optional_field == 'contributors':
-                    io_doi.contributors = DOIOstiWebParser.parse_contributor_names(
+                    io_doi.editors = DOIOstiWebParser.parse_editor_names(
                         optional_field_element[0]
                     )
+                    logger.debug(f"Adding optional field 'editors': "
+                                 f"{io_doi.editors}")
+                elif optional_field == 'date_record_added':
+                    io_doi.date_record_added = datetime.strptime(
+                        optional_field_element[0].text, '%Y-%m-%d'
+                    )
+                    logger.debug(f"Adding optional field 'date_record_added': "
+                                 f"{io_doi.date_record_added}")
+                elif optional_field == 'date_record_updated':
+                    io_doi.date_record_updated = datetime.strptime(
+                        optional_field_element[0].text, '%Y-%m-%d'
+                    )
+                    logger.debug(f"Adding optional field 'date_record_updated': "
+                                 f"{io_doi.date_record_updated}")
                 else:
                     setattr(io_doi, optional_field, optional_field_element[0].text)
 
-                logger.debug(
-                    f"Adding optional field "
-                    f"'{optional_field}': {getattr(io_doi, optional_field)}"
-                )
+                    logger.debug(
+                        f"Adding optional field "
+                        f"'{optional_field}': {getattr(io_doi, optional_field)}"
+                    )
 
-        logger.debug(f"io_doi) {io_doi}")
+        logger.debug(f"io_doi {io_doi}")
 
         return io_doi
 
@@ -302,15 +335,19 @@ class DOIOstiWebParser:
                 lidvid = DOIOstiWebParser.get_lidvid(single_record_element)
 
                 if lidvid:
+                    publication_date = single_record_element.xpath('publication_date')[0].text
+                    product_type = single_record_element.xpath('product_type')[0].text
+                    product_type_specific = single_record_element.xpath('product_type_specific')[0].text
+
                     # Move the fetching of identifier_type in parse_optional_fields() function.
                     # The following 4 fields were deleted from constructor of Doi
                     # to inspect individually since the code was failing:
                     #     ['id','doi','date_record_added',date_record_updated']
                     doi = Doi(
                         title=single_record_element.xpath('title')[0].text,
-                        publication_date=single_record_element.xpath('publication_date')[0].text,
-                        product_type=single_record_element.xpath('product_type')[0].text,
-                        product_type_specific=single_record_element.xpath('product_type_specific')[0].text,
+                        publication_date=datetime.strptime(publication_date, '%Y-%m-%d'),
+                        product_type=ProductType(product_type),
+                        product_type_specific=product_type_specific,
                         related_identifier=lidvid,
                         status=DoiStatus(status.lower())
                     )
