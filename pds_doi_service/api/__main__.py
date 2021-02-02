@@ -11,6 +11,9 @@ def main():
     app = connexion.App(__name__, specification_dir='swagger/')
     CORS(app.app)
     app.app.json_encoder = encoder.JSONEncoder
+    # Disable the Flask "strict_slashes" checking so endpoints with a trailing
+    # slash resolve to the same endpoint as without
+    app.app.url_map.strict_slashes = False
     app.add_api('swagger.yaml',
                 arguments={'title': 'Planetary Data System DOI Service API'},
                 pythonic_params=True)

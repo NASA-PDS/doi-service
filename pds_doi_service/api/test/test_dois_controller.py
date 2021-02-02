@@ -52,19 +52,24 @@ class TestDoisController(BaseTestCase):
         # Start with a empty query to fetch all available records
         query_string = [('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
-                                    method='GET',
-                                    query_string=query_string)
+        # Ensure fetch-all endpoint works both with and without a trailing
+        # slash
+        endpoints = ['/PDS_APIs/pds_doi_api/0.1/dois',
+                     '/PDS_APIs/pds_doi_api/0.1/dois/']
 
-        self.assert200(
-            response,
-            'Response body is : ' + response.data.decode('utf-8')
-        )
+        for endpoint in endpoints:
+            response = self.client.open(endpoint, method='GET',
+                                        query_string=query_string)
 
-        records = response.json
+            self.assert200(
+                response,
+                'Response body is : ' + response.data.decode('utf-8')
+            )
 
-        # Test database should contain 3 records
-        self.assertEqual(len(records), 3)
+            records = response.json
+
+            # Test database should contain 3 records
+            self.assertEqual(len(records), 3)
 
         # Now use a query string to ensure we can get specific records back
         query_string = [('node', 'eng'),
