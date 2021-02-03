@@ -69,16 +69,20 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(dois), 2)
         self.assertEqual(len(errors), 0)
 
+        lidvids = {
+            'urn:nasa:pds:insight_cameras::1.1',
+            'urn:nasa:pds:insight_cameras::1.0'
+        }
+
         for doi in dois:
             self.assertEqual(len(doi.authors), 4)
             self.assertEqual(len(doi.contributors), 1)
             self.assertEqual(len(doi.keywords), 18)
             self.assertEqual(doi.status, DoiStatus.Pending)
+            self.assertTrue(doi.related_identifier in lidvids)
+            lidvids.discard(doi.related_identifier)
 
-        self.assertEqual(dois[0].related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(dois[1].related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.0')
+
 
     def test_local_bundle(self):
         """Test draft request with a local bundle path"""
