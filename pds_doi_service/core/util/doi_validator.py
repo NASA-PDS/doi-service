@@ -87,9 +87,9 @@ class DOIValidator:
                     logger.debug(f"site_url {doi.site_url} indeed exists")
             except (requests.exceptions.ConnectionError, Exception):
                 error_message = f"site_url {doi.site_url} not reachable"
+
                 # Although not being able to connect is an error, the message
                 # printed is a warning.
-                logger.warning(error_message)
                 raise SiteURLNotExistException(error_message)
 
     def _check_field_title_duplicate(self, doi: Doi):
@@ -129,7 +129,7 @@ class DOIValidator:
             msg = (f"The title '{doi.title}' has already been used for a DOI "
                    f"by lidvid(s): {lidvids}, status: {status}, doi: {','.join(dois)}. " 
                    "You must use a different title.")
-            logger.error(msg)
+
             raise DuplicatedTitleDOIException(msg)
 
     def _check_field_title_content(self, doi: Doi):
@@ -152,10 +152,11 @@ class DOIValidator:
                      f"doi.title: {doi.title}")
 
         if not product_type_specific_suffix.lower() in doi.title.lower():
-            msg = (f"DOI with lidvid '{doi.related_identifier}' title '{doi.title}' "
-                   f"does not contains product specific type suffix '{product_type_specific_suffix.lower()}'. "
+            msg = (f"DOI with lidvid '{doi.related_identifier}' title "
+                   f"'{doi.title}' does not contains product specific type "
+                   f"suffix '{product_type_specific_suffix.lower()}'. "
                    "Product specific type suffix should be in the title.")
-            logger.debug(msg)
+
             raise TitleDoesNotMatchProductTypeException(msg)
 
     def _check_field_lidvid_update(self, doi: Doi):
@@ -215,7 +216,8 @@ class DOIValidator:
             doi_str = row[columns.index('doi')]
             prev_status = row[columns.index('status')]
 
-            # A status tuple of ('Pending',3) is higher than ('Draft',2) will cause an error.
+            # A status tuple of ('Pending',3) is higher than ('Draft',2) will
+            # cause an error.
             if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:
                 msg = (
                     f"There is a DOI record {doi_str} with status: '{prev_status.lower()}'. "
@@ -223,7 +225,6 @@ class DOIValidator:
                     f"'{doi.status}' for the lidvid: {doi.related_identifier}?"
                 )
 
-                logger.error(msg)
                 raise UnexpectedDOIActionException(msg)
 
     def validate_against_xsd(self, doi_label):
