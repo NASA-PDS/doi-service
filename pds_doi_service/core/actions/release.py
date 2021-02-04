@@ -24,7 +24,7 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    IllegalDOIActionException,
                                                    CriticalDOIException,
                                                    collect_exception_classes_and_messages,
-                                                   raise_warn_exceptions)
+                                                   raise_or_warn_exceptions)
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
@@ -155,10 +155,12 @@ class DOICoreActionRelease(DOICoreAction):
                     err, exception_classes, exception_messages
                 )
 
-        # If there is at least one exception caught, raise a WarningDOIException
-        # with all the messages, provided the force flag is not set
-        if len(exception_classes) > 0 and not self._force:
-            raise_warn_exceptions(exception_classes, exception_messages)
+        # If there is at least one exception caught, either raise a
+        # WarningDOIException or log a warning with all the messages,
+        # depending on the the state of the force flag
+        if len(exception_classes) > 0:
+            raise_or_warn_exceptions(exception_classes, exception_messages,
+                                     log=self._force)
 
         return dois
 

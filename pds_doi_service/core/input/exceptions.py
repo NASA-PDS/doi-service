@@ -15,7 +15,7 @@ Contains exception classes and functions for collecting and managing exceptions.
 
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_core.input.exceptions')
+logger = get_logger('pds_doi_service.core.input.exceptions')
 
 
 class InputFormatException(Exception):
@@ -117,10 +117,10 @@ def collect_exception_classes_and_messages(single_exception,
     return io_exception_classes, io_exception_messages
 
 
-def raise_warn_exceptions(exception_classes, exception_messages):
+def raise_or_warn_exceptions(exception_classes, exception_messages, log=False):
     """
-    Raise a WarningDOIException that rolls up all the of the provided
-    exception class names and messages.
+    Raise a WarningDOIException or log a warning message that rolls up all the
+    of the provided exception class names and messages.
 
     Parameters
     ----------
@@ -128,6 +128,9 @@ def raise_warn_exceptions(exception_classes, exception_messages):
         The list of exception class names to include in the WarningDOIException
     exception_messages : list of str
         The list of exception messages to include in the WarningDOIException
+    log : bool
+        If True, log the combined message as a warning, otherwise raise
+        A WarningDOIException
 
     Raises
     ------
@@ -149,4 +152,7 @@ def raise_warn_exceptions(exception_classes, exception_messages):
                                 + ', ' + exception_classes[ii]
                                 + ':' + exception_messages[ii])
 
-    raise WarningDOIException(message_to_raise)
+    if log:
+        logger.warning(message_to_raise)
+    else:
+        raise WarningDOIException(message_to_raise)
