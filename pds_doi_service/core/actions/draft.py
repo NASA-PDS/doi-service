@@ -28,8 +28,9 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    NoTransactionHistoryForLIDVIDException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    InputFormatException,
-                                                   WarningDOIException,
-                                                   CriticalDOIException)
+                                                   CriticalDOIException,
+                                                   collect_exception_classes_and_messages,
+                                                   raise_or_warn_exceptions)
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
@@ -349,6 +350,12 @@ class DOICoreActionDraft(DOICoreAction):
         return o_doi_label, o_doi
 
     def _run_single_file(self, input_file, node, submitter, force_flag, keywords):
+        exception_classes = []
+        exception_messages = []
+
+        doi_label = None
+        doi_obj = None
+
         logger.info(f"input_file {input_file}")
         logger.debug(f"force_flag,input_file {force_flag, input_file}")
 
@@ -369,9 +376,26 @@ class DOICoreActionDraft(DOICoreAction):
 
             if doi_obj:
                 self._doi_validator.validate(doi_obj)
-            else:
-                return None
+        # Collect any exceptions/warnings for now and decide whether to
+        # raise or log them later on
+        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
+                TitleDoesNotMatchProductTypeException) as err:
+            (exception_classes,
+             exception_messages) = collect_exception_classes_and_messages(
+                err, exception_classes, exception_messages
+            )
+        # Catch all other exceptions as errors
+        except InputFormatException as err:
+            raise CriticalDOIException(err)
 
+        # If there is at least one exception caught, either raise a
+        # WarningDOIException or log a warning with all the messages,
+        # depending on the the state of the force flag
+        if len(exception_classes) > 0:
+            raise_or_warn_exceptions(exception_classes, exception_messages,
+                                     log=self._force)
+
+        if doi_label and doi_obj:
             # Use the service of TransactionBuilder to prepare all things
             # related to writing a transaction.
             transaction = self.m_transaction_builder.prepare_transaction(
@@ -382,19 +406,7 @@ class DOICoreActionDraft(DOICoreAction):
             # Commit the transaction to the database
             transaction.log()
 
-            return doi_label
-        # Treat warnings as exceptions if force flag is not provided
-        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                TitleDoesNotMatchProductTypeException) as err:
-            if not force_flag:
-                # If the user did not use force_flag, re-raise the exception.
-                raise WarningDOIException(str(err))
-            else:
-                # Just log that the warning occurred
-                logger.warn(str(err))
-        # Catch all other exceptions as errors
-        except InputFormatException as err:
-            raise CriticalDOIException(err)
+        return doi_label
 
     def run(self, **kwargs):
         """
