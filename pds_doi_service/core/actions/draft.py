@@ -351,7 +351,7 @@ class DOICoreActionDraft(DOICoreAction):
     def _run_single_file(self, input_file, node, submitter, force_flag, keywords):
         logger.info(f"input_file {input_file}")
         logger.debug(f"force_flag,input_file {force_flag, input_file}")
-
+        success = False
         try:
             # Transform the PDS4 label to an OSTI record.
             doi_label, doi_obj = self._transform_pds4_label_into_osti_record(
@@ -369,20 +369,9 @@ class DOICoreActionDraft(DOICoreAction):
 
             if doi_obj:
                 self._doi_validator.validate(doi_obj)
-            else:
-                return None
+                success = True
 
-            # Use the service of TransactionBuilder to prepare all things
-            # related to writing a transaction.
-            transaction = self.m_transaction_builder.prepare_transaction(
-                node, submitter, [doi_obj], input_path=input_file,
-                output_content=doi_label
-            )
 
-            # Commit the transaction to the database
-            transaction.log()
-
-            return doi_label
         # Treat warnings as exceptions if force flag is not provided
         except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
                 TitleDoesNotMatchProductTypeException) as err:
@@ -392,9 +381,26 @@ class DOICoreActionDraft(DOICoreAction):
             else:
                 # Just log that the warning occurred
                 logger.warn(str(err))
+                success = True
+
         # Catch all other exceptions as errors
         except InputFormatException as err:
             raise CriticalDOIException(err)
+
+        finally:
+            if success:
+                # Use the service of TransactionBuilder to prepare all things
+                # related to writing a transaction.
+                transaction = self.m_transaction_builder.prepare_transaction(
+                    node, submitter, [doi_obj], input_path=input_file,
+                    output_content=doi_label
+                )
+
+                # Commit the transaction to the database
+                transaction.log()
+                return doi_label
+            else:
+                return None
 
     def run(self, **kwargs):
         """

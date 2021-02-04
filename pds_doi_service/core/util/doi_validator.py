@@ -223,7 +223,7 @@ class DOIValidator:
                     f"'{doi.status}' for the lidvid: {doi.related_identifier}?"
                 )
 
-                logger.error(msg)
+                logger.warning(msg)
                 raise UnexpectedDOIActionException(msg)
 
     def validate_against_xsd(self, doi_label):
