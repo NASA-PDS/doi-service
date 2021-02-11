@@ -17,7 +17,7 @@ import requests
 from datetime import datetime
 from enum import Enum
 
-from pds_doi_service.core.entities.doi import Doi, ProductType
+from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer
@@ -242,7 +242,8 @@ class DOIPDS4LabelUtil:
             if len(doi_prefix_suffix) == 2:
                 osti_id = doi_prefix_suffix[1]
 
-        doi = Doi(title=pds4_fields['title'],
+        doi = Doi(status=DoiStatus.Unknown,
+                  title=pds4_fields['title'],
                   description=pds4_fields['description'],
                   publication_date=self.get_publication_date(pds4_fields),
                   product_type=product_type,
