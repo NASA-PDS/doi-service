@@ -53,6 +53,19 @@ paths:
           items:
             type: string
         example: eng
+      - name: status
+        in: query
+        description: List of DOI workflow status values to filter results by. Status
+          must be one of the following - "unknown", "reserved_not_submitted",  "reserved",
+          "draft", "review", "pending", or "registered".
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+        example: review
       - name: lid
         in: query
         description: List of LIDs to filter DOIs by. An LID may include the VID appended
