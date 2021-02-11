@@ -95,7 +95,7 @@ class DOICoreActionRelease(DOICoreAction):
 
     def _parse_input(self, input_file):
         if input_file.endswith('.xml'):
-            with open(input_file, mode='rb') as f:
+            with open(input_file, mode='r') as f:
                 o_doi_label = f.read()
         else:
             msg = f"Input file {input_file} type not supported yet."

@@ -317,9 +317,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         return format_exceptions(err), 500
 
     # Parse the OSTI XML string back into a list of DOIs
-    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-        bytes(osti_label, encoding='utf-8')
-    )
+    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(osti_label)
 
     records = _records_from_dois(
         dois, node=node, submitter=submitter, osti_record=osti_label
@@ -414,9 +412,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
 
             osti_release_label = release_action.run(**release_kwargs)
 
-        dois, errors = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(osti_release_label, encoding='utf-8')
-        )
+        dois, errors = DOIOstiWebParser().response_get_parse_osti_xml(osti_release_label)
 
         # Propagate any errors returned from OSTI in a single exception
         if errors:
@@ -499,9 +495,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
         return format_exceptions(err), 500
 
     # Parse the label associated with the lidvid so we can return a full DoiRecord
-    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-        bytes(osti_label_for_lidvid, encoding='utf-8')
-    )
+    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(osti_label_for_lidvid)
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],

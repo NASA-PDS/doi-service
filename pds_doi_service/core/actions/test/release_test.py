@@ -73,9 +73,7 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         o_doi_label = self._action.run(**release_args)
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(o_doi_label, encoding='utf-8')
-        )
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
         # Should get three DOI's back that have all been marked as ready for review
         self.assertEqual(len(dois), 3)
@@ -97,9 +95,7 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         o_doi_label = self._action.run(**release_args)
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(o_doi_label, encoding='utf-8')
-        )
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
         # Should get three DOI's back that have all been marked as pending
         # registration
@@ -119,9 +115,7 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         o_doi_label = self._action.run(**release_args)
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(o_doi_label, encoding='utf-8')
-        )
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
         # Should get one DOI back with status 'review'
         self.assertEqual(len(dois), 1)
@@ -143,9 +137,7 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         o_doi_label = self._action.run(**release_args)
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(o_doi_label, encoding='utf-8')
-        )
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
         # Should get one DOI back with status 'pending'
         self.assertEqual(len(dois), 1)
@@ -168,9 +160,7 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         o_doi_label = self._action.run(**release_args)
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(o_doi_label, encoding='utf-8')
-        )
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
         # Should get one DOI back with status 'review'
         self.assertEqual(len(dois), 1)
@@ -192,9 +182,7 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         o_doi_label = self._action.run(**release_args)
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(
-            bytes(o_doi_label, encoding='utf-8')
-        )
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
         # Should get one DOI back with status 'pending'
         self.assertEqual(len(dois), 1)

@@ -154,7 +154,7 @@ class DOIOstiWebParser:
 
             if optional_field_element and optional_field_element[0].text is not None:
                 if optional_field == 'keywords':
-                    io_doi.keywords = set(optional_field_element[0].text.split('; '))
+                    io_doi.keywords = set(optional_field_element[0].text.split(';'))
                     logger.debug(f"Adding optional field 'keywords': "
                                  f"{io_doi.keywords}")
                 elif optional_field == 'authors':
@@ -164,6 +164,8 @@ class DOIOstiWebParser:
                     logger.debug(f"Adding optional field 'authors': "
                                  f"{io_doi.authors}")
                 elif optional_field == 'contributors':
+                    # TODO: this should also parse the contributor (node long
+                    #  name) from the DataCurator contributor field
                     io_doi.editors = DOIOstiWebParser.parse_editor_names(
                         optional_field_element[0]
                     )
@@ -304,7 +306,7 @@ class DOIOstiWebParser:
         dois = []
         errors = []
 
-        doc = etree.fromstring(osti_response_text)
+        doc = etree.fromstring(osti_response_text.encode())
         my_root = doc.getroottree()
 
         # Trim down input to just fields we want.
