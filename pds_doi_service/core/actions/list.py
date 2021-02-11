@@ -97,10 +97,18 @@ class DOICoreActionList(DOICoreAction):
         )
 
         node_values = NodeUtil.get_permissible_values()
+        status_values = [status for status in DoiStatus]
+
         action_parser.add_argument(
             '-n', '--node', required=False, metavar='"img,eng"',
             help='A list of node names comma separated to return the matching '
                  'DOI. Authorized values are: ' + ','.join(node_values)
+        )
+        action_parser.add_argument(
+            '-status', '--status', required=False, metavar="draft,review",
+            help='A list of comma-separated submission status values to pass '
+                 'as input to the database query. Valid status values are: '
+                 '{}'.format(', '.join(status_values))
         )
         action_parser.add_argument(
             '-f', '--format',  default='JSON', required=False, metavar='JSON',
