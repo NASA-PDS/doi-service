@@ -9,7 +9,9 @@ import tempfile
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
+from pds_doi_service.core.input.exceptions import CriticalDOIException, WarningDOIException
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import DOIOutputOsti
 
 
 class DraftActionTestCase(unittest.TestCase):
@@ -86,7 +88,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(dois[1].related_identifier,
                          'urn:nasa:pds:insight_cameras::1.0')
 
-    def test_local_bundle(self):
+    def test_local_pds4_bundle(self):
         """Test draft request with a local bundle path"""
         kwargs = {
             'input': join(self.input_dir, 'bundle_in_with_contributors.xml'),
@@ -114,7 +116,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
-    def test_remote_bundle(self):
+    def test_remote_pds4_bundle(self):
         """Test draft request with a remote bundle URL"""
         kwargs = {
             'input': 'https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml',
@@ -140,6 +142,48 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
+
+    def test_local_osti_label(self):
+        """Test draft action with a local OSTI label"""
+        kwargs = {
+            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
+            'node': 'img',
+            'submitter': 'my_user@my_node.gov',
+            'force': True
+        }
+
+        osti_doi = self._draft_action.run(**kwargs)
+
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(osti_doi)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+
+        doi = dois[0]
+
+        self.assertEqual(doi.status, DoiStatus.Draft)
+
+    def test_local_unsupported_file(self):
+        """Attempt a draft with a unsupported file types"""
+        kwargs = {
+            'input': join(self.input_dir, 'DOI_Reserved_GEO_200318.csv'),
+            'node': 'img',
+            'submitter': 'my_user@my_node.gov',
+            'force': True
+        }
+
+        with self.assertRaises(CriticalDOIException):
+            self._draft_action.run(**kwargs)
+
+        kwargs = {
+            'input': join(self.input_dir, 'DOI_Reserved_GEO_200318.xlsx'),
+            'node': 'img',
+            'submitter': 'my_user@my_node.gov',
+            'force': True
+        }
+
+        with self.assertRaises(CriticalDOIException):
+            self._draft_action.run(**kwargs)
 
     def test_remote_collection(self):
         """Test draft request with a remote collection URL"""
@@ -287,9 +331,7 @@ class DraftActionTestCase(unittest.TestCase):
 
             review_osti_doi = self._review_action.run(**review_kwargs)
 
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(
-            bytes(review_osti_doi, encoding='utf-8')
-        )
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(review_osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -307,13 +349,67 @@ class DraftActionTestCase(unittest.TestCase):
 
         draft_osti_doi = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(
-            bytes(draft_osti_doi, encoding='utf-8')
-        )
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(draft_osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
         self.assertEqual(dois[0].status, DoiStatus.Draft)
+
+    def test_force_flag(self):
+        """
+        Ensure the force flag allows bypass of warnings encountered while
+        submitting a draft.
+        """
+        draft_kwargs = {
+            'input': join(self.input_dir, 'bundle_in_with_contributors.xml'),
+            'node': 'img',
+            'submitter': 'my_user@my_node.gov',
+            'force': True
+        }
+
+        draft_osti_doi = self._draft_action.run(**draft_kwargs)
+
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(draft_osti_doi)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+        self.assertEqual(dois[0].status, DoiStatus.Draft)
+
+        doi = dois[0]
+
+        # Slightly modify the lidvid so we trigger the "duplicate title" warning
+        doi.related_identifier += '.1'
+
+        modified_draft_label = DOIOutputOsti().create_osti_doi_record(doi)
+
+        with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
+            xml_file.write(modified_draft_label)
+            xml_file.flush()
+
+            draft_kwargs = {
+                'input': xml_file.name,
+                'node': 'img',
+                'submitter': 'my_user@my_node.gov',
+                'force': False
+            }
+
+            # Should get a warning exception containing the duplicate title finding
+            with self.assertRaises(WarningDOIException):
+                self._draft_action.run(**draft_kwargs)
+
+            # Now try again with the force flag set and we should bypass the
+            # warning
+            draft_kwargs = {
+                'input': xml_file.name,
+                'node': 'img',
+                'submitter': 'my_user@my_node.gov',
+                'force': True
+            }
+
+            try:
+                self._draft_action.run(**draft_kwargs)
+            except WarningDOIException:
+                self.fail()
 
 
 if __name__ == '__main__':
