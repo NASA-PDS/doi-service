@@ -14,10 +14,12 @@ Contains classes and functions for validation of DOI records and the overall
 DOI workflow.
 """
 
+import tempfile
 from os.path import dirname, join
 from lxml import etree
 
 import requests
+import xmlschema
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi, DoiStatus
@@ -30,7 +32,7 @@ from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
-logger = get_logger('pds_doi_core.util.doi_validator')
+logger = get_logger('pds_doi_service.core.util.doi_validator')
 
 
 class DOIValidator:
@@ -227,7 +229,7 @@ class DOIValidator:
 
                 raise UnexpectedDOIActionException(msg)
 
-    def validate_against_xsd(self, doi_label):
+    def validate_against_xsd(self, doi_label, use_alternate_validation_method=True):
         # Given a DOI label, validate it against the XSD.
         # The fromstring() requires the parameter type to be bytes.
         # The encode() convert str to bytes.
@@ -244,23 +246,20 @@ class DOIValidator:
 
         # If DOI is not valid, use another method to get exactly where the
         # error(s) occurred.
-        use_alternate_validation_method = True
-
         if not is_valid and use_alternate_validation_method:
-            import xmlschema
             schema = xmlschema.XMLSchema(xsd_filename)
 
             # Save doi_label to disk so it can be compared to historical in next step.
-            temporary_file_name = 'temp_doi_label_from_validate_against_xsd.xml'
-            temporary_file_ptr = open(temporary_file_name, "w+")
-            temporary_file_ptr.write(doi_label + "\n")
-            temporary_file_ptr.close()
-            logger.info(f"xsd_filename,is_valid,temporary_file_name "
-                        f"{xsd_filename,is_valid,temporary_file_name}")
+            with tempfile.NamedTemporaryFile(mode='w', suffix='temp_doi.xml') as temp_file:
+                temp_file.write(doi_label + "\n")
+                temp_file.flush()
 
-            # If the XSD fail to validate the DOI label, it will throw an exception and exit.
-            # It will report where the error occurred. The error will have to be fixed.
-            schema.validate(temporary_file_name)
+                # If the XSD fails to validate the DOI label, it will throw an
+                # exception and exit. It will report where the error occurred.
+                # The error will have to be fixed.
+                schema.validate(temp_file.name)
+
+        return is_valid
 
     def validate(self, doi: Doi):
         """
