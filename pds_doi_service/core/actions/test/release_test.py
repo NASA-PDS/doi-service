@@ -75,9 +75,9 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
-        # Should get three DOI's back that have all been marked as ready for review
-        self.assertEqual(len(dois), 3)
-        self.assertTrue(all([doi.status == DoiStatus.Review for doi in dois]))
+        # Should get one DOI back that has been marked as ready for review
+        self.assertEqual(len(dois), 1)
+        self.assertTrue(dois[0].status == DoiStatus.Review)
 
     @patch.object(
         pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
@@ -97,10 +97,9 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(o_doi_label)
 
-        # Should get three DOI's back that have all been marked as pending
-        # registration
-        self.assertEqual(len(dois), 3)
-        self.assertTrue(all([doi.status == DoiStatus.Pending for doi in dois]))
+        # Should get one DOI back that has been marked as pending registration
+        self.assertEqual(len(dois), 1)
+        self.assertTrue(dois[0].status == DoiStatus.Pending)
 
     def test_draft_release_to_review(self):
         """Test release to review status with a draft DOI entry"""

@@ -1,65 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <records>
-  <record status='pending' index="1">
-    <id>25901</id>
-    <site_url>http://mysite.example.com/link/to/my-dataset-id-25901.html</site_url>
-    <site_code>NASA-PDS</site_code>
-    <title>Laboratory Shocked Feldspars Bundle</title>
-    <accession_number>urn:nasa:pds:lab_shocked_feldspars::2.0</accession_number>
-    <doi>10.17189/25901</doi>
-    <publication_date>2020-03-11</publication_date>
-    <product_type>Dataset</product_type>
-    <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
-    <date_record_added>2020-07-23</date_record_added>
-    <date_record_updated>2020-07-23</date_record_updated>
-    <authors>
-      <author>
-        <first_name>J. R.</first_name>
-        <last_name>Johnson</last_name>
-        <affiliations/>
-      </author>
-    </authors>
-    <contributors/>
-  </record>
-  <record  status='pending' index="2">
-    <id>25902</id>
-    <site_url>http://mysite.example.com/link/to/my-dataset-id-25902.html</site_url>
-    <site_code>NASA-PDS</site_code>
-    <title>Laboratory Shocked Feldspars Bundle 2</title>
-    <accession_number>urn:nasa:pds:lab_shocked_feldspars_2::1.0</accession_number>
-    <doi>10.17189/25902</doi>
-    <publication_date>2020-03-12</publication_date>
-    <product_type>Dataset</product_type>
-    <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
-    <date_record_added>2020-07-23</date_record_added>
-    <date_record_updated>2020-07-23</date_record_updated>
-    <authors>
-      <author>
-        <first_name>J2. R2.</first_name>
-        <last_name>Johnson_2</last_name>
-        <affiliations/>
-      </author>
-    </authors>
-    <contributors/>
-  </record>
-  <record status='pending' index="3">
-    <id>25903</id>
-    <site_url>http://mysite.example.com/link/to/my-dataset-id-25903.html</site_url>
-    <site_code>NASA-PDS</site_code>
-    <title>Laboratory Shocked Feldspars Bundle</title>
-    <accession_number>urn:nasa:pds:lab_shocked_feldspars_3::1.0</accession_number>
-    <doi>10.17189/25903</doi>
-    <publication_date>2020-03-12</publication_date>
-    <product_type>Dataset</product_type>
-    <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
-    <date_record_added>2020-07-23</date_record_added>
-    <date_record_updated>2020-07-23</date_record_updated>
-    <authors>
-      <author>
-        <first_name>J3. R3.</first_name>
-        <last_name>Johnson_3</last_name>
-        <affiliations/>
-      </author>
-    </authors>
-    <contributors/>
-  </record>
+    <record status='pending'>
+        <id>25901</id>
+        <title>Laboratory Shocked Feldspars Bundle</title>
+        <doi>10.17189/25901</doi>
+        <accession_number>urn:nasa:pds:lab_shocked_feldspars::2.0</accession_number>
+        <availability>NASA Planetary Data System</availability>
+        <publication_date>2020-03-11</publication_date>
+        <site_url>http://mysite.example.com/link/to/my-dataset-id-25901.html</site_url>
+        <site_code>NASA-PDS</site_code>
+        <product_type>Dataset</product_type>
+        <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
+        <date_record_added>2020-07-23</date_record_added>
+        <date_record_updated>2020-07-23</date_record_updated>
+        <keywords>PDS;PDS4</keywords>
+        <authors>
+            <author>
+                <last_name>Johnson</last_name>
+                <first_name>J. R.</first_name>
+                <affiliations/>
+            </author>
+        </authors>
+        <contributors/>
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
 </records>
