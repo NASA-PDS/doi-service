@@ -1,76 +1,131 @@
+#!/usr/bin/env python
+
 import os
+from os.path import abspath, dirname, join
 import unittest
-from pds_doi_service.core.util.general_util import get_logger
+from unittest.mock import patch
+
+import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
+from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
-logger = get_logger(__name__)
 
+class ReserveActionTestCase(unittest.TestCase):
 
-class MyTestCase(unittest.TestCase):
-    # The two tests below only build the reserve DOI and return the reserve label.
-    # The parameter submit_label_flag  is set to False to not send the DOI to OTSI.
-    # The parameter write_to_file_flag is set to False to not create individual external file for each record in the XML or CSV file.
-    # Inorder to actually the submit the DOI, the ~/.netrc file must have been set up previously.
-    # Due to addition of validation of existing 'title', 'lidvid' and 'doi' fields from local database,
-    # the DOICoreActionReserve must be instantiated per test and the tear down per test as well to remove temporary database.
-
-    # Because validation has been added to each action, the force=True is required as the command line is not parsed for unit test.
     db_name = 'doi_temp.db'
 
     def setUp(self):
         # This setUp() function is called for every test.
         self._action = DOICoreActionReserve(db_name=self.db_name)
-        logger.info(f"Instantiate DOICoreActionReserve with database file {self.db_name}")
+        self.test_dir = abspath(dirname(__file__))
+        self.input_dir = abspath(
+            join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
+        )
 
     def tearDown(self):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
-            logger.info(f"Removed test artifact database file {self.db_name}")
 
+    def webclient_submit_patch(self, payload, i_url=None, i_username=None,
+                               i_password=None):
+        """
+        Patch for DOIOstiWebClient.webclient_submit_existing_content().
 
-    def test_reserve_xlsx(self):
-        # Instantiate DOICoreActionReserve() class per test.
-        # The setUp() function is called for every test.
-        logger.info("test reserve xlsx file format")
+        Allows a non dry-run reserve to occur without actually submitting
+        anything to the OSTI test server.
+        """
+        # Parse the DOI's from the input label, update status to 'reserved',
+        # and create the output label
+        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(payload)
 
-        self._action.run(
-            input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
+        for doi in dois:
+            doi.status = DoiStatus.Reserved
+
+        o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
+
+        return dois, o_doi_label
+
+    def test_reserve_xlsx_dry_run(self):
+        """
+        Test Reserve action with a local excel spreadsheet, using the
+        dry run flag to avoid submission to OSTI.
+        """
+        o_doi_label = self._action.run(
+            input=join(self.input_dir,
+                       'DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx'),
             node='img', submitter='my_user@my_node.gov',
-            dry_run=True,force=True)
+            dry_run=True, force=True
+        )
 
-        # The tearDown() function is called per test.
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
 
+        self.assertEqual(len(dois), 3)
+        self.assertEqual(len(errors), 0)
+        self.assertTrue(all([doi.status == DoiStatus.Reserved_not_submitted
+                             for doi in dois]))
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
+        'webclient_submit_existing_content', webclient_submit_patch)
     def test_reserve_xlsx_and_submit(self):
-        # Instantiate DOICoreActionReserve() class per test.
-        # The setUp(0 function is called for every test.
-        logger.info("test reserve xlsx file format")
-
-        self._action.run(
-            input='input/DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx',
+        """
+        Test Reserve action with a local excel spreadsheet, submitting the
+        result to OSTI.
+        """
+        o_doi_label = self._action.run(
+            input=join(self.input_dir,
+                       'DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx'),
             node='img', submitter='my_user@my_node.gov',
-            dry_run=True,force=True)
+            dry_run=False, force=True
+        )
 
-        # The tearDown() function is called per test.
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
 
-    def test_reserve_csv(self):
-        # Instantiate DOICoreActionReserve() class per test.
-        # The setUp(0 function is called for every test.
-        logger.info("test reserve csv file format")
-        osti_doi = self._action.run(
-            input='input/DOI_Reserved_GEO_200318.csv',
-            node='img', submitter='my_user@my_node.gov',
-            dry_run=True,force=True)
-        logger.info(osti_doi)
+        self.assertEqual(len(dois), 3)
+        self.assertEqual(len(errors), 0)
+        self.assertTrue(all([doi.status == DoiStatus.Reserved
+                             for doi in dois]))
 
+    def test_reserve_csv_dry_run(self):
+        """
+        Test Reserve action with a local CSV file, using the dry run flag
+        to avoid submission to OSTI.
+        """
+        o_doi_label = self._action.run(
+            input=join(self.input_dir, 'DOI_Reserved_GEO_200318.csv'),
+            node='img', submitter='my_user@my_node.gov', dry_run=True,
+            force=True
+        )
+
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
+
+        self.assertEqual(len(dois), 3)
+        self.assertEqual(len(errors), 0)
+        self.assertTrue(all([doi.status == DoiStatus.Reserved_not_submitted
+                             for doi in dois]))
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
+        'webclient_submit_existing_content', webclient_submit_patch)
     def test_reserve_csv_and_submit(self):
-        logger.info("test reserve csv file format and submit")
-        osti_doi = self._action.run(
-            input='input/DOI_Reserved_GEO_200318.csv',
-            node='img', submitter='my_user@my_node.gov',
-            dry_run=False,force=True)
-        logger.info(osti_doi)
+        """
+        Test Reserve action with a local CSV file, submitting the result to OSTI.
+        """
+        o_doi_label = self._action.run(
+            input=join(self.input_dir, 'DOI_Reserved_GEO_200318.csv'),
+            node='img', submitter='my_user@my_node.gov', dry_run=False,
+            force=True
+        )
 
-        # The tearDown() function is called per test.
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
+
+        self.assertEqual(len(dois), 3)
+        self.assertEqual(len(errors), 0)
+        self.assertTrue(all([doi.status == DoiStatus.Reserved
+                             for doi in dois]))
+
 
 if __name__ == '__main__':
     unittest.main()
