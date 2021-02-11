@@ -242,8 +242,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         the action is set to "reserve", otherwise it can be used optionally in
         lieu of url when the action is set to "draft".
     force : bool
-        If true, forces a reserve request to completion, ignoring any warnings
-        encountered. Has no effect for draft requests.
+        If true, forces a request to completion, ignoring any warnings
+        encountered.
 
     Returns
     -------
@@ -293,7 +293,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     draft_kwargs = {
                         'node': node,
                         'submitter': submitter,
-                        'input': xml_file.name
+                        'input': xml_file.name,
+                        'force': force
                     }
 
                     osti_label = draft_action.run(**draft_kwargs)
@@ -301,7 +302,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 draft_kwargs = {
                     'node': node,
                     'submitter': submitter,
-                    'input': url
+                    'input': url,
+                    'force': force
                 }
 
                 osti_label = draft_action.run(**draft_kwargs)
