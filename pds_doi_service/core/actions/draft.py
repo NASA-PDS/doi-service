@@ -15,7 +15,6 @@ Contains the definition for the Draft action of the Core PDS DOI Service.
 
 import copy
 import os
-import requests
 from lxml import etree
 from os.path import exists, join
 
@@ -28,11 +27,12 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    NoTransactionHistoryForLIDVIDException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    InputFormatException,
-                                                   WarningDOIException,
-                                                   CriticalDOIException)
+                                                   CriticalDOIException,
+                                                   collect_exception_classes_and_messages,
+                                                   raise_or_warn_exceptions)
+from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
@@ -67,14 +67,14 @@ class DOICoreActionDraft(DOICoreAction):
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
             cls._name, description='Create a draft of OSTI records, '
-                                   'from a single or list of PDS4 labels'
+                                   'from existing PDS4 or OSTI labels'
         )
 
         node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument(
             '-i', '--input', required=False,
             metavar='input/bundle_in_with_contributors.xml',
-            help='An input PDS4 label. May be a local path or an HTTP address '
+            help='An input PDS4/OSTI label. May be a local path or an HTTP address '
                  'resolving to a label file. Multiple inputs may be provided '
                  'via comma-delimited list. Must be provided if --lidvid is not '
                  'specified.'
@@ -160,9 +160,7 @@ class DOICoreActionDraft(DOICoreAction):
         )
 
         # Format label into an in-memory DOI object
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(
-            bytes(lidvid_record, encoding='utf-8')
-        )
+        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(lidvid_record)
 
         doi = dois[0]
 
@@ -297,64 +295,44 @@ class DOICoreActionDraft(DOICoreAction):
 
         return io_doi
 
-    def _transform_pds4_label_into_osti_record(self, input_file, keywords):
+    def _transform_label_into_osti_record(self, input_file, keywords):
         """
         Receives an XML PDS4 input file and transforms it into an OSTI record.
         """
-        # Set to None to signify an input file that does not end with '.xml'
-        o_doi_label = None
-        o_doi = None
+        input_util = DOIInputUtil(valid_extensions=['.xml'])
 
-        # parse input_file
-        if not input_file.startswith('http'):
-            # Only process .xml files and print WARNING for any other files,
-            # then continue.
-            if input_file.endswith('.xml'):
-                try:
-                    xml_tree = etree.parse(input_file)
-                except OSError as err:
-                    msg = f'Error reading file {input_file}, reason: {str(err)}'
-                    logger.error(msg)
-                    raise InputFormatException(msg)
-            else:
-                msg = f"File {input_file} was not processed, only .xml files " \
-                      "are supported"
-                logger.warning(msg)
-                return o_doi_label, o_doi
+        o_dois = input_util.parse_dois_from_input_file(input_file)
 
-        else:
-            # A URL gets read into memory.
-            response = requests.get(input_file)
-            xml_tree = etree.fromstring(response.content)
+        for o_doi in o_dois:
+            o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
+            o_doi.contributor = NodeUtil().get_node_long_name(self._node)
 
-        label_util = DOIPDS4LabelUtil(
-            landing_page_template=self._config.get('LANDING_PAGES', 'url')
-        )
+            # Add 'status' field so the ranking in the workflow can be determined.
+            o_doi.status = DoiStatus.Draft
 
-        o_doi = label_util.get_doi_fields_from_pds4(xml_tree)
-        o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
-        o_doi.contributor = NodeUtil().get_node_long_name(self._node)
-
-        # Add 'status' field so the ranking in the workflow can be determined.
-        o_doi.status = DoiStatus.Draft
-
-        # Add any default keywords or extra keywords provided by the user.
-        self._add_extra_keywords(keywords, o_doi)
+            # Add any default keywords or extra keywords provided by the user.
+            self._add_extra_keywords(keywords, o_doi)
 
         # Generate the output OSTI record
-        o_doi_label = DOIOutputOsti().create_osti_doi_record(o_doi)
+        o_doi_label = DOIOutputOsti().create_osti_doi_record(o_dois)
 
-        # Return the label (which is text) and a dictionary 'o_doi' representing
-        # all values parsed.
-        return o_doi_label, o_doi
+        # Return the label (which is text) and a dictionary 'o_dois' representing
+        # all individual DOI's parsed.
+        return o_doi_label, o_dois
 
     def _run_single_file(self, input_file, node, submitter, force_flag, keywords):
+        exception_classes = []
+        exception_messages = []
+
+        doi_label = None
+        dois_obj = None
+
         logger.info(f"input_file {input_file}")
         logger.debug(f"force_flag,input_file {force_flag, input_file}")
 
         try:
-            # Transform the PDS4 label to an OSTI record.
-            doi_label, doi_obj = self._transform_pds4_label_into_osti_record(
+            # Transform the input label to an OSTI record and list of Doi objects.
+            doi_label, dois_obj = self._transform_label_into_osti_record(
                 input_file, keywords
             )
 
@@ -367,34 +345,39 @@ class DOICoreActionDraft(DOICoreAction):
                 if self._config.get('OTHER', 'draft_validate_against_xsd_flag').lower() == 'true':
                     self._doi_validator.validate_against_xsd(doi_label)
 
-            if doi_obj:
+            for doi_obj in dois_obj:
                 self._doi_validator.validate(doi_obj)
-            else:
-                return None
+        # Collect any exceptions/warnings for now and decide whether to
+        # raise or log them later on
+        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
+                TitleDoesNotMatchProductTypeException) as err:
+            (exception_classes,
+             exception_messages) = collect_exception_classes_and_messages(
+                err, exception_classes, exception_messages
+            )
+        # Catch all other exceptions as errors
+        except InputFormatException as err:
+            raise CriticalDOIException(err)
 
+        # If there is at least one exception caught, either raise a
+        # WarningDOIException or log a warning with all the messages,
+        # depending on the the state of the force flag
+        if len(exception_classes) > 0:
+            raise_or_warn_exceptions(exception_classes, exception_messages,
+                                     log=force_flag)
+
+        if doi_label and dois_obj:
             # Use the service of TransactionBuilder to prepare all things
             # related to writing a transaction.
             transaction = self.m_transaction_builder.prepare_transaction(
-                node, submitter, [doi_obj], input_path=input_file,
+                node, submitter, dois_obj, input_path=input_file,
                 output_content=doi_label
             )
 
             # Commit the transaction to the database
             transaction.log()
 
-            return doi_label
-        # Treat warnings as exceptions if force flag is not provided
-        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                TitleDoesNotMatchProductTypeException) as err:
-            if not force_flag:
-                # If the user did not use force_flag, re-raise the exception.
-                raise WarningDOIException(str(err))
-            else:
-                # Just log that the warning occurred
-                logger.warn(str(err))
-        # Catch all other exceptions as errors
-        except InputFormatException as err:
-            raise CriticalDOIException(err)
+        return doi_label
 
     def run(self, **kwargs):
         """

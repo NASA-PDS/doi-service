@@ -49,7 +49,7 @@ class DOIOutputOsti:
 
             # Convert set of keywords back to a semi-colon delimited string
             if doi.keywords:
-                doi_fields['keywords'] = "; ".join(sorted(doi.keywords))
+                doi_fields['keywords'] = ";".join(sorted(doi.keywords))
 
             # publication_date is assigned to a Doi object as a datetime,
             # need to convert to a string for the OSTI label. Note that

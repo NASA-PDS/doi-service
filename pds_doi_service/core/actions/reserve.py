@@ -14,10 +14,6 @@ Contains the definition for the Reserve action of the Core PDS DOI Service.
 """
 
 from datetime import datetime
-import os
-import requests
-
-from lxml import etree
 
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -28,11 +24,10 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    UnexpectedDOIActionException,
                                                    UnknownNodeException,
                                                    collect_exception_classes_and_messages,
-                                                   raise_warn_exceptions)
+                                                   raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
 from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.doi_validator import DOIValidator
@@ -94,103 +89,8 @@ class DOICoreActionReserve(DOICoreAction):
                  "of 'reserved_not_submitted'."
         )
 
-    def _read_from_path(self, path):
-        if os.path.isfile(path):
-            if path.endswith('.xml'):
-                return self._read_from_local_pdf4(path)
-            elif path.endswith('.xlsx') or path.endswith('.xls'):
-                return self._read_from_local_xlsx(path)
-            elif path.endswith('.csv'):
-                return self._read_from_local_csv(path)
-            else:
-                logger.info(f'file {path} not supported')
-        else:
-            dois = []
-
-            for sub_path in os.listdir(path):
-                dois.extend(self._read_from_path(os.path.join(path, sub_path)))
-
-            return dois
-
-    def _read_from_remote_pds4(self, url):
-        try:
-            response = requests.get(url)
-            xml_tree = etree.fromstring(response.content)
-            label_util = DOIPDS4LabelUtil(
-                landing_page_template=self._config.get('LANDING_PAGES', 'url')
-            )
-            doi = label_util.get_doi_fields_from_pds4(xml_tree)
-
-            return [doi]
-        except OSError as err:
-            msg = f'Error reading file {url}, reason: {str(err)}'
-            logger.error(msg)
-            raise InputFormatException(msg)
-
-    def _read_from_local_pdf4(self, path):
-        # parse input
-        try:
-            xml_tree = etree.parse(path)
-            label_util =  DOIPDS4LabelUtil(
-                landing_page_template=self._config.get('LANDING_PAGES', 'url')
-            )
-            doi = label_util.get_doi_fields_from_pds4(xml_tree)
-
-            return [doi]
-        except OSError as err:
-            msg = f'Error reading file {path}, reason: {str(err)}'
-            logger.error(msg)
-            raise InputFormatException(msg)
-
-    def _read_from_local_xlsx(self, path):
-        """Processes a Reserve action based on a file with an .xlsx ending."""
-        try:
-            dois = DOIInputUtil().parse_sxls_file(path)
-
-            # Do a sanity check on content of dict_condition_data.
-            if len(dois) == 0:
-                raise InputFormatException(
-                    "Length of dict_condition_data['dois'] is zero, target_url " + path
-                )
-
-            return dois
-        except InputFormatException as err:
-            logger.error(err)
-            exit(1)
-        except OSError as err:
-            msg = f'Error reading file {path}, reason: {str(err)}'
-            logger.error(msg)
-            raise InputFormatException(msg)
-
-    def _read_from_local_csv(self, path):
-        """Processes a Reserve action based on a file with a .csv ending."""
-        try:
-            dois = DOIInputUtil().parse_csv_file(path)
-
-            # Do a sanity check on content of dict_condition_data.
-            if len(dois) == 0:
-                raise InputFormatException(
-                    "Length of dict_condition_data['dois'] is zero, target_url " + path
-                )
-
-            return dois
-        except InputFormatException as err:
-            logger.error(err)
-            exit(1)
-        except OSError as err:
-            msg = f'Error reading file {path}, reason: {str(err)}'
-            logger.error(msg)
-            raise InputFormatException(msg)
-
     def _parse_input(self, input_file):
-        # Check for existence first to return the message the 'behave' testing
-        # expects.
-        if input_file.startswith('http'):
-            return self._read_from_remote_pds4(input_file)
-        elif os.path.exists(input_file):
-            return self._read_from_path(input_file)
-        else:
-            raise InputFormatException(f"Error reading file {input_file}")
+        return DOIInputUtil().parse_dois_from_input_file(input_file)
 
     def complete_and_validate_dois(self, dois, contributor, publisher, dry_run):
         exception_classes = []
@@ -231,10 +131,12 @@ class DOICoreActionReserve(DOICoreAction):
                     err, exception_classes, exception_messages
                 )
 
-        # If there is at least one exception caught, raise a WarningDOIException
-        # with all the messages, provided the force flag is not set
-        if len(exception_classes) > 0 and not self._force:
-            raise_warn_exceptions(exception_classes, exception_messages)
+        # If there is at least one exception caught, either raise a
+        # WarningDOIException or log a warning with all the messages,
+        # depending on the the state of the force flag
+        if len(exception_classes) > 0:
+            raise_or_warn_exceptions(exception_classes, exception_messages,
+                                     log=self._force)
 
         return dois
 
@@ -309,6 +211,7 @@ class DOICoreActionReserve(DOICoreAction):
 
             logger.debug(f"reserve_response {o_doi_label}")
             logger.debug(f"_input,self,_dry_run {self._input, self._dry_run}")
+
             return o_doi_label
         # Convert other errors into a CriticalDOIException to report back
         except (UnknownNodeException, InputFormatException) as err:

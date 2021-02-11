@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <records>
     <record status="review">
-        <id></id>
+        <id/>
         <title>InSight Cameras Bundle 0</title>
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
         <accession_number>urn:nasa:pds:insight_cameras::2.0</accession_number>
-        <publisher></publisher>
-        <availability></availability>
+        <publisher>NASA Planetary Data System</publisher>
+        <availability>NASA Planetary Data System</availability>
         <publication_date>2019-01-01</publication_date>
         <site_url>https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
         <product_type>Dataset</product_type>
         <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
-        <date_record_added></date_record_added>
-        <keywords>PDS; PDS4;</keywords>
+        <date_record_added>2020-07-23</date_record_added>
+        <keywords>PDS;PDS4</keywords>
         <authors>
             <author>
-                <first_name>R.</first_name>
                 <last_name>Deen</last_name>
+                <first_name>R.</first_name>
             </author>
-             <author>
-                <first_name>H.</first_name>
-                <last_name>Abarca</last_name>
+            <author>
+                 <last_name>Abarca</last_name>
+                 <first_name>H.</first_name>
             </author>
-             <author>
-                <first_name>P.</first_name>
+            <author>
                 <last_name>Zamani</last_name>
+                <first_name>P.</first_name>
             </author>
-             <author>
-                <first_name>J.</first_name>
+            <author>
                 <last_name>Maki</last_name>
+                <first_name>J.</first_name>
             </author>
         </authors>
         <contributors>
