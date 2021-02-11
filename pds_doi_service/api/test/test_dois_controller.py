@@ -151,6 +151,23 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
 
+        # Now try filtering by workflow status
+        query_string = [('status', DoiStatus.Reserved_not_submitted.value),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Should only get two of the records back
+        records = response.json
+        self.assertEqual(len(records), 2)
+
         # Finally, test with a malformed start/end date and ensure we
         # get "invalid argument" code back
         query_string = [('start_date', '2020-10-20 14:04:13.000000'),
