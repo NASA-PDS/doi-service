@@ -121,8 +121,8 @@ def _records_from_dois(dois, node=None, submitter=None, osti_record=None):
     return records
 
 
-def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
-             end_date=None):
+def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
+             start_date=None, end_date=None):
     """
     List the DOI requests within the transaction database which match
     the specified criteria. If no criteria are provided, all database entries
@@ -137,6 +137,10 @@ def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
     node : list of str, optional
         List of PDS node names cited as contributor of the DOI to filter by.
         Each identifier must be one of the valid PDS steward IDs.
+    status : list of str, optional
+        List of DOI workflow status values to filter results by.
+        Each status value should correspond to one of the enumeration values in
+        DoiStatus.
     lid : list of str, optional
         List of LIDs to filter DOIs by. An LID may include the VID appended to
         the end.
@@ -167,6 +171,9 @@ def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
     if node:
         node = ','.join(node)
 
+    if status:
+        status = ','.join(status)
+
     lidvid = None
 
     if lid:
@@ -183,6 +190,7 @@ def get_dois(doi=None, submitter=None, node=None, lid=None, start_date=None,
         'lidvid': lidvid,
         'submitter': submitter,
         'node': node,
+        'status': status,
         'start_update': start_date,
         'end_update': end_date
     }
