@@ -13,6 +13,8 @@ osti_web_parser.py
 Contains classes and functions for parsing OSTI XML labels.
 """
 
+import json
+
 from datetime import datetime
 from lxml import etree
 
@@ -293,7 +295,7 @@ class DOIOstiWebParser:
         ).decode('utf-8')
 
     @staticmethod
-    def response_get_parse_osti_xml(osti_response_text):
+    def parse_osti_response_xml(osti_response_text):
         """
         Parses a response from a GET (query) or a PUT to the OSTI server
         (in XML query format) and return a list of dictionaries.
@@ -370,15 +372,18 @@ class DOIOstiWebParser:
         return dois, errors
 
     @staticmethod
-    def response_get_parse_osti_json(osti_response):
+    def parse_osti_response_json(osti_response_text):
         """
         Parses a response from a query to the OSTI server (in JSON format) and
-        returns a JSON object.
+        returns a list of parsed Doi objects.
 
-        Specific fields are extracted from input. Not all fields in JSON are used.
+        Specific fields are extracted from input. Not all fields in the JSON are
+        used.
 
         """
         dois = []  # It is possible that the query resulted in no rows.
+
+        osti_response = json.loads(osti_response_text)
 
         # These are the fields in a record returned by OSTI
         # fields_returned_from_osti =

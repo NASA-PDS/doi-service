@@ -108,7 +108,7 @@ class DOIInputUtil:
         # the format
         if DOIValidator().validate_against_xsd(
                 xml_contents, use_alternate_validation_method=False):
-            dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(xml_contents)
+            dois, _ = DOIOstiWebParser.parse_osti_response_xml(xml_contents)
         # Finally, try parsing as a PDS4 label
         else:
             try:

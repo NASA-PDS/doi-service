@@ -160,7 +160,7 @@ class DOICoreActionDraft(DOICoreAction):
         )
 
         # Format label into an in-memory DOI object
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(lidvid_record)
+        dois, errors = DOIOstiWebParser.parse_osti_response_xml(lidvid_record)
 
         doi = dois[0]
 

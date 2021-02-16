@@ -132,7 +132,7 @@ class DOICoreActionRelease(DOICoreAction):
         exception_classes = []
         exception_messages = []
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(doi_label)
+        dois, _ = DOIOstiWebParser().parse_osti_response_xml(doi_label)
 
         for doi in dois:
             try:

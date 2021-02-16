@@ -42,7 +42,7 @@ class ListActionTestCase(unittest.TestCase):
 
         draft_xml = self._draft_action.run(**draft_kwargs)
 
-        dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(draft_xml)
+        dois, _ = DOIOstiWebParser.parse_osti_response_xml(draft_xml)
         doi = dois[0]
 
         list_kwargs = {
@@ -75,7 +75,7 @@ class ListActionTestCase(unittest.TestCase):
 
             review_xml = self._release_action.run(**review_kwargs)
 
-        dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(review_xml)
+        dois, _ = DOIOstiWebParser.parse_osti_response_xml(review_xml)
         doi = dois[0]
 
         # Now query for review status
