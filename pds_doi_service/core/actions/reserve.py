@@ -187,32 +187,45 @@ class DOICoreActionReserve(DOICoreAction):
 
             self._validate_against_schematron_as_batch(dois, self._dry_run)
 
+            contributor = NodeUtil().get_node_long_name(self._node)
+            publisher = self._config.get('OTHER', 'doi_publisher')
+
             dois = self.complete_and_validate_dois(
-                dois, NodeUtil().get_node_long_name(self._node),
-                self._config.get('OTHER', 'doi_publisher'), self._dry_run
+                dois, contributor, publisher, self._dry_run
             )
-            o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
+            io_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
 
             if not self._dry_run:
                 dois, o_doi_label = DOIOstiWebClient().webclient_submit_existing_content(
-                    o_doi_label,
+                    io_doi_label,
                     i_url=self._config.get('OSTI', 'url'),
                     i_username=self._config.get('OSTI', 'user'),
                     i_password=self._config.get('OSTI', 'password')
                 )
 
+                # TODO: we lose these fields when parsing dois from OSTI response.
+                #       as a temp kludge, reassign here
+                for doi in dois:
+                    doi.contributor = contributor
+                    doi.publisher = publisher
+
+                # The label returned from OSTI is of a slightly different
+                # format than what we expect to pass validation, so reformat
+                # using the valid template here
+                io_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
+
             transaction = self.m_transaction_builder.prepare_transaction(
                 self._node, self._submitter, dois, input_path=self._input,
-                output_content=o_doi_label
+                output_content=io_doi_label
             )
 
             # Commit the transaction to the local database
             transaction.log()
 
-            logger.debug(f"reserve_response {o_doi_label}")
+            logger.debug(f"reserve_response {io_doi_label}")
             logger.debug(f"_input,self,_dry_run {self._input, self._dry_run}")
 
-            return o_doi_label
+            return io_doi_label
         # Convert other errors into a CriticalDOIException to report back
         except (UnknownNodeException, InputFormatException) as err:
             raise CriticalDOIException(err)

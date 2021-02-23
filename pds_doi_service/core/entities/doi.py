@@ -13,7 +13,7 @@ doi.py
 Contains the dataclass and enumeration definitions for Doi objects.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, unique
 
@@ -71,7 +71,7 @@ class Doi:
     product_type_specific: str
     related_identifier: str
     authors: list = None
-    keywords: list = None
+    keywords: set = field(default_factory=set)
     editors: list = None
     description: str = None
     id: str = None

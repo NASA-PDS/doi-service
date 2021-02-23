@@ -221,6 +221,20 @@ class DOICoreActionRelease(DOICoreAction):
                     i_password=self._config.get('OSTI', 'password')
                 )
                 logger.debug(f"o_release_result {dois}")
+
+                # TODO: we lose these fields when parsing dois from OSTI response.
+                #       as a temp kludge, reassign here
+                contributor = NodeUtil().get_node_long_name(self._node)
+                publisher = self._config.get('OTHER', 'doi_publisher')
+
+                for doi in dois:
+                    doi.contributor = contributor
+                    doi.publisher = publisher
+
+                # The label returned from OSTI is of a slightly different
+                # format than what we expect to pass validation, so reformat
+                # using the valid template here
+                o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
             # Otherwise, if the next step is review, recreate an OSTI label
             # from the parsed DOI's that have the "review" status assigned.
             # This becomes the label associated with the transaction database entry.
