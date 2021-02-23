@@ -18,7 +18,9 @@
         <availability>NASA Planetary Data System</availability>
         <publication_date>{{publication_date}}</publication_date>
         <country>USA</country>
+        {{#description}}
         <description>{{description}}</description>
+        {{/description}}
         {{#site_url}}
         <site_url>{{site_url}}</site_url>
         {{/site_url}}
@@ -28,7 +30,12 @@
         <product_type>{{product_type}}</product_type>
         <product_type_specific>{{product_type_specific}}</product_type_specific>
         <date_record_added>{{date_record_added}}</date_record_added>
+        {{#keywords}}
         <keywords>{{keywords}}</keywords>
+        {{/keywords}}
+        {{^keywords}}
+        <keywords/>
+        {{/keywords}}
         <authors>
             {{#authors}}
              <author>
