@@ -65,7 +65,13 @@ class DOIValidator:
 
     @staticmethod
     def __lidvid(columns, row):
-        return f"{row[columns.index('lid')]}::{row[columns.index('vid')]}"
+        lid = row[columns.index('lid')]
+        vid = row[columns.index('vid')]
+
+        if lid and vid:
+            return f"{row[columns.index('lid')]}::{row[columns.index('vid')]}"
+
+        return lid
 
     def _check_field_site_url(self, doi: Doi):
         """
@@ -75,7 +81,7 @@ class DOIValidator:
         logger.debug(f"doi {doi}")
         logger.info(f"doi.site_url {doi.site_url}")
 
-        if doi.site_url:
+        if doi.site_url and doi.site_url != 'N/A':
             try:
                 response = requests.get(doi.site_url, timeout=5)
                 status_code = response.status_code
