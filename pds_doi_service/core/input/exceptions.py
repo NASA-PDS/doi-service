@@ -51,7 +51,7 @@ class IllegalDOIActionException(Exception):
 class UnexpectedDOIActionException(Exception):
     """
     Raised when a DOI has an unexpected status, or a requested action
-    circumvents the expceted DOI workflow.
+    circumvents the expected DOI workflow.
     """
     pass
 
@@ -77,6 +77,10 @@ class WarningDOIException(Exception):
 class SiteURLNotExistException(Exception):
     """Raised when a DOI's site URL cannot be reached."""
     pass
+
+
+class OSTIRequestException(Exception):
+    """Raised when a request to the OSTI service fails."""
 
 
 def collect_exception_classes_and_messages(single_exception,
