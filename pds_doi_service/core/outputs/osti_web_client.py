@@ -21,38 +21,14 @@ import requests
 
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.input.exceptions import OSTIRequestException
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
-logger = get_logger('pds_doi_core.cmd.pds_doi_cmd')
+logger = get_logger('pds_doi_service.core.outputs.osti_web_client')
 
 
 class DOIOstiWebClient:
     _web_parser = DOIOstiWebParser()
-
-    def webclient_draft_doi(self, target_url, contributor_value):
-        """Draft a DOI from input by making a request to the server."""
-        parameters = {
-            'target_url': target_url,
-            'contributor': contributor_value
-        }
-
-        response = requests.get(target_url, params=parameters)
-        logger.debug(f'response {response}')
-
-        # Return the response as text and let the user decide what to do with it.
-        return response.text
-
-    def webclient_reserve_doi(self, target_url, contributor_value):
-        """Reserve a DOI from input by making a request to the server."""
-        params = {
-            'target_url': target_url,
-            'contributor': contributor_value
-        }
-
-        response = requests.get(target_url, params=params)
-        logger.debug(f'reserve doi {response.request}')
-
-        return response.text
 
     def webclient_submit_existing_content(self, payload, i_url=None,
                                           i_username=None, i_password=None):
@@ -66,6 +42,14 @@ class DOIOstiWebClient:
 
         response = requests.post(i_url, auth=auth, data=payload, headers=headers)
 
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as http_err:
+            raise OSTIRequestException(
+                'DOI submission request to OSTI service failed, '
+                f'reason: {str(http_err)}'
+            )
+
         # Re-use the parse function response_get_parse_osti_xml() from
         # DOIOstiWebParser class instead of duplicating code.
         doi, _ = self._web_parser.response_get_parse_osti_xml(response.text)
@@ -73,15 +57,6 @@ class DOIOstiWebClient:
         logger.debug(f"o_status {doi}")
 
         return doi, response.text
-
-    def webclient_submit_doi(self, payload_filename):
-        """Submit the content external file as a DOI to server."""
-        logger.debug(f"payload_filename {payload_filename}")
-
-        with open(payload_filename, 'rb') as payload:
-            o_status, doc = self.webclient_submit_existing_content(payload)
-
-        return o_status, doc
 
     def webclient_query_doi(self, i_url, query_dict=None, i_username=None, i_password=None):
         """
@@ -125,6 +100,14 @@ class DOIOstiWebClient:
                                      auth=auth,
                                      params=query_dict,
                                      headers=headers)
+
+        try:
+            osti_response.raise_for_status()
+        except requests.exceptions.HTTPError as http_err:
+            raise OSTIRequestException(
+                f'DOI query request to OSTI service failed, reason: '
+                f'{str(http_err)}'
+            )
 
         return osti_response.text
 
