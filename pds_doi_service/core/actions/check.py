@@ -84,6 +84,7 @@ class DOICoreActionCheck(DOICoreAction):
         """
         doi_value = pending_record['doi']
         query_dict = {'doi': doi_value}
+
         doi_xml = DOIOstiWebClient().webclient_query_doi(
             self._config.get('OSTI', 'url'), query_dict,
             i_username=self._config.get('OSTI', 'user'),
@@ -111,8 +112,6 @@ class DOICoreActionCheck(DOICoreAction):
                 f"doi {pending_record['doi']} for lidvid "
                 + f"{pending_record['lid']}::{pending_record['vid']} no found at OSTI"
             )
-
-        return pending_record
 
     def _get_distinct_nodes_and_submitters(self, i_check_result):
         """
