@@ -6,38 +6,55 @@
 #
 
 """
-=======================
+==================
 osti_web_client.py
-=======================
+==================
 
 Contains client functions for interfacing with the OSTI DOI submission service.
-It allows the user to draft a DOI object by communicating with a currently
+It allows the user to submit a DOI object by communicating with a currently
 running web server for DOI services.
 """
 
-from lxml import etree
-from requests.auth import HTTPBasicAuth
+import pprint
+import json
 import requests
+from requests.auth import HTTPBasicAuth
 
-from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.outputs.osti import (CONTENT_TYPE_XML,
+                                               CONTENT_TYPE_JSON,
+                                               VALID_CONTENT_TYPES)
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.input.exceptions import OSTIRequestException
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
 logger = get_logger('pds_doi_service.core.outputs.osti_web_client')
 
+CONTENT_TYPE_MAP = {
+    CONTENT_TYPE_XML: 'application/xml',
+    CONTENT_TYPE_JSON: 'application/json'
+}
+"""Mapping of content type constants to the corresponding MIME identifier"""
+
+MAX_TOTAL_ROWS_RETRIEVE = 1000000000
+"""Maximum numbers of rows to request from a query to OSTI"""
+
 
 class DOIOstiWebClient:
     _web_parser = DOIOstiWebParser()
 
     def webclient_submit_existing_content(self, payload, i_url=None,
-                                          i_username=None, i_password=None):
+                                          i_username=None, i_password=None,
+                                          content_type=CONTENT_TYPE_XML):
         """Submit the content (payload already in memory)."""
+        if content_type not in VALID_CONTENT_TYPES:
+            raise ValueError('Invalid content type requested, must be one of '
+                             f'{",".join(VALID_CONTENT_TYPES)}')
+
         auth = HTTPBasicAuth(i_username, i_password)
 
         headers = {
-            'Accept': 'application/xml',
-            'Content-Type': 'application/xml'
+            'Accept': CONTENT_TYPE_MAP[content_type],
+            'Content-Type': CONTENT_TYPE_MAP[content_type]
         }
 
         response = requests.post(i_url, auth=auth, data=payload, headers=headers)
@@ -47,18 +64,23 @@ class DOIOstiWebClient:
         except requests.exceptions.HTTPError as http_err:
             raise OSTIRequestException(
                 'DOI submission request to OSTI service failed, '
-                f'reason: {str(http_err)}'
+                f'reason: {str(http_err)}\n'
+                f'Details: {pprint.pformat(json.loads(response.text))}'
             )
 
-        # Re-use the parse function response_get_parse_osti_xml() from
-        # DOIOstiWebParser class instead of duplicating code.
-        doi, _ = self._web_parser.response_get_parse_osti_xml(response.text)
+        # Re-use the parse functions from DOIOstiWebParser class to get the
+        # list of Doi objects to return
+        if content_type == CONTENT_TYPE_XML:
+            doi, _ = self._web_parser.parse_osti_response_xml(response.text)
+        else:
+            doi, _ = self._web_parser.parse_osti_response_json(response.text)
 
         logger.debug(f"o_status {doi}")
 
         return doi, response.text
 
-    def webclient_query_doi(self, i_url, query_dict=None, i_username=None, i_password=None):
+    def webclient_query_doi(self, i_url, query_dict=None, i_username=None,
+                            i_password=None, content_type=CONTENT_TYPE_XML):
         """
         Queries the status of a DOI from the OSTI server and returns the
         response text.
@@ -72,13 +94,15 @@ class DOIOstiWebClient:
             if query_dict = {'id'=1327397,'status'='Registered'}
                 then https://www.osti.gov/iad2test/api/records?id=1327397&status=Registered
         """
-        MAX_TOTAL_ROWS_RETRIEVE= 1000000000
+        if content_type not in VALID_CONTENT_TYPES:
+            raise ValueError('Invalid content type requested, must be one of '
+                             f'{",".join(VALID_CONTENT_TYPES)}')
 
         auth = HTTPBasicAuth(i_username, i_password)
 
         headers = {
-            'Accept': 'application/xml',
-            'Content-Type': 'application/xml'
+            'Accept': CONTENT_TYPE_MAP[content_type],
+            'Content-Type': CONTENT_TYPE_MAP[content_type]
         }
 
         # OSTI server requires 'rows' field to know how many max rows to fetch at once.
@@ -96,64 +120,17 @@ class DOIOstiWebClient:
         logger.debug(f"query_dict {query_dict}")
         logger.debug(f"i_url {i_url}")
 
-        osti_response = requests.get(i_url,
-                                     auth=auth,
-                                     params=query_dict,
-                                     headers=headers)
+        osti_response = requests.get(
+            i_url, auth=auth, params=query_dict, headers=headers
+        )
 
         try:
             osti_response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
             raise OSTIRequestException(
-                f'DOI query request to OSTI service failed, reason: '
-                f'{str(http_err)}'
+                'DOI submission request to OSTI service failed, '
+                f'reason: {str(http_err)}\n'
+                f'Details: {pprint.pformat(json.loads(osti_response.text))}'
             )
 
         return osti_response.text
-
-    def _verify_osti_reserved_status(self, i_doi_label):
-        """
-        Verifies that all the status attributes in all records are 'Reserved'
-        as expected.
-        """
-        o_reserved_flag = True
-
-        if i_doi_label is None:
-            logger.error(f"The value of i_doi_label is none. Will not continue.")
-            exit(1)
-
-        doc = etree.fromstring(i_doi_label.encode())
-
-        # Do a sanity check on the 'status' attribute for each record.
-        # If not equal to 'Reserved' exit.
-        my_root = doc.getroottree()
-        num_reserved_statuses = 0
-        num_record_records = 0
-
-        for element in my_root.findall('record'):
-            num_record_records += 1
-            my_record = my_root.xpath(element.tag)[0]
-
-            if my_record.attrib['status'] == DoiStatus.Reserved:
-                num_reserved_statuses += 1
-            else:
-                logger.warning("Expected 'status' attribute to be 'reserved' "
-                               f"but it is {my_record.attrib['status']}")
-                my_record.attrib['status'] = DoiStatus.Reserved
-                logger.warning("Reset status to 'reserved'")
-
-                num_reserved_statuses += 1
-
-        logger.debug("num_record_records,num_reserved_statuses "
-                     f"{num_record_records} {num_reserved_statuses}")
-
-        if num_record_records != num_reserved_statuses:
-            logger.error("num_record_records is not the same as num_reserved_statuses "
-                         f"{num_record_records} {num_reserved_statuses}")
-            exit(1)
-
-        o_out_text = etree.tostring(doc, pretty_print=True)
-        logger.debug(f'o_out_text {o_out_text}')
-        logger.debug(f'doc {doc}')
-
-        return o_reserved_flag, o_out_text
