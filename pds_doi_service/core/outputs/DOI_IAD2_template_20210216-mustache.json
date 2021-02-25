@@ -1,0 +1,62 @@
+[
+    {{#dois}}
+    {
+        "status": "{{status}}",
+        {{#id}}
+        "id": "{{id}}",
+        {{/id}}
+        "title": "{{title}}",
+        {{#doi}}
+        "doi": "{{doi}}",
+        {{/doi}}
+        "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
+        "accession_number": "{{related_identifier}}",
+        "publisher": "{{publisher}}",
+        "availability": "NASA Planetary Data System",
+        "publication_date": "{{publication_date}}",
+        "country": "US",
+        {{#description}}
+        "description": "{{description}}",
+        {{/description}}
+        {{#site_url}}
+        "site_url": "{{{site_url}}}",
+        {{/site_url}}
+        {{^site_url}}
+        "site_url": "N/A",
+        {{/site_url}}
+        "product_type": "{{product_type}}",
+        "product_type_specific": "{{product_type_specific}}",
+        "date_record_added": "{{date_record_added}}",
+        "keywords": "{{keywords}}",
+        "authors": {{{authors}}},
+        "contributors": [
+            {{#editors}}
+            {
+                {{#last_name}}
+                "last_name": "{{last_name}}",
+                {{/last_name}}
+                {{#first_name}}
+                "first_name": "{{first_name}}",
+                {{/first_name}}
+                {{#middle_name}}
+                "middle_name": "{{middle_name}}",
+                {{/middle_name}}
+                {{#full_name}}
+                "full_name": "{{full_name}}",
+                {{/full_name}}
+                "contributor_type": "Editor"
+            },
+            {{/editors}}
+            {
+                "full_name": "Planetary Data System: {{contributor}} Node",
+                "contributor_type": "DataCurator"
+            }
+        ],
+        "contact_name": "PDS Operator",
+        "contact_org": "PDS",
+        "contact_email": "pds-operator@jpl.nasa.gov",
+        "contact_phone": "818.393.7165"
+    }{{#comma}},{{/comma}}
+    {{/dois}}
+]
+
