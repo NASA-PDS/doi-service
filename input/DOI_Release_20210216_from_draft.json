@@ -1,0 +1,60 @@
+[
+    {
+        "status": "pending",
+        "title": "InSight Cameras Bundle 0",
+        "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
+        "accession_number": "urn:nasa:pds:insight_cameras::2.0",
+        "publisher": "NASA Planetary Data System",
+        "availability": "NASA Planetary Data System",
+        "publication_date": "2019-01-01",
+        "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+        "site_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0",
+        "product_type": "Dataset",
+        "product_type_specific": "PDS4 Refereed Data Bundle",
+        "keywords": "PDS;Instrument;Spacecraft;Raw;Lander;Mars;Deployment;Science;Mission;Camera;Insight;Context;Planet",
+        "authors": [
+            {
+                "first_name": "R.",
+                "last_name": "Deen"
+            },
+            {
+                "first_name": "H.",
+                "last_name": "Abarca"
+            },
+            {
+                "first_name": "P.",
+                "last_name": "Zamani"
+            },
+            {
+                "first_name": "J.",
+                "last_name": "Maki"
+            }
+        ],
+        "contributors": [
+            {
+                "first_name": "P. H.",
+                "last_name": "Smith",
+                "contributor_type": "Editor"
+            },
+            {
+                "first_name": "M.",
+                "last_name": "Lemmon",
+                "contributor_type": "Editor"
+            },
+            {
+                "first_name": "R. F.",
+                "last_name": "Beebe",
+                "contributor_type": "Editor"
+            },
+            {
+                "full_name": "Planetary Data System: Cartography and Imaging Sciences Discipline Node",
+                "contributor_type": "DataCurator"
+            }
+        ],
+        "contact_name": "PDS Operator",
+        "contact_org": "PDS",
+        "contact_email": "pds-operator@jpl.nasa.gov",
+        "contact_phone": "818.393.7165"
+    }
+]
+
