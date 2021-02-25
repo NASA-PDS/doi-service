@@ -48,7 +48,7 @@ class DOIInputUtil:
     EXPECTED_PUBLICATION_DATE_LEN = 10
     """Expected minimum length of a parsed publication date."""
 
-    DEFAULT_VALID_EXTENSIONS = ['.xml', '.csv', '.xlsx', '.xls']
+    DEFAULT_VALID_EXTENSIONS = ['.xml', '.csv', '.xlsx', '.xls', '.json']
     """The default list of valid input file extensions this module can read."""
 
     def __init__(self, valid_extensions=None):
@@ -84,7 +84,8 @@ class DOIInputUtil:
             '.xml': self.parse_xml_file,
             '.xls': self.parse_sxls_file,
             '.xlsx': self.parse_sxls_file,
-            '.csv': self.parse_csv_file
+            '.csv': self.parse_csv_file,
+            '.json': self.parse_json_file
         }
 
         if not all([extension in self._parser_map
@@ -241,6 +242,29 @@ class DOIInputUtil:
         else:
             dois = self._parse_rows_to_doi_meta(csv_sheet)
             logger.info("FILE_WRITE_SUMMARY: num_rows " + str(num_rows))
+
+        return dois
+
+    def parse_json_file(self, json_filepath):
+        """
+        Parses DOIs from a file with a .json extension. The file is expected
+        to conform to the OSTI output JSON schema.
+
+        """
+        dois = []
+
+        # First read the contents of the file
+        with open(json_filepath, 'r') as infile:
+            json_contents = infile.read()
+
+        # We only support the OSTI json format currently, so attempt to
+        # parse Dois with the DOIOStiWebParser class. If it fails we'll return
+        # an empty list of Dois.
+        try:
+            dois, _ = DOIOstiWebParser.parse_osti_response_json(json_contents)
+        except InputFormatException:
+            logger.warning('Unable to parse any Doi objects from provided '
+                           f'json file "{json_filepath}"')
 
         return dois
 
