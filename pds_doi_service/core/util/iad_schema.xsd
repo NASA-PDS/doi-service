@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- IAD 1.0 XML schema 
+<!-- IAD 1.0 XML schema
      Created: 2020-AUG-05 by Neal Ensor
 -->
 
@@ -10,15 +10,15 @@
         <xs:documentation>This XML schema file has been generated from the
             Information Model.</xs:documentation>
     </xs:annotation>
-    
+
     <xs:element name="records" type="records"> </xs:element>
-    
+
     <xs:simpleType name="type_date_record_added">
         <xs:annotation>
             <xs:documentation>
                 Date when record was added.
             </xs:documentation>
-        </xs:annotation>        
+        </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:minLength value="10"/>
             <xs:maxLength value="10"/>
@@ -30,24 +30,24 @@
             <xs:documentation>
                 Date when record was updated.
             </xs:documentation>
-        </xs:annotation>        
+        </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:minLength value="10"/>
             <xs:maxLength value="10"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_id">
         <xs:annotation>
             <xs:documentation>
                 Provide the ID of a record for editing.  Omit this value for new records.
             </xs:documentation>
-        </xs:annotation>  
+        </xs:annotation>
         <!--
         <xs:restriction base="xs:unsignedInt">
         </xs:restriction>
         -->
-        
+
             <xs:union>
                 <xs:simpleType>
                     <xs:restriction base='xs:string'>
@@ -66,7 +66,7 @@
             <xs:documentation>
                 Title of the publication.
             </xs:documentation>
-        </xs:annotation>        
+        </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:minLength value="10"/>
             <xs:maxLength value="500"/>
@@ -84,7 +84,7 @@
             <xs:pattern value='10\.\S+/\S+'/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="ASCII_DOI">
         <xs:restriction base="xs:string">
             <xs:pattern value='10\.\S+/\S+'/>
@@ -130,7 +130,7 @@
                 <xs:maxLength value="1000" />
             </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_relation_type">
         <xs:annotation>
             <xs:documentation>
@@ -184,7 +184,7 @@
             <xs:maxLength value="400" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_accession_number">
         <xs:annotation>
             <xs:documentation>
@@ -196,7 +196,7 @@
             <xs:maxLength value="100" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_publisher">
         <xs:annotation>
             <xs:documentation>
@@ -207,11 +207,11 @@
             <xs:maxLength value="1000"></xs:maxLength>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_availability">
         <xs:annotation>
             <xs:documentation>
-                Description of the document's availability, any restrictions on use or other information pertinent to its 
+                Description of the document's availability, any restrictions on use or other information pertinent to its
                 dissemination.
             </xs:documentation>
         </xs:annotation>
@@ -219,7 +219,7 @@
             <xs:maxLength value="1000"></xs:maxLength>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_publication_date">
         <xs:annotation>
             <xs:documentation>
@@ -227,9 +227,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:date">
-        </xs:restriction>        
+        </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_country">
         <xs:annotation>
             <xs:documentation>
@@ -240,7 +240,7 @@
             <xs:maxLength value="100" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_description">
         <xs:annotation>
             <xs:documentation>
@@ -248,9 +248,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-        </xs:restriction>          
+        </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_site_url">
         <xs:annotation>
             <xs:documentation>
@@ -272,7 +272,7 @@
             <xs:maxLength value="250"></xs:maxLength>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_product_type">
         <xs:annotation>
             <xs:documentation>
@@ -295,11 +295,11 @@
             <xs:enumeration value="Other" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_product_type_specific">
         <xs:annotation>
             <xs:documentation>
-                Describes the product type in more general terms, to further explain the type of information contained 
+                Describes the product type in more general terms, to further explain the type of information contained
                 within the record.
             </xs:documentation>
         </xs:annotation>
@@ -307,11 +307,11 @@
             <xs:maxLength value="250" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_keywords">
         <xs:annotation>
             <xs:documentation>
-                One or more keywords describing the information in general terms.  Multiple values should be semi-colon 
+                One or more keywords describing the information in general terms.  Multiple values should be semi-colon
                 delimited.
             </xs:documentation>
         </xs:annotation>
@@ -319,7 +319,7 @@
             <xs:maxLength value="4000" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_affiliation">
         <xs:annotation>
             <xs:documentation>
@@ -359,7 +359,7 @@
             <xs:maxLength value="255" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_contact_email">
         <xs:annotation>
             <xs:documentation>
@@ -370,7 +370,7 @@
             <xs:maxLength value="255" />
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="type_contact_phone">
         <xs:annotation>
             <xs:documentation>
@@ -382,7 +382,7 @@
             <xs:maxLength value="255"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <!-- define Complex Types -->
 
     <xs:complexType name="records">
@@ -391,10 +391,10 @@
                 file.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="record" type="type_record" minOccurs="1" maxOccurs="1"> </xs:element>
+            <xs:element name="record" type="type_record" minOccurs="1" maxOccurs="unbounded"> </xs:element>
         </xs:sequence>
     </xs:complexType>
-    
+
 
     <xs:complexType name="type_record_status">
         <xs:annotation>
@@ -402,21 +402,21 @@
                 history of changes made to the product once it enters the
                 registry system.</xs:documentation>
         </xs:annotation>
-        
+
         <xs:complexContent>
             <xs:restriction base="xs:anyType">
                 <xs:attribute name="status" type="xs:string" use="optional"/>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="type_record">
         <xs:annotation>
             <xs:documentation>The Modification_History class tracks the
                 history of changes made to the product once it enters the
                 registry system.</xs:documentation>
         </xs:annotation>
-        
+
         <xs:complexContent>
             <xs:extension base="type_record_status">
                 <xs:sequence>
@@ -437,11 +437,11 @@
                     <xs:element name="date_record_added" type="type_date_record_added" minOccurs="0" maxOccurs="1"> </xs:element>
                     <xs:element name="date_record_updated" type="type_date_record_updated" minOccurs="0" maxOccurs="1"> </xs:element>
                     <xs:element name="keywords" type="type_keywords" minOccurs="1" maxOccurs="1"> </xs:element>
-                    
+
                     <xs:element name="authors" type="type_authors" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="contributors" type="type_contributors" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="related_identifiers" type="type_related_identifiers" minOccurs="0" maxOccurs="1"> </xs:element>
-      
+
                     <!--
                     <contact_name>PDS OPERATOR</contact_name>
                     <contact_org>PDS</contact_org>
@@ -452,22 +452,22 @@
                     <xs:element name="contact_org" type="type_contact_org" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="contact_email" type="type_contact_email" minOccurs="1" maxOccurs="1"> </xs:element>
                     <xs:element name="contact_phone" type="type_contact_phone" minOccurs="1" maxOccurs="1"> </xs:element>
-                    
+
                 </xs:sequence>
             </xs:extension>
-        </xs:complexContent>          
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="type_authors">
         <xs:annotation>
             <xs:documentation>The Zip class describes a zip
                 file.</xs:documentation>
-        </xs:annotation>        
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="author" type="type_person_info" minOccurs="1" maxOccurs="unbounded"> </xs:element>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="type_contributors">
         <xs:annotation>
             <xs:documentation>The Zip class describes a zip
@@ -476,8 +476,8 @@
         <xs:sequence>
             <xs:element name="contributor" type="type_contributor_info" minOccurs="0" maxOccurs="unbounded"> </xs:element>
         </xs:sequence>
-    </xs:complexType> 
-    
+    </xs:complexType>
+
     <xs:complexType name="type_related_identifiers">
         <xs:annotation>
             <xs:documentation>The Zip class describes a zip
@@ -499,8 +499,8 @@
             <xs:element name="relation_type" type="type_relation_type" minOccurs="1" maxOccurs="1"> </xs:element>
         </xs:sequence>
     </xs:complexType>
-    
-       
+
+
     <xs:element name="affiliation">
         <xs:annotation>
             <xs:documentation>
@@ -513,9 +513,9 @@
             </xs:restriction>
         </xs:simpleType>
     </xs:element>
- 
 
-    
+
+
     <!-- define complex element references; authors and contributor types -->
     <xs:group name="group_person_shared_info">
         <xs:annotation>
@@ -524,7 +524,7 @@
                 For organizations or other non-person entities, use the full_name.
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="email" minOccurs="0">
                 <xs:annotation>
@@ -537,10 +537,10 @@
                         <xs:maxLength value="640" />
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:element>                      
-         </xs:sequence>        
+            </xs:element>
+         </xs:sequence>
     </xs:group>
-    
+
     <xs:group name="group_person_fullname_info">
         <xs:annotation>
             <xs:documentation>
@@ -562,9 +562,9 @@
                         <xs:maxLength value="640" />
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:element>           
+            </xs:element>
             -->
-            
+
             <xs:element name="full_name" minOccurs="1" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -577,7 +577,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            
+
             <!--
             <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
@@ -592,8 +592,8 @@
                 </xs:simpleType>
             </xs:element>
             -->
-            
-        </xs:sequence>        
+
+        </xs:sequence>
     </xs:group>
 
     <!--
@@ -616,8 +616,8 @@
                         <xs:maxLength value="640" />
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:element>           
-            
+            </xs:element>
+
             <xs:element name="full_name" minOccurs="1" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -630,7 +630,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            
+
             <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -643,7 +643,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            
+
         </xs:sequence>
     </xs:complexType>
     -->
@@ -655,8 +655,8 @@
                 For organizations or other non-person entities, use the full_name.
             </xs:documentation>
         </xs:annotation>
-        
-        <xs:sequence>            
+
+        <xs:sequence>
             <xs:element name="last_name" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -693,7 +693,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            
+
             <!--
             <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
@@ -707,10 +707,10 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            -->            
-        </xs:sequence>        
+            -->
+        </xs:sequence>
     </xs:group>
-    
+
     <xs:complexType name="type_person_info">
         <xs:annotation>
             <xs:documentation>
@@ -731,13 +731,13 @@
                         <xs:maxLength value="640" />
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:element>    
-            
-            <xs:choice minOccurs="1" maxOccurs="1">                               
+            </xs:element>
+
+            <xs:choice minOccurs="1" maxOccurs="1">
                  <xs:group ref="group_person_fullname_info" />
-                <xs:group ref="group_person_info" />    
-            </xs:choice> 
-            
+                <xs:group ref="group_person_info" />
+            </xs:choice>
+
             <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -749,13 +749,13 @@
                         <xs:maxLength value="50" />
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:element>  
-            
+            </xs:element>
+
         </xs:sequence>
 
     </xs:complexType>
-    
-    
+
+
     <xs:complexType name="type_contributor_info">
         <xs:annotation>
             <xs:documentation>
@@ -775,13 +775,13 @@
                         <xs:maxLength value="640" />
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:element>    
+            </xs:element>
 
-            <xs:choice minOccurs="1" maxOccurs="1">                               
+            <xs:choice minOccurs="1" maxOccurs="1">
                 <xs:group ref="group_person_fullname_info" />
-                <xs:group ref="group_person_info" />    
-            </xs:choice> 
-                      
+                <xs:group ref="group_person_info" />
+            </xs:choice>
+
             <xs:element name="contributor_type">
                 <xs:annotation>
                     <xs:documentation>
@@ -813,7 +813,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            
+
             <xs:element name="affiliations" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -826,8 +826,8 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            
+
         </xs:sequence>
     </xs:complexType>
-        
+
 </xs:schema>
