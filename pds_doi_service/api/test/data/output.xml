@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <records>
-    <record status="Reserved" index="1">
+    <record status="Reserved">
         <id>28606</id>
         <site_code>NASA-PDS</site_code>
         <title>Laboratory Shocked Feldspars Bundle</title>
@@ -31,7 +31,7 @@
         </contributors>
         <related_identifiers/>
     </record>
-    <record status="Pending" index="2">
+    <record status="Pending">
         <id></id>
         <title>InSight Cameras Bundle 1.1</title>
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
@@ -77,7 +77,7 @@
         <contact_email>pds-operator@jpl.nasa.gov</contact_email>
         <contact_phone>818.393.7165</contact_phone>
     </record>
-    <record status="Pending" index="3">
+    <record status="Pending">
         <id></id>
         <title>InSight Cameras Bundle</title>
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
