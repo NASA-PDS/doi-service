@@ -35,22 +35,7 @@ class DOIPDS4LabelUtil:
     def __init__(self, landing_page_template):
         self._landing_page_template = landing_page_template
 
-    def get_doi_fields_from_pds4(self, xml_tree):
-        pds4_fields = self.read_pds4(xml_tree)
-        doi_fields = self.process_pds4_fields(pds4_fields)
-        return doi_fields
-
-    def read_pds4(self, xml_tree):
-        """
-
-        :param xml_tree: lxml etree
-        :return:
-        """
-        pds4_field_value_dict = {}
-
-        pds4_namespace = {'pds4': 'http://pds.nasa.gov/pds4/pds/v1'}
-
-        xpath_dict = {
+        self.xpath_dict = {
             'lid':
                 '/*/pds4:Identification_Area/pds4:logical_identifier',
             'vid':
@@ -81,7 +66,45 @@ class DOIPDS4LabelUtil:
                 '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi'
         }
 
-        for key, xpath in xpath_dict.items():
+    def is_pds4_label(self, xml_tree):
+        # If reading xpaths with the PSD4 namespace returns anything, it should
+        # be safe to assume its a PDS4 label, additional validation can occur
+        # downstream.
+        if self.read_pds4(xml_tree):
+            return True
+
+        return False
+
+    def get_doi_fields_from_pds4(self, xml_tree):
+        pds4_fields = self.read_pds4(xml_tree)
+        doi_fields = self.process_pds4_fields(pds4_fields)
+        return doi_fields
+
+    def read_pds4(self, xml_tree):
+        """
+        Reads values from a PDS4 XML Label into a local dictionary using the
+        mapping of field names to xpath locations.
+
+        Parameters
+        ----------
+        xml_tree : lxml.etree.Element
+            The root of the parsed PDS4 label to read.
+
+        Returns
+        -------
+        pds4_field_value_dict : dict
+            The dictionary of values read from the parsed PDS4 label.
+            The key names correspond to the keys of the xpath mapping
+            stored by this class. If the provided XML tree does not
+            correspond to a valid PSD4 label, then this will be an empty
+            dictionary.
+
+        """
+        pds4_field_value_dict = {}
+
+        pds4_namespace = {'pds4': 'http://pds.nasa.gov/pds4/pds/v1'}
+
+        for key, xpath in self.xpath_dict.items():
             elements = xml_tree.xpath(xpath, namespaces=pds4_namespace)
 
             if elements:
@@ -199,27 +222,27 @@ class DOIPDS4LabelUtil:
         return o_best_method
 
     def process_pds4_fields(self, pds4_fields):
-        product_class = pds4_fields['product_class']
-        product_class_suffix = product_class.split('_')[1]
+        try:
+            product_class = pds4_fields['product_class']
+            product_class_suffix = product_class.split('_')[1]
 
-        if product_class == 'Product_Document':
-            product_specific_type = 'technical documentation'
-            product_type = ProductType.Text
-        else:
-            product_specific_type = 'PDS4 Refereed Data ' + product_class_suffix
-            product_type = ProductType.Dataset
+            if product_class == 'Product_Document':
+                product_specific_type = 'technical documentation'
+                product_type = ProductType.Text
+            else:
+                product_specific_type = 'PDS4 Refereed Data ' + product_class_suffix
+                product_type = ProductType.Dataset
 
-        site_url = self._landing_page_template.format(
-            product_class_suffix, requests.utils.quote(pds4_fields['lid']),
-            requests.utils.quote(pds4_fields['vid'])
-        )
+            site_url = self._landing_page_template.format(
+                product_class_suffix, requests.utils.quote(pds4_fields['lid']),
+                requests.utils.quote(pds4_fields['vid'])
+            )
 
-        editors = (self.get_editor_names(pds4_fields['editors'].split(';'))
-                   if 'editors' in pds4_fields else None)
+            editors = (self.get_editor_names(pds4_fields['editors'].split(';'))
+                       if 'editors' in pds4_fields else None)
 
-        # The 'authors' field is inconsistent on the use of separators.
-        # Try to make a best guess on which method is better.
-        if 'authors' in pds4_fields:
+            # The 'authors' field is inconsistent on the use of separators.
+            # Try to make a best guess on which method is better.
             o_best_method = self._find_method_to_parse_authors(pds4_fields['authors'])
 
             if o_best_method == BestParserMethod.BY_COMMA:
@@ -229,32 +252,37 @@ class DOIPDS4LabelUtil:
             else:
                 logger.error(f"o_best_method,pds4_fields['authors'] "
                              f"{o_best_method,pds4_fields['authors']}")
-                raise InputFormatException("Cannot split the authors using comma or semi-colon.")
-        else:
-            msg = "Missing authors fields in PDS4 input, please complete it"
+                raise InputFormatException(
+                    "Cannot split the authors using comma or semi-colon."
+                )
+
+            osti_id = None
+
+            if 'doi' in pds4_fields:
+                doi_prefix_suffix = pds4_fields['doi'].split('/')
+                if len(doi_prefix_suffix) == 2:
+                    osti_id = doi_prefix_suffix[1]
+
+            doi = Doi(status=DoiStatus.Unknown,
+                      title=pds4_fields['title'],
+                      description=pds4_fields['description'],
+                      publication_date=self.get_publication_date(pds4_fields),
+                      product_type=product_type,
+                      product_type_specific=product_specific_type,
+                      related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
+                      site_url=site_url,
+                      authors=self.get_author_names(authors_list),
+                      editors=editors,
+                      keywords=self.get_keywords(pds4_fields),
+                      date_record_added=self.get_record_added_date(pds4_fields),
+                      id=osti_id)
+        except KeyError as key_err:
+            missing_key = key_err.args[0]
+            msg = (f"Could not find a value for an expected PS4 label field: {key_err}.\n"
+                   f"Please ensure there is a value present in the label for the "
+                   f"following xpath: {self.xpath_dict[missing_key]}")
             logger.error(msg)
             raise InputFormatException(msg)
-
-        osti_id = None
-
-        if 'doi' in pds4_fields:
-            doi_prefix_suffix = pds4_fields['doi'].split('/')
-            if len(doi_prefix_suffix) == 2:
-                osti_id = doi_prefix_suffix[1]
-
-        doi = Doi(status=DoiStatus.Unknown,
-                  title=pds4_fields['title'],
-                  description=pds4_fields['description'],
-                  publication_date=self.get_publication_date(pds4_fields),
-                  product_type=product_type,
-                  product_type_specific=product_specific_type,
-                  related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
-                  site_url=site_url,
-                  authors=self.get_author_names(authors_list),
-                  editors=editors,
-                  keywords=self.get_keywords(pds4_fields),
-                  date_record_added=self.get_record_added_date(pds4_fields),
-                  id=osti_id)
 
         return doi
 
