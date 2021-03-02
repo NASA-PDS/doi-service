@@ -19,6 +19,8 @@ import tempfile
 from os.path import basename
 from datetime import datetime
 
+from xmlschema import XMLSchemaValidationError
+
 import pandas as pd
 import requests
 from lxml import etree
@@ -105,21 +107,33 @@ class DOIInputUtil:
         with open(xml_path, 'r') as infile:
             xml_contents = infile.read()
 
-        # Next, try validating xml against the OSTI schema to determine
-        # the format
-        if DOIValidator().validate_against_xsd(
-                xml_contents, use_alternate_validation_method=False):
-            dois, _ = DOIOstiWebParser.parse_osti_response_xml(xml_contents)
-        # Finally, try parsing as a PDS4 label
-        else:
-            try:
-                xml_tree = etree.fromstring(xml_contents.encode())
+        xml_tree = etree.fromstring(xml_contents.encode())
 
+        # Check if we were handed a PSD4 label
+        if self._label_util.is_pds4_label(xml_tree):
+            logger.info(f'Parsing xml file {basename(xml_path)} as a PSD4 label')
+
+            try:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
-            except Exception:
+            except Exception as err:
                 raise InputFormatException(
-                    f'Could not parse xml file {xml_path} as either a PDS4 label '
-                    f'or OSTI output label.'
+                    'Could not parse the provided xml file as a PDS4 label.\n'
+                    f'Reason: {err}'
+                )
+        # Otherwise, assume OSTI format
+        else:
+            logger.info(f'Parsing xml file {basename(xml_path)} as an OSTI label')
+
+            try:
+                DOIValidator().validate_against_xsd(
+                    xml_contents, use_alternate_validation_method=True
+                )
+
+                dois, _ = DOIOstiWebParser.parse_osti_response_xml(xml_contents)
+            except XMLSchemaValidationError as err:
+                raise InputFormatException(
+                    'Could not parse the provided xml file as an OSTI label.\n'
+                    f'Reason: {err.reason}'
                 )
 
         return dois
