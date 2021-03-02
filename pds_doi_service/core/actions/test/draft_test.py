@@ -9,7 +9,7 @@ import tempfile
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
-from pds_doi_service.core.input.exceptions import CriticalDOIException, WarningDOIException
+from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException, WarningDOIException
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.outputs.osti import DOIOutputOsti
 
@@ -172,7 +172,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        with self.assertRaises(CriticalDOIException):
+        with self.assertRaises(InputFormatException):
             self._draft_action.run(**kwargs)
 
         kwargs = {
@@ -182,7 +182,7 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        with self.assertRaises(CriticalDOIException):
+        with self.assertRaises(InputFormatException):
             self._draft_action.run(**kwargs)
 
     def test_remote_collection(self):

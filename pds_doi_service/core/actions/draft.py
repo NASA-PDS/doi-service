@@ -333,8 +333,13 @@ class DOICoreActionDraft(DOICoreAction):
              exception_messages) = collect_exception_classes_and_messages(
                 err, exception_classes, exception_messages
             )
-        # Catch all other exceptions as errors
+        # Propagate input format exceptions, force flag should not affect
+        # these being raised and certain callers (such as the API) look
+        # for this exception specifically
         except InputFormatException as err:
+            raise err
+        # Catch all other exceptions as errors
+        except Exception as err:
             raise CriticalDOIException(err)
 
         # If there is at least one exception caught, either raise a
