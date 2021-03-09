@@ -33,7 +33,7 @@ from pds_doi_service.core.input.exceptions import (UnknownLIDVIDException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
 
 
 def _get_db_name():
@@ -522,9 +522,13 @@ def get_doi_from_id(lidvid):  # noqa: E501
     else:
         dois, _ = DOIOstiWebParser().parse_osti_response_json(osti_label_for_lidvid)
 
+    # Create a return label in XML, since this is the format expected by
+    # consumers of the response (such as the UI)
+    xml_label_for_lidvid = DOIOutputOsti().create_osti_doi_record(dois)
+
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        osti_label=osti_label_for_lidvid
+        osti_label=xml_label_for_lidvid
     )
 
     # Should only ever be one record since we filtered by lidvid
