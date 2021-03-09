@@ -13,6 +13,9 @@ release.py
 Contains the definition for the Release action of the Core PDS DOI Service.
 """
 
+from datetime import datetime
+from distutils.util import strtobool
+
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import (UnknownNodeException,
@@ -25,15 +28,15 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    CriticalDOIException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
+from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.node_util import NodeUtil
-from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_core.actions.release')
+logger = get_logger('pds_doi_service.core.actions.release')
 
 
 class DOICoreActionRelease(DOICoreAction):
@@ -45,6 +48,7 @@ class DOICoreActionRelease(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
+        self._input_util = DOIInputUtil(valid_extensions=['.xml', '.json'])
 
         self._input = None
         self._node = None
@@ -77,7 +81,7 @@ class DOICoreActionRelease(DOICoreAction):
             '-i', '--input', required=True,
             metavar='input/DOI_Update_GEO_200318.xml',
             help='A file containing a list of DOI metadata to update/release '
-                 'in OSTI XML format (see https://www.osti.gov/iad2/docs#record-model).'
+                 'in OSTI JSON/XML format (see https://www.osti.gov/iad2/docs#record-model).'
                  'The input is produced by the Reserve and Draft actions, and '
                  'can be retrieved for a DOI with the List action.',
         )
@@ -94,58 +98,81 @@ class DOICoreActionRelease(DOICoreAction):
         )
 
     def _parse_input(self, input_file):
-        if input_file.endswith('.xml'):
-            with open(input_file, mode='r') as f:
-                o_doi_label = f.read()
-        else:
-            msg = f"Input file {input_file} type not supported yet."
-            raise CriticalDOIException(msg)
+        return self._input_util.parse_dois_from_input_file(input_file)
 
-        return o_doi_label
-
-    def _validate_dois(self, doi_label):
+    def _complete_dois(self, dois):
         """
-        Before submitting the user input, it has to be validated against the
-        database so a Doi object can be built.
-
-        Since the format of o_doi_label is same as a response from OSTI, the
-        same parser can be used.
+        Ensures the list of Doi objects to reserve have the requisite fields,
+        such as status or contributor, filled in prior to submission to OSTI.
 
         Parameters
         ----------
-        doi_label : str or bytes
-            Contents of the DOI XML label file to validate.
+        dois : list of Doi
+            The list of Doi objects to complete
 
         Returns
         -------
         dois : list of Doi
-            The parsed, validated DOI's with the appropriate workflow status
-            assigned.
+            The completed list of Doi objects.
 
-        Raises
-        ------
-        WarningDOIException
-            Rolls up any encountered warnings or errors were encountered during
-            validation.
+        """
+        for doi in dois:
+            # Make sure correct contributor and publisher fields are set
+            doi.contributor = NodeUtil().get_node_long_name(self._node)
+            doi.publisher = self._config.get('OTHER', 'doi_publisher')
+
+            # Add 'status' field so the ranking in the workflow can be determined.
+            doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
+
+            # Add field 'date_record_added' because the XSD requires it.
+            if doi.date_record_added is None:
+                doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
+            # If date added is already present, mark the date of this update
+            else:
+                doi.date_record_updated = datetime.now().strftime('%Y-%m-%d')
+
+        return dois
+
+    def _validate_dois(self, dois):
+        """
+        Validates the list of Doi objects prior to their submission to OSTI.
+
+        Depending on the configuration of the DOI service, Doi objects may
+        be validated against the OSTI XSD, schematron, as well as the internal
+        checks performed by the DOIValidator class.
+
+        Any exceptions or warnings encountered during the checks are stored
+        until all Doi's have been checked. Depending on the state of the
+        force flag, these collected exceptions are either raised as a single
+        exception, or simply logged.
+
+        Parameters
+        ----------
+        dois : list of Doi
+            The Doi objects to validate.
+
+        Returns
+        -------
+        dois : list of Doi
+            The validated list of Doi objects.
 
         """
         exception_classes = []
         exception_messages = []
 
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(doi_label)
-
         for doi in dois:
             try:
-                # Add 'status' field so the ranking in the workflow can be determined.
-                doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
-
-                # Make sure correct contributor field is set
-                doi.contributor = NodeUtil().get_node_long_name(self._node)
-
                 single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
 
-                if self._config.get('OTHER', 'release_validate_against_xsd_flag').lower() == 'true':
-                    self._doi_validator.validate_against_xsd(single_doi_label)
+                # Validate XML representation of the DOI against the OSTI XSD,
+                # if requested
+                if strtobool(self._config.get('OTHER', 'release_validate_against_xsd_flag')):
+                    self._doi_validator.validate_against_xsd(
+                        single_doi_label, use_alternate_validation_method=True
+                    )
+
+                # Validate the input content against schematron for correctness.
+                OSTIInputValidator().validate(single_doi_label)
 
                 self._doi_validator.validate_osti_submission(doi)
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
@@ -197,63 +224,50 @@ class DOICoreActionRelease(DOICoreAction):
         self.parse_arguments(kwargs)
 
         try:
-            i_doi_label = self._parse_input(self._input)
+            # Parse, complete and validate the input dois prior to their
+            # submission to OSTI
+            dois = self._parse_input(self._input)
+            dois = self._complete_dois(dois)
+            dois = self._validate_dois(dois)
 
-            # Validate the input content against database for any step violation.
-            dois = self._validate_dois(i_doi_label)
-
-            # Validate the input content against schematron for correctness.
-            # If the input is correct no exception is thrown and the code can
-            # proceed to next step.
-            # Also note that the check against schematron is done after XSD
-            # above so any bad dates would have been caught already.
-            OSTIInputValidator().validate_from_file(self._input)
+            # Create an JSON request label to send to OSTI
+            io_doi_label = DOIOutputOsti().create_osti_doi_record(
+                dois, content_type=CONTENT_TYPE_JSON
+            )
 
             # If the next step is to release to OSTI, submit to the server
             # and use response label for the local transaction database entry
             if self._no_review:
                 # Submit the text containing the 'release' action and its associated
                 # DOIs and optional metadata.
-                (dois, o_doi_label) = DOIOstiWebClient().webclient_submit_existing_content(
-                    i_doi_label,
+                dois, o_doi_label = DOIOstiWebClient().webclient_submit_existing_content(
+                    io_doi_label,
                     i_url=self._config.get('OSTI', 'url'),
                     i_username=self._config.get('OSTI', 'user'),
-                    i_password=self._config.get('OSTI', 'password')
+                    i_password=self._config.get('OSTI', 'password'),
+                    content_type=CONTENT_TYPE_JSON
                 )
-                logger.debug(f"o_release_result {dois}")
-
-                # TODO: we lose these fields when parsing dois from OSTI response.
-                #       as a temp kludge, reassign here
-                contributor = NodeUtil().get_node_long_name(self._node)
-                publisher = self._config.get('OTHER', 'doi_publisher')
-
-                for doi in dois:
-                    doi.contributor = contributor
-                    doi.publisher = publisher
 
                 # The label returned from OSTI is of a slightly different
                 # format than what we expect to pass validation, so reformat
                 # using the valid template here
-                o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
-            # Otherwise, if the next step is review, recreate an OSTI label
-            # from the parsed DOI's that have the "review" status assigned.
-            # This becomes the label associated with the transaction database entry.
-            else:
-                o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
-                logger.debug(f"o_review_result {o_doi_label}")
+                io_doi_label = DOIOutputOsti().create_osti_doi_record(
+                    dois, content_type=CONTENT_TYPE_JSON
+                )
 
+            # Otherwise, if the next step is review, the label we've already
+            # created has marked all the Doi's as being the "review" step
+            # so its ready to be submitted to the local transaction history
             transaction = self.m_transaction_builder.prepare_transaction(
                 self._node, self._submitter, dois, input_path=self._input,
-                output_content=o_doi_label
+                output_content=io_doi_label, output_content_type=CONTENT_TYPE_JSON
             )
 
             # Commit the transaction to the local database
             transaction.log()
 
-            return o_doi_label
+            return io_doi_label
         # Convert errors into a CriticalDOIException to report back
         except (IllegalDOIActionException, UnknownNodeException,
                 InputFormatException) as err:
             raise CriticalDOIException(str(err))
-
-# end class DOICoreActionRelease(DOICoreAction):

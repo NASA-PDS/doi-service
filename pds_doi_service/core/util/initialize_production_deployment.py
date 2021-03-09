@@ -85,7 +85,7 @@ def _read_from_local_xml(path):
             doi_xml = f.read()
     except Exception as e:
         raise CriticalDOIException(str(e))
-    dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
+    dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
     return dois
 
 def _read_from_path(path):
@@ -119,7 +119,7 @@ def get_dois_from_osti(target_url):
                                                          query_dict,
                                                          i_username=m_config.get('OSTI', 'user'),
                                                          i_password=m_config.get('OSTI', 'password'))
-        dois, _ = DOIOstiWebParser.response_get_parse_osti_xml(doi_xml)
+        dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
 
         logger.info(f"o_server_url,len(dois) {o_server_url,len(dois)}")
 

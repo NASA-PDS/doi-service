@@ -14,21 +14,14 @@ Contains the TransactionBuilder class, which is used to manage transactions
 with the local database.
 """
 
-import time
-
-from datetime import datetime
-from lxml import etree
-
-from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.db.doi_database import DOIDataBase
+from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML, VALID_CONTENT_TYPES
 from pds_doi_service.core.outputs.transaction import Transaction
 from pds_doi_service.core.outputs.transaction_on_disk import TransactionOnDisk
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.util.general_util import get_logger
 
-# Get the common logger and set the level for this file.
-
-logger = get_logger('pds_doi_core.outputs.transaction_builder')
+logger = get_logger('pds_doi_service.core.outputs.transaction_builder')
 
 
 class TransactionBuilder:
@@ -64,66 +57,23 @@ class TransactionBuilder:
     def get_doi_database_writer(self):
         return self.m_doi_database
 
-    def set_doi_fields_osti(self, i_doc, dois):
-        """
-        Fetches the status, title, id and doi fields from i_doc and updates the
-        io_doi_fields.
-        """
-        # If i_doc is string, we expect it to be in XML format, otherwise an
-        # Element object from lxml module.
-        if isinstance(i_doc, str):
-            my_root = etree.fromstring(i_doc)
-        else:
-            my_root = i_doc.getroottree()
-
-        element_index = 0
-
-        for element in my_root.findall('record'):
-            # TODO: this is not safe to rely on the order of the response from OSTI
-            my_record = my_root.xpath(element.tag)[element_index]
-            my_id = my_root.xpath('record/id')[element_index]
-            my_doi = my_root.xpath('record/doi')[element_index]
-            my_title = my_root.xpath('record/title')[element_index]
-
-            # Add these new fields to io_doi_fields were not there before.
-            dois[element_index].status = DoiStatus(my_record.attrib['status'].lower())
-            dois[element_index].title = my_title.text
-            dois[element_index].id = my_id.text
-            dois[element_index].doi = my_doi.text
-
-            element_index += 1
-
-        return dois
-
     def prepare_transaction(self, node_id, submitter_email, dois: list,
                             input_path=None, output_content=None,
-                            web_response=None):
+                            output_content_type=CONTENT_TYPE_XML):
         """
-        Build a transaction from 'reserve' or 'draft' action. The transaction
-        object and transaction logger will be returned.
+        Build a Transaction from the inputs and outputs to a 'reserve', 'draft'
+        or release action. The Transaction object is returned.
 
         The field output_content is used for writing the content to disk.
-        The field web_response is from any interaction with OSTI server.
-        The status, id, doi and other fields can parsed from web_response.
+        This is typically the response text from an OSTI request.
+
         """
-        transaction_dir = self._config.get('OTHER', 'transaction_dir')
-        logger.debug(f"transaction_dir {transaction_dir}")
-
-        # Get the current time.
-        current_time = datetime.now()
-        now_is = current_time.isoformat()
-        logger.debug(f"now_is {now_is}")
-
-        logger.debug(f"web_response {web_response}")
-        logger.debug(f"doi_fields {dois}")
-
-        if web_response:
-            doi_fields = self.set_doi_fields_osti(web_response, dois)
-            logger.debug(f"doi_fields {doi_fields}")
-
-        logger.debug(f"submitter_email {submitter_email}")
+        if output_content_type not in VALID_CONTENT_TYPES:
+            raise ValueError('Invalid content type requested, must be one of '
+                             f'{",".join(VALID_CONTENT_TYPES)}')
 
         return Transaction(output_content,
+                           output_content_type,
                            node_id,
                            submitter_email,
                            dois,
@@ -131,4 +81,4 @@ class TransactionBuilder:
                            self.m_doi_database,
                            input_path=input_path)
 
-# end class TransactionBuilder:
+# end class TransactionBuilder

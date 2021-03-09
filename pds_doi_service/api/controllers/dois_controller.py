@@ -14,6 +14,7 @@ Contains the request handlers for the PDS DOI API.
 """
 
 import csv
+import glob
 import json
 from os.path import exists, join
 from tempfile import NamedTemporaryFile
@@ -32,6 +33,7 @@ from pds_doi_service.core.input.exceptions import (UnknownLIDVIDException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML
 
 
 def _get_db_name():
@@ -81,7 +83,7 @@ def _write_csv_from_labels(temp_file, labels):
     temp_file.flush()
 
 
-def _records_from_dois(dois, node=None, submitter=None, osti_record=None):
+def _records_from_dois(dois, node=None, submitter=None, osti_label=None):
     """
     Reformats a list of DOI objects into a corresponding list of DoiRecord
     objects.
@@ -95,8 +97,8 @@ def _records_from_dois(dois, node=None, submitter=None, osti_record=None):
         The PDS node to associate with each record.
     submitter : str, optional
         Submitter email address to associate with each record.
-    osti_record : str, optional
-        OSTI XML record to associate with each record.
+    osti_label : str, optional
+        OSTI label to associate with each record.
 
     Returns
     -------
@@ -113,7 +115,7 @@ def _records_from_dois(dois, node=None, submitter=None, osti_record=None):
                 submitter=submitter, status=doi.status,
                 creation_date=doi.date_record_added,
                 update_date=doi.date_record_updated,
-                record=osti_record,
+                record=osti_label,
                 message=doi.message
             )
         )
@@ -284,6 +286,9 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 }
 
                 osti_label = reserve_action.run(**reserve_kwargs)
+
+            # Parse the OSTI JSON string back into a list of DOIs
+            dois, _ = DOIOstiWebParser().parse_osti_response_json(osti_label)
         elif action == 'draft':
             if not body and not url:
                 raise ValueError('No requestBody or URL parameter provided '
@@ -315,6 +320,9 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 }
 
                 osti_label = draft_action.run(**draft_kwargs)
+
+            # Parse the OSTI XML string back into a list of DOIs
+            dois, _ = DOIOstiWebParser().parse_osti_response_xml(osti_label)
         else:
             raise ValueError('Action must be either "draft" or "reserve". '
                              'Received "{}"'.format(action))
@@ -326,11 +334,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     except Exception as err:
         return format_exceptions(err), 500
 
-    # Parse the OSTI XML string back into a list of DOIs
-    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(osti_label)
-
     records = _records_from_dois(
-        dois, node=node, submitter=submitter, osti_record=osti_label
+        dois, node=node, submitter=submitter, osti_label=osti_label
     )
 
     return records, 200
@@ -390,9 +395,9 @@ def post_release_doi(lidvid, force=False, **kwargs):
         # Make sure we can locate the output OSTI label associated with this
         # transaction
         transaction_location = list_record['transaction_key']
-        osti_label_file = join(transaction_location, 'output.xml')
+        osti_label_files = glob.glob(join(transaction_location, 'output.*'))
 
-        if not exists(osti_label_file):
+        if not osti_label_files or not exists(osti_label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
                 'Could not find an OSTI Label associated with LIDVID {}. '
                 'The database and transaction history location may be out of sync. '
@@ -400,12 +405,16 @@ def post_release_doi(lidvid, force=False, **kwargs):
                 .format(lidvid)
             )
 
+        osti_label_file = osti_label_files[0]
+
         # An output OSTI label may contain entries other than the requested
         # LIDVID, extract only the appropriate record into its own temporary
-        # XML file and feed it to the release action
-        with NamedTemporaryFile('w', prefix='output_', suffix='.xml') as xml_file:
-            xml_file.write(DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid))
-            xml_file.flush()
+        # file and feed it to the release action
+        record, content_type = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
+
+        with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
+            temp_file.write(record)
+            temp_file.flush()
 
             # Prepare the release action
             release_action = DOICoreActionRelease(db_name=_get_db_name())
@@ -413,7 +422,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
             release_kwargs = {
                 'node': list_record['node_id'],
                 'submitter': list_record['submitter'],
-                'input': xml_file.name,
+                'input': temp_file.name,
                 'force': force,
                 # Default for this endpoint should be to skip review and release
                 # directly to OSTI
@@ -422,7 +431,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
 
             osti_release_label = release_action.run(**release_kwargs)
 
-        dois, errors = DOIOstiWebParser().response_get_parse_osti_xml(osti_release_label)
+        dois, errors = DOIOstiWebParser().parse_osti_response_json(osti_release_label)
 
         # Propagate any errors returned from OSTI in a single exception
         if errors:
@@ -442,7 +451,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        osti_record=osti_release_label
+        osti_label=osti_release_label
     )
 
     return records, 200
@@ -485,9 +494,9 @@ def get_doi_from_id(lidvid):  # noqa: E501
         # Make sure we can locate the output OSTI label associated with this
         # transaction
         transaction_location = list_record['transaction_key']
-        osti_label_file = join(transaction_location, 'output.xml')
+        osti_label_files = glob.glob(join(transaction_location, 'output.*'))
 
-        if not exists(osti_label_file):
+        if not osti_label_files or not exists(osti_label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
                 'Could not find an OSTI Label associated with LIDVID {}. '
                 'The database and transaction history location may be out of sync. '
@@ -495,8 +504,11 @@ def get_doi_from_id(lidvid):  # noqa: E501
                 .format(lidvid)
             )
 
+        osti_label_file = osti_label_files[0]
+
         # Get only the record corresponding to the requested LIDVID
-        osti_label_for_lidvid = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
+        (osti_label_for_lidvid,
+         content_type) = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
     except UnknownLIDVIDException as err:
         # Return "not found" code
         return format_exceptions(err), 404
@@ -505,11 +517,14 @@ def get_doi_from_id(lidvid):  # noqa: E501
         return format_exceptions(err), 500
 
     # Parse the label associated with the lidvid so we can return a full DoiRecord
-    dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(osti_label_for_lidvid)
+    if content_type == CONTENT_TYPE_XML:
+        dois, _ = DOIOstiWebParser().parse_osti_response_xml(osti_label_for_lidvid)
+    else:
+        dois, _ = DOIOstiWebParser().parse_osti_response_json(osti_label_for_lidvid)
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        osti_record=osti_label_for_lidvid
+        osti_label=osti_label_for_lidvid
     )
 
     # Should only ever be one record since we filtered by lidvid

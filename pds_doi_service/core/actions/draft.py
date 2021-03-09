@@ -14,9 +14,11 @@ Contains the definition for the Draft action of the Core PDS DOI Service.
 """
 
 import copy
-import os
-from lxml import etree
+import glob
+from distutils.util import strtobool
 from os.path import exists, join
+
+from lxml import etree
 
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
@@ -33,7 +35,7 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
@@ -144,23 +146,28 @@ class DOICoreActionDraft(DOICoreAction):
         # Make sure we can locate the output OSTI label associated with this
         # transaction
         transaction_location = transaction_record['transaction_key']
-        osti_label_file = join(transaction_location, 'output.xml')
+        osti_label_files = glob.glob(join(transaction_location, 'output.*'))
 
-        if not exists(osti_label_file):
+        if not osti_label_files or not exists(osti_label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
                 f'Could not find an OSTI Label associated with LIDVID {lidvid}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
             )
 
+        osti_label_file = osti_label_files[0]
+
         # Label could contain entries for multiple LIDVIDs, so extract
         # just the one we care about
-        lidvid_record = DOIOstiWebParser.get_record_for_lidvid(
+        lidvid_record, content_type = DOIOstiWebParser.get_record_for_lidvid(
             osti_label_file, lidvid
         )
 
         # Format label into an in-memory DOI object
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(lidvid_record)
+        if content_type == CONTENT_TYPE_XML:
+            dois, _ = DOIOstiWebParser.parse_osti_response_xml(lidvid_record)
+        else:
+            dois, _ = DOIOstiWebParser.parse_osti_response_json(lidvid_record)
 
         doi = dois[0]
 
@@ -172,12 +179,12 @@ class DOICoreActionDraft(DOICoreAction):
         doi.contributor = NodeUtil().get_node_long_name(self._node)
 
         # Update the output label to reflect new draft status
-        doi_label = DOIOutputOsti().create_osti_doi_record(doi)
+        doi_label = DOIOutputOsti().create_osti_doi_record(doi, content_type)
 
         # Re-commit transaction to official roll DOI back to draft status
         transaction = self.m_transaction_builder.prepare_transaction(
             self._node, self._submitter, [doi], input_path=osti_label_file,
-            output_content=doi_label
+            output_content=doi_label, output_content_type=content_type
         )
 
         # Commit the transaction to the database
@@ -208,15 +215,21 @@ class DOICoreActionDraft(DOICoreAction):
         """
         try:
             # The value of input can be a list of names, or a directory.
-            # Resolve that to a list of names.
-            list_of_names = self._resolve_input_into_list_of_names(inputs)
+            # Split them up and let the input util library handle determination
+            # of each type
+            list_of_inputs = inputs.split(',')
+
+            # Filter out any empty strings from trailing commas
+            list_of_inputs = list(
+                filter(lambda input_file: len(input_file), list_of_inputs)
+            )
 
             # OSTI uses 'records' as the root tag.
             o_doi_labels = etree.Element("records")
 
             # For each name found, transform the PDS4 label to an OSTI record,
             # then concatenate that record to o_doi_label to return.
-            for input_file in list_of_names:
+            for input_file in list_of_inputs:
                 doi_label = self._run_single_file(
                     input_file, self._node, self._submitter, self._force,
                     self._keywords
@@ -241,41 +254,6 @@ class DOICoreActionDraft(DOICoreAction):
             return etree.tostring(o_doi_labels, pretty_print=True).decode()
         except UnknownNodeException as err:
             raise CriticalDOIException(str(err))
-
-    def _resolve_input_into_list_of_names(self, input_labels):
-        """
-        Receives a string of input labels which can be a single location
-        or a comma-delimited list of locations. The function returns the list
-        of names parsed from the input string.
-        """
-        o_list_of_names = []
-
-        # Split the input using a comma, then inspect each token to check
-        # if it is a local path or a URL.
-        split_tokens = input_labels.split(',')
-
-        for token in split_tokens:
-            # Only save the file name if it is not an empty string as in the
-            # case of a comma being the last character:
-            #    -i https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml,
-            # or no name provided with just a comma:
-            #    -i ,
-            if len(token) > 0:
-                if os.path.isdir(token):
-                    # Get all file names in the directory.
-                    # Note that the top level directory needs to precede the
-                    # file name in the for loop.
-                    list_of_names_from_token = [os.path.join(token, f)
-                                                for f in os.listdir(token)
-                                                if os.path.isfile(os.path.join(token, f))]
-
-                    o_list_of_names.extend(list_of_names_from_token)
-                else:
-                    # The token is either the name of a file or a URL.
-                    # Either way, add it to the list.
-                    o_list_of_names.append(token)
-
-        return o_list_of_names
 
     def _add_extra_keywords(self, keywords, io_doi):
         """
@@ -342,7 +320,7 @@ class DOICoreActionDraft(DOICoreAction):
                 # proceed to database validation and then submission.
                 OSTIInputValidator().validate(doi_label)
 
-                if self._config.get('OTHER', 'draft_validate_against_xsd_flag').lower() == 'true':
+                if strtobool(self._config.get('OTHER', 'draft_validate_against_xsd_flag')):
                     self._doi_validator.validate_against_xsd(doi_label)
 
             for doi_obj in dois_obj:

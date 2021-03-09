@@ -104,7 +104,6 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime)
                              for doi in dois]))
 
-
     def test_read_csv(self):
         """Test the DOIInputUtil.parse_csv_file() method"""
         doi_input_util = DOIInputUtil()
@@ -143,6 +142,20 @@ class InputUtilTestCase(unittest.TestCase):
         # Test with an OSTI output label
         i_filepath = join(self.input_dir, 'DOI_Release_20200727_from_reserve.xml')
         dois = doi_input_util.parse_xml_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertIsInstance(doi, Doi)
+
+    def test_read_json(self):
+        """Test the DOIInputUtil.parse_json_file() method"""
+        doi_input_util = DOIInputUtil()
+
+        # Test with an OSTI JSON label
+        i_filepath = join(self.input_dir, 'DOI_Release_20210216_from_reserve.json')
+        dois = doi_input_util.parse_json_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
 

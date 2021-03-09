@@ -14,12 +14,14 @@ Contains the definition for the Reserve action of the Core PDS DOI Service.
 """
 
 from datetime import datetime
+from distutils.util import strtobool
 
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    DuplicatedTitleDOIException,
                                                    InputFormatException,
+                                                   SiteURLNotExistException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException,
                                                    UnknownNodeException,
@@ -28,12 +30,12 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_core.actions.reserve')
+logger = get_logger('pds_doi_service.core.actions.reserve')
 
 
 class DOICoreActionReserve(DOICoreAction):
@@ -45,6 +47,8 @@ class DOICoreActionReserve(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
+        self._input_util = DOIInputUtil()
+
         self._input = None
         self._node = None
         self._submitter = None
@@ -74,8 +78,9 @@ class DOICoreActionReserve(DOICoreAction):
         action_parser.add_argument(
             '-i', '--input', required=True,
             metavar='input/DOI_Reserved_GEO_200318.csv',
-            help='A PDS4 XML label, or XLS/CSV spreadsheet file with the '
-                 'following columns: ' + ','.join(DOIInputUtil.MANDATORY_COLUMNS)
+            help='A PDS4 XML label, OSTI XML/JSON label or XLS/CSV '
+                 'spreadsheet file with the following columns: ' +
+                 ','.join(DOIInputUtil.MANDATORY_COLUMNS)
         )
         action_parser.add_argument(
             '-s', '--submitter-email', required=True,
@@ -83,49 +88,98 @@ class DOICoreActionReserve(DOICoreAction):
             help='The email address to associate with the Reserve request.'
         )
         action_parser.add_argument(
-            '-d', '--dry-run', required=False, action='store_true',
+            '-dry-run', '--dry-run', required=False, action='store_true',
             help="Performs the Reserve request without submitting the record to "
                  "OSTI. The record is logged to the local database with a status "
                  "of 'reserved_not_submitted'."
         )
 
     def _parse_input(self, input_file):
-        return DOIInputUtil().parse_dois_from_input_file(input_file)
+        return self._input_util.parse_dois_from_input_file(input_file)
 
-    def complete_and_validate_dois(self, dois, contributor, publisher, dry_run):
+    def _complete_dois(self, dois):
+        """
+        Ensures the list of Doi objects to reserve have the requisite fields,
+        such as status or contributor, filled in prior to submission to OSTI.
+
+        Parameters
+        ----------
+        dois : list of Doi
+            The list of Doi objects to complete
+
+        Returns
+        -------
+        dois : list of Doi
+            The completed list of Doi objects.
+
+        """
+        for doi in dois:
+            # First set contributor, publisher at the beginning of the function
+            # to ensure that they are set in case of an exception.
+            doi.contributor = NodeUtil().get_node_long_name(self._node)
+            doi.publisher = self._config.get('OTHER', 'doi_publisher')
+
+            # Add 'status' field so the ranking in the workflow can be determined
+            doi.status = DoiStatus.Reserved_not_submitted if self._dry_run else DoiStatus.Reserved
+
+            # Add field 'date_record_added' because the XSD requires it.
+            if doi.date_record_added is None:
+                doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
+            # If date added is already present, mark the date of this update
+            else:
+                doi.date_record_updated = datetime.now().strftime('%Y-%m-%d')
+
+        return dois
+
+    def _validate_dois(self, dois):
+        """
+        Validates the list of Doi objects prior to their submission to OSTI.
+
+        Depending on the configuration of the DOI service, Doi objects may
+        be validated against the OSTI XSD, schematron, as well as the internal
+        checks performed by the DOIValidator class.
+
+        Any exceptions or warnings encountered during the checks are stored
+        until all Doi's have been checked. Depending on the state of the
+        force flag, these collected exceptions are either raised as a single
+        exception, or simply logged.
+
+        Parameters
+        ----------
+        dois : list of Doi
+            The Doi objects to validate.
+
+        Returns
+        -------
+        dois : list of Doi
+            The validated list of Doi objects.
+
+        """
         exception_classes = []
         exception_messages = []
 
-        # Note that it is important to fill in the doi.status for all dois in
-        # case an exception occurs in the validate() function.
-        # If an exception occurs, the value of dois now has the correct
-        # contributor, publisher and status fields filled in.
-        for doi in dois:
-            # First set contributor, publisher and status to the beginning of
-            # the function to ensure that they are set in case of an exception.
-            doi.contributor = contributor
-            doi.publisher = publisher
-
-            # Note that the mustache file must have the double quotes around the
-            # status value: <record status="{{status}}">, as it is an attribute
-            # of a field.
-
-            # Add 'status' field so the ranking in the workflow can be determined
-            doi.status = DoiStatus.Reserved_not_submitted if dry_run else DoiStatus.Reserved
-
-            # Add field 'date_record_added' because the XSD requires it.
-            doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
-
         for doi in dois:
             try:
-                if dry_run:
+                single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
+
+                # Validate XML representation of the DOI against the OSTI XSD,
+                # if requested
+                if strtobool(self._config.get('OTHER', 'reserve_validate_against_xsd_flag')):
+                    self._doi_validator.validate_against_xsd(
+                        single_doi_label, use_alternate_validation_method=True
+                    )
+
+                # Validate the doi_label content against schematron for correctness.
+                OSTIInputValidator().validate(single_doi_label)
+
+                if self._dry_run:
                     self._doi_validator.validate(doi)
                 else:
                     self._doi_validator.validate_osti_submission(doi)
             # Collect all warnings and exceptions so they can be combined into
             # a single WarningDOIException
             except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException) as err:
+                    TitleDoesNotMatchProductTypeException, SiteURLNotExistException) as err:
                 (exception_classes,
                  exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages
@@ -140,92 +194,47 @@ class DOICoreActionReserve(DOICoreAction):
 
         return dois
 
-    def _validate_against_schematron_as_batch(self, dois, dry_run):
-        # Because the function schematron validator only works on one record,
-        # each must be extracted and validated one at a time.
-        for doi in dois:
-            # Add 'status' field so the ranking in the workflow can be determined
-            doi.status = DoiStatus.Reserved_not_submitted if dry_run else DoiStatus.Reserved
-
-            # Add field 'date_record_added' because the XSD requires it.
-            doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
-
-            single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
-            logger.debug(f'produced osti label is {single_doi_label}')
-
-            # Validate the doi_label content against schematron for correctness.
-            # If the input is correct no exception is thrown and code can
-            # proceed to database validation and then submission.
-            OSTIInputValidator().validate(single_doi_label)
-
-    def _validate_against_xsd_as_batch(self, dois, dry_run):
-        # Because the function XSD validator only works on one record, each must
-        # be extracted and validated one at a time.
-        for doi in dois:
-            # Add 'status' field so the ranking in the workflow can be determined
-            doi.status = DoiStatus.Reserved_not_submitted if dry_run else DoiStatus.Reserved
-
-            # Add field 'date_record_added' because the XSD requires it.
-            doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
-
-            single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
-            logger.debug(f"single_doi_label {single_doi_label}")
-
-            # Validate the single_doi_label against the XSD.
-            self._doi_validator.validate_against_xsd(single_doi_label)
-
     def run(self, **kwargs):
-        logger.info('run reserve')
-
         self.parse_arguments(kwargs)
 
         try:
+            # Parse, complete and validate the set of provided DOI's
             dois = self._parse_input(self._input)
+            dois = self._complete_dois(dois)
+            dois = self._validate_dois(dois)
 
-            if self._config.get('OTHER', 'reserve_validate_against_xsd_flag').lower() == 'true':
-                self._validate_against_xsd_as_batch(dois, self._dry_run)
-
-            self._validate_against_schematron_as_batch(dois, self._dry_run)
-
-            contributor = NodeUtil().get_node_long_name(self._node)
-            publisher = self._config.get('OTHER', 'doi_publisher')
-
-            dois = self.complete_and_validate_dois(
-                dois, contributor, publisher, self._dry_run
+            # Create an JSON request label to send to OSTI
+            io_doi_label = DOIOutputOsti().create_osti_doi_record(
+                dois, content_type=CONTENT_TYPE_JSON
             )
-            io_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
 
+            # Submit the Reserve request to OSTI if this isn't a dry run
             if not self._dry_run:
                 dois, o_doi_label = DOIOstiWebClient().webclient_submit_existing_content(
                     io_doi_label,
                     i_url=self._config.get('OSTI', 'url'),
                     i_username=self._config.get('OSTI', 'user'),
-                    i_password=self._config.get('OSTI', 'password')
+                    i_password=self._config.get('OSTI', 'password'),
+                    content_type=CONTENT_TYPE_JSON
                 )
-
-                # TODO: we lose these fields when parsing dois from OSTI response.
-                #       as a temp kludge, reassign here
-                for doi in dois:
-                    doi.contributor = contributor
-                    doi.publisher = publisher
 
                 # The label returned from OSTI is of a slightly different
                 # format than what we expect to pass validation, so reformat
                 # using the valid template here
-                io_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
+                io_doi_label = DOIOutputOsti().create_osti_doi_record(
+                    dois, content_type=CONTENT_TYPE_JSON
+                )
 
+            # Log the inputs and outputs of this transaction
             transaction = self.m_transaction_builder.prepare_transaction(
                 self._node, self._submitter, dois, input_path=self._input,
-                output_content=io_doi_label
+                output_content=io_doi_label, output_content_type=CONTENT_TYPE_JSON
             )
 
             # Commit the transaction to the local database
             transaction.log()
 
-            logger.debug(f"reserve_response {io_doi_label}")
-            logger.debug(f"_input,self,_dry_run {self._input, self._dry_run}")
-
             return io_doi_label
-        # Convert other errors into a CriticalDOIException to report back
+        # Convert unhandled errors into a CriticalDOIException to report back
         except (UnknownNodeException, InputFormatException) as err:
             raise CriticalDOIException(err)

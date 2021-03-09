@@ -271,11 +271,11 @@ class TestDoisController(BaseTestCase):
         """
         Patch for DOICoreActionReserve.run()
 
-        Returns body of an OSTI XML label corresponding to a successful reserve
+        Returns body of an OSTI JSON label corresponding to a successful reserve
         (dry-run) request.
         """
         draft_record_file = join(
-            TestDoisController.test_data_dir, 'reserve_osti_record.xml')
+            TestDoisController.test_data_dir, 'reserve_osti_record.json')
         with open(draft_record_file, 'r') as infile:
             return infile.read()
 
@@ -317,7 +317,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(reserve_record.node, 'img')
         self.assertEqual(reserve_record.submitter, 'img-submitter@jpl.nasa.gov')
-        self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
+        self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:insight_cameras::2.0')
         self.assertEqual(reserve_record.status, DoiStatus.Reserved_not_submitted)
 
     def test_post_dois_invalid_requests(self):

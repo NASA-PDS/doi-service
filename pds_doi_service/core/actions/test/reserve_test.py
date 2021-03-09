@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_JSON, CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
 
@@ -29,7 +29,7 @@ class ReserveActionTestCase(unittest.TestCase):
             os.remove(self.db_name)
 
     def webclient_submit_patch(self, payload, i_url=None, i_username=None,
-                               i_password=None):
+                               i_password=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.webclient_submit_existing_content().
 
@@ -38,12 +38,14 @@ class ReserveActionTestCase(unittest.TestCase):
         """
         # Parse the DOI's from the input label, update status to 'reserved',
         # and create the output label
-        dois, _ = DOIOstiWebParser().response_get_parse_osti_xml(payload)
+        dois, _ = DOIOstiWebParser().parse_osti_response_json(payload)
 
         for doi in dois:
             doi.status = DoiStatus.Reserved
 
-        o_doi_label = DOIOutputOsti().create_osti_doi_record(dois)
+        o_doi_label = DOIOutputOsti().create_osti_doi_record(
+            dois, content_type=CONTENT_TYPE_JSON
+        )
 
         return dois, o_doi_label
 
@@ -59,7 +61,7 @@ class ReserveActionTestCase(unittest.TestCase):
             dry_run=True, force=True
         )
 
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
+        dois, errors = DOIOstiWebParser.parse_osti_response_json(o_doi_label)
 
         self.assertEqual(len(dois), 3)
         self.assertEqual(len(errors), 0)
@@ -81,7 +83,7 @@ class ReserveActionTestCase(unittest.TestCase):
             dry_run=False, force=True
         )
 
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
+        dois, errors = DOIOstiWebParser.parse_osti_response_json(o_doi_label)
 
         self.assertEqual(len(dois), 3)
         self.assertEqual(len(errors), 0)
@@ -99,7 +101,7 @@ class ReserveActionTestCase(unittest.TestCase):
             force=True
         )
 
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
+        dois, errors = DOIOstiWebParser.parse_osti_response_json(o_doi_label)
 
         self.assertEqual(len(dois), 3)
         self.assertEqual(len(errors), 0)
@@ -119,7 +121,7 @@ class ReserveActionTestCase(unittest.TestCase):
             force=True
         )
 
-        dois, errors = DOIOstiWebParser.response_get_parse_osti_xml(o_doi_label)
+        dois, errors = DOIOstiWebParser.parse_osti_response_json(o_doi_label)
 
         self.assertEqual(len(dois), 3)
         self.assertEqual(len(errors), 0)
