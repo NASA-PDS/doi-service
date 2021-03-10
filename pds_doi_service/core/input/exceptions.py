@@ -149,12 +149,12 @@ def raise_or_warn_exceptions(exception_classes, exception_messages, log=False):
         if ii == 0:
             message_to_raise = (message_to_raise
                                 + exception_classes[ii]
-                                + ':' + exception_messages[ii])
+                                + ' : ' + exception_messages[ii])
         else:
             # Add a comma after every message.
             message_to_raise = (message_to_raise
                                 + ', ' + exception_classes[ii]
-                                + ':' + exception_messages[ii])
+                                + ' : ' + exception_messages[ii])
 
     if log:
         logger.warning(message_to_raise)

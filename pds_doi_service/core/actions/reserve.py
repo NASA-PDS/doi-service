@@ -24,7 +24,6 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    SiteURLNotExistException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException,
-                                                   UnknownNodeException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -235,6 +234,11 @@ class DOICoreActionReserve(DOICoreAction):
             transaction.log()
 
             return io_doi_label
-        # Convert unhandled errors into a CriticalDOIException to report back
-        except (UnknownNodeException, InputFormatException) as err:
+        # Propagate input format exceptions, force flag should not affect
+        # these being raised and certain callers (such as the API) look
+        # for this exception specifically
+        except InputFormatException as err:
+            raise err
+        # Convert all other errors into a CriticalDOIException to report back
+        except Exception as err:
             raise CriticalDOIException(err)

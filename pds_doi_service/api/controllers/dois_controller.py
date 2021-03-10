@@ -28,8 +28,9 @@ from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
-from pds_doi_service.core.input.exceptions import (UnknownLIDVIDException,
+from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    NoTransactionHistoryForLIDVIDException,
+                                                   UnknownLIDVIDException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
@@ -328,7 +329,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                              'Received "{}"'.format(action))
     # These exceptions indicate some kind of input error, so return the
     # Invalid Argument code
-    except (WarningDOIException, ValueError) as err:
+    except (InputFormatException, WarningDOIException, ValueError) as err:
         return format_exceptions(err), 400
     # For everything else, return the Internal Error code
     except Exception as err:

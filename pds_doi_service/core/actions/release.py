@@ -18,13 +18,11 @@ from distutils.util import strtobool
 
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.input.exceptions import (UnknownNodeException,
-                                                   InputFormatException,
+from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    DuplicatedTitleDOIException,
                                                    UnexpectedDOIActionException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    SiteURLNotExistException,
-                                                   IllegalDOIActionException,
                                                    CriticalDOIException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
@@ -267,7 +265,11 @@ class DOICoreActionRelease(DOICoreAction):
             transaction.log()
 
             return io_doi_label
-        # Convert errors into a CriticalDOIException to report back
-        except (IllegalDOIActionException, UnknownNodeException,
-                InputFormatException) as err:
+        # Propagate input format exceptions, force flag should not affect
+        # these being raised and certain callers (such as the API) look
+        # for this exception specifically
+        except InputFormatException as err:
+            raise err
+        # Convert all other errors into a CriticalDOIException to report back
+        except Exception as err:
             raise CriticalDOIException(str(err))
