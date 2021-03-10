@@ -204,6 +204,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/doi_record'
+              example:
+              - creation_date: 2021-03-09T00:00:00Z
+                doi: 10.17189/29476
+                lidvid: urn:nasa:pds:lab_shocked_feldspars::1.0
+                node: eng
+                record: |
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <records>
+                      <record status="reserved">
+                          <id>29476</id>
+                          <title>Laboratory Shocked Feldspars Bundle</title>
+                          <doi>10.17189/29476</doi>
+                          ...
+                          <contact_name>PDS Operator</contact_name>
+                          <contact_org>PDS</contact_org>
+                          <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+                          <contact_phone>818.393.7165</contact_phone>
+                      </record>
+                  </records>
+                status: reserved
+                submitter: my.email@node.gov
         "201":
           description: Success
         "400":
@@ -234,6 +255,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/doi_record'
+              example:
+              - creation_date: 2021-03-09T00:00:00Z
+                doi: 10.17189/29476
+                lidvid: urn:nasa:pds:lab_shocked_feldspars::1.0
+                node: eng
+                record: |
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <records>
+                      <record status="reserved">
+                          <id>29476</id>
+                          <title>Laboratory Shocked Feldspars Bundle</title>
+                          <doi>10.17189/29476</doi>
+                          ...
+                          <contact_name>PDS Operator</contact_name>
+                          <contact_org>PDS</contact_org>
+                          <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+                          <contact_phone>818.393.7165</contact_phone>
+                      </record>
+                  </records>
+                status: reserved
+                submitter: my.email@node.gov
         "404":
           description: Not existing
         "500":
