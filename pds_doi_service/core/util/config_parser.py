@@ -1,17 +1,25 @@
-#!/bin/python
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-#------------------------------
 
-import os
-from os.path import abspath, dirname, join
-import sys
+"""
+================
+config_parser.py
+================
+
+Classes and functions for locating and parsing the configuration file for the
+core DOI service.
+"""
+
 import configparser
 import logging
+import os
+import sys
+
+from os.path import abspath, dirname, join
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -30,16 +38,26 @@ class DOIConfigUtil:
 
     def get_config(self):
         parser = configparser.ConfigParser()
+
         # default configuration
         conf_default = 'conf.ini.default'
         conf_default_path = abspath(join(dirname(__file__), conf_default))
+
+        # user-specified configuration for production
         conf_user = 'pds_doi_service.ini'
         conf_user_prod_path = os.path.join(sys.prefix, conf_user)
-        conf_user_dev_path = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user))
-        candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
-        logging.info(f"search configuration files in {candidates_full_path}")
-        found = parser.read(candidates_full_path)
-        logging.info(f"used configuration following files {found}")
-        parser = DOIConfigUtil._resolve_relative_path(parser)
-        return parser
 
+        # user-specified configuration for development
+        conf_user_dev_path = abspath(
+            join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user)
+        )
+
+        candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
+
+        logging.info(f"Searching for configuration files in {candidates_full_path}")
+        found = parser.read(candidates_full_path)
+
+        logging.info(f"Using the following configuration file: {found}")
+        parser = DOIConfigUtil._resolve_relative_path(parser)
+
+        return parser
