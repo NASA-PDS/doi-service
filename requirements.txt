@@ -44,4 +44,4 @@ behave==1.2.6
 allure-behave==2.8.13
 behave-testrail-reporter==0.4.0
 xmlschema==1.5.1
-
+waitress==2.0.0
