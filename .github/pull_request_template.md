@@ -6,7 +6,7 @@ A properly formed git commit subject line should always be able to complete the 
     If applied, this commit will <your subject line here>
 ----- REMOVE -----
 
-**Summary***
+**Summary**
 Brief summary of changes if not sufficiently described by commit messages.
 
 **Test Data and/or Report**
