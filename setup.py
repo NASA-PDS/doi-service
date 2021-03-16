@@ -55,7 +55,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': ['pds-doi-start-dev=pds_doi_core.web_api.service:main',
                             'pds-doi-cmd=pds_doi_service.core.cmd.pds_doi_cmd:main',
-                            'pds_doi_api=pds_doi_service.api.__main__:main'],
+                            'pds-doi-api=pds_doi_service.api.__main__:main'],
     },
 
 )
