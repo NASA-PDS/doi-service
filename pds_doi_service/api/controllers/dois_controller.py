@@ -1,5 +1,5 @@
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -35,6 +35,9 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
+from pds_doi_service.core.util.general_util import get_logger
+
+logger = get_logger('pds_doi_service.api.controllers.doi_controller')
 
 
 def _get_db_name():
@@ -162,6 +165,8 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
         match the requested criteria.
 
     """
+    logger.info('GET /dois request received')
+
     list_action = DOICoreActionList(db_name=_get_db_name())
 
     # List action expects multiple inputs as comma-delimited
@@ -198,6 +203,8 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
         'end_update': end_date
     }
 
+    logger.debug(f'GET /dois list action arguments: {list_kwargs}')
+
     try:
         results = list_action.run(**list_kwargs)
     except ValueError as err:
@@ -224,6 +231,8 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
                 update_date=result['update_date']
             )
         )
+
+    logger.info(f'GET /dois request returned {len(records)} results')
 
     return records, 200
 
@@ -264,6 +273,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         The HTTP response code corresponding to the result.
 
     """
+    logger.info(f'POST /dois request received, action: {action}')
+
     try:
         if action == 'reserve':
             # Extract the list of labels from the requestBody, if one was provided
@@ -276,6 +287,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
             reserve_action = DOICoreActionReserve(db_name=_get_db_name())
 
             with NamedTemporaryFile('w', prefix='labels_', suffix='.csv') as csv_file:
+                logger.debug(f'Writing temporary label to {csv_file.name}')
+
                 _write_csv_from_labels(csv_file, body['labels'])
 
                 reserve_kwargs = {
@@ -301,6 +314,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
             # Determine how the input label(s) was sent
             if body:
                 with NamedTemporaryFile('wb', prefix='labels_', suffix='.xml') as xml_file:
+                    logger.debug(f'Writing temporary label to {xml_file.name}')
+
                     xml_file.write(body)
                     xml_file.flush()
 
@@ -339,6 +354,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         dois, node=node, submitter=submitter, osti_label=osti_label
     )
 
+    logger.info(f'Posted {len(records)} record(s) to status "{action}"')
+
     return records, 200
 
 
@@ -360,6 +377,8 @@ def post_submit_doi(lidvid, force=None):
         Record of the DOI submit action.
 
     """
+    logger.info(f'POST /dois/{lidvid}/submit request received')
+
     # A submit action is the same as invoking the release endpoint with
     # --no-review set to False
     kwargs = {'lidvid': lidvid, 'force': force, 'no_review': False}
@@ -414,6 +433,8 @@ def post_release_doi(lidvid, force=False, **kwargs):
         record, content_type = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
 
         with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
+            logger.debug(f'Writing temporary label to {temp_file.name}')
+
             temp_file.write(record)
             temp_file.flush()
 
@@ -455,6 +476,9 @@ def post_release_doi(lidvid, force=False, **kwargs):
         osti_label=osti_release_label
     )
 
+    logger.info(f'Posted {len(records)} record(s) to status "'
+                f'{"release" if kwargs.get("no_review") else "review"}"')
+
     return records, 200
 
 
@@ -473,6 +497,8 @@ def get_doi_from_id(lidvid):  # noqa: E501
         The record for the requested LIDVID.
 
     """
+    logger.info(f'GET /dois/{lidvid} request received')
+
     list_action = DOICoreActionList(db_name=_get_db_name())
 
     # Check for full lidvid vs. just a lid and map the list action arg accordingly

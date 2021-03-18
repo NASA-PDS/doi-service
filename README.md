@@ -48,7 +48,10 @@ Create a file in the base directory of the project `pds_doi_service.ini`
     
 ## Launch api server (to be re-worked)
 
-    pds_doi_api
+    pds-doi-api
+    
+The started service documentation is available on http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
+
     
     
 ## Test 
