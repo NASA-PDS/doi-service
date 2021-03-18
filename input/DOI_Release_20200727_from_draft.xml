@@ -2,9 +2,9 @@
 <records>
     <record status='pending'>
         <id/>
-        <title>InSight Cameras Bundle 0</title>
+        <title>InSight Cameras Bundle 2.1</title>
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
-        <accession_number>urn:nasa:pds:insight_cameras::2.0</accession_number>
+        <accession_number>urn:nasa:pds:insight_cameras::2.1</accession_number>
         <publisher>NASA Planetary Data System</publisher>
         <availability>NASA Planetary Data System</availability>
         <publication_date>2019-01-01</publication_date>
@@ -19,10 +19,6 @@
                 <first_name>R.</first_name>
             </author>
             <author>
-                <last_name>Abarca</last_name>
-                <first_name>H.</first_name>
-            </author>
-            <author>
                 <last_name>Zamani</last_name>
                 <first_name>P.</first_name>
             </author>
@@ -32,31 +28,6 @@
             </author>
         </authors>
         <contributors>
-            <contributor>
-                <email/>
-                <last_name>Smith</last_name>
-                <first_name>P. H.</first_name>
-                <contributor_type>Editor</contributor_type>
-                <affiliations/>
-            </contributor>
-            <contributor>
-                <email/>
-                <last_name>Lemmon</last_name>
-                <first_name>M.</first_name>
-                <contributor_type>Editor</contributor_type>
-                <affiliations/>
-            </contributor>
-            <contributor>
-                <email/>
-                <last_name>Beebe</last_name>
-                <first_name>R. F.</first_name>
-                <contributor_type>Editor</contributor_type>
-                <affiliations/>
-            </contributor>
-            <contributor>
-                <full_name>PDS Cartography and Imaging Sciences Discipline</full_name>
-                <contributor_type>DataCurator</contributor_type>
-            </contributor>
         </contributors>
         <contact_name>PDS Operator</contact_name>
         <contact_org>PDS</contact_org>
