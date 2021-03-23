@@ -12,11 +12,14 @@ from unittest.mock import patch
 from lxml import etree
 
 import pds_doi_service.api.controllers.dois_controller
+import pds_doi_service.core.outputs.transaction
+import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
                                         LabelsPayload, LabelPayload)
 from pds_doi_service.api.test import BaseTestCase
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML
 
 
 class TestDoisController(BaseTestCase):
@@ -24,6 +27,9 @@ class TestDoisController(BaseTestCase):
     # This attribute is defined at class level so it may be accessed
     # by patched methods
     test_data_dir = None
+    input_dir = abspath(
+        join(dirname(__file__), os.pardir, os.pardir, os.pardir, 'input')
+    )
 
     @classmethod
     def setUpClass(cls):
@@ -781,6 +787,77 @@ class TestDoisController(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 501)
+
+    def webclient_query_patch(self, i_url, query_dict=None, i_username=None,
+                              i_password=None, content_type=CONTENT_TYPE_XML):
+        """
+        Patch for DOIOstiWebClient.webclient_query_doi().
+
+        Allows a pending check to occur without actually having to communicate
+        with the OSTI test server.
+        """
+        # Return dummy xml results containing the statuses we expect
+        # Released
+        if query_dict['doi'] == '10.17189/28957':
+            xml_file = 'DOI_Release_20200727_from_release.xml'
+        # Pending
+        elif query_dict['doi'] == '10.17189/29348':
+            xml_file = 'DOI_Release_20200727_from_reserve.xml'
+        # Error
+        else:
+            xml_file = 'DOI_Release_20200727_from_error.xml'
+
+        with open(join(TestDoisController.input_dir, xml_file), 'r') as infile:
+            xml_contents = infile.read()
+
+        return xml_contents
+
+    def transaction_log_patch(self):
+        """No-op patch for Transaction.log() to avoid modifying our test DB"""
+        return
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
+        'webclient_query_doi', webclient_query_patch)
+    @patch.object(
+        pds_doi_service.core.outputs.transaction.Transaction,
+        'log', transaction_log_patch)
+    def test_get_check_dois(self):
+        """Test case for get_check_dois"""
+        test_db = join(self.test_data_dir, 'pending_dois.db')
+
+        query_string = [('submitter', 'doi-checker@jpl.nasa.gov'),
+                        ('email', False),
+                        ('attachment', False),
+                        ('db_name', test_db)]
+
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois/check',
+                                    method='GET',
+                                    query_string=query_string)
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        records = response.json
+        self.assertEqual(len(records), 3)
+
+        # Check each record and ensure each DOI returned with the expected
+        # status
+        for record in records:
+            self.assertEqual(record['submitter'], 'doi-checker@jpl.nasa.gov')
+
+            if record['doi'] == '10.17189/28957':
+                self.assertEqual(record['status'], DoiStatus.Registered)
+
+            if record['doi'] == '10.17189/29348':
+                self.assertEqual(record['status'], DoiStatus.Pending)
+
+            if record['doi'] == '10.17189/29527':
+                self.assertEqual(record['status'], DoiStatus.Error)
+                # Make sure we got a message back with the error
+                self.assertIsNotNone(record['message'])
 
 
 if __name__ == '__main__':
