@@ -4,8 +4,8 @@ bs4==0.0.1
 certifi==2020.4.5.1
 chardet==3.0.4
 #click==7.1.1
-jsonschema==2.6.0
-connexion[swagger-ui] == 2.2.0
+jsonschema==3.0.0
+connexion[swagger-ui] == 2.7.0
 dataclasses==0.7; python_version <= '3.6'
 distlib==0.3.1
 filelock==3.0.12
@@ -20,7 +20,7 @@ lxml>=4.5
 #MarkupSafe==1.1.1
 nltk==3.5
 numpy>=1.18
-openapi-schema-validator==0.1.1
+openapi-schema-validator==0.1.4
 pandas>=1.0
 pystache>=0.5
 python-dateutil>=2.8
@@ -37,7 +37,6 @@ openpyxl==3.0
 xmlschema==1.5.1
 wheel
 ## Dev/test requirements
-jsonschema==2.6.0
 flask_testing==0.8.0
 flask-cors==3.0.9
 sphinx-rtd-theme==0.5.0
