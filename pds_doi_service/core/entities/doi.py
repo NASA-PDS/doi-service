@@ -33,6 +33,8 @@ class DoiStatus(str, Enum):
     Enumerates the stages of the DOI workflow.
 
     The workflow stages consist of:
+        Error -
+            An error has occurred with the DOI submission to OSTI.
         Unknown -
             Default starting state for DOI transactions.
         Reserve_not_submitted -
@@ -53,6 +55,7 @@ class DoiStatus(str, Enum):
             DOI request has been registered with OSTI.
 
     """
+    Error = 'error'
     Unknown = 'unknown'
     Reserved_not_submitted = 'reserved_not_submitted'
     Reserved = 'reserved'
