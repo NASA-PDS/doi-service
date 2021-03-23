@@ -24,11 +24,13 @@ from flask import current_app
 
 from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.api.models import DoiRecord, DoiSummary
+from pds_doi_service.core.actions.check import DOICoreActionCheck
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.input.exceptions import (InputFormatException,
+                                                   OSTIRequestException,
                                                    NoTransactionHistoryForLIDVIDException,
                                                    UnknownLIDVIDException,
                                                    WarningDOIException)
@@ -560,6 +562,65 @@ def get_doi_from_id(lidvid):  # noqa: E501
 
     # Should only ever be one record since we filtered by lidvid
     return records[0], 200
+
+
+def get_check_dois(submitter, email=False, attachment=False):
+    """
+    Check submission status of all records pending release.
+
+    Parameters
+    ----------
+    submitter : str
+        The email address of the user to register as author of the check action.
+        This address is also included in the list of recipients.
+    email : bool
+        If true, the check action sends results to the default recipients and
+        pending DOI submitters.
+    attachment : bool
+        If true, the check action sends results as an email attachment. Has no
+        effect if the email flag is not set to true.
+
+    Returns
+    -------
+    records : list of DoiRecord
+        Records containing the current status of all DOI's listed as pending
+        within the transaction database when this endpoint is called.
+
+    """
+    logger.info(f'GET /dois/check request received')
+
+    check_action = DOICoreActionCheck(db_name=_get_db_name())
+
+    check_kwargs = {
+        'submitter': submitter,
+        'email': email,
+        'attachment': attachment
+    }
+
+    logger.debug(f'GET /dois/check action arguments: {check_kwargs}')
+
+    try:
+        pending_results = check_action.run(**check_kwargs)
+    except OSTIRequestException as err:
+        # OSTI host was unreachable
+        return format_exceptions(err), 400
+    except Exception as err:
+        # Treat any unexpected Exception as an "Internal Error" and report back
+        return format_exceptions(err), 500
+
+    records = [
+        DoiRecord(
+            doi=pending_result['doi'], lidvid=pending_result['lidvid'],
+            node=pending_result['node_id'],
+            submitter=submitter, status=pending_result['status'],
+            creation_date=pending_result['release_date'],
+            update_date=pending_result['update_date'],
+            message=pending_result['message']
+        )
+        for pending_result in pending_results
+    ]
+
+    return records, 200
 
 
 def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
