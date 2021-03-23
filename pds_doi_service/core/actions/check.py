@@ -1,5 +1,5 @@
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -15,10 +15,13 @@ Contains the definition for the Check action of the Core PDS DOI Service.
 
 import datetime
 import json
-import os
+
 from copy import deepcopy
 from datetime import date
-from os.path import dirname, join
+from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from os.path import dirname, exists, join
 
 import pystache
 
@@ -30,7 +33,7 @@ from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.emailer import Emailer
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_core.actions.check')
+logger = get_logger('pds_doi_service.core.actions.check')
 
 
 class DOICoreActionCheck(DOICoreAction):
@@ -43,12 +46,33 @@ class DOICoreActionCheck(DOICoreAction):
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
+
         self._list_obj = DOICoreActionList(db_name=db_name)
         self._emailer = Emailer()
 
         self._submitter = self._config.get('OTHER', 'emailer_sender')
         self._email = True
         self._attachment = True
+
+        self.email_header_template_file = join(
+            dirname(__file__), 'email_template_header.mustache'
+        )
+
+        self.email_body_template_file = join(
+            dirname(__file__), 'email_template_body.txt'
+        )
+
+        # Make sure templates are where we expect them to be
+        if (not exists(self.email_header_template_file)
+                or not exists(self.email_body_template_file)):
+            raise RuntimeError(
+                f'Could not find one or more email templates needed by this action\n'
+                f'Expected header template: {self.email_header_template_file}\n'
+                f'Expected body template: {self.email_body_template_file}'
+            )
+
+        with open(self.email_body_template_file, 'r') as infile:
+            self.email_body_template = infile.read().strip()
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -57,20 +81,20 @@ class DOICoreActionCheck(DOICoreAction):
         action_parser.add_argument(
             '-e', '--email', required=False, action='store_true',
             help='If provided, the check action sends results to the default '
-                 'recipients and pending DOI submitters'
+                 'recipients and pending DOI submitters.'
         )
         action_parser.add_argument(
             '-a', '--attachment', required=False, action='store_true',
             help='If provided, the check action sends results as an email '
-                 'attachment'
+                 'attachment. Has no effect if --email is not also provided.'
         )
         action_parser.add_argument(
-            '-r', '--submitter', required=False, metavar='"my.email@node.gov"',
+            '-s', '--submitter', required=False, metavar='"my.email@node.gov"',
             help='The email address of the user to register as author of the '
-                 'check action'
+                 'check action.'
         )
 
-    def _update_transaction_db_when_needed(self, pending_record):
+    def _update_transaction_db(self, pending_record):
         """
         Processes the result from the one 'check' query to OSTI server.
 
@@ -78,11 +102,14 @@ class DOICoreActionCheck(DOICoreAction):
         the database and write a new record to the database and return DOI just
         updated.
 
-        :param pending_record:
-        :return: o_doi_updated:
-
         """
         doi_value = pending_record['doi']
+        lidvid = '::'.join([pending_record['lid'], pending_record['vid']])
+
+        logger.info(
+            f'Checking OSTI release status for DOI {doi_value} (LIDVID {lidvid})'
+        )
+
         query_dict = {'doi': doi_value}
 
         doi_xml = DOIOstiWebClient().webclient_query_doi(
@@ -90,27 +117,52 @@ class DOICoreActionCheck(DOICoreAction):
             i_username=self._config.get('OSTI', 'user'),
             i_password=self._config.get('OSTI', 'password')
         )
-        dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
+        dois, errors = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
 
         if dois:
+            # Should only ever be one entry returned
             doi = dois[0]
 
             if doi.status != DoiStatus.Pending:
-                # have an author for this automated action
+                logger.info(f'DOI has changed from status {DoiStatus.Pending} '
+                            f'to {doi.status}')
+
+                # Set the author for this action
                 doi.submitter = self._submitter
 
+                # Update the previous status we store in the transaction database
+                doi.previous_status = DoiStatus.Pending
+
+                # If there was an error submitting to OSTI, include the details.
+                # Since we only check one DOI at a time, should be safe
+                # to index by 0 here
+                if errors:
+                    doi.message = '\n'.join(errors[0])
+
+                # Log the update to the DOI entry
                 transaction_obj = self.m_transaction_builder.prepare_transaction(
                     pending_record['node_id'], pending_record['submitter'],
                     [doi], output_content=doi_xml
                 )
 
                 transaction_obj.log()
-                pending_record['initial_status'] = pending_record['status']
-                pending_record['status'] = doi.status
+            else:
+                logger.info(f'No change in {DoiStatus.Pending} status for DOI '
+                            f'{doi_value} (LIDVID {lidvid})')
+
+            # Update the record we'll be using to populate the status email
+            pending_record['previous_status'] = pending_record['status']
+            pending_record['status'] = doi.status
+            pending_record['lidvid'] = lidvid
+            pending_record['message'] = doi.message
+
+            # Remove some behind-the-scenes fields users shouldn't care about
+            pending_record.pop('transaction_key', None)
+            pending_record.pop('is_latest', None)
         else:
             logger.error(
-                f"doi {pending_record['doi']} for lidvid "
-                + f"{pending_record['lid']}::{pending_record['vid']} no found at OSTI"
+                f"No record for DOI {pending_record['doi']} (LIDVID {lidvid}) "
+                f"found at OSTI"
             )
 
     def _get_distinct_nodes_and_submitters(self, i_check_result):
@@ -124,20 +176,19 @@ class DOICoreActionCheck(DOICoreAction):
             # Make lowercase to be consistent.
             node_id_key = one_result['node_id'].lower()
 
-            # Create an empty list of 'distinct_submitters' to key node_id_key
-            # if we haven't already.
+            # Create an empty set of submitters and list of records keyed to
+            # node_id_key if we haven't already.
             if node_id_key not in o_distinct_info:
-                # Create an empty list of 'distinct_submitters' to key node_id_key.
-                o_distinct_info[node_id_key] = {}
-                o_distinct_info[node_id_key]['distinct_submitters'] = set()
-                o_distinct_info[node_id_key]['distinct_records'] = []
+                o_distinct_info[node_id_key] = {
+                    'submitters': set(), 'records': list()
+                }
 
             # Add the submitter to distinct_submitters for a particular node
             # if we haven't already.
-            o_distinct_info[node_id_key]['distinct_submitters'].add(one_result['submitter'].lower())
+            o_distinct_info[node_id_key]['submitters'].add(one_result['submitter'].lower())
 
             # Add each record to a particular node.
-            o_distinct_info[node_id_key]['distinct_records'].append(one_result)
+            o_distinct_info[node_id_key]['records'].append(one_result)
 
         return o_distinct_info
 
@@ -146,72 +197,63 @@ class DOICoreActionCheck(DOICoreAction):
         Prepares an attachment by converting i_dicts_per_submitter to a JSON
         text and returns the o_attachment_part as MIMEMultipart object.
         """
-        # Only do the import if sending an attachment file along with the email.
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.base import MIMEBase
-
         # Convert a list of dict to JSON text to make it human readable.
         attachment_text = json.dumps(
             i_dicts_per_submitter,
-            indent=4  # Make human read-able output with indentation of each key.
+            indent=4  # Make output human readable by indentation
         )
 
         # Add current time to make file unique
-        now_is = datetime.datetime.now().isoformat()
-        o_attachment_filename = 'doi_status_attachment_on_' + now_is + '.txt'
-
-        # Write the text to disk so the file can be sent as an attachment.
-        with open(o_attachment_filename, 'w+') as file_ptr:
-            file_ptr.write(attachment_text)
+        now_is = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+        o_attachment_filename = f'doi_status_{now_is}.json'
 
         o_attachment_part = MIMEMultipart()
-        part = MIMEBase('application', 'text')
+        part = MIMEBase('application', 'json')
         part.add_header('Content-Disposition',
-                        "attachment; filename= %s" % o_attachment_filename)
+                        f'attachment; filename={o_attachment_filename}')
         part.set_payload(attachment_text)
         o_attachment_part.attach(part)
 
-        # Must return the attachment filename so it can be deleted after the
-        # email has been successfully sent.
-        return o_attachment_filename, o_attachment_part
+        return o_attachment_part
 
-    def _prepare_email_entire_message(self, i_dicts_per_submitter):
+    def _prepare_email_message(self, i_dicts_per_submitter):
         renderer = pystache.Renderer()
         today = date.today()
 
-        # There is an 'Id' column in the email content so that field needs to be
-        # built.
-        # The field 'record_index' is to allow Pystache to print the record
-        # number on the left most column.
-        record_index = 0
-        for doi_record in i_dicts_per_submitter:
-            # Split '10.17189/21940' to get to 21940
-            doi_record['id'] = doi_record['doi'].split('/')[1]
-            doi_record['record_index'] = record_index + 1
-            record_index += 1
-
-        # Build the email first part containing: Date: 07/01/2020\n 3 records.
+        # Build the email header containing date and number of records
         header_dict = {
             'my_date': today.strftime("%m/%d/%Y"),
             'my_records_count': len(i_dicts_per_submitter)
         }
-        email_part1_template = join(dirname(__file__), 'emailer_template_part_1-mustache.json')
-        email_part_1 = renderer.render_path(email_part1_template, header_dict)
+        email_header = renderer.render_path(
+            self.email_header_template_file, header_dict
+        )
 
-        # Build the email second part containing the table of DOIs with status
-        # changed: "1  21940  Laboratory Shocked Feldspars Bundle  10.17189/21940  Pending  Reserved"
-        email_part2_template = join(dirname(__file__), 'emailer_template_part_2-mustache.json')
-        email_part_2 = renderer.render_path(email_part2_template,
-                                            {'dois': i_dicts_per_submitter})
+        # Build the email body containing the table of DOIs with status
+        body_header = self.email_body_template.format(
+            record_index='#', id='ID', title='Title', doi='DOI', lidvid='LIDVID',
+            previous_status='Previous Status', status='Current Status'
+        )
+        body_divider = '-' * len(body_header)
+        email_body = [body_header, body_divider]
 
-        o_email_entire_message = email_part_1 + "\n" + email_part_2
-        logger.debug(f"o_email_entire_message {o_email_entire_message}")
+        for index, record in enumerate(i_dicts_per_submitter):
+            email_body.append(
+                self.email_body_template.format(record_index=index + 1,
+                                                id=record['doi'].split('/')[-1],
+                                                **record)
+            )
+
+        email_body = '\n'.join(email_body)
+
+        o_email_entire_message = "\n".join([email_header, email_body])
+        logger.debug(f"o_email_entire_message:\n{o_email_entire_message}\n")
 
         return o_email_entire_message
 
-    def _send_email(self, to_send_attachment_flag, email_sender, final_receivers,
-                    subject_field, email_entire_message, o_dicts_per_node):
-        if not to_send_attachment_flag:
+    def _send_email(self, email_sender, final_receivers, subject_field,
+                    email_entire_message, o_dicts_per_node):
+        if not self._attachment:
             # This sends a brief email message.
             self._emailer.sendmail(
                 email_sender, final_receivers, subject_field, email_entire_message
@@ -219,8 +261,6 @@ class DOICoreActionCheck(DOICoreAction):
         else:
             # Try an alternative way to send the email so the attachment will be
             # viewable as an attachment in the email reader.
-            # Only import if sending an attachment file along with the email.
-            from email.message import EmailMessage
             msg = EmailMessage()
             msg["From"] = email_sender
             msg["Subject"] = subject_field
@@ -228,8 +268,7 @@ class DOICoreActionCheck(DOICoreAction):
 
             msg.set_content(email_entire_message)
 
-            (attachment_filename,
-             attachment_part) = self._prepare_attachment(o_dicts_per_node)
+            attachment_part = self._prepare_attachment(o_dicts_per_node)
 
             # The attachment is now 'attached' in the msg object.
             msg.add_attachment(attachment_part)
@@ -237,49 +276,43 @@ class DOICoreActionCheck(DOICoreAction):
             # Send the email with attachment file.
             self._emailer.send_message(msg)
 
-            # Delete the temporary attached file.
-            if os.path.isfile(attachment_filename):
-                os.remove(attachment_filename)
-
-    def _group_dois_updated_records_and_email(self, i_check_result,
-                                              to_send_mail_flag=False,
-                                              to_send_attachment_flag=False):
+    def _group_updated_doi_records_and_email(self, i_check_result):
         """
         From all records in i_check_result, group a list of records per
         submitter and send an email of the status of metadata of DOIs with
         status changed to receivers.
         """
-        logger.debug(f"to_send_mail_flag {to_send_mail_flag}")
-
         # Get configurations related to sending email.
         email_sender = self._config.get('OTHER', 'emailer_sender')
         email_receivers_field = self._config.get('OTHER', 'emailer_receivers')
 
         # The receivers can be a comma-delimited list of addresses.
         email_receivers_tokens = email_receivers_field.split(',')
-        email_receivers = set()
 
         # Get distinct list of email addresses from email_receivers_field in
         # case they have duplicates.
-        for email_receiver_token in email_receivers_tokens:
-            email_receivers.add(email_receiver_token.lstrip().rstrip().lower())
+        email_receivers = set(
+            [email_receiver_token.strip().lower()
+             for email_receiver_token in email_receivers_tokens]
+        )
+
+        # Ensure the submitter of this check action included if they're not already
+        email_receivers.add(self._submitter)
 
         # Get distinct info from i_check_result
         # The distinct info is a dictionary containing distinct nodes as keys
-        # and 'distinct_submitters', 'distinct_records' as values for each node.
+        # with 'submitters' and 'records' as values for each node.
         o_distinct_info = self._get_distinct_nodes_and_submitters(i_check_result)
 
         # For each node, e.g 'img','naif', get all records for that node and
         # send an email for all submitters of that node, along with the receivers.
-        for node_key in list(o_distinct_info.keys()):
+        for node_key in o_distinct_info:
             # Build a list of unique recipients for the emailer.
             # Make a copy since we need a new email list for that node.
             final_receivers = deepcopy(email_receivers)
 
             # Add emails of all submitters for that node.
-            final_receivers.union(
-                o_distinct_info[node_key]['distinct_submitters']
-            )
+            final_receivers |= o_distinct_info[node_key]['submitters']
 
             now_is = datetime.datetime.now().isoformat()
             subject_field = f"DOI Submission Status Report For Node {node_key} On {now_is}"
@@ -287,29 +320,26 @@ class DOICoreActionCheck(DOICoreAction):
             # Convert a list of dict to JSON text to make it human readable.
             dois_per_node = [
                 element['doi']
-                for element in o_distinct_info[node_key]['distinct_records']
+                for element in o_distinct_info[node_key]['records']
             ]
             logger.debug(
                 "NUM_RECORDS_PER_NODE_AND_SUBMITTERS "
-                f"{node_key, dois_per_node, len(dois_per_node), o_distinct_info[node_key]['distinct_submitters']}"
+                f"{node_key, dois_per_node, len(dois_per_node), o_distinct_info[node_key]['submitters']}"
             )
 
             # Prepare the email message using all the dictionaries (records
             # associated with that node).
-            email_entire_message = self._prepare_email_entire_message(
-                o_distinct_info[node_key]['distinct_records']
+            email_entire_message = self._prepare_email_message(
+                o_distinct_info[node_key]['records']
             )
-            logger.debug(f"email_entire_message {email_entire_message}")
 
             # Finally, send the email with all status changed per node.
             # The report is for a particular node, e.g 'img' send to all submitters
             # for that node (along with other recipients in final_receivers)
-            if to_send_mail_flag:
-                self._send_email(
-                    to_send_attachment_flag, email_sender, final_receivers,
-                    subject_field, email_entire_message,
-                    o_distinct_info[node_key]['distinct_records']
-                )
+            self._send_email(
+                email_sender, final_receivers, subject_field,
+                email_entire_message, o_distinct_info[node_key]['records']
+            )
 
     def run(self, **kwargs):
         """
@@ -326,25 +356,21 @@ class DOICoreActionCheck(DOICoreAction):
         """
         self.parse_arguments(kwargs)
 
-        pending_state_list = []
-
         # Get the list of latest rows in database with status = 'Pending'.
         o_doi_list = self._list_obj.run(status=DoiStatus.Pending)
+        pending_state_list = json.loads(o_doi_list)
 
-        if len(o_doi_list) > 0:
-            pending_state_list = json.loads(o_doi_list)
+        logger.info(f'Found {len(pending_state_list)} {DoiStatus.Pending} '
+                    f'record(s) to check')
 
+        if len(pending_state_list) > 0:
             for pending_record in pending_state_list:
-                logger.debug(f"pending_record {pending_record}")
-                self._update_transaction_db_when_needed(pending_record)
+                self._update_transaction_db(pending_record)
 
-            self._group_dois_updated_records_and_email(
-                pending_state_list, self._email, self._attachment
-            )
+            if self._email:
+                self._group_updated_doi_records_and_email(pending_state_list)
 
         # Return a list of DOIs updated or still in pending status.
-        # List can be empty meaning no records have changed from 'Pending'
+        # List can be empty, meaning no records have changed from 'Pending'
         # to something else.
         return pending_state_list
-
-# end class DOICoreActionCheck(DOICoreAction):
