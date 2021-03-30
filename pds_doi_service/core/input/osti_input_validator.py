@@ -13,7 +13,8 @@ osti_input_validator.py
 Contains functions for validating the contents of an input OSTI XML label.
 """
 
-from os.path import dirname, join
+from os.path import exists
+from pkg_resources import resource_filename
 
 from lxml import etree
 from lxml import isoschematron
@@ -35,8 +36,14 @@ class OSTIInputValidator:
     m_doi_config_util = DOIConfigUtil()
 
     def __init__(self):
+        schematron_file = resource_filename(__name__, 'IAD3_scheematron.sch')
 
-        schematron_file = join(dirname(__file__), 'IAD3_scheematron.sch')
+        if not exists(schematron_file):
+            raise RuntimeError(
+                'Could not find the schematron file needed by this module.\n'
+                f'Expected schematron file: {schematron_file}'
+            )
+
         sct_doc = etree.parse(schematron_file)
         self._schematron = isoschematron.Schematron(sct_doc, store_report=True)
 
@@ -77,8 +84,8 @@ class OSTIInputValidator:
 
         # Moved osti_root variable to above where the content of the tree is
         # parsed either from a file or from a string.
-        logger.debug(f"len(osti_root.keys()) {len(osti_root.keys())}")
-        logger.debug(f"osti_root.keys() {osti_root.keys()}")
+        logger.debug("len(osti_root.keys()): %d", len(osti_root.keys()))
+        logger.debug("osti_root.keys(): %s", osti_root.keys())
 
         # Check 1. Extraneous tags in <records> element.
         if len(osti_root.keys()) > 0:
@@ -97,14 +104,11 @@ class OSTIInputValidator:
         for element in osti_root.findall('record'):
             if ('status' in element.keys()
                     and element.attrib['status'].lower() not in possible_status_list):
-                msg = (f"If record tag contains 'status' its value must be one of these {possible_status_list}. "
+                msg = (f"If record tag contains 'status' its value must be one "
+                       f"of these {possible_status_list}. "
                        f"Provided {element.attrib['status'].lower()}")
                 logger.error(msg)
                 raise InputFormatException(msg)
 
             # Keep track of which record working on for 'record' element.
             record_count += 1
-
-        # end for element in osti_root.findall('record'):
-
-# end class OSTOInputValidator:

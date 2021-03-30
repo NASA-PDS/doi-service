@@ -21,7 +21,8 @@ from datetime import date
 from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
-from os.path import dirname, exists, join
+from os.path import exists
+from pkg_resources import resource_filename
 
 import pystache
 
@@ -54,12 +55,12 @@ class DOICoreActionCheck(DOICoreAction):
         self._email = True
         self._attachment = True
 
-        self.email_header_template_file = join(
-            dirname(__file__), 'email_template_header.mustache'
+        self.email_header_template_file = resource_filename(
+            __name__, 'email_template_header.mustache'
         )
 
-        self.email_body_template_file = join(
-            dirname(__file__), 'email_template_body.txt'
+        self.email_body_template_file = resource_filename(
+            __name__, 'email_template_body.txt'
         )
 
         # Make sure templates are where we expect them to be
@@ -107,7 +108,8 @@ class DOICoreActionCheck(DOICoreAction):
         lidvid = '::'.join([pending_record['lid'], pending_record['vid']])
 
         logger.info(
-            f'Checking OSTI release status for DOI {doi_value} (LIDVID {lidvid})'
+            'Checking OSTI release status for DOI %s (LIDVID %s)',
+            doi_value, lidvid
         )
 
         query_dict = {'doi': doi_value}
@@ -124,8 +126,8 @@ class DOICoreActionCheck(DOICoreAction):
             doi = dois[0]
 
             if doi.status != DoiStatus.Pending:
-                logger.info(f'DOI has changed from status {DoiStatus.Pending} '
-                            f'to {doi.status}')
+                logger.info("DOI has changed from status %s to %s",
+                            DoiStatus.Pending, doi.status)
 
                 # Set the author for this action
                 doi.submitter = self._submitter
@@ -147,8 +149,8 @@ class DOICoreActionCheck(DOICoreAction):
 
                 transaction_obj.log()
             else:
-                logger.info(f'No change in {DoiStatus.Pending} status for DOI '
-                            f'{doi_value} (LIDVID {lidvid})')
+                logger.info('No change in %s status for DOI %s (LIDVID %s)',
+                            DoiStatus.Pending, doi_value, lidvid)
 
             # Update the record we'll be using to populate the status email
             pending_record['previous_status'] = pending_record['status']
@@ -161,8 +163,8 @@ class DOICoreActionCheck(DOICoreAction):
             pending_record.pop('is_latest', None)
         else:
             logger.error(
-                f"No record for DOI {pending_record['doi']} (LIDVID {lidvid}) "
-                f"found at OSTI"
+                "No record for DOI %s (LIDVID %s) found at OSTI",
+                pending_record['doi'], lidvid
             )
 
     def _get_distinct_nodes_and_submitters(self, i_check_result):
@@ -247,7 +249,7 @@ class DOICoreActionCheck(DOICoreAction):
         email_body = '\n'.join(email_body)
 
         o_email_entire_message = "\n".join([email_header, email_body])
-        logger.debug(f"o_email_entire_message:\n{o_email_entire_message}\n")
+        logger.debug("o_email_entire_message:\n%s\n", o_email_entire_message)
 
         return o_email_entire_message
 
@@ -323,8 +325,9 @@ class DOICoreActionCheck(DOICoreAction):
                 for element in o_distinct_info[node_key]['records']
             ]
             logger.debug(
-                "NUM_RECORDS_PER_NODE_AND_SUBMITTERS "
-                f"{node_key, dois_per_node, len(dois_per_node), o_distinct_info[node_key]['submitters']}"
+                "NUM_RECORDS_PER_NODE_AND_SUBMITTERS: %s,%s,%d,%s",
+                node_key, dois_per_node, len(dois_per_node),
+                o_distinct_info[node_key]['submitters']
             )
 
             # Prepare the email message using all the dictionaries (records
@@ -360,8 +363,8 @@ class DOICoreActionCheck(DOICoreAction):
         o_doi_list = self._list_obj.run(status=DoiStatus.Pending)
         pending_state_list = json.loads(o_doi_list)
 
-        logger.info(f'Found {len(pending_state_list)} {DoiStatus.Pending} '
-                    f'record(s) to check')
+        logger.info(f'Found %d %s record(s) to check', len(pending_state_list),
+                    DoiStatus.Pending)
 
         if len(pending_state_list) > 0:
             for pending_record in pending_state_list:

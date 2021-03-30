@@ -15,7 +15,9 @@ DOI workflow.
 """
 
 import tempfile
-from os.path import dirname, join
+from os.path import exists
+from pkg_resources import resource_filename
+
 from lxml import etree
 
 import requests
@@ -48,7 +50,7 @@ class DOIValidator:
         DoiStatus.Registered: 5
     }
 
-    def __init__(self,db_name=None):
+    def __init__(self, db_name=None):
         self._config = self.m_doi_config_util.get_config()
 
         if db_name:
@@ -59,6 +61,14 @@ class DOIValidator:
             self.m_default_db_file = self._config.get('OTHER', 'db_file')
 
         self._database_obj = DOIDataBase(self.m_default_db_file)
+
+        self._xsd_filename = resource_filename(__name__, 'iad_schema.xsd')
+
+        if not exists(self._xsd_filename):
+            raise RuntimeError(
+                'Could not find the schema file needed by this module.\n'
+                f'Expected schema file: {self._xsd_filename}'
+            )
 
     def get_database_name(self):
         return self._database_obj.get_database_name()
@@ -78,27 +88,24 @@ class DOIValidator:
         If the site_url field exists in the doi object, check to see if it is
         online. If the site is not online, an exception will be thrown.
         """
-        logger.debug(f"doi {doi}")
-        logger.info(f"doi.site_url {doi.site_url}")
+        logger.debug("doi,site_url: %s,%s", doi, doi.site_url)
 
         if doi.site_url and doi.site_url != 'N/A':
             try:
                 response = requests.get(doi.site_url, timeout=5)
                 status_code = response.status_code
-                logger.debug(f"from_request:status_code,site_url {status_code,doi.site_url}")
+                logger.debug("from_request status_code,site_url: %s,%s",
+                             status_code, doi.site_url)
+
                 # Handle cases when a connection can be made to the server but
                 # the status is greater than or equal to 400.
                 if status_code >= 400:
                     # Need to check its an 404, 503, 500, 403 etc.
                     raise requests.HTTPError(f"status_code,site_url {status_code,doi.site_url}")
                 else:
-                    logger.debug(f"site_url {doi.site_url} indeed exists")
+                    logger.debug("site_url %s indeed exists", doi.site_url)
             except (requests.exceptions.ConnectionError, Exception):
-                error_message = f"site_url {doi.site_url} not reachable"
-
-                # Although not being able to connect is an error, the message
-                # printed is a warning.
-                raise SiteURLNotExistException(error_message)
+                raise SiteURLNotExistException(f"site_url {doi.site_url} not reachable")
 
     def _check_field_title_duplicate(self, doi: Doi):
         """
@@ -156,8 +163,8 @@ class DOIValidator:
                                         if len(product_type_specific_split) > 1
                                         else '<<< no product specific type found >>> ')
 
-        logger.debug(f"product_type_specific_suffix: {product_type_specific_suffix}, "
-                     f"doi.title: {doi.title}")
+        logger.debug("product_type_specific_suffix: %s", product_type_specific_suffix)
+        logger.debug("doi.title: %s", doi.title)
 
         if not product_type_specific_suffix.lower() in doi.title.lower():
             msg = (f"DOI with lidvid '{doi.related_identifier}' title "
@@ -241,19 +248,18 @@ class DOIValidator:
         # The encode() convert str to bytes.
         xml_file = etree.fromstring(doi_label.encode())
 
-        xsd_filename = join(dirname(__file__), 'iad_schema.xsd')
-        xml_validator = etree.XMLSchema(file=xsd_filename)
+        xml_validator = etree.XMLSchema(file=self._xsd_filename)
 
         # Perform the XSD validation.
         # The validate() function does not throw an exception, but merely
         # returns True or False.
         is_valid = xml_validator.validate(xml_file)
-        logger.info(f"xsd_filename,is_valid {xsd_filename,is_valid}")
+        logger.info("xsd_filename,is_valid: %s,%s", self._xsd_filename, is_valid)
 
         # If DOI is not valid, use another method to get exactly where the
         # error(s) occurred.
         if not is_valid and use_alternate_validation_method:
-            schema = xmlschema.XMLSchema(xsd_filename)
+            schema = xmlschema.XMLSchema(self._xsd_filename)
 
             # Save doi_label to disk so it can be compared to historical in next step.
             with tempfile.NamedTemporaryFile(mode='w', suffix='temp_doi.xml') as temp_file:
