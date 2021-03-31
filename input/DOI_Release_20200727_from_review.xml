@@ -8,7 +8,7 @@
         <publisher>NASA Planetary Data System</publisher>
         <availability>NASA Planetary Data System</availability>
         <publication_date>2019-01-01</publication_date>
-        <site_url>https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
+        <site_url>https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
         <product_type>Dataset</product_type>
         <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
         <date_record_added>2020-07-23</date_record_added>

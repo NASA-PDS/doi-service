@@ -1,0 +1,70 @@
+<records total="1" start="0" recordsTotal="1" recordsFiltered="1">
+  <record status="Error">
+    <id>29348</id>
+    <site_code>NASA-PDS</site_code>
+    <title>InSight Cameras Bundle 0</title>
+    <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+    <accession_number>urn:nasa:pds:insight_cameras::2.0</accession_number>
+    <doi>10.17189/29348</doi>
+    <publisher>NASA Planetary Data System</publisher>
+    <availability>NASA Planetary Data System</availability>
+    <publication_date>2019-01-01</publication_date>
+    <country>US</country>
+    <description>InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products</description>
+    <site_url>https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;amp;version=1.0</site_url>
+    <product_type>Dataset</product_type>
+    <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
+    <date_record_added>2021-02-24</date_record_added>
+    <date_record_updated>2021-03-16</date_record_updated>
+    <keywords>Camera;Context;Deployment;Insight;Instrument;Lander;Mars;Mission;PDS;Planet;Raw;Science;Spacecraft</keywords>
+    <doi_message>Registration update failed: {"errors":[{"source":"url","uid":"10.17189/29348","title":"URL https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;amp;version=1.0 is not allowed by repository osti.nasapds domain settings."}]}</doi_message>
+    <authors>
+      <author>
+        <first_name>H.</first_name>
+        <last_name>Abarca</last_name>
+        <affiliations/>
+      </author>
+      <author>
+        <first_name>J.</first_name>
+        <last_name>Maki</last_name>
+        <affiliations/>
+      </author>
+      <author>
+        <first_name>R.</first_name>
+        <last_name>Deen</last_name>
+        <affiliations/>
+      </author>
+      <author>
+        <first_name>P.</first_name>
+        <last_name>Zamani</last_name>
+        <affiliations/>
+      </author>
+    </authors>
+    <contributors>
+      <contributor>
+        <full_name>Planetary Data System: Engineering Node</full_name>
+        <contributor_type>DataCurator</contributor_type>
+        <affiliations/>
+      </contributor>
+      <contributor>
+        <first_name>R. F.</first_name>
+        <last_name>Beebe</last_name>
+        <contributor_type>Editor</contributor_type>
+        <affiliations/>
+      </contributor>
+      <contributor>
+        <first_name>M.</first_name>
+        <last_name>Lemmon</last_name>
+        <contributor_type>Editor</contributor_type>
+        <affiliations/>
+      </contributor>
+      <contributor>
+        <first_name>P. H.</first_name>
+        <last_name>Smith</last_name>
+        <contributor_type>Editor</contributor_type>
+        <affiliations/>
+      </contributor>
+    </contributors>
+    <related_identifiers/>
+  </record>
+</records>

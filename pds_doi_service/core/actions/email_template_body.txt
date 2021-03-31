@@ -1,0 +1,1 @@
+{record_index:<3}{id:<7}{title:<40}{doi:<16}{lidvid:<40}{previous_status:<24}{status}

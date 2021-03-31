@@ -1,5 +1,5 @@
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -466,7 +466,7 @@ class DOIOstiWebParser:
 
         """
         dois = []
-        errors = []
+        errors = {}
 
         doc = etree.fromstring(osti_response_text.encode())
         my_root = doc.getroottree()
@@ -484,23 +484,25 @@ class DOIOstiWebParser:
             if status.lower() == 'error':
                 # The 'error' record is parsed differently and does not have all
                 # the attributes we desire.
-                # Get the entire text and save it in 'error' key. Print a WARN
-                # only since it is not related to any particular 'doi' or 'id' action.
-                logger.error(f"ERROR OSTI RECORD {single_record_element.text}")
+                logger.error(
+                    f"Errors reported for record index {index + 1}"
+                )
 
                 # Check for any errors reported back from OSTI and save
                 # them off to be returned
                 errors_element = single_record_element.xpath('errors')
+                doi_message = single_record_element.xpath('doi_message')
+
+                cur_errors = []
 
                 if len(errors_element):
-                    cur_errors = []
-
                     for error_element in errors_element[0]:
                         cur_errors.append(error_element.text)
 
-                    errors.append({single_record_element.get('index'): cur_errors})
+                if len(doi_message):
+                    cur_errors.append(doi_message[0].text)
 
-                    continue
+                errors[index] = cur_errors
 
             lidvid = DOIOstiWebParser.get_lidvid_from_xml(single_record_element)
 

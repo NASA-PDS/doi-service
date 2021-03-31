@@ -17,7 +17,6 @@ import os
 import urllib.parse
 import tempfile
 from os.path import basename
-from datetime import datetime
 
 from xmlschema import XMLSchemaValidationError
 
@@ -151,8 +150,9 @@ class DOIInputUtil:
         actual_sheet_name = xl_wb.sheet_names[0]
         xl_sheet = pd.read_excel(
             i_filepath, actual_sheet_name,
-            converters={'publication_date': str,
-                        'publication_date (yyyy-mm-dd)': str}
+            # Parse 3rd column (1-indexed) as a pd.Timestamp, can't use
+            # name of column since it hasn't been standardized yet
+            parse_dates=[3]
         )
 
         num_cols = len(xl_sheet.columns)
@@ -192,33 +192,10 @@ class DOIInputUtil:
 
         for index, row in xl_sheet.iterrows():
             logger.debug(f"row {row}")
-            # It is possible that the length of row['publication_date'] is more
-            # than needed, we only need to get the first 10 characters
-            #   '2020-08-01' from '2020-08-01 00:00:00'
-            if len(row['publication_date']) >= self.EXPECTED_PUBLICATION_DATE_LEN:
-                # It is possible that the format provided is not expected,
-                # put a try/except clause to catch that.
-                try:
-                    publication_date_value = datetime.strptime(
-                        row['publication_date'][:self.EXPECTED_PUBLICATION_DATE_LEN],
-                        '%Y-%m-%d'
-                    )
-                except Exception:
-                    msg = (f"Expecting publication_date "
-                           f"[{row['publication_date']}] with format YYYY-mm-dd")
-
-                    logger.error(msg)
-                    raise InputFormatException(msg)
-            else:
-                raise InputFormatException(
-                    f"Expecting publication_date to be at least "
-                    f"{self.EXPECTED_PUBLICATION_DATE_LEN} characters: "
-                    f"[{row['publication_date']}]"
-                )
 
             doi = Doi(status=DoiStatus(row['status'].lower()),
                       title=row['title'],
-                      publication_date=publication_date_value,
+                      publication_date=row['publication_date'],
                       product_type=ProductType.Collection,
                       product_type_specific=row['product_type_specific'],
                       related_identifier=row['related_resource'],
@@ -235,8 +212,12 @@ class DOIInputUtil:
         Receives a URI containing CSV format and create one external file per
         row to output directory.
         """
-        # Read the CSV file into memory.
-        csv_sheet = pd.read_csv(csv_filepath)
+        # Read the CSV file into memory
+        csv_sheet = pd.read_csv(
+            csv_filepath,
+            parse_dates=["publication_date"]
+        )
+
         num_cols = len(csv_sheet.columns)
         num_rows = len(csv_sheet.index)
 

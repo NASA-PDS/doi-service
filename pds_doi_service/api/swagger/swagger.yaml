@@ -354,6 +354,7 @@ paths:
         explode: true
         schema:
           type: boolean
+          default: false
       responses:
         "200":
           description: Success
@@ -411,6 +412,54 @@ paths:
 #        "500":
 #          description: Internal error
 #      x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
+  /dois/check:
+    get:
+      tags:
+      - dois
+      description: Check submission status of all records pending release.
+      operationId: get_check_dois
+      parameters:
+      - name: email
+        in: query
+        description: If true, the check action sends results to the default recipients
+          and pending DOI submitters.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: attachment
+        in: query
+        description: If true, the check action sends results as an email attachment.
+          Has no effect if the email flag is not set to true.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: submitter
+        in: query
+        description: The email address of the user to register as author of the check
+          action. This address is also included in the list of recipients.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/doi_record'
+        "400":
+          description: OSTI service cannot be reached
+        "500":
+          description: Internal error
+      x-openapi-router-controller: pds_doi_service.api.controllers.dois_controller
 components:
   schemas:
     label_payload:

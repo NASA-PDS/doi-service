@@ -1,5 +1,5 @@
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -57,27 +57,33 @@ class DOIOstiWebClient:
             'Content-Type': CONTENT_TYPE_MAP[content_type]
         }
 
-        response = requests.post(i_url, auth=auth, data=payload, headers=headers)
+        osti_response = requests.post(i_url, auth=auth, data=payload, headers=headers)
 
         try:
-            response.raise_for_status()
+            osti_response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
+            # Detail text is not always present, which can cause json parsing
+            # issues
+            details = (
+                f'Details: {pprint.pformat(json.loads(osti_response.text))}'
+                if osti_response.text else ''
+            )
+
             raise OSTIRequestException(
                 'DOI submission request to OSTI service failed, '
-                f'reason: {str(http_err)}\n'
-                f'Details: {pprint.pformat(json.loads(response.text))}'
+                f'reason: {str(http_err)}\n{details}'
             )
 
         # Re-use the parse functions from DOIOstiWebParser class to get the
         # list of Doi objects to return
         if content_type == CONTENT_TYPE_XML:
-            doi, _ = self._web_parser.parse_osti_response_xml(response.text)
+            doi, _ = self._web_parser.parse_osti_response_xml(osti_response.text)
         else:
-            doi, _ = self._web_parser.parse_osti_response_json(response.text)
+            doi, _ = self._web_parser.parse_osti_response_json(osti_response.text)
 
         logger.debug(f"o_status {doi}")
 
-        return doi, response.text
+        return doi, osti_response.text
 
     def webclient_query_doi(self, i_url, query_dict=None, i_username=None,
                             i_password=None, content_type=CONTENT_TYPE_XML):
@@ -127,10 +133,16 @@ class DOIOstiWebClient:
         try:
             osti_response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
+            # Detail text is not always present, which can cause json parsing
+            # issues
+            details = (
+                f'Details: {pprint.pformat(json.loads(osti_response.text))}'
+                if osti_response.text else ''
+            )
+
             raise OSTIRequestException(
                 'DOI submission request to OSTI service failed, '
-                f'reason: {str(http_err)}\n'
-                f'Details: {pprint.pformat(json.loads(osti_response.text))}'
+                f'reason: {str(http_err)}\n{details}'
             )
 
         return osti_response.text

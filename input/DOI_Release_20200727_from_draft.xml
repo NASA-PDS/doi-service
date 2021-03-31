@@ -9,7 +9,7 @@
         <availability>NASA Planetary Data System</availability>
         <publication_date>2019-01-01</publication_date>
         <description>InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products</description>
-        <site_url>https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
+        <site_url>https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0</site_url>
         <product_type>Dataset</product_type>
         <product_type_specific>PDS4 Refereed Data Bundle</product_type_specific>
         <keywords>PDS;Instrument;Spacecraft;Raw;Lander;Mars;Deployment;Science;Mission;Camera;Insight;Context;Planet</keywords>

@@ -15,7 +15,8 @@ Contains classes for creating output OSTI labels from DOI objects.
 
 import datetime
 import json
-from os.path import dirname, join
+from os.path import exists
+from pkg_resources import resource_filename
 
 import pystache
 
@@ -35,13 +36,22 @@ VALID_CONTENT_TYPES = [CONTENT_TYPE_JSON, CONTENT_TYPE_XML]
 class DOIOutputOsti:
     def __init__(self):
         """Creates a new DOIOutputOsti instance"""
-        # Need to find mustache template relative to current file location
-        self._xml_template_path = join(
-            dirname(__file__), 'DOI_IAD2_template_20200205-mustache.xml'
+        # Need to find the mustache DOI templates
+        self._xml_template_path = resource_filename(
+            __name__, 'DOI_IAD2_template_20200205-mustache.xml'
         )
-        self._json_template_path = join(
-            dirname(__file__), 'DOI_IAD2_template_20210216-mustache.json'
+        self._json_template_path = resource_filename(
+            __name__, 'DOI_IAD2_template_20210216-mustache.json'
         )
+
+        if (not exists(self._xml_template_path)
+                or not exists(self._json_template_path)):
+            raise RuntimeError(
+                f'Could not find one or more DOI templates needed by this module\n'
+                f'Expected XML template: {self._xml_template_path}\n'
+                f'Expected JSON template: {self._json_template_path}'
+            )
+
         self._template_map = {
             CONTENT_TYPE_XML: self._xml_template_path,
             CONTENT_TYPE_JSON: self._json_template_path

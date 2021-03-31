@@ -20,6 +20,7 @@ import os
 import sys
 
 from os.path import abspath, dirname, join
+from pkg_resources import resource_filename
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -41,7 +42,7 @@ class DOIConfigUtil:
 
         # default configuration
         conf_default = 'conf.ini.default'
-        conf_default_path = abspath(join(dirname(__file__), conf_default))
+        conf_default_path = resource_filename(__name__, conf_default)
 
         # user-specified configuration for production
         conf_user = 'pds_doi_service.ini'
@@ -54,10 +55,10 @@ class DOIConfigUtil:
 
         candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
 
-        logging.info(f"Searching for configuration files in {candidates_full_path}")
+        logging.info("Searching for configuration files in %s", candidates_full_path)
         found = parser.read(candidates_full_path)
 
-        logging.info(f"Using the following configuration file: {found}")
+        logging.info("Using the following configuration file: %s", found)
         parser = DOIConfigUtil._resolve_relative_path(parser)
 
         return parser
