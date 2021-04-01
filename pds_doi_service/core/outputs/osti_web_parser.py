@@ -13,6 +13,7 @@ osti_web_parser.py
 Contains classes and functions for parsing OSTI XML labels.
 """
 
+import html
 import json
 import os
 
@@ -238,6 +239,12 @@ class DOIOstiWebParser:
                     io_doi.keywords = set(optional_field_value.split(';'))
                     logger.debug(f"Adding optional field 'keywords': "
                                  f"{io_doi.keywords}")
+                elif optional_field == 'site_url':
+                    # In order to match parsing behavior of lxml, unescape
+                    # the site url
+                    io_doi.site_url = html.unescape(optional_field_value)
+                    logger.debug(f"Adding optional field 'site_url': "
+                                 f"{io_doi.site_url}")
                 elif optional_field == 'contributors':
                     (io_doi.editors,
                      io_doi.contributor) = DOIOstiWebParser.parse_contributors_json(
