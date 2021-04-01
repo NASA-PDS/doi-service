@@ -71,7 +71,7 @@ class CheckActionTestCase(unittest.TestCase):
         # Read an XML output label that corresponds to the DOI we're
         # checking for, and that has a status of 'registered'
         with open(join(CheckActionTestCase.input_dir,
-                       'DOI_Release_20200727_from_release.xml'), 'r') as infile:
+                       'DOI_Release_20200727_from_register.xml'), 'r') as infile:
             xml_contents = infile.read()
 
         return xml_contents
@@ -107,7 +107,7 @@ class CheckActionTestCase(unittest.TestCase):
         # Read an XML output label that corresponds to the DOI we're
         # checking for, and that has a status of 'registered'
         with open(join(CheckActionTestCase.input_dir,
-                       'DOI_Release_20200727_from_reserve.xml'), 'r') as infile:
+                       'DOI_Release_20200727_from_release.xml'), 'r') as infile:
             xml_contents = infile.read()
 
         return xml_contents
