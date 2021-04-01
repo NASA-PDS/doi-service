@@ -14,6 +14,7 @@ Contains classes for creating output OSTI labels from DOI objects.
 """
 
 import datetime
+import html
 import json
 from os.path import exists
 from pkg_resources import resource_filename
@@ -75,6 +76,12 @@ class DOIOutputOsti:
             doi_fields = (
                 dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
             )
+
+            # Escape any necessary HTML characters from the site-url,
+            # we perform this step rather than pystache to avoid
+            # unintentional recursive escapes
+            if doi.site_url:
+                doi_fields['site_url'] = html.escape(doi.site_url)
 
             # Convert set of keywords back to a semi-colon delimited string
             if doi.keywords:
