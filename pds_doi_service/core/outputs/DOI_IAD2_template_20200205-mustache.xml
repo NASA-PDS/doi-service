@@ -17,7 +17,7 @@
         <publisher>{{publisher}}</publisher>
         <availability>NASA Planetary Data System</availability>
         <publication_date>{{publication_date}}</publication_date>
-        <country>USA</country>
+        <country>US</country>
         {{#description}}
         <description>{{description}}</description>
         {{/description}}
