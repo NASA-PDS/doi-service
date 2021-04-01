@@ -22,7 +22,7 @@
         <description>{{description}}</description>
         {{/description}}
         {{#site_url}}
-        <site_url>{{site_url}}</site_url>
+        <site_url>{{{site_url}}}</site_url>
         {{/site_url}}
         {{^site_url}}
         <site_url>N/A</site_url>
