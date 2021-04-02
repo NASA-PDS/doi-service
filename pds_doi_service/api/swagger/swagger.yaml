@@ -69,7 +69,7 @@ paths:
       - name: lid
         in: query
         description: List of LIDs to filter DOIs by. An LID may include the VID appended
-          to the end.
+          to the end. Each LID or LIDVID may also contain one or more Unix-style wildcards (*) to pattern match against.
         required: false
         style: form
         explode: true

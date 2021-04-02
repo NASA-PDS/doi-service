@@ -23,7 +23,7 @@ from pds_doi_service.core.input.exceptions import UnknownLIDVIDException
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.actions.list')
+logger = get_logger(__name__)
 
 
 class DOICoreActionList(DOICoreAction):
@@ -124,13 +124,15 @@ class DOICoreActionList(DOICoreAction):
             '-lid', '--lid', required=False,
             metavar='urn:nasa:pds:lab_shocked_feldspars',
             help='A list of comma-delimited LIDs to pass as input to the '
-                 'database query.'
+                 'database query. Each LID may contain one or more wildcards '
+                 '(*) to pattern match against.'
         )
         action_parser.add_argument(
             '-lidvid', '--lidvid', required=False,
             metavar='urn:nasa:pds:lab_shocked_feldspars::1.0',
             help='A list of comma-delimited LIDVIDs to pass as input to the '
-                 'database query.'
+                 'database query. Each LIDVID may contain one or more wildcards '
+                 '(*) to pattern match against.'
         )
         action_parser.add_argument(
             '-start', '--start-update', required=False,
@@ -193,8 +195,6 @@ class DOICoreActionList(DOICoreAction):
         :param kwargs:
         :return: o_list_result:
         """
-        o_query_result = None
-
         self.parse_criteria(**kwargs)
 
         columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
@@ -220,9 +220,8 @@ class DOICoreActionList(DOICoreAction):
                                     for i in range(len(columns))})
 
             o_query_result = json.dumps(result_json)
-            logger.debug(f"o_select_result {o_query_result} {type(o_query_result)}")
+            logger.debug("o_select_result: %s", o_query_result)
         else:
-            logger.error(f"Output format type {self._format} not supported yet")
-            exit(1)
+            raise ValueError(f"Output format type {self._format} is not supported.")
 
         return o_query_result
