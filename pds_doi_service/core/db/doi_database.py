@@ -24,7 +24,7 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
-logger = get_logger('pds_doi_service.core.db_util.doi_database')
+logger = get_logger(__name__)
 
 
 class DOIDataBase:
@@ -51,7 +51,7 @@ class DOIDataBase:
 
     def close_database(self):
         """Close connection to the SQLite database."""
-        logger.debug(f"Closing database {self.m_database_name}")
+        logger.debug("Closing database %s", self.m_database_name)
 
         if self.m_my_conn:
             self.m_my_conn.close()
@@ -59,8 +59,8 @@ class DOIDataBase:
             # Set m_my_conn to None to signify that there is no connection.
             self.m_my_conn = None
         else:
-            logger.warn(f"Database connection has not been started or is already "
-                        f"closed: m_database_name [{self.m_database_name}]")
+            logger.warn("Database connection to %s has not been started or is "
+                        "already closed", self.m_database_name)
 
     def create_connection(self):
         """Create and return a connection to the SQLite database."""
@@ -70,13 +70,14 @@ class DOIDataBase:
             self.close_database()
 
         logger.info(
-            f"Connecting to SQLite3 (ver {sqlite3.version}) database {self.m_database_name}"
+            "Connecting to SQLite3 (ver %s) database %s",
+            sqlite3.version, self.m_database_name
         )
 
         try:
             self.m_my_conn = sqlite3.connect(self.m_database_name)
         except Error as my_error:
-            logger.error(f"Failed to connect to database, reason: {my_error}")
+            logger.error("Failed to connect to database, reason: %s", my_error)
 
     def get_connection(self, table_name=None):
         """
@@ -103,13 +104,13 @@ class DOIDataBase:
         If a database connection has not been made yet, one is created by
         this method.
         """
-        logger.info(f'Checking for existence of DOI table "{table_name}"')
+        logger.info("Checking for existence of DOI table %s", table_name)
 
         o_table_exists_flag = False
 
         if self.m_my_conn is None:
-            logger.warn(f"Not yet connected to {self.m_database_name}, "
-                        "establishing new connection...")
+            logger.warn("Not connected to %s, establishing new connection...",
+                        self.m_database_name)
             self.create_connection()
 
         table_pointer = self.m_my_conn.cursor()
@@ -120,21 +121,21 @@ class DOIDataBase:
             f"name='{table_name}'"
         )
 
-        logger.info(f'Executing query: {query_string}')
+        logger.info('Executing query: %s', query_string)
         table_pointer.execute(query_string)
 
         # If the count is 1, then table exists.
         if table_pointer.fetchone()[0] == 1:
             o_table_exists_flag = True
 
-        logger.debug(f'o_table_exists_flag: {o_table_exists_flag}')
+        logger.debug('o_table_exists_flag: %s', o_table_exists_flag)
 
         return o_table_exists_flag
 
     def drop_table(self, table_name):
         """Delete the given table from the SQLite database."""
         if self.m_my_conn:
-            logger.debug(f"Executing query: DROP TABLE {table_name}")
+            logger.debug("Executing query: DROP TABLE %s", table_name)
             self.m_my_conn.execute(f'DROP TABLE {table_name}')
 
     def create_q_string_for_create(self, table_name):
@@ -155,7 +156,7 @@ class DOIDataBase:
         o_query_string += ',transaction_key TEXT NOT NULL'  # transaction (key is node id/datetime)
         o_query_string += ',is_latest BOOLEAN NULL); '  # whether the transaction is the latest
 
-        logger.debug(f"CREATE o_query_string: {o_query_string}")
+        logger.debug("CREATE o_query_string: %s", o_query_string)
 
         return o_query_string
 
@@ -178,7 +179,7 @@ class DOIDataBase:
         o_query_string += ',is_latest) VALUES '
         o_query_string += '(?,?,?,?,?,?,?,?,?,?,?,?,?)'
 
-        logger.debug(f"INSERT o_query_string: {o_query_string}")
+        logger.debug("INSERT o_query_string: %s", o_query_string)
 
         return o_query_string
 
@@ -201,7 +202,7 @@ class DOIDataBase:
         o_query_string += ',transaction_key) VALUES '
         o_query_string += '(?,?,?,?,?,?,?,?,?,?,?,?)'
 
-        logger.debug(f"INSERT o_query_string: {o_query_string}")
+        logger.debug("INSERT o_query_string: %s", o_query_string)
 
         return o_query_string
 
@@ -226,13 +227,13 @@ class DOIDataBase:
         o_query_string += ' AND  (doi = ? or doi is NULL)'
         o_query_string += ';'  # Don't forget the last semi-colon for SQL to work.
 
-        logger.debug(f"UPDATE o_query_string: {o_query_string}")
+        logger.debug("UPDATE o_query_string: %s", o_query_string)
 
         return o_query_string
 
     def create_table(self, table_name):
         """Create a given table in the SQLite database."""
-        logger.info(f'Creating SQLite table "{table_name}"')
+        logger.info('Creating SQLite table "%s"', table_name)
         self.m_my_conn = self.get_connection()
 
         query_string = self.create_q_string_for_create(table_name)
@@ -263,12 +264,13 @@ class DOIDataBase:
     def insert_row(self, table_name, dict_row):
         """Insert a row into the requested database table."""
         if self.m_my_conn is None:
-            logger.warn(f"Not yet connected to {self.m_database_name}, "
-                        "establishing new connection...")
+            logger.warn("Not connected to %s, establishing new connection...",
+                        self.m_database_name)
             self.create_connection()
 
         o_table_exist_flag = self.check_if_table_exists(table_name)
-        logger.debug(f"table_name, o_table_exist_flag {table_name}, {o_table_exist_flag}")
+        logger.debug("table_name, o_table_exist_flag: %s, %s",
+                     table_name, o_table_exist_flag)
 
         # Do a sanity check on the types of all the columns int.
         self._int_columns_check(dict_row)
@@ -291,7 +293,7 @@ class DOIDataBase:
                       dict_row['transaction_key'],  # 12
                       dict_row['is_latest'])        # 13
 
-        logger.debug(f"INSERT query_string: {query_string}")
+        logger.debug("INSERT query_string: %s", query_string)
 
         self.m_my_conn.execute(query_string, data_tuple)
         self.m_my_conn.commit()
@@ -354,13 +356,13 @@ class DOIDataBase:
 
         query_string += '; '
 
-        logger.debug(f"SELECT query_string: {query_string}")
+        logger.debug("SELECT query_string: %s", query_string)
 
         cursor = self.m_my_conn.cursor()
         cursor.execute(query_string)
         records = cursor.fetchall()
 
-        logger.debug(f'Query returned {len(records)} result(s)')
+        logger.debug('Query returned %d result(s)', len(records))
 
         return records
 
@@ -376,7 +378,7 @@ class DOIDataBase:
         query_string = (f'SELECT * from {table_name} '
                         f'WHERE is_latest=1 {criterias_str} ORDER BY update_date')
 
-        logger.debug(f'SELECT query_string: {query_string}')
+        logger.debug('SELECT query_string: %s', query_string)
 
         cursor = self.m_my_conn.cursor()
         cursor.execute(query_string, criteria_dict)
@@ -396,13 +398,13 @@ class DOIDataBase:
 
         query_string = f'SELECT * FROM {table_name};'
 
-        logger.debug(f"SELECT query_string {query_string}")
+        logger.debug("SELECT query_string %s", query_string)
 
         cursor = self.m_my_conn.cursor()
         cursor.execute(query_string)
         records = cursor.fetchall()
 
-        logger.debug(f'Query returned {len(records)} result(s)')
+        logger.debug('Query returned %d result(s)', len(records))
 
         return records
 
@@ -438,7 +440,7 @@ class DOIDataBase:
             else:
                 query_string += f' AND {query_criterias[ii]} '
 
-        logger.debug(f"UPDATE query_string: {query_string}")
+        logger.debug("UPDATE query_string: %s", query_string)
 
         self.m_my_conn.execute(query_string)
 
@@ -457,16 +459,85 @@ class DOIDataBase:
         return DOIDataBase._get_simple_in_criteria(v, 'doi')
 
     @staticmethod
+    def _form_query_with_wildcards(column_name, search_tokens):
+        """
+        Helper method to form a portion of an SQL WHERE clause that returns
+        matches from the specified column using the provided list of tokens.
+
+        The list of tokens may either contain fully specified identifiers, or
+        identifiers containing Unix-style wildcards (*), aka globs. The method
+        partitions the tokens accordingly, and forms the appropriate clause
+        to capture all results.
+
+        Parameters
+        ----------
+        column_name : str
+            Name of the SQL table column name that will be searched by the
+            returned query.
+        search_tokens : list of str
+            List of tokens to search for. Tokens may either be full identifiers,
+            or contain one or more wildcards (*).
+
+        Returns
+        -------
+        where_subclause : str
+            Query portion which can be used with a WHERE clause to find the
+            requested set of tokens. This subclause is parameterized, and should
+            be used with the returned named parameter dictionary.
+        named_parameter_values : dict
+            The dictionary mapping the named parameters in the returned subclause
+            with the actual values to use.
+
+        """
+        # Partition the tokens containing wildcards from the fully specified ones
+        wildcard_tokens = list(filter(lambda token: '*' in token, search_tokens))
+        full_tokens = list(set(search_tokens) - set(wildcard_tokens))
+
+        # Set up the named parameters for the IN portion of the WHERE used
+        # to find fully specified tokens
+        named_parameters = ','.join([f':token_{i}'
+                                     for i in range(len(full_tokens))])
+        named_parameter_values = {f'token_{i}': full_tokens[i]
+                                  for i in range(len(full_tokens))}
+
+        # Set up the named parameters for the GLOB portion of the WHERE used
+        # find tokens containing wildcards
+        glob_parameters = ' OR '.join([f'{column_name} GLOB :glob_{i}'
+                                       for i in range(len(wildcard_tokens))])
+
+        named_parameter_values.update({f'glob_{i}': wildcard_tokens[i]
+                                       for i in range(len(wildcard_tokens))})
+
+        # Build the portion of the WHERE clause combining the necessary
+        # parameters needed to search for all the tokens we were provided
+        where_subclause = "AND ("
+
+        if full_tokens:
+            where_subclause += f"{column_name} IN ({named_parameters}) "
+
+        if full_tokens and wildcard_tokens:
+            where_subclause += ' OR '
+
+        if wildcard_tokens:
+            where_subclause += f'{glob_parameters}'
+
+        where_subclause += ")"
+
+        logger.debug("WHERE subclause: %s", where_subclause)
+
+        return where_subclause, named_parameter_values
+
+    @staticmethod
     def _get_query_criteria_lid(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'lid')
+        lid_column_name = 'lid'
+        return DOIDataBase._form_query_with_wildcards(lid_column_name, v)
 
     @staticmethod
     def _get_query_criteria_lidvid(v):
-        named_parameters = ','.join([':lidvid_' + str(i) for i in range(len(v))])
-        named_parameter_values = {'lidvid_' + str(i): v[i] for i in range(len(v))}
-
-        # To combine the 'lid' and 'vid' we need to add the '::' to compare to the lidvid values
-        return f" AND lid || '::' || vid IN ({named_parameters})", named_parameter_values
+        # To combine the 'lid' and 'vid' we need to add the '::' to compare to
+        # lidvid values
+        lidvid_column_name = "lid || '::' || vid"
+        return DOIDataBase._form_query_with_wildcards(lidvid_column_name, v)
 
     @staticmethod
     def _get_query_criteria_submitter(v):
@@ -496,12 +567,12 @@ class DOIDataBase:
         criteria_dict = {}
 
         for k, v in query_criterias.items():
-            logger.debug(f"Calling get_query_criteria_{k} with value {v}")
+            logger.debug("Calling get_query_criteria_%s with value %s", k, v)
 
             criteria_str, dict_entry = getattr(DOIDataBase, '_get_query_criteria_' + k)(v)
 
-            logger.debug(f"criteria_str: {criteria_str}")
-            logger.debug(f"dict_entry: {dict_entry} {type(dict_entry)}")
+            logger.debug("criteria_str: %s", criteria_str)
+            logger.debug("dict_entry: %s", dict_entry)
 
             criterias_str += criteria_str
             criteria_dict.update(dict_entry)
