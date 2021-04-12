@@ -82,11 +82,16 @@ class DraftActionTestCase(unittest.TestCase):
             self.assertEqual(doi.product_type, ProductType.Dataset)
             self.assertIsInstance(doi.publication_date, datetime)
             self.assertIsInstance(doi.date_record_added, datetime)
+            self.assertTrue(doi.related_identifier.startswith('urn:nasa:pds:insight_cameras::1'))
+            self.assertTrue(doi.title.startswith('InSight Cameras Bundle 1.'))
 
-        self.assertEqual(dois[0].related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.1')
-        self.assertEqual(dois[1].related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.0')
+            # Make sure for the "bundle_in_with_contributors.xml" file, we
+            # parsed the editors
+            if doi.related_identifier == 'urn:nasa:pds:insight_cameras::1.0':
+                self.assertEqual(len(doi.editors), 3)
+            # For "bundle_in.xml", there should be no editors
+            else:
+                self.assertEqual(len(doi.editors), 0)
 
     def test_local_pds4_bundle(self):
         """Test draft request with a local bundle path"""

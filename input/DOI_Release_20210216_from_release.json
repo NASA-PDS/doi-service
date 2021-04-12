@@ -1,6 +1,6 @@
 [
     {
-        "status": "reserved",
+        "status": "pending",
         "id": "29569",
         "title": "InSight Cameras Bundle",
         "doi": "10.17189/29569",
@@ -18,30 +18,26 @@
         "keywords": "PDS;PDS4;camera;context;data;deployment;edr;engineering;experiment;insight;lander;mars;product;raw;rdr;record;reduced;science",
         "authors": [
             {
-                "first_name": "J.",
-                "last_name": "Maki",
-                "affiliations": []
-            },
-            {
-                "first_name": "P.",
-                "last_name": "Zamani",
-                "affiliations": []
+                "first_name": "R.",
+                "last_name": "Deen"
             },
             {
                 "first_name": "H.",
-                "last_name": "Abarca",
-                "affiliations": []
+                "last_name": "Abarca"
             },
             {
-                "first_name": "R.",
-                "last_name": "Deen",
-                "affiliations": []
+                "first_name": "P.",
+                "last_name": "Zamani"
+            },
+            {
+                "first_name": "J.",
+                "last_name": "Maki"
             }
         ],
         "contributors": [
             {
-                "last_name": "Beebe",
-                "first_name": "R. F.",
+                "last_name": "Smith",
+                "first_name": "P. H.",
                 "contributor_type": "Editor"
             },
             {
@@ -50,8 +46,8 @@
                 "contributor_type": "Editor"
             },
             {
-                "last_name": "Smith",
-                "first_name": "P. H.",
+                "last_name": "Beebe",
+                "first_name": "R. F.",
                 "contributor_type": "Editor"
             },
             {

@@ -13,6 +13,7 @@ osti_web_parser.py
 Contains classes and functions for parsing OSTI XML labels.
 """
 
+import html
 import json
 import os
 
@@ -169,6 +170,9 @@ class DOIOstiWebParser:
         o_node_name = o_node_name.replace('Node', '')
         o_node_name = o_node_name.strip()
 
+        for editor in o_editors_list:
+            editor.pop('contributor_type')
+
         return o_editors_list, o_node_name
 
     @staticmethod
@@ -238,6 +242,12 @@ class DOIOstiWebParser:
                     io_doi.keywords = set(optional_field_value.split(';'))
                     logger.debug(f"Adding optional field 'keywords': "
                                  f"{io_doi.keywords}")
+                elif optional_field == 'site_url':
+                    # In order to match parsing behavior of lxml, unescape
+                    # the site url
+                    io_doi.site_url = html.unescape(optional_field_value)
+                    logger.debug(f"Adding optional field 'site_url': "
+                                 f"{io_doi.site_url}")
                 elif optional_field == 'contributors':
                     (io_doi.editors,
                      io_doi.contributor) = DOIOstiWebParser.parse_contributors_json(
@@ -545,7 +555,7 @@ class DOIOstiWebParser:
 
         """
         dois = []
-        errors = []
+        errors = {}
 
         osti_response = json.loads(osti_response_text)
 
@@ -554,10 +564,23 @@ class DOIOstiWebParser:
         if 'records' in osti_response:
             osti_response = osti_response['records']
 
-        for record in osti_response:
+        for index, record in enumerate(osti_response):
             if record.get('status', '').lower() == 'error':
-                errors.append({record['index']: record['errors']})
-                continue
+                logger.error(
+                    f"Errors reported for record index {index + 1}"
+                )
+
+                # Check for any errors reported back from OSTI and save
+                # them off to be returned
+                cur_errors = []
+
+                if 'errors' in record:
+                    cur_errors.extend(record['errors'])
+
+                if 'doi_message' in record and len(record['doi_message']):
+                    cur_errors.append(record['doi_message'])
+
+                errors[index] = cur_errors
 
             # Make sure all the mandatory fields are present
             mandatory_fields = ['title', 'publication_date', 'site_url',

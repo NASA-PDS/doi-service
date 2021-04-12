@@ -1,11 +1,11 @@
 [
     {
         "status": "review",
-        "id": "29348",
-        "title": "InSight Cameras Bundle 0",
-        "doi": "10.17189/29348",
+        "id": "29569",
+        "title": "InSight Cameras Bundle",
+        "doi": "10.17189/29569",
         "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
-        "accession_number": "urn:nasa:pds:insight_cameras::2.0",
+        "accession_number": "urn:nasa:pds:insight_cameras::1.0",
         "publisher": "NASA Planetary Data System",
         "availability": "NASA Planetary Data System",
         "publication_date": "2019-01-01",
@@ -14,34 +14,30 @@
         "site_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0",
         "product_type": "Dataset",
         "product_type_specific": "PDS4 Refereed Data Bundle",
-        "date_record_added": "2021-02-24",
-        "keywords": "Camera;Context;Deployment;Insight;Instrument;Lander;Mars;Mission;PDS;Planet;Raw;Science;Spacecraft",
+        "date_record_added": "2021-04-01",
+        "keywords": "PDS;PDS4;camera;context;data;deployment;edr;engineering;experiment;insight;lander;mars;product;raw;rdr;record;reduced;science",
         "authors": [
             {
-                "first_name": "J.",
-                "last_name": "Maki",
-                "affiliations": []
-            },
-            {
-                "first_name": "P.",
-                "last_name": "Zamani",
-                "affiliations": []
+                "first_name": "R.",
+                "last_name": "Deen"
             },
             {
                 "first_name": "H.",
-                "last_name": "Abarca",
-                "affiliations": []
+                "last_name": "Abarca"
             },
             {
-                "first_name": "R.",
-                "last_name": "Deen",
-                "affiliations": []
+                "first_name": "P.",
+                "last_name": "Zamani"
+            },
+            {
+                "first_name": "J.",
+                "last_name": "Maki"
             }
         ],
         "contributors": [
             {
-                "last_name": "Beebe",
-                "first_name": "R. F.",
+                "last_name": "Smith",
+                "first_name": "P. H.",
                 "contributor_type": "Editor"
             },
             {
@@ -50,8 +46,8 @@
                 "contributor_type": "Editor"
             },
             {
-                "last_name": "Smith",
-                "first_name": "P. H.",
+                "last_name": "Beebe",
+                "first_name": "R. F.",
                 "contributor_type": "Editor"
             },
             {
@@ -65,4 +61,3 @@
         "contact_phone": "818.393.7165"
     }
 ]
-

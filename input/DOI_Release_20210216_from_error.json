@@ -1,0 +1,52 @@
+[
+    {
+        "status": "Error",
+        "id": 29527,
+        "title": "InSight Cameras Bundle 0",
+        "doi": "10.17189/29527",
+        "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
+        "accession_number": "urn:nasa:pds:insight_cameras::2.0",
+        "publisher": "NASA Planetary Data System",
+        "availability": "NASA Planetary Data System",
+        "publication_date": "2019-01-01",
+        "country": "US",
+        "site_code": "NASA-PDS",
+        "site_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0",
+        "product_type": "Dataset",
+        "product_type_specific": "PDS4 Refereed Data Bundle",
+        "date_record_added": "2021-03-17",
+        "date_record_updated": "2021-03-17",
+        "keywords": "PDS;PDS4",
+        "authors": [
+            {
+                "first_name": "J.",
+                "last_name": "Maki",
+                "affiliations": []
+            },
+            {
+                "first_name": "P.",
+                "last_name": "Zamani",
+                "affiliations": []
+            },
+            {
+                "first_name": "H.",
+                "last_name": "Abarca",
+                "affiliations": []
+            },
+            {
+                "first_name": "R.",
+                "last_name": "Deen",
+                "affiliations": []
+            }
+        ],
+        "contributors": [
+            {
+                "full_name": "Planetary Data System: Engineering Node",
+                "affiliations": [],
+                "contributor_type": "DataCurator"
+            }
+        ],
+        "related_identifiers": [],
+        "doi_message": "Registration update failed: {\"errors\":[{\"source\":\"url\",\"uid\":\"10.17189/29527\",\"title\":\"URL https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0 is not allowed by repository osti.nasapds domain settings.\"}]}"
+    }
+]

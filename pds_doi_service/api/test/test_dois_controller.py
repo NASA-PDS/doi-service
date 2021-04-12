@@ -799,10 +799,10 @@ class TestDoisController(BaseTestCase):
         # Return dummy xml results containing the statuses we expect
         # Released
         if query_dict['doi'] == '10.17189/28957':
-            xml_file = 'DOI_Release_20200727_from_release.xml'
+            xml_file = 'DOI_Release_20200727_from_register.xml'
         # Pending
         elif query_dict['doi'] == '10.17189/29348':
-            xml_file = 'DOI_Release_20200727_from_reserve.xml'
+            xml_file = 'DOI_Release_20200727_from_release.xml'
         # Error
         else:
             xml_file = 'DOI_Release_20200727_from_error.xml'
