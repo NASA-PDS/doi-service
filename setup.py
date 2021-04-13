@@ -21,9 +21,9 @@ setuptools.setup(
     name=PACKAGE, # Replace with your own username
     version=version,
     license="apache-2.0",
-    author="pds ",
+    author="PDS",
     author_email="pds_operator@jpl.nasa.gov",
-    description="short description of my pds module, less than 100-120 characters",
+    description="Planetary Data System (PDS) Data Object Identifier (DOI) Service",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/NASA-PDS/pds-template-python",
@@ -45,7 +45,7 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',  # pds_doi_service.core package requires Dataclasses
+    python_requires='>=3.7',  # pds_doi_service.core package requires Dataclasses
     install_requires=pip_requirements,
     # TO DO if this is th proper wy to handle dev/test dependencies in the CI/CD pipeline
     #extras_require={
