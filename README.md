@@ -96,6 +96,18 @@ docker build -t pds-doi-service .
 docker run -p 8080:8080 pds-doi-service
 ```
 
+However, note that when launching the container via `docker run`, all configuration values are
+derived from the default INI file bundled with the repo. To override the configuration, it
+is recommended to launch the service via docker-compose:
+
+```bash
+docker-compose up
+```
+
+This will launch the DOI Service container using the top-level `docker-compose.yml` file, which
+specifies that environment variables be imported from `doi_service.env`. Modify `doi_service.env`
+to define any configuration values to override when the service is launched.
+
 ## Test 
 
 ### Unit tests (for developers) :
