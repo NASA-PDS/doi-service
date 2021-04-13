@@ -118,7 +118,6 @@ Upgrade Software
 To check and install an upgrade to the software, run the following command in your 
 virtual environment::
 
-  source $HOME/.virtualenvs/pds-deep-archive/bin/activate
   pip install pds-doi-service --upgrade
 
 
