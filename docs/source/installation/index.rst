@@ -3,6 +3,8 @@
 
 This section describes how to install the PDS DOI Service.
 
+The service is compose by a command line tool and a web API (which enable to activate the command line remotelly or via a web UI)
+
 
 Requirements
 ------------
@@ -81,8 +83,8 @@ Authorized values are DEBUG, INFO, ERROR... (see https://docs.python.org/3/libra
 
 
 
-Start using the tool
-^^^^^^^^^^^^^^^^^^^^
+Start using the command line tool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can then run ``pds-doi-cmd --help`` to get a usage message and ensure
 it's properly installed. You can go to the `usage`_ documentation for details.
@@ -98,6 +100,17 @@ it's properly installed. You can go to the `usage`_ documentation for details.
     The released versions are listed on: https://pypi.org/project/pds-doi-core/#history
 
     If you want to use the latest unstable version, you can refer to the `development`_ documentation
+
+
+Start the API server
+^^^^^^^^^^^^^^^^^^^^
+
+You can simply start the web API  service with command line ``pds-doi-api``
+
+You can explore the API documentation and test it from its UI: http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
+
+
+
 
 Upgrade Software
 ----------------
