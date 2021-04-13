@@ -1,0 +1,8 @@
+pds_doi_service.ini
+doi.db
+doi_temp.db
+transaction_history/
+**/test*
+**/.DS_Store
+**/__pycache__
+**/.pytest_cache
