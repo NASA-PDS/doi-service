@@ -12,8 +12,8 @@ class DoiSummary(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, doi: str = None, lidvid: str = None, node: str = None,
-                 submitter: str = None, status: str = None,
+    def __init__(self, doi: str = None, lidvid: str = None, title: str = None,
+                 node: str = None, submitter: str = None, status: str = None,
                  update_date: datetime = None):  # noqa: E501
         """DoiSummary - a model defined in Swagger
 
@@ -21,6 +21,8 @@ class DoiSummary(Model):
         :type doi: str
         :param lidvid: The lidvid of this DoiSummary.  # noqa: E501
         :type lidvid: str
+        :param title: The title of this DoiRecord.  # noqa: E501
+        :type title: str
         :param node: The node of this DoiSummary.  # noqa: E501
         :type node: str
         :param submitter: The submitter of this DoiSummary.  # noqa: E501
@@ -33,6 +35,7 @@ class DoiSummary(Model):
         self.swagger_types = {
             'doi': str,
             'lidvid': str,
+            'title': str,
             'node': str,
             'submitter': str,
             'status': str,
@@ -42,6 +45,7 @@ class DoiSummary(Model):
         self.attribute_map = {
             'doi': 'doi',
             'lidvid': 'lidvid',
+            'title': 'title',
             'node': 'node',
             'submitter': 'submitter',
             'status': 'status',
@@ -49,6 +53,7 @@ class DoiSummary(Model):
         }
         self._doi = doi
         self._lidvid = lidvid
+        self._title = title
         self._node = node
         self._submitter = submitter
         self._status = status
@@ -106,6 +111,27 @@ class DoiSummary(Model):
         """
 
         self._lidvid = lidvid
+
+    @property
+    def title(self) -> str:
+        """Gets the title of this DoiSummary.
+
+
+        :return: The title of this DoiSummary.
+        :rtype: str
+        """
+        return self._title
+
+    @title.setter
+    def title(self, title: str):
+        """Sets the title of this DoiSummary.
+
+
+        :param title: The title of this DoiSummary.
+        :type title: str
+        """
+
+        self._title = title
 
     @property
     def node(self) -> str:
