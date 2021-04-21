@@ -19,10 +19,43 @@ import logging
 import os
 import sys
 
+import functools
 from os.path import abspath, dirname, join
 from pkg_resources import resource_filename
 
-logging.basicConfig(level=logging.ERROR)
+
+class DOIConfigParser(configparser.ConfigParser):
+    """
+    Specialized version of ConfigParser which prioritizes environment variables
+    when searching for the requested configuration section/option.
+
+    """
+
+    def get(self, section, option, *, raw=False, vars=None, fallback=object()):
+        """
+        Overloaded version of ConfigParser.get() which searches the
+        current environment for potential configuration values before checking
+        values from the parsed INI. This allows manipulation of the DOI service
+        configuration from external contexts such as Docker.
+
+        The key used to search the local environment is determined from the
+        section and option names passed to this function. The values are
+        concatenated with an underscore and converted to upper-case, for
+        example::
+
+            DOIConfigParser.get('OSTI', 'user') -> os.environ['OSTI_USER']
+            DOIConfigParser.get('OTHER', 'db_file') -> os.environ['OTHER_DB_FILE']
+
+        If the key is not present in os.environ, then the result from the
+        default ConfigParser.get() is returned.
+
+        """
+        env_var_key = '_'.join([section, option]).upper()
+
+        if env_var_key in os.environ:
+            return os.environ[env_var_key]
+
+        return super().get(section, option, raw=raw, vars=vars, fallback=fallback)
 
 
 class DOIConfigUtil:
@@ -37,8 +70,12 @@ class DOIConfigUtil:
 
         return parser
 
-    def get_config(self):
-        parser = configparser.ConfigParser()
+    @staticmethod
+    @functools.lru_cache()
+    def get_config():
+        logger = logging.getLogger(__name__)
+
+        parser = DOIConfigParser()
 
         # default configuration
         conf_default = 'conf.ini.default'
@@ -55,10 +92,20 @@ class DOIConfigUtil:
 
         candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
 
-        logging.info("Searching for configuration files in %s", candidates_full_path)
+        logger.info("Searching for configuration files in %s", candidates_full_path)
         found = parser.read(candidates_full_path)
 
-        logging.info("Using the following configuration file: %s", found)
+        if not found:
+            raise RuntimeError(
+                'Could not find an INI configuration file to '
+                f'parse from the following candidates: {candidates_full_path}'
+            )
+
+        # When providing multiple configs they are parsed in successive order,
+        # and any previously parsed values are overwritten. So the config
+        # we use should correspond to the last file in the list returned
+        # from ConfigParser.read()
+        logger.info("Using the following configuration file: %s", found[-1])
         parser = DOIConfigUtil._resolve_relative_path(parser)
 
         return parser

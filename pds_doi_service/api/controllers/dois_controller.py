@@ -39,7 +39,7 @@ from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.api.controllers.doi_controller')
+logger = get_logger(__name__)
 
 
 def _get_db_name():
@@ -205,7 +205,7 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
         'end_update': end_date
     }
 
-    logger.debug(f'GET /dois list action arguments: {list_kwargs}')
+    logger.debug('GET /dois list action arguments: %s', list_kwargs)
 
     try:
         results = list_action.run(**list_kwargs)
@@ -234,7 +234,7 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
             )
         )
 
-    logger.info(f'GET /dois request returned {len(records)} results')
+    logger.info('GET /dois request returned %d result(s)', len(records))
 
     return records, 200
 
@@ -257,7 +257,8 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     url : str, optional
         URL to provide as the record to register a DOI for. URL must start with
         either "http://" or "https://" and resolve to a valid PDS4 label in XML
-        format. Only used when action is set to "draft".
+        format. Only used when action is set to "draft". If provided, any
+        requestBody contents are ignored by the draft action.
     body : str or dict
         requestBody contents. If provided, should contain an PSD4 label (for
         draft) or one or more LabelPayload structures (for reserve). Required if
@@ -275,7 +276,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         The HTTP response code corresponding to the result.
 
     """
-    logger.info(f'POST /dois request received, action: {action}')
+    logger.info('POST /dois request received, action: %s', action)
 
     try:
         if action == 'reserve':
@@ -289,7 +290,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
             reserve_action = DOICoreActionReserve(db_name=_get_db_name())
 
             with NamedTemporaryFile('w', prefix='labels_', suffix='.csv') as csv_file:
-                logger.debug(f'Writing temporary label to {csv_file.name}')
+                logger.debug('Writing temporary label to %s', csv_file.name)
 
                 _write_csv_from_labels(csv_file, body['labels'])
 
@@ -314,9 +315,27 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
             draft_action = DOICoreActionDraft(db_name=_get_db_name())
 
             # Determine how the input label(s) was sent
-            if body:
+            if url:
+                draft_kwargs = {
+                    'node': node,
+                    'submitter': submitter,
+                    'input': url,
+                    'force': force
+                }
+
+                osti_label = draft_action.run(**draft_kwargs)
+            else:
+                # Swagger def only specified application/xml and application/json
+                # as potential input types, so it should be sufficient to just
+                # check for JSON here
+                if connexion.request.is_json:
+                    raise ValueError(
+                        'JSON requestBody provided for draft POST request. '
+                        'Body must be an XML PDS4/OSTI label.'
+                    )
+
                 with NamedTemporaryFile('wb', prefix='labels_', suffix='.xml') as xml_file:
-                    logger.debug(f'Writing temporary label to {xml_file.name}')
+                    logger.debug('Writing temporary label to %s', xml_file.name)
 
                     xml_file.write(body)
                     xml_file.flush()
@@ -329,15 +348,6 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     }
 
                     osti_label = draft_action.run(**draft_kwargs)
-            else:
-                draft_kwargs = {
-                    'node': node,
-                    'submitter': submitter,
-                    'input': url,
-                    'force': force
-                }
-
-                osti_label = draft_action.run(**draft_kwargs)
 
             # Parse the OSTI XML string back into a list of DOIs
             dois, _ = DOIOstiWebParser().parse_osti_response_xml(osti_label)
@@ -356,7 +366,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         dois, node=node, submitter=submitter, osti_label=osti_label
     )
 
-    logger.info(f'Posted {len(records)} record(s) to status "{action}"')
+    logger.info('Posted %d record(s) to status "%s"', len(records), action)
 
     return records, 200
 
@@ -379,7 +389,7 @@ def post_submit_doi(lidvid, force=None):
         Record of the DOI submit action.
 
     """
-    logger.info(f'POST /dois/{lidvid}/submit request received')
+    logger.info('POST /dois/%s/submit request received', lidvid)
 
     # A submit action is the same as invoking the release endpoint with
     # --no-review set to False
@@ -435,7 +445,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
         record, content_type = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
 
         with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
-            logger.debug(f'Writing temporary label to {temp_file.name}')
+            logger.debug('Writing temporary label to %s', temp_file.name)
 
             temp_file.write(record)
             temp_file.flush()
@@ -478,8 +488,8 @@ def post_release_doi(lidvid, force=False, **kwargs):
         osti_label=osti_release_label
     )
 
-    logger.info(f'Posted {len(records)} record(s) to status "'
-                f'{"release" if kwargs.get("no_review") else "review"}"')
+    logger.info('Posted %d record(s) to status "%s"', len(records),
+                "release" if kwargs.get("no_review") else "review")
 
     return records, 200
 
@@ -499,7 +509,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
         The record for the requested LIDVID.
 
     """
-    logger.info(f'GET /dois/{lidvid} request received')
+    logger.info('GET /dois/%s request received', lidvid)
 
     list_action = DOICoreActionList(db_name=_get_db_name())
 
@@ -587,7 +597,7 @@ def get_check_dois(submitter, email=False, attachment=False):
         within the transaction database when this endpoint is called.
 
     """
-    logger.info(f'GET /dois/check request received')
+    logger.info('GET /dois/check request received')
 
     check_action = DOICoreActionCheck(db_name=_get_db_name())
 
@@ -597,7 +607,7 @@ def get_check_dois(submitter, email=False, attachment=False):
         'attachment': attachment
     }
 
-    logger.debug(f'GET /dois/check action arguments: {check_kwargs}')
+    logger.debug('GET /dois/check action arguments: %s', check_kwargs)
 
     try:
         pending_results = check_action.run(**check_kwargs)

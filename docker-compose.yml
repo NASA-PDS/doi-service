@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+  pds-doi-api:
+    image: pds-doi-service:latest
+    ports:
+      - 8080:8080
+    working_dir: /usr/src/app
+    volumes:
+      - sqllite-data:/usr/src/data
+    environment:
+      # By setting this envvar in the Compose file, it supersedes anything set
+      # in doi_service.env. This is how we ensure the SQLite file is written to
+      # the sqllite-data persistent volume.
+      - OTHER_DB_FILE=/usr/src/data/doi.db
+    env_file:
+      - doi_service.env
+
+volumes:
+  sqllite-data:
