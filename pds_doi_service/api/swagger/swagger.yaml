@@ -492,6 +492,8 @@ components:
           type: string
         lidvid:
           type: string
+        title:
+          type: string
         node:
           type: string
         submitter:
@@ -505,6 +507,7 @@ components:
         node: eng
         submitter: my.email@node.gov
         lidvid: urn:nasa:pds:lab_shocked_feldspars::1.0
+        title: Laboratory Shocked Feldspars Collection
         update_date: 2001-01-23T04:56:07.000+00:00
         doi: 10.17189/21734
         status: Pending

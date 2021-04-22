@@ -117,8 +117,8 @@ def _records_from_dois(dois, node=None, submitter=None, osti_label=None):
     for doi in dois:
         records.append(
             DoiRecord(
-                doi=doi.doi, lidvid=doi.related_identifier, node=node,
-                submitter=submitter, status=doi.status,
+                doi=doi.doi, lidvid=doi.related_identifier, title=doi.title,
+                node=node, submitter=submitter, status=doi.status,
                 creation_date=doi.date_record_added,
                 update_date=doi.date_record_updated,
                 record=osti_label,
@@ -228,9 +228,9 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
 
         records.append(
             DoiSummary(
-                doi=result['doi'], lidvid=lidvid, node=result['node_id'],
-                submitter=result['submitter'], status=result['status'],
-                update_date=result['update_date']
+                doi=result['doi'], lidvid=lidvid, title=result['title'],
+                node=result['node_id'], submitter=result['submitter'],
+                status=result['status'], update_date=result['update_date']
             )
         )
 
@@ -621,7 +621,7 @@ def get_check_dois(submitter, email=False, attachment=False):
     records = [
         DoiRecord(
             doi=pending_result['doi'], lidvid=pending_result['lidvid'],
-            node=pending_result['node_id'],
+            title=pending_result['title'], node=pending_result['node_id'],
             submitter=submitter, status=pending_result['status'],
             creation_date=pending_result['release_date'],
             update_date=pending_result['update_date'],
