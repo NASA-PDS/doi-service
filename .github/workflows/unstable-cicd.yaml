@@ -2,7 +2,7 @@
 # =================================================
 #
 # Note: for this workflow to succeed, the following secrets must be installed
-# in the repository or inherited from the organization:
+# in the repository:
 #
 # ``ADMIN_GITHUB_TOKEN``
 #     A personal access token of a user with collaborator or better access to
@@ -10,12 +10,11 @@
 #     Settings → Developer settings → Personal access tokens → Generate new
 #     token. Give the token scopes on ``repo``, ``write:packages``,
 #     ``delete:packages``, ``workflow``, and ``read:gpg_key``.
-# ``CODE_SIGNING_KEY``
-#     A *private* key with which we can sign artifacts.
-# ``OSSRH_USERNAME``
-#     Username for the Central Repository.
-# ``OSSRH_USERNAME``
-#     Password for the Central Repository.
+# ``TEST_PYPI_USERNAME``
+#     Username for test.pypi.org.
+# ``TEST_PYPI_PASSWORD``
+#     Password for ``TEST_PYPI_USERNAME``.
+#
 
 
 ---
@@ -33,6 +32,9 @@ on:
     push:
         branches:
             -   master
+        paths-ignore:
+            - 'CHANGELOG.md'
+            - 'docs/requirements/**'
 
 
 # What to Do
@@ -44,24 +46,35 @@ jobs:
     unstable-assembly:
         name: 🧩 Unstable Assembly
         runs-on: ubuntu-latest
-        if: github.actor != 'pdsen-ci'
         steps:
             -
                 name: 💳 Checkout
                 uses: actions/checkout@v2
                 with:
                     lfs: true
+                    fetch-depth: 0
                     token: ${{secrets.ADMIN_GITHUB_TOKEN}}
-
+            -
+                name: Update default configuration
+                run: |
+                    import sys
+                    import os
+                    print("Running python version {}".format(sys.version))
+                    conf_file = "pds_doi_service.ini"
+                    print("Create config file for unit test {}".format(conf_file))
+                    with open(conf_file, "w") as f:
+                        f.write("[OSTI]\n")
+                        f.write("user = {}\n".format("${{secrets.osti_login}}"))
+                        f.write("password = {}\n".format("${{secrets.osti_password}}"))
+                shell: python
             -
                 name: 🤠 Roundup
                 uses: NASA-PDS/roundup-action@master
                 with:
                     assembly: unstable
                 env:
-                    ossrh_username: ${{secrets.OSSRH_USERNAME}}
-                    ossrh_password: ${{secrets.OSSRH_PASSWORD}}
-                    CODE_SIGNING_KEY: ${{secrets.CODE_SIGNING_KEY}}
+                    pypi_username: ${{secrets.TEST_PYPI_USERNAME}}
+                    pypi_password: ${{secrets.TEST_PYPI_PASSWORD}}
                     ADMIN_GITHUB_TOKEN: ${{secrets.ADMIN_GITHUB_TOKEN}}
 
 
