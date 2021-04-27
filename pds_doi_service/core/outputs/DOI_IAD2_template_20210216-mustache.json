@@ -27,6 +27,9 @@
         "product_type": "{{product_type}}",
         "product_type_specific": "{{product_type_specific}}",
         "date_record_added": "{{date_record_added}}",
+        {{#date_record_updated}}
+        "date_record_updated": "{{date_record_updated}}",
+        {{/date_record_updated}}
         "keywords": "{{keywords}}",
         "authors": {{{authors}}},
         "contributors": [
