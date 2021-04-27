@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+from datetime import timedelta, timezone
 import os
 from os.path import exists
 import unittest
@@ -38,6 +39,7 @@ class DOIDatabaseTest(unittest.TestCase):
         vid = '1.0'
         transaction_key = 'img/2020-06-15T18:42:45.653317'
         doi = '10.17189/21729'
+        release_date = datetime.datetime.now()
         transaction_date = datetime.datetime.now()
         status = DoiStatus.Unknown
         title = 'Laboratory Shocked Feldspars Bundle'
@@ -48,7 +50,7 @@ class DOIDatabaseTest(unittest.TestCase):
 
         # Insert a row in the 'doi' table
         self._doi_database.write_doi_info_to_database(
-            lid, vid, transaction_key, doi, transaction_date, status,
+            lid, vid, transaction_key, doi, release_date, transaction_date, status,
             title, product_type, product_type_specific, submitter, discipline_node
         )
 
@@ -63,8 +65,14 @@ class DOIDatabaseTest(unittest.TestCase):
 
         # Ensure we got back everything we just put in
         self.assertEqual(query_result['status'], status)
-        self.assertEqual(int(query_result['update_date']),
-                         int(transaction_date.replace(tzinfo=datetime.timezone.utc).timestamp()))
+        self.assertEqual(
+            int(query_result['release_date'].timestamp()),
+            int(release_date.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp())
+        )
+        self.assertEqual(
+            int(query_result['update_date'].timestamp()),
+            int(transaction_date.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp())
+        )
         self.assertEqual(query_result['submitter'], submitter)
         self.assertEqual(query_result['title'], title)
         self.assertEqual(query_result['type'], product_type)
@@ -83,7 +91,7 @@ class DOIDatabaseTest(unittest.TestCase):
         discipline_node = 'eng'
 
         self._doi_database.write_doi_info_to_database(
-            lid, vid, transaction_key, doi, transaction_date, status,
+            lid, vid, transaction_key, doi, release_date, transaction_date, status,
             title, product_type, product_type_specific, submitter, discipline_node
         )
 
@@ -118,6 +126,7 @@ class DOIDatabaseTest(unittest.TestCase):
             vid = f'{_id}.0'
             transaction_key = f'img/{_id}/2020-06-15T18:42:45.653317'
             doi = f'10.17189/2000{_id}'
+            release_date = datetime.datetime.now()
             transaction_date = datetime.datetime.now()
             status = DoiStatus.Draft
             title = f'Laboratory Shocked Feldspars Bundle {_id}'
@@ -127,7 +136,7 @@ class DOIDatabaseTest(unittest.TestCase):
             discipline_node = 'img'
 
             self._doi_database.write_doi_info_to_database(
-                lid, vid, transaction_key, doi, transaction_date, status,
+                lid, vid, transaction_key, doi, release_date, transaction_date, status,
                 title, product_type, product_type_specific, submitter, discipline_node
             )
 
