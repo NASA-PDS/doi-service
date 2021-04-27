@@ -27,7 +27,7 @@ from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.input.exceptions import OSTIRequestException
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
-logger = get_logger('pds_doi_service.core.outputs.osti_web_client')
+logger = get_logger(__name__)
 
 CONTENT_TYPE_MAP = {
     CONTENT_TYPE_XML: 'application/xml',
@@ -77,13 +77,11 @@ class DOIOstiWebClient:
         # Re-use the parse functions from DOIOstiWebParser class to get the
         # list of Doi objects to return
         if content_type == CONTENT_TYPE_XML:
-            doi, _ = self._web_parser.parse_osti_response_xml(osti_response.text)
+            dois, _ = self._web_parser.parse_osti_response_xml(osti_response.text)
         else:
-            doi, _ = self._web_parser.parse_osti_response_json(osti_response.text)
+            dois, _ = self._web_parser.parse_osti_response_json(osti_response.text)
 
-        logger.debug(f"o_status {doi}")
-
-        return doi, osti_response.text
+        return dois, osti_response.text
 
     def webclient_query_doi(self, i_url, query_dict=None, i_username=None,
                             i_password=None, content_type=CONTENT_TYPE_XML):
@@ -122,9 +120,9 @@ class DOIOstiWebClient:
         else:
             query_dict = initial_payload
 
-        logger.debug(f"initial_payload {initial_payload}")
-        logger.debug(f"query_dict {query_dict}")
-        logger.debug(f"i_url {i_url}")
+        logger.debug("initial_payload: %s", initial_payload)
+        logger.debug("query_dict: %s", query_dict)
+        logger.debug("i_url: %s", i_url)
 
         osti_response = requests.get(
             i_url, auth=auth, params=query_dict, headers=headers

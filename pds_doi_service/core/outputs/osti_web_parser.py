@@ -25,7 +25,7 @@ from pds_doi_service.core.input.exceptions import InputFormatException, UnknownL
 from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.outputs.osti_web_parser')
+logger = get_logger(__name__)
 
 
 class DOIOstiWebParser:
@@ -42,9 +42,10 @@ class DOIOstiWebParser:
 
     OPTIONAL_FIELDS_LIST = [
         'id', 'doi', 'sponsoring_organization', 'publisher', 'availability',
-        'country', 'description', 'site_url', 'site_code', 'date_record_added',
-        'date_record_updated', 'keywords', 'authors', 'contributors'
+        'country', 'description', 'site_url', 'site_code', 'keywords',
+        'authors', 'contributors'
     ]
+    """The optional field names we parse from input OSTI labels."""
 
     def validate_field_names(self, query_dict):
         """
@@ -517,21 +518,21 @@ class DOIOstiWebParser:
             lidvid = DOIOstiWebParser.get_lidvid_from_xml(single_record_element)
 
             if lidvid:
+                timestamp = datetime.now()
+
                 publication_date = single_record_element.xpath('publication_date')[0].text
                 product_type = single_record_element.xpath('product_type')[0].text
                 product_type_specific = single_record_element.xpath('product_type_specific')[0].text
 
-                # Move the fetching of identifier_type in parse_optional_fields() function.
-                # The following 4 fields were deleted from constructor of Doi
-                # to inspect individually since the code was failing:
-                #     ['id','doi','date_record_added',date_record_updated']
                 doi = Doi(
                     title=single_record_element.xpath('title')[0].text,
                     publication_date=datetime.strptime(publication_date, '%Y-%m-%d'),
                     product_type=ProductType(product_type),
                     product_type_specific=product_type_specific,
                     related_identifier=lidvid,
-                    status=DoiStatus(status.lower())
+                    status=DoiStatus(status.lower()),
+                    date_record_added=timestamp,
+                    date_record_updated=timestamp
                 )
 
                 # Parse for some optional fields that may not be present in
@@ -595,13 +596,17 @@ class DOIOstiWebParser:
             lidvid = DOIOstiWebParser.get_lidvid_from_json(record)
 
             if lidvid:
+                timestamp = datetime.now()
+
                 doi = Doi(
                     title=record['title'],
                     publication_date=datetime.strptime(record['publication_date'], '%Y-%m-%d'),
                     product_type=ProductType(record['product_type']),
                     product_type_specific=record.get('product_type_specific'),
                     related_identifier=lidvid,
-                    status=DoiStatus(record.get('status', DoiStatus.Unknown).lower())
+                    status=DoiStatus(record.get('status', DoiStatus.Unknown).lower()),
+                    date_record_added=timestamp,
+                    date_record_updated=timestamp
                 )
 
                 # Parse for some optional fields that may not be present in
