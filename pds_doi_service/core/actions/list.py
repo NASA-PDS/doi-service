@@ -13,7 +13,7 @@ list.py
 Contains the definition for the List action of the Core PDS DOI Service.
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 import json
 
 from pds_doi_service.core.actions.action import DOICoreAction
@@ -192,8 +192,6 @@ class DOICoreActionList(DOICoreAction):
         Lists all the latest records in the named database, returning the
         the results in JSON format.
 
-        :param kwargs:
-        :return: o_list_result:
         """
         self.parse_criteria(**kwargs)
 
@@ -204,20 +202,11 @@ class DOICoreActionList(DOICoreAction):
             result_json = []
 
             for row in rows:
-                # Convert the update time from Unix epoch to iso8601 including tz
-                row = list(row)
-                update_date = row[columns.index('update_date')]
-                update_date = (datetime.fromtimestamp(update_date, tz=timezone.utc)
-                               .replace(tzinfo=timezone(timedelta(hours=--8.0)))
-                               .isoformat())
-                row[columns.index('update_date')] = update_date
+                # Convert the datetime objects to iso8601 strings
+                for time_col in ('release_date', 'update_date'):
+                    row[columns.index(time_col)] = row[columns.index(time_col)].isoformat()
 
-                # Convert status back to an Enum, force to lowercase
-                # to handle any legacy uppercase status values
-                row[columns.index('status')] = DoiStatus(row[columns.index('status')].lower())
-
-                result_json.append({columns[i]: row[i]
-                                    for i in range(len(columns))})
+                result_json.append(dict(zip(columns, row)))
 
             o_query_result = json.dumps(result_json)
             logger.debug("o_select_result: %s", o_query_result)

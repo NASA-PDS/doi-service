@@ -37,6 +37,7 @@ class CheckActionTestCase(unittest.TestCase):
         lid = 'urn:nasa:pds:lab_shocked_feldspars'
         vid = '1.0'
         transaction_key = './transaction_history/img/2020-06-15T18:42:45.653317'
+        release_date = datetime.datetime.now()
         transaction_date = datetime.datetime.now()
         status = DoiStatus.Pending
         title = 'Laboratory Shocked Feldspars Bundle'
@@ -46,7 +47,7 @@ class CheckActionTestCase(unittest.TestCase):
         submitter = 'img-submitter@jpl.nasa.gov'
 
         cls._database_obj.write_doi_info_to_database(
-            lid, vid, transaction_key, doi, transaction_date, status,
+            lid, vid, transaction_key, doi, release_date, transaction_date, status,
             title, product_type, product_type_specific, submitter, discipline_node
         )
 

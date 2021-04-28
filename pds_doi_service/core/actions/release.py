@@ -34,7 +34,7 @@ from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.actions.release')
+logger = get_logger(__name__)
 
 
 class DOICoreActionRelease(DOICoreAction):
@@ -121,13 +121,6 @@ class DOICoreActionRelease(DOICoreAction):
 
             # Add 'status' field so the ranking in the workflow can be determined.
             doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
-
-            # Add field 'date_record_added' because the XSD requires it.
-            if doi.date_record_added is None:
-                doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
-            # If date added is already present, mark the date of this update
-            else:
-                doi.date_record_updated = datetime.now().strftime('%Y-%m-%d')
 
         return dois
 
@@ -246,25 +239,19 @@ class DOICoreActionRelease(DOICoreAction):
                     content_type=CONTENT_TYPE_JSON
                 )
 
-                # The label returned from OSTI is of a slightly different
-                # format than what we expect to pass validation, so reformat
-                # using the valid template here
-                io_doi_label = DOIOutputOsti().create_osti_doi_record(
-                    dois, content_type=CONTENT_TYPE_JSON
-                )
-
             # Otherwise, if the next step is review, the label we've already
             # created has marked all the Doi's as being the "review" step
             # so its ready to be submitted to the local transaction history
             transaction = self.m_transaction_builder.prepare_transaction(
                 self._node, self._submitter, dois, input_path=self._input,
-                output_content=io_doi_label, output_content_type=CONTENT_TYPE_JSON
+                output_content_type=CONTENT_TYPE_JSON
             )
 
             # Commit the transaction to the local database
             transaction.log()
 
-            return io_doi_label
+            # Return up-to-date version of output label
+            return transaction.output_content
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically

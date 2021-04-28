@@ -114,13 +114,21 @@ def _records_from_dois(dois, node=None, submitter=None, osti_label=None):
     """
     records = []
 
+    list_action = DOICoreActionList(db_name=_get_db_name())
+
     for doi in dois:
+        # Pull info from transaction database so we can get the most accurate
+        # info for the DOI
+        list_kwargs = {'lidvid': doi.related_identifier}
+        list_result = json.loads(list_action.run(**list_kwargs))[0]
+
         records.append(
             DoiRecord(
-                doi=doi.doi, lidvid=doi.related_identifier, title=doi.title,
+                doi=doi.doi or list_result['doi'],
+                lidvid=doi.related_identifier, title=doi.title,
                 node=node, submitter=submitter, status=doi.status,
-                creation_date=doi.date_record_added,
-                update_date=doi.date_record_updated,
+                creation_date=list_result['release_date'],
+                update_date=list_result['update_date'],
                 record=osti_label,
                 message=doi.message
             )

@@ -40,7 +40,7 @@ from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.actions.draft')
+logger = get_logger(__name__)
 
 
 class DOICoreActionDraft(DOICoreAction):
@@ -178,19 +178,17 @@ class DOICoreActionDraft(DOICoreAction):
         # Update the contributor
         doi.contributor = NodeUtil().get_node_long_name(self._node)
 
-        # Update the output label to reflect new draft status
-        doi_label = DOIOutputOsti().create_osti_doi_record(doi, content_type)
-
         # Re-commit transaction to official roll DOI back to draft status
         transaction = self.m_transaction_builder.prepare_transaction(
             self._node, self._submitter, [doi], input_path=osti_label_file,
-            output_content=doi_label, output_content_type=content_type
+            output_content_type=content_type
         )
 
         # Commit the transaction to the database
         transaction.log()
 
-        return doi_label
+        # Return up-to-date output label
+        return transaction.output_content
 
     def _draft_input_files(self, inputs):
         """
@@ -275,9 +273,9 @@ class DOICoreActionDraft(DOICoreAction):
 
     def _transform_label_into_osti_record(self, input_file, keywords):
         """
-        Receives an XML PDS4 input file and transforms it into an OSTI record.
+        Receives an input file and transforms it into an OSTI record.
         """
-        input_util = DOIInputUtil(valid_extensions=['.xml'])
+        input_util = DOIInputUtil(valid_extensions=['.json', '.xml'])
 
         o_dois = input_util.parse_dois_from_input_file(input_file)
 
@@ -294,19 +292,20 @@ class DOICoreActionDraft(DOICoreAction):
         # Generate the output OSTI record
         o_doi_label = DOIOutputOsti().create_osti_doi_record(o_dois)
 
-        # Return the label (which is text) and a dictionary 'o_dois' representing
+        # Return the label (which is text) and a list 'o_dois' representing
         # all individual DOI's parsed.
         return o_doi_label, o_dois
 
     def _run_single_file(self, input_file, node, submitter, force_flag, keywords):
+        logger.info("Drafting input file %s", input_file)
+        logger.debug("node,submitter,force_flag,keywords: %s,%s,%s,%s",
+                     node, submitter, force_flag, keywords)
+
         exception_classes = []
         exception_messages = []
 
         doi_label = None
         dois_obj = None
-
-        logger.info(f"input_file {input_file}")
-        logger.debug(f"force_flag,input_file {force_flag, input_file}")
 
         try:
             # Transform the input label to an OSTI record and list of Doi objects.
@@ -353,12 +352,14 @@ class DOICoreActionDraft(DOICoreAction):
             # Use the service of TransactionBuilder to prepare all things
             # related to writing a transaction.
             transaction = self.m_transaction_builder.prepare_transaction(
-                node, submitter, dois_obj, input_path=input_file,
-                output_content=doi_label
+                node, submitter, dois_obj, input_path=input_file
             )
 
             # Commit the transaction to the database
             transaction.log()
+
+            # Return the most up-to-date version of output label
+            doi_label = transaction.output_content
 
         return doi_label
 

@@ -13,11 +13,9 @@ check.py
 Contains the definition for the Check action of the Core PDS DOI Service.
 """
 
-import datetime
 import json
-
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime
 from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -34,7 +32,7 @@ from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.emailer import Emailer
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.actions.check')
+logger = get_logger(__name__)
 
 
 class DOICoreActionCheck(DOICoreAction):
@@ -135,6 +133,9 @@ class DOICoreActionCheck(DOICoreAction):
                 # Update the previous status we store in the transaction database
                 doi.previous_status = DoiStatus.Pending
 
+                # Update the last updated time to mark the successful query to OSTI
+                pending_record['update_date'] = doi.date_record_updated.isoformat()
+
                 # If there was an error submitting to OSTI, include the details.
                 # Since we only check one DOI at a time, should be safe
                 # to index by 0 here
@@ -143,8 +144,7 @@ class DOICoreActionCheck(DOICoreAction):
 
                 # Log the update to the DOI entry
                 transaction_obj = self.m_transaction_builder.prepare_transaction(
-                    pending_record['node_id'], pending_record['submitter'],
-                    [doi], output_content=doi_xml
+                    pending_record['node_id'], self._submitter, [doi]
                 )
 
                 transaction_obj.log()
@@ -206,7 +206,7 @@ class DOICoreActionCheck(DOICoreAction):
         )
 
         # Add current time to make file unique
-        now_is = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+        now_is = datetime.now().strftime('%Y%m%d-%H%M')
         o_attachment_filename = f'doi_status_{now_is}.json'
 
         o_attachment_part = MIMEMultipart()
@@ -316,7 +316,7 @@ class DOICoreActionCheck(DOICoreAction):
             # Add emails of all submitters for that node.
             final_receivers |= o_distinct_info[node_key]['submitters']
 
-            now_is = datetime.datetime.now().isoformat()
+            now_is = datetime.now().isoformat()
             subject_field = f"DOI Submission Status Report For Node {node_key} On {now_is}"
 
             # Convert a list of dict to JSON text to make it human readable.

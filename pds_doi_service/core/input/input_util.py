@@ -16,6 +16,7 @@ Contains classes for working with input label files, be they local or remote.
 import os
 import urllib.parse
 import tempfile
+from datetime import datetime
 from os.path import basename
 
 from xmlschema import XMLSchemaValidationError
@@ -33,7 +34,7 @@ from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger
-logger = get_logger('pds_doi_service.core.input.input_util')
+logger = get_logger(__name__)
 
 
 class DOIInputUtil:
@@ -189,6 +190,7 @@ class DOIInputUtil:
         XML of all records in OSTI format.
         """
         doi_records = []
+        timestamp = datetime.now()
 
         for index, row in xl_sheet.iterrows():
             logger.debug(f"row {row}")
@@ -200,7 +202,9 @@ class DOIInputUtil:
                       product_type_specific=row['product_type_specific'],
                       related_identifier=row['related_resource'],
                       authors=[{'first_name': row['author_first_name'],
-                                'last_name': row['author_last_name']}])
+                                'last_name': row['author_last_name']}],
+                      date_record_added=timestamp,
+                      date_record_updated=timestamp)
 
             logger.debug(f'getting doi metadata {doi.__dict__}')
             doi_records.append(doi)

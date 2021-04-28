@@ -34,7 +34,7 @@ from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.actions.reserve')
+logger = get_logger(__name__)
 
 
 class DOICoreActionReserve(DOICoreAction):
@@ -82,8 +82,7 @@ class DOICoreActionReserve(DOICoreAction):
                  ','.join(DOIInputUtil.MANDATORY_COLUMNS)
         )
         action_parser.add_argument(
-            '-s', '--submitter-email', required=True,
-            metavar='"my.email@node.gov"',
+            '-s', '--submitter', required=True, metavar='"my.email@node.gov"',
             help='The email address to associate with the Reserve request.'
         )
         action_parser.add_argument(
@@ -120,13 +119,6 @@ class DOICoreActionReserve(DOICoreAction):
 
             # Add 'status' field so the ranking in the workflow can be determined
             doi.status = DoiStatus.Reserved_not_submitted if self._dry_run else DoiStatus.Reserved
-
-            # Add field 'date_record_added' because the XSD requires it.
-            if doi.date_record_added is None:
-                doi.date_record_added = datetime.now().strftime('%Y-%m-%d')
-            # If date added is already present, mark the date of this update
-            else:
-                doi.date_record_updated = datetime.now().strftime('%Y-%m-%d')
 
         return dois
 
@@ -217,23 +209,17 @@ class DOICoreActionReserve(DOICoreAction):
                     content_type=CONTENT_TYPE_JSON
                 )
 
-                # The label returned from OSTI is of a slightly different
-                # format than what we expect to pass validation, so reformat
-                # using the valid template here
-                io_doi_label = DOIOutputOsti().create_osti_doi_record(
-                    dois, content_type=CONTENT_TYPE_JSON
-                )
-
             # Log the inputs and outputs of this transaction
             transaction = self.m_transaction_builder.prepare_transaction(
                 self._node, self._submitter, dois, input_path=self._input,
-                output_content=io_doi_label, output_content_type=CONTENT_TYPE_JSON
+                output_content_type=CONTENT_TYPE_JSON
             )
 
             # Commit the transaction to the local database
             transaction.log()
 
-            return io_doi_label
+            # Return up-to-date version of output label
+            return transaction.output_content
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically

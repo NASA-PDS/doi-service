@@ -22,7 +22,7 @@ from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer
 
-logger = get_logger('pds_doi_service.core.input.pds4_util')
+logger = get_logger(__name__)
 
 
 class BestParserMethod(Enum):
@@ -263,6 +263,8 @@ class DOIPDS4LabelUtil:
                 if len(doi_prefix_suffix) == 2:
                     osti_id = doi_prefix_suffix[1]
 
+            timestamp = datetime.now()
+
             doi = Doi(status=DoiStatus.Unknown,
                       title=pds4_fields['title'],
                       description=pds4_fields['description'],
@@ -274,7 +276,8 @@ class DOIPDS4LabelUtil:
                       authors=self.get_author_names(authors_list),
                       editors=editors,
                       keywords=self.get_keywords(pds4_fields),
-                      date_record_added=self.get_record_added_date(pds4_fields),
+                      date_record_added=timestamp,
+                      date_record_updated=timestamp,
                       id=osti_id)
         except KeyError as key_err:
             missing_key = key_err.args[0]
@@ -305,11 +308,6 @@ class DOIPDS4LabelUtil:
             publication_date = datetime.now()
 
         return publication_date
-
-    def get_record_added_date(self, pds4_fields):
-        # TODO: have the creation date read from the transaction database if the
-        #       record has been added earlier.
-        return datetime.now()
 
     def get_keywords(self, pds4_fields):
         keyword_fields = {'investigation_area',

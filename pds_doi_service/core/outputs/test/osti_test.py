@@ -33,20 +33,25 @@ class OutputOstiTestCase(unittest.TestCase):
 
         with open(input_xml_file, 'r') as infile:
             input_xml = infile.read()
-            dois, _ = DOIOstiWebParser.parse_osti_response_xml(input_xml)
+            input_dois, _ = DOIOstiWebParser.parse_osti_response_xml(input_xml)
 
             # Now create an output label from the parsed Doi
             output_xml = DOIOutputOsti().create_osti_doi_record(
-                dois, content_type=CONTENT_TYPE_XML
+                input_dois, content_type=CONTENT_TYPE_XML
             )
+            output_dois, _ = DOIOstiWebParser.parse_osti_response_xml(output_xml)
 
-        # Massage the output a bit so we can do a straight string comparison
-        parser = etree.XMLParser(remove_blank_text=True)
-        input_xml = etree.tostring(etree.XML(input_xml, parser=parser))
-        output_xml = output_xml.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
-        output_xml = etree.tostring(etree.XML(output_xml, parser=parser))
+        # Massage the output a bit so we can do a straight dict comparison
+        input_doi_fields = input_dois[0].__dict__
+        output_doi_fields = output_dois[0].__dict__
 
-        self.assertEqual(input_xml, output_xml)
+        # Add/update dates are always overwritten when parsing Doi objects
+        # from input labels, so remove these key/values from the comparison
+        for date_key in ('date_record_added', 'date_record_updated'):
+            input_doi_fields.pop(date_key, None)
+            output_doi_fields.pop(date_key, None)
+
+        self.assertDictEqual(input_doi_fields, output_doi_fields)
 
     def test_create_osti_label_json(self):
         """Test creation of an OSTI JSON label from Doi objects"""
@@ -64,8 +69,14 @@ class OutputOstiTestCase(unittest.TestCase):
                 dois, content_type=CONTENT_TYPE_JSON
             )
 
-        # Massage the output a bit so we can do a straight string comparison
-        input_json = json.dumps(json.loads(input_json))
-        output_json = json.dumps(json.loads(output_json))
+        # Massage the output a bit so we can do a straight dict comparison
+        input_json = json.loads(input_json)[0]
+        output_json = json.loads(output_json)[0]
 
-        self.assertEqual(input_json, output_json)
+        # Add/update dates are always overwritten when parsing Doi objects
+        # from input labels, so remove these key/values from the comparison
+        for date_key in ('date_record_added', 'date_record_updated'):
+            input_json.pop(date_key, None)
+            output_json.pop(date_key, None)
+
+        self.assertDictEqual(input_json, output_json)

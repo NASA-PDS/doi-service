@@ -49,6 +49,53 @@ class TestDoisController(BaseTestCase):
         if exists(self.temp_db):
             os.unlink(self.temp_db)
 
+    def list_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionList.run()
+
+        Returns a JSON string corresponding to a successful search.
+        The transaction_key is modified to point to the local test data
+        directory.
+        """
+        return json.dumps(
+            [
+                {"status": DoiStatus.Draft,
+                 "release_date": '2020-10-20T14:04:12.560568-07:00',
+                 "update_date": '2020-10-20T14:04:12.560568-07:00',
+                 "submitter": "eng-submitter@jpl.nasa.gov",
+                 "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
+                 "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
+                 "lid": "urn:nasa:pds:insight_cameras", "vid": "1.1",
+                 "doi": '10.17189/28957',
+                 "transaction_key": TestDoisController.test_data_dir,
+                 "is_latest": 1}
+            ]
+        )
+
+    def draft_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionDraft.run()
+
+        Returns body of an OSTI XML label corresponding to a successful draft
+        request.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, 'draft_osti_record.xml')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    def reserve_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionReserve.run()
+
+        Returns body of an OSTI JSON label corresponding to a successful reserve
+        (dry-run) request.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, 'reserve_osti_record.json')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
     def test_get_dois(self):
         """Test case for get_dois"""
         # For these tests, use a pre-existing database with some canned
@@ -192,18 +239,9 @@ class TestDoisController(BaseTestCase):
             'Response body is : ' + response.data.decode('utf-8')
         )
 
-    def draft_action_run_patch(self, **kwargs):
-        """
-        Patch for DOICoreActionDraft.run()
-
-        Returns body of an OSTI XML label corresponding to a successful draft
-        request.
-        """
-        draft_record_file = join(
-            TestDoisController.test_data_dir, 'draft_osti_record.xml')
-        with open(draft_record_file, 'r') as infile:
-            return infile.read()
-
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft,
         'run', draft_action_run_patch)
@@ -236,10 +274,18 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(draft_record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(draft_record.doi, '10.17189/28957')
+        self.assertEqual(draft_record.creation_date,
+                         datetime.fromisoformat('2020-10-20T14:04:12.560568-07:00'))
+        self.assertEqual(draft_record.update_date,
+                         datetime.fromisoformat('2020-10-20T14:04:12.560568-07:00'))
         # Note we get Pending back from the parsed label, however
         # the object sent to transaction database has 'Draft' status
         self.assertEqual(draft_record.status, DoiStatus.Pending)
 
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft,
         'run', draft_action_run_patch)
@@ -274,22 +320,18 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(draft_record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(draft_record.doi, '10.17189/28957')
+        self.assertEqual(draft_record.creation_date,
+                         datetime.fromisoformat('2020-10-20T14:04:12.560568-07:00'))
+        self.assertEqual(draft_record.update_date,
+                         datetime.fromisoformat('2020-10-20T14:04:12.560568-07:00'))
         # Note we get Pending back from the parsed label, however
         # the object sent to transaction database has 'Draft' status
         self.assertEqual(draft_record.status, DoiStatus.Pending)
 
-    def reserve_action_run_patch(self, **kwargs):
-        """
-        Patch for DOICoreActionReserve.run()
-
-        Returns body of an OSTI JSON label corresponding to a successful reserve
-        (dry-run) request.
-        """
-        draft_record_file = join(
-            TestDoisController.test_data_dir, 'reserve_osti_record.json')
-        with open(draft_record_file, 'r') as infile:
-            return infile.read()
-
+    @patch.object(
+        pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
+        'run', list_action_run_patch)
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionReserve,
         'run', reserve_action_run_patch)
@@ -383,28 +425,6 @@ class TestDoisController(BaseTestCase):
             'Response body is : ' + error_response.data.decode('utf-8')
         )
 
-    def list_action_run_patch(self, **kwargs):
-        """
-        Patch for DOICoreActionList.run()
-
-        Returns a JSON string corresponding to a successful search.
-        The transaction_key is modified to point to the local test data
-        directory.
-        """
-        return json.dumps(
-            [
-                {"status": DoiStatus.Draft,
-                 "update_date": '2020-10-20T14:04:12.560568-07:00',
-                 "submitter": "eng-submitter@jpl.nasa.gov",
-                 "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
-                 "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
-                 "lid": "urn:nasa:pds:insight_cameras", "vid": "1.1",
-                 "doi": None, "release_date": None,
-                 "transaction_key": TestDoisController.test_data_dir,
-                 "is_latest": 1}
-            ]
-        )
-
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
         'run', list_action_run_patch)
@@ -434,7 +454,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(submit_record.submitter, 'eng-submitter@jpl.nasa.gov')
         self.assertEqual(submit_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(submit_record.status, DoiStatus.Review)
-        self.assertIsNone(submit_record.doi)
+        self.assertEqual(submit_record.doi, '10.17189/28957')
 
     def release_action_run_patch(self, **kwargs):
         """

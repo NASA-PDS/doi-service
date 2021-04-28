@@ -16,10 +16,11 @@ disk and database table.
 
 from datetime import datetime
 
+from pds_doi_service.core.outputs.transaction_on_disk import TransactionOnDisk
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.outputs.transaction')
+logger = get_logger(__name__)
 
 
 class Transaction:
@@ -31,8 +32,7 @@ class Transaction:
     m_doi_config_util = DOIConfigUtil()
 
     def __init__(self, output_content, output_content_type, node_id,
-                 submitter_email, dois, transaction_disk_dao, transaction_db_dao,
-                 input_path=None):
+                 submitter_email, dois, transaction_db, input_path=None):
         self._config = self.m_doi_config_util.get_config()
         self._node_id = node_id.lower()
         self._submitter_email = submitter_email
@@ -41,32 +41,38 @@ class Transaction:
         self._output_content_type = output_content_type
         self._transaction_time = datetime.now()
         self._dois = dois
-        self._transaction_disk_dao = transaction_disk_dao
-        self._transaction_db_dao = transaction_db_dao
+        self._transaction_disk = TransactionOnDisk()
+        self._transaction_db = transaction_db
+
+    @property
+    def output_content(self):
+        return self._output_content
 
     def log(self):
-        transaction_io_dir = self._transaction_disk_dao.write(
+        transaction_io_dir = self._transaction_disk.write(
             self._node_id, self._transaction_time, input_ref=self._input_ref,
             output_content=self._output_content,
             output_content_type=self._output_content_type
         )
 
         for doi in self._dois:
-            lidvid = doi.related_identifier.split('::')
+            lidvid = doi.related_identifier
+            lid, vid = lidvid.split('::')
 
             doi_fields = doi.__dict__
 
-            k_doi_params = dict(
-                (k, doi_fields[k]) for k in doi_fields.keys() &
-                {'doi', 'status', 'title', 'product_type', 'product_type_specific'}
+            self._transaction_db.write_doi_info_to_database(
+                lid=lid,
+                vid=vid if vid else None,
+                transaction_key=transaction_io_dir,
+                doi=doi_fields['doi'],
+                release_date=doi_fields.get('date_record_added', self._transaction_time),
+                transaction_date=doi_fields.get('date_record_updated', self._transaction_time),
+                status=doi_fields['status'],
+                title=doi_fields['title'],
+                product_type=doi_fields['product_type'],
+                product_type_specific=doi_fields['product_type_specific'],
+                submitter=self._submitter_email,
+                discipline_node=self._node_id
             )
 
-            self._transaction_db_dao.write_doi_info_to_database(
-                lid=lidvid[0],
-                vid=lidvid[1] if len(lidvid) > 1 else None,
-                transaction_date=self._transaction_time,
-                submitter=self._submitter_email,
-                discipline_node=self._node_id,
-                transaction_key=transaction_io_dir,
-                **k_doi_params
-            )
