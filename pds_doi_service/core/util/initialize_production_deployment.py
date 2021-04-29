@@ -140,7 +140,9 @@ def _get_node_id_from_contributors(doi_field):
     o_node_id = 'eng'
     full_name = 'dummy_full_name'  # If a 'contributors' field exist, this value will get a valid value set.
 
-    if doi_field['contributors'] and len(doi_field['contributors']) > 0:
+    if 'contributors' in doi_field.keys() \
+            and doi_field['contributors'] \
+            and len(doi_field['contributors']) > 0:
         full_name = doi_field['contributors'][0]['full_name']
         if 'Atmospheres'.lower() in full_name.lower():
             o_node_id = 'atm'
@@ -267,7 +269,9 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
         # Get the node_id from 'contributors' field if can be found.
         node_id = _get_node_id_from_contributors(doi_field)
 
-        logger.debug(f"node_id,submitter_email,doi.contributors {node_id,submitter_email,doi.contributors}")
+        logger.debug(doi_field)
+
+        logger.debug(f"node_id,submitter_email,doi.contributors {node_id,submitter_email}")
 
         # Create a dictionary with these fields {'doi', 'status', 'title', 'product_type', 'product_type_specific'}
         # from fields in doi_field dictionary.

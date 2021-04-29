@@ -63,6 +63,7 @@ class DoiStatus(str, Enum):
     Review = 'review'
     Pending = 'pending'
     Registered = 'registered'
+    Deactivated = 'deactivated'
 
 
 @dataclass

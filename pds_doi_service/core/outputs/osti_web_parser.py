@@ -143,10 +143,15 @@ class DOIOstiWebParser:
                         o_editors_list.append(editor_dict)
                 # Parse the node ID from the name of the data curator
                 elif contributor_type[0].text == 'DataCurator':
-                    o_node_name = full_name[0].text
-                    o_node_name = o_node_name.replace('Planetary Data System:', '')
-                    o_node_name = o_node_name.replace('Node', '')
-                    o_node_name = o_node_name.strip()
+                    if full_name:
+                        o_node_name = full_name[0].text
+                        o_node_name = o_node_name.replace('Planetary Data System:', '')
+                        o_node_name = o_node_name.replace('Node', '')
+                        o_node_name = o_node_name.strip()
+                    else:
+                        logger.info("missing DataCurator %s", etree.tostring(single_contributor))
+
+
 
         return o_editors_list, o_node_name
 
