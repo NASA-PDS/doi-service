@@ -56,6 +56,10 @@ from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
+from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
+from pds_doi_service.core.outputs.transaction import Transaction
+
+
 # Get the common logger and set the level for this file.
 logger = get_logger('pds_doi_core.util.initialize_production_deployment')
 logger.setLevel(logging.INFO)
@@ -175,6 +179,8 @@ def _get_node_id_from_contributors(doi_field):
 def perform_import_to_database(db_name, input, dry_run, submitter_email):
     # Function import all records from input (if provided) into local database.  If not provided will query from OSTI server.
     # Note that all records returned from are associated with the NASA-PDS user account.
+
+    transaction_builder = TransactionBuilder(db_name)
 
     o_records_found        = 0 # Number of records returned from OSTI.
     o_records_processed    = 0 # At the end, this value should be the same as o_records_found
@@ -298,15 +304,24 @@ def perform_import_to_database(db_name, input, dry_run, submitter_email):
 
         if not skip_db_write_flag:
             # Write a row into the database.
-            transaction_db_dao.write_doi_info_to_database(
-                lid=lidvid[0],
-                vid=lidvid[1] if len(lidvid) > 1 else None,
-                transaction_date=transaction_time,
-                submitter=submitter_email,
-                discipline_node=node_id,
-                transaction_key=transaction_io_dir,
-                **k_doi_params
+            transaction = transaction_builder.prepare_transaction(
+                node_id,
+                submitter_email,
+                [doi],
+                output_content_type='xml'
             )
+
+            transaction.log()
+
+            #transaction_db_dao.write_doi_info_to_database(
+            #    lid=lidvid[0],
+            #    vid=lidvid[1] if len(lidvid) > 1 else None,
+            #    transaction_date=transaction_time,
+            #    submitter=submitter_email,
+            #    discipline_node=node_id,
+            #    transaction_key=transaction_io_dir,
+            #    **k_doi_params
+            #)
             o_records_written += 1
 
         item_index += 1

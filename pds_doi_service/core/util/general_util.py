@@ -34,3 +34,6 @@ def get_logger(module_name=''):
     logger.setLevel(getattr(logging, logging_level.upper()))
 
     return logger
+
+
+
