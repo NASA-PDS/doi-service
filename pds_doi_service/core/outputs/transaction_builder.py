@@ -54,11 +54,11 @@ class TransactionBuilder:
                              f'{",".join(VALID_CONTENT_TYPES)}')
 
         for doi in dois:
-            lidvid = doi.related_identifier
-            lid, vid = lidvid.split('::')
+
+            lid, vid = Transaction.get_lidvid(doi.related_identifier)
 
             # Get the latest available entry in the DB for this lidvid, if it exists
-            query_criteria = {'lidvid': [lidvid]} if vid else {'lid': [lid]}
+            query_criteria = {'lidvid': [doi.related_identifier]} if vid else {'lid': [lid]}
             columns, rows = self.m_doi_database.select_latest_rows(query_criteria)
 
             # Get the latest transaction record for this LIDVID so we can carry
