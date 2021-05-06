@@ -111,7 +111,8 @@ class DOIInputUtil:
 
         # Check if we were handed a PSD4 label
         if self._label_util.is_pds4_label(xml_tree):
-            logger.info(f'Parsing xml file {basename(xml_path)} as a PSD4 label')
+            logger.info('Parsing xml file %s as a PSD4 label',
+                        basename(xml_path))
 
             try:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
@@ -122,7 +123,8 @@ class DOIInputUtil:
                 )
         # Otherwise, assume OSTI format
         else:
-            logger.info(f'Parsing xml file {basename(xml_path)} as an OSTI label')
+            logger.info('Parsing xml file %s as an OSTI label',
+                        basename(xml_path))
 
             try:
                 DOIValidator().validate_against_xsd(
@@ -143,7 +145,7 @@ class DOIInputUtil:
         Receives a URI containing SXLS format and writes one external file per
         row to an output directory.
         """
-        logger.info("i_filepath " + i_filepath)
+        logger.info("i_filepath: %s", i_filepath)
 
         xl_wb = pd.ExcelFile(i_filepath, engine='openpyxl')
 
@@ -153,15 +155,17 @@ class DOIInputUtil:
             i_filepath, actual_sheet_name,
             # Parse 3rd column (1-indexed) as a pd.Timestamp, can't use
             # name of column since it hasn't been standardized yet
-            parse_dates=[3]
+            parse_dates=[3],
+            # Remove automatic replacement of empty columns with NaN
+            na_filter=False
         )
 
         num_cols = len(xl_sheet.columns)
         num_rows = len(xl_sheet.index)
 
-        logger.info("num_cols " + str(num_cols))
-        logger.info("num_rows " + str(num_rows))
-        logger.debug("data columns " + str(list(xl_sheet.columns)))
+        logger.info("num_cols: %d", num_cols)
+        logger.info("num_rows: %d", num_rows)
+        logger.debug("data columns: %s", str(list(xl_sheet.columns)))
 
         # rename columns in a simpler way
         xl_sheet = xl_sheet.rename(
@@ -206,7 +210,7 @@ class DOIInputUtil:
                       date_record_added=timestamp,
                       date_record_updated=timestamp)
 
-            logger.debug(f'getting doi metadata {doi.__dict__}')
+            logger.debug("Parsed Doi: %r", doi.__dict__)
             doi_records.append(doi)
 
         return doi_records
@@ -219,28 +223,31 @@ class DOIInputUtil:
         # Read the CSV file into memory
         csv_sheet = pd.read_csv(
             csv_filepath,
-            parse_dates=["publication_date"]
+            # Have pandas auto-parse publication_date column as a datetime
+            parse_dates=["publication_date"],
+            # Remove automatic replacement of empty columns with NaN
+            na_filter=False
         )
 
         num_cols = len(csv_sheet.columns)
         num_rows = len(csv_sheet.index)
 
-        logger.debug("csv_sheet.head() " + str(csv_sheet.head()))
-        logger.info("num_cols " + str(num_cols))
-        logger.info("num_rows " + str(num_rows))
-        logger.debug("data columns " + str(list(csv_sheet.columns)))
+        logger.debug("csv_sheet.head(): %s", str(csv_sheet.head()))
+        logger.debug("num_cols: %d", str(num_cols))
+        logger.debug("num_rows: %d", str(num_rows))
+        logger.debug("data columns: %s", str(list(csv_sheet.columns)))
 
         if num_cols < self.EXPECTED_NUM_COLUMNS:
             msg = (f"Expecting {self.EXPECTED_NUM_COLUMNS} columns in the provided "
                    f"CSV file, but only found {num_cols} columns.")
 
             logger.error(msg)
-            logger.error("csv_filepath " + csv_filepath)
-            logger.error("data columns " + str(list(csv_sheet.columns)))
+            logger.error("csv_filepath: %s", csv_filepath)
+            logger.error("data columns: %s", list(csv_sheet.columns))
             raise InputFormatException(msg)
         else:
             dois = self._parse_rows_to_doi_meta(csv_sheet)
-            logger.info("FILE_WRITE_SUMMARY: num_rows " + str(num_rows))
+            logger.debug("FILE_WRITE_SUMMARY: num_rows %d", num_rows)
 
         return dois
 
@@ -263,7 +270,7 @@ class DOIInputUtil:
             dois, _ = DOIOstiWebParser.parse_osti_response_json(json_contents)
         except InputFormatException:
             logger.warning('Unable to parse any Doi objects from provided '
-                           f'json file "{json_filepath}"')
+                           'json file "%s"', json_filepath)
 
         return dois
 
@@ -288,7 +295,7 @@ class DOIInputUtil:
         dois = []
 
         if os.path.isfile(path):
-            logger.info(f'Reading local file path {path}')
+            logger.info('Reading local file path %s', path)
 
             extension = os.path.splitext(path)[-1]
 
@@ -304,9 +311,9 @@ class DOIInputUtil:
                     logger.error(msg)
                     raise InputFormatException(msg)
             else:
-                logger.info(f'File {path} has unsupported extension, ignoring')
+                logger.info('File %s has unsupported extension, ignoring', path)
         else:
-            logger.info(f'Reading files within directory {path}')
+            logger.info('Reading files within directory %s', path)
 
             for sub_path in os.listdir(path):
                 dois.extend(self._read_from_path(os.path.join(path, sub_path)))
