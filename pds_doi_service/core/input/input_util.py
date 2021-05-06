@@ -200,7 +200,7 @@ class DOIInputUtil:
             doi = Doi(status=DoiStatus(row['status'].lower()),
                       title=row['title'],
                       publication_date=row['publication_date'],
-                      product_type=ProductType.Collection,
+                      product_type=self._parse_product_type(row['product_type_specific']),
                       product_type_specific=row['product_type_specific'],
                       related_identifier=row['related_resource'],
                       authors=[{'first_name': row['author_first_name'],
@@ -212,6 +212,36 @@ class DOIInputUtil:
             doi_records.append(doi)
 
         return doi_records
+
+    @staticmethod
+    def _parse_product_type(product_type_specific):
+        """
+        Attempt to parse a ProductType enum value from the "product_type_specific"
+        field of a parsed Doi.
+
+        Parameters
+        ----------
+        product_type_specific : str
+            The product_type_specific field from a parsed Doi.
+
+        Returns
+        -------
+        product_type : ProductType
+            The product type parsed from the product_type_specific field,
+            if present. Otherwise, defaults to ProductType.Text.
+
+        """
+        product_type_specific_suffix = product_type_specific.split()[-1]
+
+        try:
+            product_type = ProductType(product_type_specific_suffix.capitalize())
+            logger.debug('Parsed %s from %s', product_type, product_type_specific)
+        except ValueError:
+            product_type = ProductType.Collection
+            logger.debug('Could not parsed product type from %s, defaulting to %s',
+                         product_type_specific, product_type)
+
+        return product_type
 
     def parse_csv_file(self, csv_filepath):
         """
