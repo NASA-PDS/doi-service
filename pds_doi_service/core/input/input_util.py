@@ -27,10 +27,10 @@ from lxml import etree
 
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger
@@ -127,9 +127,7 @@ class DOIInputUtil:
                         basename(xml_path))
 
             try:
-                DOIValidator().validate_against_xsd(
-                    xml_contents, use_alternate_validation_method=True
-                )
+                OSTIInputValidator()._validate_against_xsd(xml_tree)
 
                 dois, _ = DOIOstiWebParser.parse_osti_response_xml(xml_contents)
             except XMLSchemaValidationError as err:
