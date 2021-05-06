@@ -34,7 +34,7 @@ from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
-logger = get_logger('pds_doi_service.core.util.doi_validator')
+logger = get_logger(__name__)
 
 
 class DOIValidator:
@@ -174,14 +174,19 @@ class DOIValidator:
 
             raise TitleDoesNotMatchProductTypeException(msg)
 
-    def _check_field_lidvid_update(self, doi: Doi):
+    def _check_doi_for_existing_lidvid(self, doi: Doi):
         """
-        If DOI does not have a doi field, and action step is 'release' there is
-        no DOI in sqllite database with the same lidvid and a DOI attribute.
+        For the LIDVID assigned to the provided Doi object, check the following:
 
-        If lidvid exist and doi exist, throw an exception if action is 'release'
-        If lidvid exist and doi exist, if action is not 'release', nothing to do.
-        If lidvid does not exist, nothing to do.
+        * If the provided Doi object does not have a doi field assigned, check
+          if there is a pre-existing transaction for the LIDVID that does have
+          a doi field already assigned.
+
+        * If the provided Doi object has a doi field assigned, check that
+          the latest transaction for the same LIDVID has a matching doi.
+
+        If either check fails, raise an IllegalDOIActionException.
+
         """
         # The database expects each field to be a list.
         query_criterias = {'lidvid': [doi.related_identifier]}
@@ -280,13 +285,8 @@ class DOIValidator:
         """
         # TODO check id and doi fields are consistent.
 
-        # Validate the site_url first to give the user a chance to make the correction.
+        self._check_doi_for_existing_lidvid(doi)
         self._check_field_site_url(doi)
         self._check_field_title_duplicate(doi)
         self._check_field_title_content(doi)
         self._check_field_workflow(doi)
-
-    def validate_osti_submission(self, doi: Doi):
-        # do first the critical error check
-        self._check_field_lidvid_update(doi)
-        self.validate(doi)

@@ -157,7 +157,7 @@ class DoiValidatorTest(unittest.TestCase):
                       status=self.status)
 
         self.assertRaises(
-            IllegalDOIActionException, self._doi_validator.validate_osti_submission, doi_obj
+            IllegalDOIActionException, self._doi_validator.validate, doi_obj
         )
 
     def test_release_existing_lidvid_missing_doi(self):
@@ -173,7 +173,7 @@ class DoiValidatorTest(unittest.TestCase):
                       status=self.status)
 
         self.assertRaises(
-            IllegalDOIActionException, self._doi_validator.validate_osti_submission, doi_obj
+            IllegalDOIActionException, self._doi_validator.validate, doi_obj
         )
 
     def test_workflow_sequence_exception(self):
