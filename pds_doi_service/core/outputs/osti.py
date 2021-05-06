@@ -21,10 +21,10 @@ from pkg_resources import resource_filename
 
 import pystache
 
-from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import Doi, ProductType
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.outputs.osti')
+logger = get_logger(__name__)
 
 CONTENT_TYPE_XML = 'xml'
 CONTENT_TYPE_JSON = 'json'
@@ -113,6 +113,11 @@ class DOIOutputOsti:
             # with pystache rendering
             if doi.authors and content_type == CONTENT_TYPE_JSON:
                 doi_fields['authors'] = json.dumps(doi.authors)
+
+            # The OSTI IAD schema does not support 'Bundle' as a product type,
+            # so convert to collection here
+            if doi.product_type == ProductType.Bundle:
+                doi_fields['product_type'] = ProductType.Collection
 
             # Lastly, we need a kludge to inform the mustache template whether
             # to include a comma between consecutive entries (JSON only)
