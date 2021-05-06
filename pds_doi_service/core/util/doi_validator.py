@@ -14,14 +14,8 @@ Contains classes and functions for validation of DOI records and the overall
 DOI workflow.
 """
 
-import tempfile
-from os.path import exists
-from pkg_resources import resource_filename
-
-from lxml import etree
 
 import requests
-import xmlschema
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi, DoiStatus
@@ -61,17 +55,6 @@ class DOIValidator:
             self.m_default_db_file = self._config.get('OTHER', 'db_file')
 
         self._database_obj = DOIDataBase(self.m_default_db_file)
-
-        self._xsd_filename = resource_filename(__name__, 'iad_schema.xsd')
-
-        if not exists(self._xsd_filename):
-            raise RuntimeError(
-                'Could not find the schema file needed by this module.\n'
-                f'Expected schema file: {self._xsd_filename}'
-            )
-
-    def get_database_name(self):
-        return self._database_obj.get_database_name()
 
     @staticmethod
     def __lidvid(columns, row):
@@ -246,37 +229,6 @@ class DOIValidator:
                 )
 
                 raise UnexpectedDOIActionException(msg)
-
-    def validate_against_xsd(self, doi_label, use_alternate_validation_method=True):
-        # Given a DOI label, validate it against the XSD.
-        # The fromstring() requires the parameter type to be bytes.
-        # The encode() convert str to bytes.
-        xml_file = etree.fromstring(doi_label.encode())
-
-        xml_validator = etree.XMLSchema(file=self._xsd_filename)
-
-        # Perform the XSD validation.
-        # The validate() function does not throw an exception, but merely
-        # returns True or False.
-        is_valid = xml_validator.validate(xml_file)
-        logger.info("xsd_filename,is_valid: %s,%s", self._xsd_filename, is_valid)
-
-        # If DOI is not valid, use another method to get exactly where the
-        # error(s) occurred.
-        if not is_valid and use_alternate_validation_method:
-            schema = xmlschema.XMLSchema(self._xsd_filename)
-
-            # Save doi_label to disk so it can be compared to historical in next step.
-            with tempfile.NamedTemporaryFile(mode='w', suffix='temp_doi.xml') as temp_file:
-                temp_file.write(doi_label + "\n")
-                temp_file.flush()
-
-                # If the XSD fails to validate the DOI label, it will throw an
-                # exception and exit. It will report where the error occurred.
-                # The error will have to be fixed.
-                schema.validate(temp_file.name)
-
-        return is_valid
 
     def validate(self, doi: Doi):
         """
