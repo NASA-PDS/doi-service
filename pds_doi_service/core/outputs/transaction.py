@@ -72,14 +72,13 @@ class Transaction:
         )
 
         for doi in self._dois:
-
             lid, vid = Transaction.get_lidvid(doi.related_identifier)
 
             doi_fields = doi.__dict__
 
             self._transaction_db.write_doi_info_to_database(
                 lid=lid,
-                vid=vid if vid else None,
+                vid=vid,
                 transaction_key=transaction_io_dir,
                 doi=doi_fields['doi'],
                 release_date=doi_fields.get('date_record_added', self._transaction_time),
