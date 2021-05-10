@@ -29,6 +29,7 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    InputFormatException,
                                                    CriticalDOIException,
+                                                   InvalidLIDVIDException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -321,7 +322,9 @@ class DOICoreActionDraft(DOICoreAction):
                 self._doi_validator.validate(doi_obj)
         # Collect any exceptions/warnings for now and decide whether to
         # raise or log them later on
-        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
+        except (DuplicatedTitleDOIException,
+                InvalidLIDVIDException,
+                UnexpectedDOIActionException,
                 TitleDoesNotMatchProductTypeException) as err:
             (exception_classes,
              exception_messages) = collect_exception_classes_and_messages(
