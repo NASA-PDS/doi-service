@@ -14,6 +14,7 @@ Contains classes and functions for validation of DOI records and the overall
 DOI workflow.
 """
 
+import re
 
 import requests
 
@@ -21,6 +22,8 @@ from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi, DoiStatus
 from pds_doi_service.core.input.exceptions import (DuplicatedTitleDOIException,
                                                    IllegalDOIActionException,
+                                                   InvalidRecordException,
+                                                   InvalidLIDVIDException,
                                                    SiteURLNotExistException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException)
@@ -29,6 +32,10 @@ from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
 logger = get_logger(__name__)
+
+MIN_LID_FIELDS = 4
+MAX_LID_FIELDS = 6
+"""The expected minimum and maximum fields expected within a LID"""
 
 
 class DOIValidator:
@@ -124,8 +131,8 @@ class DOIValidator:
                 else:
                     dois.append('None')
 
-            msg = (f"The title '{doi.title}' has already been used for a DOI "
-                   f"by lidvid(s): {lidvids}, status: {status}, doi: {','.join(dois)}. " 
+            msg = (f"The title '{doi.title}' has already been used for records "
+                   f"{lidvids}, status: {status}, doi: {','.join(dois)}. " 
                    "You must use a different title.")
 
             raise DuplicatedTitleDOIException(msg)
@@ -168,7 +175,15 @@ class DOIValidator:
         * If the provided Doi object has a doi field assigned, check that
           the latest transaction for the same LIDVID has a matching doi.
 
-        If either check fails, raise an IllegalDOIActionException.
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to validate.
+
+        Raises
+        ------
+        IllegalDOIActionException
+            If either check fails.
 
         """
         # The database expects each field to be a list.
@@ -180,22 +195,160 @@ class DOIValidator:
         rows_having_doi = [row for row in rows if row[columns.index('doi')]]
 
         if rows_having_doi:
-            pre_existing_doi = {columns[i]: rows_having_doi[0][i]
-                                for i in range(len(columns))}
+            pre_existing_doi = dict(zip(columns, rows_having_doi[0]))
 
             if doi.doi is None:
                 raise IllegalDOIActionException(
                     f"There is already a DOI {pre_existing_doi['doi']} submitted "
-                    f"for this lidvid {doi.related_identifier} "
-                    f"(status={pre_existing_doi['status']}). "
-                    "You cannot submit a new DOI for the same lidvid."
+                    f"for record identifier {doi.related_identifier} "
+                    f"(status={pre_existing_doi['status']}).\n"
+                    "You cannot update/remove a DOI for an existing record identifier."
                 )
             elif doi.doi != pre_existing_doi['doi']:
                 raise IllegalDOIActionException(
                     f"There is already a DOI {pre_existing_doi['doi']} submitted "
-                    f"for this lidvid {doi.related_identifier} "
-                    f"(status={pre_existing_doi['status']}). "
-                    f"You cannot update DOI {doi.doi} for the same lidvid.")
+                    f"for record identifier {doi.related_identifier} "
+                    f"(status={pre_existing_doi['status']}).\n"
+                    f"You cannot update DOI {doi.doi} for an existing record identifier."
+                )
+
+    def _check_lidvid_for_existing_doi(self, doi: Doi):
+        """
+        For Doi objects with DOI already assigned, ensure the DOI value is
+        not already in use for a different LIDVID.
+
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to validate.
+
+        Raises
+        ------
+        IllegalDOIActionException
+            If the check fails.
+
+        """
+        if doi.doi:
+            # The database expects each field to be a list.
+            query_criterias = {'doi': [doi.doi]}
+
+            # Query database for rows with given DOI value (should only ever be
+            # at most one)
+            columns, rows = self._database_obj.select_latest_rows(query_criterias)
+
+            if rows and doi.related_identifier != self.__lidvid(columns, rows[0]):
+                raise IllegalDOIActionException(
+                    f"The DOI ({doi.doi}) provided for record identifier "
+                    f"{doi.related_identifier} is already in use for record "
+                    f"{self.__lidvid(columns, rows[0])}.\nThe DOI may not be "
+                    f"reused with a different record identifier."
+                )
+
+    def _check_identifier_fields(self, doi: Doi):
+        """
+        Checks the fields of a Doi object used for identification for consistency
+        and validity.
+
+        Parameters
+        ----------
+        doi : Doi
+            The parsed Doi object to validate
+
+        Raises
+        ------
+        InvalidDOIException
+            If any of the identifier field checks fail
+
+        """
+        # Make sure we have an identifier to key off of
+        if not doi.related_identifier:
+            raise InvalidRecordException(
+                'Record provided with missing related_identifier field. '
+                'Please ensure a LIDVID or similar identifier is provided for '
+                'all DOI requests.'
+            )
+
+        # Make sure the doi and id fields are consistent, if present
+        if doi.doi and doi.id:
+            prefix, suffix = doi.doi.split('/')
+
+            if suffix != doi.id:
+                raise InvalidRecordException(
+                    f'Record for {doi.related_identifier} has inconsistent '
+                    f'DOI ({doi.doi}) and ID ({doi.id}) fields. Please reconcile '
+                    'the inconsistency and resubmit the request.'
+                )
+
+    def _check_lidvid_field(self, doi: Doi):
+        """
+        Checks the related_identifier field of a Doi to ensure it conforms
+        to the LIDVID format.
+
+        Parameters
+        ----------
+        doi : Doi
+            The parsed Doi object to validate
+
+        Raises
+        ------
+        InvalidLIDVIDException
+            If the related identifier field of the DOI does not conform to
+            the LIDVID format. These exceptions should be able to be bypassed
+            when the --force flag is provided.
+
+        """
+
+        if '::' in doi.related_identifier:
+            lid, vid = doi.related_identifier.split('::')
+        else:
+            lid = doi.related_identifier
+            vid = None
+
+        lid_tokens = lid.split(':')
+
+        try:
+            # Make sure we got a URN
+            if lid_tokens[0] != 'urn':
+                raise InvalidLIDVIDException('LIDVID must start with "urn"')
+
+            # Make sure we got the minimum number of fields, and that
+            # the number of fields is consistent with the product type
+            if not MIN_LID_FIELDS <= len(lid_tokens) <= MAX_LID_FIELDS:
+                raise InvalidLIDVIDException(
+                    f'LIDVID must contain only between {MIN_LID_FIELDS} '
+                    f'and {MAX_LID_FIELDS} colon-delimited fields, '
+                    f'got {len(lid_tokens)} field(s)'
+                )
+
+            # Now check each field for the expected set of characters
+            token_regex = re.compile(r'[a-z0-9][a-z0-9-._]{0,31}')
+
+            for index, token in enumerate(lid_tokens):
+                if not token_regex.fullmatch(token):
+                    raise InvalidLIDVIDException(
+                        f'LIDVID field {index + 1} ({token}) is invalid. '
+                        f'Fields must begin with a letter or digit, and only '
+                        f'consist of letters, digits, hyphens (-), underscores (_) '
+                        f'or periods (.)'
+                    )
+
+            # Finally, make sure the VID conforms to a version number
+            version_regex = re.compile(r'^\d+\.\d+$')
+
+            if vid and not version_regex.fullmatch(vid):
+                raise InvalidLIDVIDException(
+                    f'Parsed VID ({vid}) does not conform to a valid version identifier. '
+                    'Version identifier must consist only of a major and minor version '
+                    'joined with a period (ex: 1.0)'
+                )
+        except InvalidLIDVIDException as err:
+            raise InvalidLIDVIDException(
+                f'The record identifier {doi.related_identifier} (DOI {doi.doi}) '
+                f'does not conform to a valid LIDVID format.\n'
+                f'Reason: {str(err)}\n'
+                'If the identifier is not intended to be a LIDVID, use the '
+                'force option to bypass the results of this check.'
+            )
 
     def _check_field_workflow(self, doi: Doi):
         """
@@ -235,9 +388,10 @@ class DOIValidator:
         Given a Doi object, validate certain fields before sending them to OSTI
         or other data center(s). Exception(s) will be raised.
         """
-        # TODO check id and doi fields are consistent.
-
         self._check_doi_for_existing_lidvid(doi)
+        self._check_lidvid_for_existing_doi(doi)
+        self._check_identifier_fields(doi)
+        self._check_lidvid_field(doi)
         self._check_field_site_url(doi)
         self._check_field_title_duplicate(doi)
         self._check_field_title_content(doi)
