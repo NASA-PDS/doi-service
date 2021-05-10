@@ -470,19 +470,27 @@ class DOIDataBase:
         wildcard_tokens = list(filter(lambda token: '*' in token, search_tokens))
         full_tokens = list(set(search_tokens) - set(wildcard_tokens))
 
+        # Clean up the column name provided so it can be used as a suitable
+        # named parameter placeholder token
+        filter_chars = [' ', '\'', ':', '|']
+        named_param_id = column_name
+
+        for filter_char in filter_chars:
+            named_param_id = named_param_id.replace(filter_char, '')
+
         # Set up the named parameters for the IN portion of the WHERE used
         # to find fully specified tokens
-        named_parameters = ','.join([f':token_{i}'
+        named_parameters = ','.join([f':{named_param_id}_{i}'
                                      for i in range(len(full_tokens))])
-        named_parameter_values = {f'token_{i}': full_tokens[i]
+        named_parameter_values = {f'{named_param_id}_{i}': full_tokens[i]
                                   for i in range(len(full_tokens))}
 
         # Set up the named parameters for the GLOB portion of the WHERE used
         # find tokens containing wildcards
-        glob_parameters = ' OR '.join([f'{column_name} GLOB :glob_{i}'
+        glob_parameters = ' OR '.join([f'{column_name} GLOB :{named_param_id}_glob_{i}'
                                        for i in range(len(wildcard_tokens))])
 
-        named_parameter_values.update({f'glob_{i}': wildcard_tokens[i]
+        named_parameter_values.update({f'{named_param_id}_glob_{i}': wildcard_tokens[i]
                                        for i in range(len(wildcard_tokens))})
 
         # Build the portion of the WHERE clause combining the necessary
@@ -511,10 +519,28 @@ class DOIDataBase:
 
     @staticmethod
     def _get_query_criteria_lidvid(v):
+        criterias_str = ''
+        criterias_dict = {}
+
+        # First filter out any LID-only entries and query those separately
+        lidvids = list(filter(lambda s: '::' in s, v))
+        lids = list(set(v) - set(lidvids))
+
+        if lids:
+            criterias_str, criterias_dict = DOIDataBase._get_query_criteria_lid(lids)
+
         # To combine the 'lid' and 'vid' we need to add the '::' to compare to
         # lidvid values
-        lidvid_column_name = "lid || '::' || vid"
-        return DOIDataBase._form_query_with_wildcards(lidvid_column_name, v)
+        if lidvids:
+            lidvid_column_name = "lid || '::' || vid"
+            criteria_str, criteria_dict = DOIDataBase._form_query_with_wildcards(
+                lidvid_column_name, lidvids
+            )
+
+            criterias_str += criteria_str
+            criterias_dict.update(criteria_dict)
+
+        return criterias_str, criterias_dict
 
     @staticmethod
     def _get_query_criteria_submitter(v):
