@@ -13,9 +13,6 @@ release.py
 Contains the definition for the Release action of the Core PDS DOI Service.
 """
 
-from datetime import datetime
-from distutils.util import strtobool
-
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import (InputFormatException,
@@ -24,6 +21,7 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    SiteURLNotExistException,
                                                    CriticalDOIException,
+                                                   InvalidLIDVIDException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -46,6 +44,7 @@ class DOICoreActionRelease(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
+        self._osti_validator = OSTIInputValidator()
         self._input_util = DOIInputUtil(valid_extensions=['.xml', '.json'])
 
         self._input = None
@@ -155,19 +154,16 @@ class DOICoreActionRelease(DOICoreAction):
             try:
                 single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
 
-                # Validate XML representation of the DOI against the OSTI XSD,
-                # if requested
-                if strtobool(self._config.get('OTHER', 'release_validate_against_xsd_flag')):
-                    self._doi_validator.validate_against_xsd(
-                        single_doi_label, use_alternate_validation_method=True
-                    )
+                # Validate XML representation of the DOI
+                self._osti_validator.validate(single_doi_label, action=self._name)
 
-                # Validate the input content against schematron for correctness.
-                OSTIInputValidator().validate(single_doi_label)
-
-                self._doi_validator.validate_osti_submission(doi)
-            except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException, SiteURLNotExistException) as err:
+                # Validate the object representation of the DOI
+                self._doi_validator.validate(doi)
+            except (DuplicatedTitleDOIException,
+                    InvalidLIDVIDException,
+                    UnexpectedDOIActionException,
+                    TitleDoesNotMatchProductTypeException,
+                    SiteURLNotExistException) as err:
                 (exception_classes,
                  exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages

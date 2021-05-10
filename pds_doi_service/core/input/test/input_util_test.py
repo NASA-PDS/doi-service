@@ -99,7 +99,7 @@ class InputUtilTestCase(unittest.TestCase):
                              for doi in dois]))
         self.assertTrue(all([len(doi.authors) == 1
                              for doi in dois]))
-        self.assertTrue(all([doi.product_type == ProductType.Collection
+        self.assertTrue(all([doi.product_type == doi_input_util._parse_product_type(doi.product_type_specific)
                              for doi in dois]))
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime)
                              for doi in dois]))

@@ -113,6 +113,87 @@ class DOIDatabaseTest(unittest.TestCase):
 
         self._doi_database.close_database()
 
+    def test_select_latest_rows_lid_only(self):
+        """Test corner case where we select and update rows that only specify a LID"""
+        # Set up a sample db entry
+        lid = 'urn:nasa:pds:insight_cameras'
+        vid = None
+        transaction_key = 'img/2021-05-10T00:00:00.000000'
+        doi = '10.17189/22000'
+        release_date = datetime.datetime.now()
+        transaction_date = datetime.datetime.now()
+        status = DoiStatus.Unknown
+        title = 'Insight Cameras Bundle'
+        product_type = ProductType.Collection
+        product_type_specific = 'PDS4 Collection'
+        submitter = 'eng-submitter@jpl.nasa.gov'
+        discipline_node = 'eng'
+
+        # Insert a row in the 'doi' table
+        self._doi_database.write_doi_info_to_database(
+            lid, vid, transaction_key, doi, release_date, transaction_date, status,
+            title, product_type, product_type_specific, submitter, discipline_node
+        )
+
+        # Select the row we just added
+        # The type of o_query_result should be JSON and a list of 1
+        o_query_result = self._doi_database.select_latest_rows(
+            query_criterias={'lidvid': [lid]}
+        )
+
+        # Reformat results to a dictionary to test with
+        query_result = dict(zip(o_query_result[0], o_query_result[1][0]))
+
+        # Ensure we got back everything we just put in
+        self.assertEqual(query_result['status'], status)
+        self.assertEqual(
+            int(query_result['release_date'].timestamp()),
+            int(release_date.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp())
+        )
+        self.assertEqual(
+            int(query_result['update_date'].timestamp()),
+            int(transaction_date.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp())
+        )
+        self.assertEqual(query_result['submitter'], submitter)
+        self.assertEqual(query_result['title'], title)
+        self.assertEqual(query_result['type'], product_type)
+        self.assertEqual(query_result['subtype'], product_type_specific)
+        self.assertEqual(query_result['node_id'], discipline_node)
+        self.assertEqual(query_result['lid'], lid)
+        self.assertEqual(query_result['vid'], vid)
+        self.assertEqual(query_result['doi'], doi)
+        self.assertEqual(query_result['transaction_key'], transaction_key)
+
+        self.assertTrue(query_result['is_latest'])
+
+        # Update some fields and write a new "latest" entry
+        status = DoiStatus.Pending
+        submitter = 'img-submitter@jpl.nasa.gov'
+        discipline_node = 'img'
+
+        self._doi_database.write_doi_info_to_database(
+            lid, vid, transaction_key, doi, release_date, transaction_date, status,
+            title, product_type, product_type_specific, submitter, discipline_node
+        )
+
+        # Query again and ensure we only get latest back
+        o_query_result = self._doi_database.select_latest_rows(
+            query_criterias={'lidvid': [lid]}
+        )
+
+        # Should only get the one row back
+        self.assertEqual(len(o_query_result[-1]), 1)
+
+        query_result = dict(zip(o_query_result[0], o_query_result[-1][0]))
+
+        self.assertEqual(query_result['status'], status)
+        self.assertEqual(query_result['submitter'], submitter)
+        self.assertEqual(query_result['node_id'], discipline_node)
+
+        self.assertTrue(query_result['is_latest'])
+
+        self._doi_database.close_database()
+
     def test_query_by_wildcard(self):
         """
         Test selection of database rows using tokens with wildcards for the

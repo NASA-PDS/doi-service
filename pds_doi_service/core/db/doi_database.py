@@ -186,7 +186,7 @@ class DOIDataBase:
 
         return o_query_string
 
-    def query_string_for_is_latest_update(self, table_name):
+    def query_string_for_is_latest_update(self, table_name, lid, vid):
         """
         Build the query string to update existing rows in the table with an
         update_date field earlier than the current row in the SQLite database.
@@ -194,20 +194,30 @@ class DOIDataBase:
         The current row is the row inserted with the "update_date" value of
         "latest_update". The comparison criteria is less than, meaning any rows
         inserted earlier will be updated with the column "is_latest" to zero.
-        """
 
+        The query string and named parameter values returned are determined
+        based on whether both a LID and VID are provided, or only a LID.
+
+        """
         # Note that we set column "is_latest" to 0 to signify that all previous
         # rows are now not the latest.
-        o_query_string = f'UPDATE {table_name} '
-        o_query_string += 'SET '
-        o_query_string += 'is_latest = 0 '
-        o_query_string += 'WHERE lid = ?'
-        o_query_string += ' AND  vid = ?'
-        o_query_string += ';'  # Don't forget the last semi-colon for SQL to work.
+        query_string = f'UPDATE {table_name} '
+        query_string += 'SET '
+        query_string += 'is_latest = 0 '
+        query_string += 'WHERE lid = ?'
 
-        logger.debug("UPDATE o_query_string: %s", o_query_string)
+        if vid:
+            query_string += ' AND vid = ?'
+        else:
+            query_string += ' AND vid is null'
 
-        return o_query_string
+        query_string += ';'  # Don't forget the last semi-colon for SQL to work.
+
+        logger.debug("UPDATE o_query_string: %s", query_string)
+
+        named_parameter_values = (lid, vid) if vid else (lid,)
+
+        return query_string, named_parameter_values
 
     def create_table(self, table_name):
         """Create a given table in the SQLite database."""
@@ -249,9 +259,11 @@ class DOIDataBase:
         try:
             # Create and execute the query to unset the is_latest field for all
             # records with the same LIDVID and DOI fields.
-            query_string = self.query_string_for_is_latest_update(self.m_default_table_name)
+            query_string, named_parameters = self.query_string_for_is_latest_update(
+                self.m_default_table_name, lid, vid
+            )
 
-            self.m_my_conn.execute(query_string, (lid, vid))
+            self.m_my_conn.execute(query_string, named_parameters)
             self.m_my_conn.commit()
         except sqlite3.Error as err:
             msg = (f"Failed to update is_latest field for LIDVID {lid}::{vid}, "
@@ -458,19 +470,27 @@ class DOIDataBase:
         wildcard_tokens = list(filter(lambda token: '*' in token, search_tokens))
         full_tokens = list(set(search_tokens) - set(wildcard_tokens))
 
+        # Clean up the column name provided so it can be used as a suitable
+        # named parameter placeholder token
+        filter_chars = [' ', '\'', ':', '|']
+        named_param_id = column_name
+
+        for filter_char in filter_chars:
+            named_param_id = named_param_id.replace(filter_char, '')
+
         # Set up the named parameters for the IN portion of the WHERE used
         # to find fully specified tokens
-        named_parameters = ','.join([f':token_{i}'
+        named_parameters = ','.join([f':{named_param_id}_{i}'
                                      for i in range(len(full_tokens))])
-        named_parameter_values = {f'token_{i}': full_tokens[i]
+        named_parameter_values = {f'{named_param_id}_{i}': full_tokens[i]
                                   for i in range(len(full_tokens))}
 
         # Set up the named parameters for the GLOB portion of the WHERE used
         # find tokens containing wildcards
-        glob_parameters = ' OR '.join([f'{column_name} GLOB :glob_{i}'
+        glob_parameters = ' OR '.join([f'{column_name} GLOB :{named_param_id}_glob_{i}'
                                        for i in range(len(wildcard_tokens))])
 
-        named_parameter_values.update({f'glob_{i}': wildcard_tokens[i]
+        named_parameter_values.update({f'{named_param_id}_glob_{i}': wildcard_tokens[i]
                                        for i in range(len(wildcard_tokens))})
 
         # Build the portion of the WHERE clause combining the necessary
@@ -499,10 +519,28 @@ class DOIDataBase:
 
     @staticmethod
     def _get_query_criteria_lidvid(v):
+        criterias_str = ''
+        criterias_dict = {}
+
+        # First filter out any LID-only entries and query those separately
+        lidvids = list(filter(lambda s: '::' in s, v))
+        lids = list(set(v) - set(lidvids))
+
+        if lids:
+            criterias_str, criterias_dict = DOIDataBase._get_query_criteria_lid(lids)
+
         # To combine the 'lid' and 'vid' we need to add the '::' to compare to
         # lidvid values
-        lidvid_column_name = "lid || '::' || vid"
-        return DOIDataBase._form_query_with_wildcards(lidvid_column_name, v)
+        if lidvids:
+            lidvid_column_name = "lid || '::' || vid"
+            criteria_str, criteria_dict = DOIDataBase._form_query_with_wildcards(
+                lidvid_column_name, lidvids
+            )
+
+            criterias_str += criteria_str
+            criterias_dict.update(criteria_dict)
+
+        return criterias_str, criterias_dict
 
     @staticmethod
     def _get_query_criteria_submitter(v):

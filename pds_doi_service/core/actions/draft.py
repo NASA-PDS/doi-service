@@ -15,7 +15,6 @@ Contains the definition for the Draft action of the Core PDS DOI Service.
 
 import copy
 import glob
-from distutils.util import strtobool
 from os.path import exists, join
 
 from lxml import etree
@@ -30,6 +29,7 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    InputFormatException,
                                                    CriticalDOIException,
+                                                   InvalidLIDVIDException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -55,6 +55,7 @@ class DOICoreActionDraft(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
+        self._osti_validator = OSTIInputValidator()
         self._list_obj = DOICoreActionList(db_name=db_name)
 
         self._input = None
@@ -308,25 +309,22 @@ class DOICoreActionDraft(DOICoreAction):
         dois_obj = None
 
         try:
-            # Transform the input label to an OSTI record and list of Doi objects.
+            # Transform the input label to an OSTI record and list of Doi objects,
+            # then validate each accordingly
             doi_label, dois_obj = self._transform_label_into_osti_record(
                 input_file, keywords
             )
 
             if doi_label:
-                # Validate the doi_label content against schematron for correctness.
-                # If the input is correct no exception is thrown and code can
-                # proceed to database validation and then submission.
-                OSTIInputValidator().validate(doi_label)
-
-                if strtobool(self._config.get('OTHER', 'draft_validate_against_xsd_flag')):
-                    self._doi_validator.validate_against_xsd(doi_label)
+                self._osti_validator.validate(doi_label, action=self._name)
 
             for doi_obj in dois_obj:
                 self._doi_validator.validate(doi_obj)
         # Collect any exceptions/warnings for now and decide whether to
         # raise or log them later on
-        except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
+        except (DuplicatedTitleDOIException,
+                InvalidLIDVIDException,
+                UnexpectedDOIActionException,
                 TitleDoesNotMatchProductTypeException) as err:
             (exception_classes,
              exception_messages) = collect_exception_classes_and_messages(

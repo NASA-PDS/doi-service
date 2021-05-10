@@ -13,14 +13,12 @@ reserve.py
 Contains the definition for the Reserve action of the Core PDS DOI Service.
 """
 
-from datetime import datetime
-from distutils.util import strtobool
-
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    DuplicatedTitleDOIException,
                                                    InputFormatException,
+                                                   InvalidLIDVIDException,
                                                    SiteURLNotExistException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException,
@@ -46,6 +44,7 @@ class DOICoreActionReserve(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
+        self._osti_validator = OSTIInputValidator()
         self._input_util = DOIInputUtil()
 
         self._input = None
@@ -153,24 +152,18 @@ class DOICoreActionReserve(DOICoreAction):
             try:
                 single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
 
-                # Validate XML representation of the DOI against the OSTI XSD,
-                # if requested
-                if strtobool(self._config.get('OTHER', 'reserve_validate_against_xsd_flag')):
-                    self._doi_validator.validate_against_xsd(
-                        single_doi_label, use_alternate_validation_method=True
-                    )
+                # Validate XML representation of the DOI
+                self._osti_validator.validate(single_doi_label, action=self._name)
 
-                # Validate the doi_label content against schematron for correctness.
-                OSTIInputValidator().validate(single_doi_label)
-
-                if self._dry_run:
-                    self._doi_validator.validate(doi)
-                else:
-                    self._doi_validator.validate_osti_submission(doi)
+                # Validate the object representation of the DOI
+                self._doi_validator.validate(doi)
             # Collect all warnings and exceptions so they can be combined into
             # a single WarningDOIException
-            except (DuplicatedTitleDOIException, UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException, SiteURLNotExistException) as err:
+            except (DuplicatedTitleDOIException,
+                    InvalidLIDVIDException,
+                    UnexpectedDOIActionException,
+                    TitleDoesNotMatchProductTypeException,
+                    SiteURLNotExistException) as err:
                 (exception_classes,
                  exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages
