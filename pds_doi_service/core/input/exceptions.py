@@ -33,6 +33,10 @@ class UnknownLIDVIDException(Exception):
     pass
 
 
+class InvalidLIDVIDException(Exception):
+    """Raised for DOI's with related identifiers that do not conform to LIDVID format."""
+
+
 class NoTransactionHistoryForLIDVIDException(Exception):
     """Raised when no transaction database entry can be found for a given LIDVID."""
     pass
@@ -41,6 +45,10 @@ class NoTransactionHistoryForLIDVIDException(Exception):
 class DuplicatedTitleDOIException(Exception):
     """Raised when a DOI title has already been used with another LIDVID."""
     pass
+
+
+class InvalidRecordException(Exception):
+    """Raised when a DOI record object is parsed with an inconsistent or invalid state."""
 
 
 class IllegalDOIActionException(Exception):
