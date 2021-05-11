@@ -101,6 +101,13 @@ def create_cmd_parser():
                         help="Name of the SQLite3 database file name to commit "
                              "DOI records to. If not provided, the file name is "
                              "obtained from the DOI service INI config.")
+    parser.add_argument("-o", "--output-file", required=False, default=None,
+                        help="Path to write out the DOI XML labels as returned "
+                             "from OSTI. When created, this file can be used "
+                             "with the --input option to import records at a "
+                             "later time without re-querying the OSTI server. "
+                             "This option has no effect if --input already "
+                             "specifies an input XML file.")
     parser.add_argument("--dry-run", required=False, action="store_true",
                         help="Flag to suppress actual writing of DOIs to database.")
     parser.add_argument("--debug", required=False, action="store_true",
@@ -138,14 +145,13 @@ def _parse_input(input_file):
                                f"File may not exist.")
 
 
-def get_dois_from_osti(target_url):
+def get_dois_from_osti(target_url, output_file):
     """
     Queries the OSTI server for all the current DOI associated with the PDS-USER
     account. The server name is fetched from the config file with the 'url'
     field in the 'OSTI' grouping if target_url is None.
 
     """
-    # TODO: option to write out doi_xml as returned from OSTI
     query_dict = {}
 
     o_server_url = target_url
@@ -160,6 +166,10 @@ def get_dois_from_osti(target_url):
         i_username=m_config.get('OSTI', 'user'),
         i_password=m_config.get('OSTI', 'password')
     )
+
+    if output_file:
+        with open(output_file, 'w') as outfile:
+            outfile.write(doi_xml)
 
     dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
 
@@ -211,7 +221,8 @@ def _get_node_id_from_contributors(doi_fields):
     return o_node_id
 
 
-def perform_import_to_database(db_name, input_source, dry_run, submitter_email):
+def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
+                               output_file):
     """
     Imports all records from the input source into a local database.
     The input source may either be an existing XML file containing DOIs to parse,
@@ -233,6 +244,9 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email):
         database.
     submitter_email : str
         Email address of the user initiating the import.
+    output_file : str
+        Path to write out the XML label obtained from OSTI. If not specified,
+        no file is written.
 
     """
     o_records_found = 0  # Number of records returned from OSTI
@@ -276,7 +290,7 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email):
         # Get the dois from OSTI server.
         # Note that because the name of the server is in the config file,
         # it can be the OPS or TEST server.
-        dois, o_server_url = get_dois_from_osti(input_source)
+        dois, o_server_url = get_dois_from_osti(input_source, output_file)
 
     o_records_found = len(dois)
 
@@ -357,7 +371,8 @@ def main():
      records_skipped) = perform_import_to_database(arguments.db_name,
                                                    arguments.input,
                                                    arguments.dry_run,
-                                                   arguments.submitter_email)
+                                                   arguments.submitter_email,
+                                                   arguments.output_file)
 
     stop_time = datetime.now()
     elapsed_seconds = stop_time.timestamp() - start_time.timestamp()
