@@ -522,31 +522,28 @@ class DOIOstiWebParser:
 
             lidvid = DOIOstiWebParser.get_lidvid_from_xml(single_record_element)
 
-            if lidvid:
-                timestamp = datetime.now()
+            timestamp = datetime.now()
 
-                publication_date = single_record_element.xpath('publication_date')[0].text
-                product_type = single_record_element.xpath('product_type')[0].text
-                product_type_specific = single_record_element.xpath('product_type_specific')[0].text
+            publication_date = single_record_element.xpath('publication_date')[0].text
+            product_type = single_record_element.xpath('product_type')[0].text
+            product_type_specific = single_record_element.xpath('product_type_specific')[0].text
 
-                doi = Doi(
-                    title=single_record_element.xpath('title')[0].text,
-                    publication_date=datetime.strptime(publication_date, '%Y-%m-%d'),
-                    product_type=ProductType(product_type),
-                    product_type_specific=product_type_specific,
-                    related_identifier=lidvid,
-                    status=DoiStatus(status.lower()),
-                    date_record_added=timestamp,
-                    date_record_updated=timestamp
-                )
+            doi = Doi(
+                title=single_record_element.xpath('title')[0].text,
+                publication_date=datetime.strptime(publication_date, '%Y-%m-%d'),
+                product_type=ProductType(product_type),
+                product_type_specific=product_type_specific,
+                related_identifier=lidvid,
+                status=DoiStatus(status.lower()),
+                date_record_added=timestamp,
+                date_record_updated=timestamp
+            )
 
-                # Parse for some optional fields that may not be present in
-                # every record from OSTI.
-                doi = DOIOstiWebParser.parse_optional_fields_xml(doi, single_record_element)
+            # Parse for some optional fields that may not be present in
+            # every record from OSTI.
+            doi = DOIOstiWebParser.parse_optional_fields_xml(doi, single_record_element)
 
-                dois.append(doi)
-
-        # end for index, single_record_element in enumerate(my_root.findall('record')):
+            dois.append(doi)
 
         return dois, errors
 
@@ -600,24 +597,23 @@ class DOIOstiWebParser:
 
             lidvid = DOIOstiWebParser.get_lidvid_from_json(record)
 
-            if lidvid:
-                timestamp = datetime.now()
+            timestamp = datetime.now()
 
-                doi = Doi(
-                    title=record['title'],
-                    publication_date=datetime.strptime(record['publication_date'], '%Y-%m-%d'),
-                    product_type=ProductType(record['product_type']),
-                    product_type_specific=record.get('product_type_specific'),
-                    related_identifier=lidvid,
-                    status=DoiStatus(record.get('status', DoiStatus.Unknown).lower()),
-                    date_record_added=timestamp,
-                    date_record_updated=timestamp
-                )
+            doi = Doi(
+                title=record['title'],
+                publication_date=datetime.strptime(record['publication_date'], '%Y-%m-%d'),
+                product_type=ProductType(record['product_type']),
+                product_type_specific=record.get('product_type_specific'),
+                related_identifier=lidvid,
+                status=DoiStatus(record.get('status', DoiStatus.Unknown).lower()),
+                date_record_added=timestamp,
+                date_record_updated=timestamp
+            )
 
-                # Parse for some optional fields that may not be present in
-                # every record from OSTI.
-                doi = DOIOstiWebParser.parse_optional_fields_json(doi, record)
+            # Parse for some optional fields that may not be present in
+            # every record from OSTI.
+            doi = DOIOstiWebParser.parse_optional_fields_json(doi, record)
 
-                dois.append(doi)
+            dois.append(doi)
 
         return dois, errors
