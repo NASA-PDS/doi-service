@@ -337,6 +337,16 @@ class DOIOstiWebParser:
                 "'report_numbers','site_url'] tags"
             )
 
+        if lidvid:
+            # Some related_identifier fields have been observed with leading and
+            # trailing whitespace, so remove it here
+            lidvid = lidvid.strip()
+
+            # Some PDS3 identifiers have been observed to contain forward
+            # slashes, which causes problems with the API endpoints, so
+            # replace them with hyphens
+            lidvid = lidvid.replace('/', '-')
+
         return lidvid
 
     @staticmethod
@@ -361,6 +371,16 @@ class DOIOstiWebParser:
                 "Expecting one of ['accession_number','identifier_type',"
                 "'report_numbers','site_url'] fields"
             )
+
+        if lidvid:
+            # Some related_identifier fields have been observed with leading and
+            # trailing whitespace, so remove it here
+            lidvid = lidvid.strip()
+
+            # Some PDS3 identifiers have been observed to contain forward
+            # slashes, which causes problems with the API endpoints, so
+            # replace them with hyphens
+            lidvid = lidvid.replace('/', '-')
 
         return lidvid
 
