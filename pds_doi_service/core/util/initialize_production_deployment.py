@@ -68,7 +68,7 @@ from datetime import datetime
 
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    CriticalDOIException)
-from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
+from pds_doi_service.core.outputs.osti import DOIOstiWebClient
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -161,10 +161,10 @@ def get_dois_from_osti(target_url, output_file):
 
     logger.info("Using OSTI server URL %s", o_server_url)
 
-    doi_xml = DOIOstiWebClient().webclient_query_doi(
-        o_server_url, query_dict,
-        i_username=m_config.get('OSTI', 'user'),
-        i_password=m_config.get('OSTI', 'password')
+    doi_xml = DOIOstiWebClient().query_doi(
+        url=o_server_url, query=query_dict,
+        username=m_config.get('OSTI', 'user'),
+        password=m_config.get('OSTI', 'password')
     )
 
     if output_file:

@@ -30,7 +30,7 @@ from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.input.exceptions import (InputFormatException,
-                                                   OSTIRequestException,
+                                                   WebRequestException,
                                                    NoTransactionHistoryForLIDVIDException,
                                                    UnknownLIDVIDException,
                                                    WarningDOIException)
@@ -620,8 +620,8 @@ def get_check_dois(submitter, email=False, attachment=False):
 
     try:
         pending_results = check_action.run(**check_kwargs)
-    except OSTIRequestException as err:
-        # OSTI host was unreachable
+    except WebRequestException as err:
+        # Host was unreachable
         return format_exceptions(err), 400
     except Exception as err:
         # Treat any unexpected Exception as an "Internal Error" and report back

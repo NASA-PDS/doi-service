@@ -5,7 +5,7 @@ from os.path import abspath, dirname, join
 import unittest
 from unittest.mock import patch
 
-import pds_doi_service.core.outputs.osti_web_client
+import pds_doi_service.core.outputs.osti
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.osti import DOIOstiRecord
@@ -29,8 +29,8 @@ class ReserveActionTestCase(unittest.TestCase):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
 
-    def webclient_submit_patch(self, payload, i_url=None, i_username=None,
-                               i_password=None, content_type=CONTENT_TYPE_XML):
+    def webclient_submit_patch(self, payload, url=None, username=None,
+                               password=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.webclient_submit_existing_content().
 
@@ -70,8 +70,8 @@ class ReserveActionTestCase(unittest.TestCase):
                              for doi in dois]))
 
     @patch.object(
-        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
-        'webclient_submit_existing_content', webclient_submit_patch)
+        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        'submit_content', webclient_submit_patch)
     def test_reserve_xlsx_and_submit(self):
         """
         Test Reserve action with a local excel spreadsheet, submitting the
@@ -110,8 +110,8 @@ class ReserveActionTestCase(unittest.TestCase):
                              for doi in dois]))
 
     @patch.object(
-        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
-        'webclient_submit_existing_content', webclient_submit_patch)
+        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        'submit_content', webclient_submit_patch)
     def test_reserve_csv_and_submit(self):
         """
         Test Reserve action with a local CSV file, submitting the result to OSTI.
