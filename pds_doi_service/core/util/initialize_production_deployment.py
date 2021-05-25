@@ -258,7 +258,7 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     # start with the configured PDS DOI token, e.g. '10.17189'.
     # OSTI server(s) may contain records other than expected, especially the test
     # server. For normal operation use_doi_filtering_flag should be set to False.
-    # If set to True, the parameter pds_registration_doi_token in config/conf.ini
+    # If set to True, the parameter doi_prefix for OSTI in config/conf.ini
     # should be set to 10.17189.
     use_doi_filtering_flag = False
 
@@ -299,7 +299,7 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     # Write each Doi object as a row into the database.
     for item_index, doi in enumerate(dois):
         if use_doi_filtering_flag:
-            o_pds_doi_token = m_config.get('OTHER', 'pds_registration_doi_token')
+            o_pds_doi_token = m_config.get('OSTI', 'doi_prefix')
 
             if doi.doi and not doi.doi.startswith(o_pds_doi_token):
                 logger.warning("Skipping non-PDS DOI %s, index %d", doi.doi,

@@ -3,8 +3,14 @@ url = https://www.osti.gov/iad2test/api/records
 #url = https://www.osti.gov/iad2/api/records
 user = username
 password = secret
-release_input_schematron = config/IAD3_scheematron.sch
-input_xsd                = config/iad_schema.xsd
+doi_prefix = 10.17189
+
+[DATACITE]
+url = https://api.test.datacite.org/dois
+#url = https://api.datacite.org/dois
+user = username
+password = secret
+doi_prefix = 10.13143
 
 [PDS4_DICTIONARY]
 url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
@@ -33,5 +39,4 @@ emailer_receivers  = pdsen-doi-test@jpl.nasa.gov
 draft_validate_against_xsd_flag = True
 release_validate_against_xsd_flag = True
 reserve_validate_against_xsd_flag = True
-pds_registration_doi_token = 10.17189
 logging_level=DEBUG
