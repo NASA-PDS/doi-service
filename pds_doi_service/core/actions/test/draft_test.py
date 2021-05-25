@@ -11,7 +11,7 @@ from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException, WarningDOIException
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
 
 
 class DraftActionTestCase(unittest.TestCase):
@@ -385,7 +385,7 @@ class DraftActionTestCase(unittest.TestCase):
         # Slightly modify the lidvid so we trigger the "duplicate title" warning
         doi.related_identifier += '.1'
 
-        modified_draft_label = DOIOutputOsti().create_osti_doi_record(doi)
+        modified_draft_label = DOIOstiRecord().create_doi_record(doi)
 
         with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
             xml_file.write(modified_draft_label)

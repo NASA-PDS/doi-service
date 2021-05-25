@@ -17,7 +17,7 @@ import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.core.actions.check import DOICoreActionCheck
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 

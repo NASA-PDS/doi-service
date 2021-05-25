@@ -15,7 +15,8 @@ with the local database.
 """
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
-from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML, VALID_CONTENT_TYPES
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, VALID_CONTENT_TYPES
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
 from pds_doi_service.core.outputs.transaction import Transaction
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -74,7 +75,7 @@ class TransactionBuilder:
         # Create the output label that's written to the local transaction
         # history on disk. This label should represent the most up-to-date
         # version for this DOI/LIDVID
-        output_content = DOIOutputOsti().create_osti_doi_record(
+        output_content = DOIOstiRecord().create_doi_record(
             dois, content_type=output_content_type
         )
 

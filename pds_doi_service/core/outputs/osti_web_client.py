@@ -20,12 +20,12 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-from pds_doi_service.core.outputs.osti import (CONTENT_TYPE_XML,
-                                               CONTENT_TYPE_JSON,
-                                               VALID_CONTENT_TYPES)
-from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.input.exceptions import OSTIRequestException
+from pds_doi_service.core.outputs.doi_record import (CONTENT_TYPE_XML,
+                                                     CONTENT_TYPE_JSON,
+                                                     VALID_CONTENT_TYPES)
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
 

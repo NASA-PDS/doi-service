@@ -36,7 +36,8 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -571,7 +572,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
 
     # Create a return label in XML, since this is the format expected by
     # consumers of the response (such as the UI)
-    xml_label_for_lidvid = DOIOutputOsti().create_osti_doi_record(dois)
+    xml_label_for_lidvid = DOIOstiRecord().create_doi_record(dois)
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],

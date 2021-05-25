@@ -8,7 +8,8 @@ from unittest.mock import patch
 import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_JSON, CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 
 
@@ -43,7 +44,7 @@ class ReserveActionTestCase(unittest.TestCase):
         for doi in dois:
             doi.status = DoiStatus.Reserved
 
-        o_doi_label = DOIOutputOsti().create_osti_doi_record(
+        o_doi_label = DOIOstiRecord().create_doi_record(
             dois, content_type=CONTENT_TYPE_JSON
         )
 

@@ -22,7 +22,7 @@ from lxml import etree
 
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException, UnknownLIDVIDException
-from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)

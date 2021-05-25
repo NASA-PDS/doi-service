@@ -27,7 +27,8 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
@@ -150,7 +151,7 @@ class DOICoreActionReserve(DOICoreAction):
 
         for doi in dois:
             try:
-                single_doi_label = DOIOutputOsti().create_osti_doi_record(doi)
+                single_doi_label = DOIOstiRecord().create_doi_record(doi)
 
                 # Validate XML representation of the DOI
                 self._osti_validator.validate(single_doi_label, action=self._name)
@@ -188,7 +189,7 @@ class DOICoreActionReserve(DOICoreAction):
             dois = self._validate_dois(dois)
 
             # Create an JSON request label to send to OSTI
-            io_doi_label = DOIOutputOsti().create_osti_doi_record(
+            io_doi_label = DOIOstiRecord().create_doi_record(
                 dois, content_type=CONTENT_TYPE_JSON
             )
 

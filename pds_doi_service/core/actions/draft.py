@@ -35,7 +35,8 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
@@ -291,7 +292,7 @@ class DOICoreActionDraft(DOICoreAction):
             self._add_extra_keywords(keywords, o_doi)
 
         # Generate the output OSTI record
-        o_doi_label = DOIOutputOsti().create_osti_doi_record(o_dois)
+        o_doi_label = DOIOstiRecord().create_doi_record(o_dois)
 
         # Return the label (which is text) and a list 'o_dois' representing
         # all individual DOI's parsed.
