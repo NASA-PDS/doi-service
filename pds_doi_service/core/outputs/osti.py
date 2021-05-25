@@ -22,19 +22,16 @@ from pkg_resources import resource_filename
 import pystache
 
 from pds_doi_service.core.entities.doi import Doi, ProductType
+from pds_doi_service.core.outputs.doi_record import (DOIRecord,
+                                                     CONTENT_TYPE_XML,
+                                                     CONTENT_TYPE_JSON,
+                                                     VALID_CONTENT_TYPES)
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
 
-CONTENT_TYPE_XML = 'xml'
-CONTENT_TYPE_JSON = 'json'
-"""Constants for the available OSTI content types to work with"""
 
-VALID_CONTENT_TYPES = [CONTENT_TYPE_JSON, CONTENT_TYPE_XML]
-"""The list of expected content types"""
-
-
-class DOIOutputOsti:
+class DOIOstiRecord(DOIRecord):
     def __init__(self):
         """Creates a new DOIOutputOsti instance"""
         # Need to find the mustache DOI templates
@@ -58,7 +55,7 @@ class DOIOutputOsti:
             CONTENT_TYPE_JSON: self._json_template_path
         }
 
-    def create_osti_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
+    def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
         if content_type not in VALID_CONTENT_TYPES:
             raise ValueError('Invalid content type requested, must be one of '
                              f'{",".join(VALID_CONTENT_TYPES)}')
