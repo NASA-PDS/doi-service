@@ -33,7 +33,7 @@ xlrd>=1.2
 xmlschema==1.5.1
 xmltodict>=0.12
 zipp>=3.1
-# for dev
+# for dev, to be removed when better way is made, in a hurry now:wq
 flask_testing==0.8.0
 sphinx-rtd-theme==0.5.0
 sphinx-argparse==0.2.5
