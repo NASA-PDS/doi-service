@@ -35,9 +35,7 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOstiRecord
-from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -166,10 +164,7 @@ class DOICoreActionDraft(DOICoreAction):
         )
 
         # Format label into an in-memory DOI object
-        if content_type == CONTENT_TYPE_XML:
-            dois, _ = DOIOstiWebParser.parse_osti_response_xml(lidvid_record)
-        else:
-            dois, _ = DOIOstiWebParser.parse_osti_response_json(lidvid_record)
+        dois, _ = DOIOstiWebParser.parse_dois_from_label(lidvid_record, content_type)
 
         doi = dois[0]
 

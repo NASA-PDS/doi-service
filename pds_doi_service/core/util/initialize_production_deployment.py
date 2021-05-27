@@ -68,8 +68,7 @@ from datetime import datetime
 
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    CriticalDOIException)
-from pds_doi_service.core.outputs.osti import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import DOIOstiWebClient, DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -124,7 +123,7 @@ def _read_from_local_xml(path):
     except Exception as e:
         raise CriticalDOIException(str(e))
 
-    dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
+    dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
 
     return dois
 
@@ -171,7 +170,7 @@ def get_dois_from_osti(target_url, output_file):
         with open(output_file, 'w') as outfile:
             outfile.write(doi_xml)
 
-    dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
+    dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
 
     return dois, o_server_url
 
