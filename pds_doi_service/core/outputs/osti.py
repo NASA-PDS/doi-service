@@ -151,6 +151,13 @@ class DOIOstiWebClient(DOIWebClient):
         CONTENT_TYPE_JSON: 'application/json'
     }
 
+    ACCEPTABLE_FIELD_NAMES_LIST = [
+        'id', 'doi', 'accession_number', 'published_before', 'published_after',
+        'added_before', 'added_after', 'updated_before', 'updated_after',
+        'first_registered_before', 'first_registered_after', 'last_registered_before',
+        'last_registered_after', 'status', 'start', 'rows', 'sort', 'order'
+    ]
+
     MAX_TOTAL_ROWS_RETRIEVE = 1000000000
     """Maximum numbers of rows to request from a query to OSTI"""
 
@@ -162,10 +169,7 @@ class DOIOstiWebClient(DOIWebClient):
 
         # Re-use the parse functions from DOIOstiWebParser class to get the
         # list of Doi objects to return
-        if content_type == CONTENT_TYPE_XML:
-            dois, _ = self._web_parser.parse_osti_response_xml(response_text)
-        else:
-            dois, _ = self._web_parser.parse_osti_response_json(response_text)
+        dois, _ = self._web_parser.parse_dois_from_label(response_text, content_type)
 
         return dois, response_text
 
@@ -202,7 +206,7 @@ class DOIOstiWebClient(DOIWebClient):
         if query:
             initial_payload.update(query)
             # Do a sanity check and only fetch valid field names.
-            query_dict = self._web_parser.validate_field_names(initial_payload)
+            query_dict = self._validate_field_names(initial_payload)
         else:
             query_dict = initial_payload
 
@@ -230,3 +234,23 @@ class DOIOstiWebClient(DOIWebClient):
             )
 
         return osti_response.text
+
+    def _validate_field_names(self, query_dict):
+        """
+        Validates the provided fields by the user to make sure they match the
+        expected fields by OSTI:
+
+            https://www.osti.gov/iad2test/docs#endpoints-recordlist
+
+        """
+        o_validated_dict = {}
+
+        for key in query_dict:
+            # If the key is valid, save the field and value to return.
+            if key in self.ACCEPTABLE_FIELD_NAMES_LIST:
+                o_validated_dict[key] = query_dict[key]
+            else:
+                logger.error(f"Unexpected field name '{key}' in query_dict")
+                exit(1)
+
+        return o_validated_dict

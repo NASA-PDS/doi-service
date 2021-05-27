@@ -33,12 +33,6 @@ class DOIOstiWebParser:
     Contains functions related to parsing input/output for interactions with
     the OSTI server.
     """
-    ACCEPTABLE_FIELD_NAMES_LIST = [
-        'id', 'doi', 'accession_number', 'published_before', 'published_after',
-        'added_before', 'added_after', 'updated_before', 'updated_after',
-        'first_registered_before', 'first_registered_after', 'last_registered_before',
-        'last_registered_after', 'status', 'start', 'rows', 'sort', 'order'
-    ]
 
     OPTIONAL_FIELDS_LIST = [
         'id', 'doi', 'sponsoring_organization', 'publisher', 'availability',
@@ -46,26 +40,6 @@ class DOIOstiWebParser:
         'authors', 'contributors'
     ]
     """The optional field names we parse from input OSTI labels."""
-
-    def validate_field_names(self, query_dict):
-        """
-        Validates the provided fields by the user to make sure they match the
-        expected fields by OSTI:
-
-            https://www.osti.gov/iad2test/docs#endpoints-recordlist
-
-        """
-        o_validated_dict = {}
-
-        for key in query_dict:
-            # If the key is valid, save the field and value to return.
-            if key in self.ACCEPTABLE_FIELD_NAMES_LIST:
-                o_validated_dict[key] = query_dict[key]
-            else:
-                logger.error(f"Unexpected field name '{key}' in query_dict")
-                exit(1)
-
-        return o_validated_dict
 
     @staticmethod
     def parse_author_names_xml(authors_element):
