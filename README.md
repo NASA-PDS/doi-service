@@ -80,7 +80,9 @@ the following may be used as a template
     
 ## Launch API server
 
-    python3 -m pds_doi_service.api
+    $ pip install pds-doi-service
+    $ pds-doi-api
+    
     
 The started service documentation is available on http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
 
