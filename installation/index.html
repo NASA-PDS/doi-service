@@ -92,7 +92,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#doing-the-installation">Doing the Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#install">Install</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configure">Configure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#start-using-the-tool">Start using the tool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-using-the-command-line-tool">Start using the command line tool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-the-api-server">Start the API server</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#upgrade-software">Upgrade Software</a></li>
@@ -169,12 +170,13 @@
   <div class="section" id="installation">
 <h1>📦 Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>This section describes how to install the PDS DOI Service.</p>
+<p>The service is compose by a command line tool and a web API (which enable to activate the command line remotelly or via a web UI)</p>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>Prior to installing this software, ensure your system meets the following
 requirements:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://www.python.org/">Python</a> 3.6 or above. Python 2 will absolutely <em>not</em> work.</p></li>
+<li><p><a class="reference external" href="https://www.python.org/">Python</a> 3.7 or above. Python 2 will absolutely <em>not</em> work.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">libxml2</span></code> version 2.9.2; later 2.9 versions are fine.  Run <code class="docutils literal notranslate"><span class="pre">xml2-config</span>
 <span class="pre">--version</span></code> to find out.</p></li>
 </ul>
@@ -223,9 +225,21 @@ pip3 install pds-doi-service
 </pre></div>
 </div>
 <p>Ask the code to <a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a></p>
+<p>The tool uses a local database and file system space to store transactions. The default location for these files is the sys.prefix, however it can be updated as follow in the configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">OTHER</span><span class="p">]</span>
+<span class="n">transaction_dir</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">directory</span> <span class="n">absolute</span> <span class="n">path</span><span class="o">&gt;</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">database</span> <span class="n">absolute</span> <span class="n">path</span><span class="o">&gt;/</span><span class="n">doi</span><span class="o">.</span><span class="n">db</span>
+</pre></div>
 </div>
-<div class="section" id="start-using-the-tool">
-<h3>Start using the tool<a class="headerlink" href="#start-using-the-tool" title="Permalink to this headline">¶</a></h3>
+<p>You can also change the log level by changing the configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">OTHER</span><span class="p">]</span>
+<span class="n">logging_level</span><span class="o">=</span><span class="n">DEBUG</span>
+</pre></div>
+</div>
+<p>Authorized values are DEBUG, INFO, ERROR… (see <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging-levels">https://docs.python.org/3/library/logging.html#logging-levels</a>)</p>
+</div>
+<div class="section" id="start-using-the-command-line-tool">
+<h3>Start using the command line tool<a class="headerlink" href="#start-using-the-command-line-tool" title="Permalink to this headline">¶</a></h3>
 <p>You can then run <code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span> <span class="pre">--help</span></code> to get a usage message and ensure
 it’s properly installed. You can go to the <a class="reference external" href="../usage/index.html">usage</a> documentation for details.</p>
 <div class="admonition note">
@@ -237,13 +251,17 @@ To install former releases, you can do:</p>
 <p>If you want to use the latest unstable version, you can refer to the <a class="reference external" href="../development/index.html">development</a> documentation</p>
 </div>
 </div>
+<div class="section" id="start-the-api-server">
+<h3>Start the API server<a class="headerlink" href="#start-the-api-server" title="Permalink to this headline">¶</a></h3>
+<p>You can simply start the web API  service with command line <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code></p>
+<p>You can explore the API documentation and test it from its UI: <a class="reference external" href="http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/">http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/</a></p>
+</div>
 </div>
 <div class="section" id="upgrade-software">
 <h2>Upgrade Software<a class="headerlink" href="#upgrade-software" title="Permalink to this headline">¶</a></h2>
 <p>To check and install an upgrade to the software, run the following command in your
 virtual environment:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>source $HOME/.virtualenvs/pds-deep-archive/bin/activate
-pip install pds-doi-service --upgrade
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span> <span class="o">--</span><span class="n">upgrade</span>
 </pre></div>
 </div>
 </div>

@@ -3,6 +3,8 @@
 
 This section describes how to install the PDS DOI Service.
 
+The service is compose by a command line tool and a web API (which enable to activate the command line remotelly or via a web UI)
+
 
 Requirements
 ------------
@@ -10,7 +12,7 @@ Requirements
 Prior to installing this software, ensure your system meets the following
 requirements:
 
-•  Python_ 3.6 or above. Python 2 will absolutely *not* work.
+•  Python_ 3.7 or above. Python 2 will absolutely *not* work.
 •  ``libxml2`` version 2.9.2; later 2.9 versions are fine.  Run ``xml2-config
    --version`` to find out.
 
@@ -65,9 +67,24 @@ You MUST set the OSTI service user and password to be able to reserve or release
 
 Ask the code to pds-operator@jpl.nasa.gov
 
+The tool uses a local database and file system space to store transactions. The default location for these files is the sys.prefix, however it can be updated as follow in the configuration::
 
-Start using the tool
-^^^^^^^^^^^^^^^^^^^^
+    [OTHER]
+    transaction_dir = <directory absolute path>
+    db_file = <database absolute path>/doi.db
+
+
+You can also change the log level by changing the configuration::
+
+    [OTHER]
+    logging_level=DEBUG
+
+Authorized values are DEBUG, INFO, ERROR... (see https://docs.python.org/3/library/logging.html#logging-levels)
+
+
+
+Start using the command line tool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can then run ``pds-doi-cmd --help`` to get a usage message and ensure
 it's properly installed. You can go to the `usage`_ documentation for details.
@@ -84,13 +101,23 @@ it's properly installed. You can go to the `usage`_ documentation for details.
 
     If you want to use the latest unstable version, you can refer to the `development`_ documentation
 
+
+Start the API server
+^^^^^^^^^^^^^^^^^^^^
+
+You can simply start the web API  service with command line ``pds-doi-api``
+
+You can explore the API documentation and test it from its UI: http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
+
+
+
+
 Upgrade Software
 ----------------
 
 To check and install an upgrade to the software, run the following command in your 
 virtual environment::
 
-  source $HOME/.virtualenvs/pds-deep-archive/bin/activate
   pip install pds-doi-service --upgrade
 
 
