@@ -43,8 +43,14 @@ logger = get_logger(__name__)
 
 
 class DOIOstiRecord(DOIRecord):
+    """
+    Class used to create a DOI record suitable for submission to the OSTI
+    DOI service.
+
+    This class supports output of DOI records in both XML and JSON format.
+    """
     def __init__(self):
-        """Creates a new DOIOutputOsti instance"""
+        """Creates a new DOIOstiRecord instance"""
         # Need to find the mustache DOI templates
         self._xml_template_path = resource_filename(
             __name__, 'DOI_IAD2_template_20200205-mustache.xml'
@@ -67,6 +73,24 @@ class DOIOstiRecord(DOIRecord):
         }
 
     def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
+        """
+        Creates a DOI record from the provided list of Doi objects in the
+        specified format.
+
+        Parameters
+        ----------
+        dois : list of Doi
+            The Doi objects to format into the returned record.
+        content_type : str
+            The type of record to return. Currently, 'xml' and 'json' are
+            supported.
+
+        Returns
+        -------
+        record : str
+            The text body of the record created from the provided Doi objects.
+
+        """
         if content_type not in VALID_CONTENT_TYPES:
             raise ValueError('Invalid content type requested, must be one of '
                              f'{",".join(VALID_CONTENT_TYPES)}')
@@ -149,7 +173,10 @@ class DOIOstiRecord(DOIRecord):
 
 class DOIOstiWebParser(DOIWebParser):
     """
+    Class used to parse Doi objects from DOI records returned from the OSTI
+    DOI service.
 
+    This class supports parsing records in both XML and JSON formats.
     """
     _optional_fields = [
         'id', 'doi', 'sponsoring_organization', 'publisher', 'availability',
@@ -160,6 +187,26 @@ class DOIOstiWebParser(DOIWebParser):
 
     @staticmethod
     def parse_dois_from_label(label_text, content_type=CONTENT_TYPE_XML):
+        """
+        Parses one or more Doi objects from the provided OSTI-format label.
+
+        Parameters
+        ----------
+        label_text : str
+            Text body of the OSTI label to parse.
+        content_type : str
+            The format of the label's content. Both 'xml' and 'json' are
+            currently supported.
+
+        Returns
+        -------
+        dois : list of Doi
+            Doi objects parsed from the provided label.
+        errors: dict
+            Dictionary mapping indices of DOI's in the provided label to lists
+            of strings containing any errors encountered while parsing.
+
+        """
         if content_type == CONTENT_TYPE_XML:
             dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(label_text)
         elif content_type == CONTENT_TYPE_JSON:
@@ -174,6 +221,26 @@ class DOIOstiWebParser(DOIWebParser):
 
     @staticmethod
     def get_record_for_lidvid(label_file, lidvid):
+        """
+        Returns a new label from the provided one containing only the DOI entry
+        corresponding to the specified lidvid.
+
+        Parameters
+        ----------
+        label_file : str
+            Path to the label file to pull a record from.
+        lidvid : str
+            The LIDVID to search for within the provided label file.
+
+        Returns
+        -------
+        record : str
+            The single found record embedded in a <records> tag. This string is
+            suitable to be written to disk as a new OSTI label.
+        content_type : str
+            The determined content type of the provided label.
+
+        """
         content_type = os.path.splitext(label_file)[-1][1:]
 
         if content_type == CONTENT_TYPE_XML:
@@ -190,6 +257,9 @@ class DOIOstiWebParser(DOIWebParser):
 
 
 class DOIOstiWebClient(DOIWebClient):
+    """
+    Class used to submit HTTP requests to the OSTI DOI service.
+    """
     _service_name = 'OSTI'
     _web_parser = DOIOstiWebParser()
     _content_type_map = {
@@ -209,6 +279,36 @@ class DOIOstiWebClient(DOIWebClient):
 
     def submit_content(self, payload, url, username, password,
                        content_type=CONTENT_TYPE_XML):
+        """
+        Submits a payload to the OSTI DOI service via the POST action.
+
+        The action taken by the service is determined by the contents of the
+        payload.
+
+        Parameters
+        ----------
+        payload : str
+            Payload to submit to the OSTI DOI service. Should correspond to
+            an OSTI-format label file containing one or DOI records.
+        url : str
+            The URL of the OSTI DOI service endpoint.
+        username : str
+            The user name to authenticate to the OSTI DOI service as.
+        password : str
+            The password to authenticate to the OSTI DOI service with.
+        content_type : str
+            The content type to specify the format of the payload, as well as
+            the format of the response from OSTI. Currently, 'xml' and 'json'
+            are supported.
+
+        Returns
+        -------
+        dois : list of Doi
+            Doi objects parsed from the response label from OSTI.
+        response_text : str
+            Body of the response label from OSTI.
+
+        """
         response_text = super().submit_content(
             payload, url, username, password, content_type
         )
@@ -304,7 +404,7 @@ class DOIOstiWebClient(DOIWebClient):
 
 class DOIOstiXmlWebParser(DOIOstiWebParser):
     """
-
+    Class used to parse OSTI-format DOI labels in XML format.
     """
     @staticmethod
     def _parse_author_names(authors_element):
@@ -613,7 +713,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
 
 class DOIOstiJsonWebParser(DOIOstiWebParser):
     """
-
+    Class used to parse OSTI-format DOI labels in JSON format.
     """
     @staticmethod
     def _parse_contributors(contributors_record):

@@ -24,12 +24,39 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 
 
 class DOIWebClient:
+    """Abstract base class for clients of an HTTP DOI service endpoint"""
     _service_name = None
     _web_parser = None
     _content_type_map = {}
 
     def submit_content(self, payload, url, username, password,
                        content_type=CONTENT_TYPE_XML):
+        """
+        Submits a payload to a DOI service endpoint via the POST action.
+
+        The action taken by the service is determined by the contents of the
+        payload.
+
+        Parameters
+        ----------
+        payload : str
+            Payload to submit to the DOI service.
+        url : str
+            The URL of the DOI service endpoint.
+        username : str
+            The user name to authenticate to the DOI service as.
+        password : str
+            The password to authenticate to the DOI service with.
+        content_type : str
+            The content type to specify the format of the payload, as well as
+            the format of the response from the endpoint.
+
+        Returns
+        -------
+        response_text : str
+            Body of the response text from the endpoint.
+
+        """
         if content_type not in self._content_type_map:
             raise ValueError('Invalid content type requested, must be one of '
                              f'{",".join(list(self._content_type_map.keys()))}')
@@ -62,6 +89,30 @@ class DOIWebClient:
 
     def query_doi(self, url, query, username, password,
                   content_type=CONTENT_TYPE_XML):
+        """
+        Queries the DOI endpoint for the status of one or more DOI submissions.
+
+        Parameters
+        ----------
+        url : str
+             The URL of the DOI service endpoint.
+        query : dict
+            Key/value pairs to append as parameters to the URL for the GET
+            endpoint.
+        username : str
+            The user name to authenticate to the DOI service as.
+        password : str
+            The password to authenticate to the DOI service with.
+        content_type : str
+            The content type to specify the the format of the response from the
+            endpoint.
+
+        Returns
+        -------
+        response_text : str
+            Body of the response text from the endpoint.
+
+        """
         raise NotImplementedError(
             'Subclasses of DOIWebClient must provide an implementation for '
             'query_doi()'

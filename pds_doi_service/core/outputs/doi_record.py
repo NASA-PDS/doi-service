@@ -24,6 +24,23 @@ VALID_CONTENT_TYPES = [CONTENT_TYPE_JSON, CONTENT_TYPE_XML]
 class DOIRecord:
     """Abstract base class for DOI record generating classes"""
     def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
+        """
+        Creates a DOI record from the provided list of Doi objects in the
+        specified format.
+
+        Parameters
+        ----------
+        dois : list of Doi
+            The Doi objects to format into the returned record.
+        content_type : str
+            The type of record to return.
+
+        Returns
+        -------
+        record : str
+            The text body of the record created from the provided Doi objects.
+
+        """
         raise NotImplementedError(
             'Subclasses of DOIRecord must provide an implementation for '
             'create_doi_record()'
