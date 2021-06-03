@@ -104,15 +104,16 @@ class DOIWebClient:
         Parameters
         ----------
         payload : str
-            Payload to submit to the DOI service.
+            Payload to submit to the DOI service. Should only correspond
+            to a single DOI record.
         content_type : str
             The content type to specify the format of the payload, as well as
             the format of the response from the endpoint.
 
         Returns
         -------
-        dois : list of Doi
-            Doi objects parsed from the response text.
+        doi : Doi
+            Doi object parsed from the response text.
         response_text : str
             Body of the response text.
 

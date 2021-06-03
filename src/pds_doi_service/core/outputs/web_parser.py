@@ -69,8 +69,8 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            'Subclasses of DOIWebParser must provide an implementation for '
-            'parse_dois_from_label()'
+            f'Subclasses of {DOIWebParser.__name__} must provide an '
+            f'implementation for parse_dois_from_label()'
         )
 
     @staticmethod
@@ -96,6 +96,6 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            'Subclasses of DOIWebParser must provide an implementation for '
-            'get_record_for_lidvid()'
+            f'Subclasses of {DOIWebParser.__name__} must provide an '
+            f'implementation for get_record_for_lidvid()'
         )

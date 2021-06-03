@@ -32,7 +32,7 @@ class Transaction:
     m_doi_config_util = DOIConfigUtil()
 
     def __init__(self, output_content, output_content_type, node_id,
-                 submitter_email, dois, transaction_db, input_path=None):
+                 submitter_email, doi, transaction_db, input_path=None):
         self._config = self.m_doi_config_util.get_config()
         self._node_id = node_id.lower()
         self._submitter_email = submitter_email
@@ -40,7 +40,7 @@ class Transaction:
         self._output_content = output_content
         self._output_content_type = output_content_type
         self._transaction_time = datetime.now()
-        self._dois = dois
+        self._doi = doi
         self._transaction_disk = TransactionOnDisk()
         self._transaction_db = transaction_db
 
@@ -71,23 +71,21 @@ class Transaction:
             output_content_type=self._output_content_type
         )
 
-        for doi in self._dois:
-            lid, vid = Transaction.get_lidvid(doi.related_identifier)
+        lid, vid = Transaction.get_lidvid(self._doi.related_identifier)
 
-            doi_fields = doi.__dict__
+        doi_fields = self._doi.__dict__
 
-            self._transaction_db.write_doi_info_to_database(
-                lid=lid,
-                vid=vid,
-                transaction_key=transaction_io_dir,
-                doi=doi_fields['doi'],
-                release_date=doi_fields.get('date_record_added', self._transaction_time),
-                transaction_date=doi_fields.get('date_record_updated', self._transaction_time),
-                status=doi_fields['status'],
-                title=doi_fields['title'],
-                product_type=doi_fields['product_type'],
-                product_type_specific=doi_fields['product_type_specific'],
-                submitter=self._submitter_email,
-                discipline_node=self._node_id
-            )
-
+        self._transaction_db.write_doi_info_to_database(
+            lid=lid,
+            vid=vid,
+            transaction_key=transaction_io_dir,
+            doi=doi_fields['doi'],
+            release_date=doi_fields.get('date_record_added', self._transaction_time),
+            transaction_date=doi_fields.get('date_record_updated', self._transaction_time),
+            status=doi_fields['status'],
+            title=doi_fields['title'],
+            product_type=doi_fields['product_type'],
+            product_type_specific=doi_fields['product_type_specific'],
+            submitter=self._submitter_email,
+            discipline_node=self._node_id
+        )
