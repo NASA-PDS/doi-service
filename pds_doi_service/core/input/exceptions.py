@@ -87,8 +87,8 @@ class SiteURLNotExistException(Exception):
     pass
 
 
-class OSTIRequestException(Exception):
-    """Raised when a request to the OSTI service fails."""
+class WebRequestException(Exception):
+    """Raised when a request to the DOI endpoint service fails."""
 
 
 def collect_exception_classes_and_messages(single_exception,

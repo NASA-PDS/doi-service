@@ -30,13 +30,15 @@ from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.input.exceptions import (InputFormatException,
-                                                   OSTIRequestException,
+                                                   WebRequestException,
                                                    NoTransactionHistoryForLIDVIDException,
                                                    UnknownLIDVIDException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.outputs.osti import DOIOutputOsti, CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.osti import (DOIOstiRecord,
+                                               DOIOstiWebParser,
+                                               DOIOstiXmlWebParser,
+                                               DOIOstiJsonWebParser)
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -313,7 +315,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 osti_label = reserve_action.run(**reserve_kwargs)
 
             # Parse the OSTI JSON string back into a list of DOIs
-            dois, _ = DOIOstiWebParser().parse_osti_response_json(osti_label)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(osti_label)
         elif action == 'draft':
             if not body and not url:
                 raise ValueError('No requestBody or URL parameter provided '
@@ -358,7 +360,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     osti_label = draft_action.run(**draft_kwargs)
 
             # Parse the OSTI XML string back into a list of DOIs
-            dois, _ = DOIOstiWebParser().parse_osti_response_xml(osti_label)
+            dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(osti_label)
         else:
             raise ValueError('Action must be either "draft" or "reserve". '
                              'Received "{}"'.format(action))
@@ -473,7 +475,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
 
             osti_release_label = release_action.run(**release_kwargs)
 
-        dois, errors = DOIOstiWebParser().parse_osti_response_json(osti_release_label)
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(osti_release_label)
 
         # Propagate any errors returned from OSTI in a single exception
         if errors:
@@ -564,14 +566,11 @@ def get_doi_from_id(lidvid):  # noqa: E501
         return format_exceptions(err), 500
 
     # Parse the label associated with the lidvid so we can return a full DoiRecord
-    if content_type == CONTENT_TYPE_XML:
-        dois, _ = DOIOstiWebParser().parse_osti_response_xml(osti_label_for_lidvid)
-    else:
-        dois, _ = DOIOstiWebParser().parse_osti_response_json(osti_label_for_lidvid)
+    dois, _ = DOIOstiWebParser.parse_dois_from_label(osti_label_for_lidvid, content_type)
 
     # Create a return label in XML, since this is the format expected by
     # consumers of the response (such as the UI)
-    xml_label_for_lidvid = DOIOutputOsti().create_osti_doi_record(dois)
+    xml_label_for_lidvid = DOIOstiRecord().create_doi_record(dois)
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
@@ -619,8 +618,8 @@ def get_check_dois(submitter, email=False, attachment=False):
 
     try:
         pending_results = check_action.run(**check_kwargs)
-    except OSTIRequestException as err:
-        # OSTI host was unreachable
+    except WebRequestException as err:
+        # Host was unreachable
         return format_exceptions(err), 400
     except Exception as err:
         # Treat any unexpected Exception as an "Internal Error" and report back

@@ -27,8 +27,7 @@ import pystache
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import DOIOstiWebClient, DOIOstiXmlWebParser
 from pds_doi_service.core.util.emailer import Emailer
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -112,12 +111,12 @@ class DOICoreActionCheck(DOICoreAction):
 
         query_dict = {'doi': doi_value}
 
-        doi_xml = DOIOstiWebClient().webclient_query_doi(
-            self._config.get('OSTI', 'url'), query_dict,
-            i_username=self._config.get('OSTI', 'user'),
-            i_password=self._config.get('OSTI', 'password')
+        doi_xml = DOIOstiWebClient().query_doi(
+            url=self._config.get('OSTI', 'url'), query=query_dict,
+            username=self._config.get('OSTI', 'user'),
+            password=self._config.get('OSTI', 'password')
         )
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
 
         if dois:
             # Should only ever be one entry returned

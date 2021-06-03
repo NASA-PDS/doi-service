@@ -12,14 +12,14 @@ from unittest.mock import patch
 from lxml import etree
 
 import pds_doi_service.api.controllers.dois_controller
+import pds_doi_service.core.outputs.osti
 import pds_doi_service.core.outputs.transaction
-import pds_doi_service.core.outputs.osti_web_client
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
                                         LabelsPayload, LabelPayload)
 from pds_doi_service.api.test import BaseTestCase
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti import CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 
 
 class TestDoisController(BaseTestCase):
@@ -818,8 +818,8 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(response.status_code, 501)
 
-    def webclient_query_patch(self, i_url, query_dict=None, i_username=None,
-                              i_password=None, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch(self, url, query=None, username=None,
+                              password=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.webclient_query_doi().
 
@@ -828,10 +828,10 @@ class TestDoisController(BaseTestCase):
         """
         # Return dummy xml results containing the statuses we expect
         # Released
-        if query_dict['doi'] == '10.17189/28957':
+        if query['doi'] == '10.17189/28957':
             xml_file = 'DOI_Release_20200727_from_register.xml'
         # Pending
-        elif query_dict['doi'] == '10.17189/29348':
+        elif query['doi'] == '10.17189/29348':
             xml_file = 'DOI_Release_20200727_from_release.xml'
         # Error
         else:
@@ -847,8 +847,8 @@ class TestDoisController(BaseTestCase):
         return
 
     @patch.object(
-        pds_doi_service.core.outputs.osti_web_client.DOIOstiWebClient,
-        'webclient_query_doi', webclient_query_patch)
+        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        'query_doi', webclient_query_patch)
     @patch.object(
         pds_doi_service.core.outputs.transaction.Transaction,
         'log', transaction_log_patch)

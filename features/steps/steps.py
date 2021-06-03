@@ -13,7 +13,7 @@ from pds_doi_service.core.util.doi_xml_differ import DOIDiffer
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.actions.release import DOICoreActionRelease
-from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
+from pds_doi_service.core.outputs.osti import DOIOstiWebClient
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Global flag to submit the DOI to OSTI or not after it has been built.
 g_submit_flag = True
-g_submit_flag = False 
+g_submit_flag = False
 
 
 def get_temporary_output_filename(extension='xml'):
@@ -91,7 +91,7 @@ def release_action_run(node_value, input_value):
 
 def file_output_compare(output_file, ref_output_value):
     # Function compare two XML files created from 'draft' or 'reserve' actions.
-    # Assumption(s): 
+    # Assumption(s):
     #   1.  The name of the new XML file is defined in get_temporary_output_filename().
     #   2.  The name of the reference name is ref_output_value
     logger.info(f"output_file,ref_output_value {output_file},{ref_output_value}")
@@ -208,10 +208,12 @@ def step_doi_label_is_submitted_impl(context):
 
     # The payload is now ready to be submitted to OSTI.
     if g_submit_flag:
-        (dois, response_str) = DOIOstiWebClient().webclient_submit_existing_content(etree.tostring(out_root),
-                                   i_url=m_config.get('OSTI', 'url'),
-                                   i_username=m_config.get('OSTI','user'),
-                                   i_password=m_config.get('OSTI','password'))
+        (dois, response_str) = DOIOstiWebClient().submit_content(
+            payload=etree.tostring(out_root),
+            url=m_config.get('OSTI', 'url'),
+            username=m_config.get('OSTI', 'user'),
+            password=m_config.get('OSTI', 'password')
+        )
     else:
         logger.info(f"g_submit_flag is False")
 

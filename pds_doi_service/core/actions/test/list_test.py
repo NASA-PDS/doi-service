@@ -10,7 +10,7 @@ from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import DOIOstiXmlWebParser, DOIOstiJsonWebParser
 
 
 class ListActionTestCase(unittest.TestCase):
@@ -42,7 +42,7 @@ class ListActionTestCase(unittest.TestCase):
 
         draft_xml = self._draft_action.run(**draft_kwargs)
 
-        dois, _ = DOIOstiWebParser.parse_osti_response_xml(draft_xml)
+        dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(draft_xml)
         doi = dois[0]
 
         list_kwargs = {
@@ -75,7 +75,7 @@ class ListActionTestCase(unittest.TestCase):
 
             review_json = self._release_action.run(**review_kwargs)
 
-        dois, _ = DOIOstiWebParser.parse_osti_response_json(review_json)
+        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(review_json)
         doi = dois[0]
 
         # Now query for review status

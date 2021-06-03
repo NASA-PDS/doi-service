@@ -9,9 +9,8 @@ import tempfile
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
-from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException, WarningDOIException
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.outputs.osti import DOIOutputOsti
+from pds_doi_service.core.input.exceptions import InputFormatException, WarningDOIException
+from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiXmlWebParser, DOIOstiJsonWebParser
 
 
 class DraftActionTestCase(unittest.TestCase):
@@ -42,7 +41,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -70,7 +69,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 2)
         self.assertEqual(len(errors), 0)
@@ -104,7 +103,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -132,7 +131,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -159,7 +158,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -201,7 +200,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -228,7 +227,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -257,7 +256,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -286,7 +285,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         osti_doi = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -316,7 +315,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         draft_osti_doi = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(draft_osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(draft_osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -336,7 +335,7 @@ class DraftActionTestCase(unittest.TestCase):
 
             review_osti_doi = self._review_action.run(**review_kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_json(review_osti_doi)
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(review_osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -354,7 +353,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         draft_osti_doi = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_json(draft_osti_doi)
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(draft_osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -374,7 +373,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         draft_osti_doi = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiWebParser.parse_osti_response_xml(draft_osti_doi)
+        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(draft_osti_doi)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -385,7 +384,7 @@ class DraftActionTestCase(unittest.TestCase):
         # Slightly modify the lidvid so we trigger the "duplicate title" warning
         doi.related_identifier += '.1'
 
-        modified_draft_label = DOIOutputOsti().create_osti_doi_record(doi)
+        modified_draft_label = DOIOstiRecord().create_doi_record(doi)
 
         with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
             xml_file.write(modified_draft_label)

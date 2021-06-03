@@ -68,8 +68,7 @@ from datetime import datetime
 
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    CriticalDOIException)
-from pds_doi_service.core.outputs.osti_web_client import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti_web_parser import DOIOstiWebParser
+from pds_doi_service.core.outputs.osti import DOIOstiWebClient, DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -124,7 +123,7 @@ def _read_from_local_xml(path):
     except Exception as e:
         raise CriticalDOIException(str(e))
 
-    dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
+    dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
 
     return dois
 
@@ -161,17 +160,17 @@ def get_dois_from_osti(target_url, output_file):
 
     logger.info("Using OSTI server URL %s", o_server_url)
 
-    doi_xml = DOIOstiWebClient().webclient_query_doi(
-        o_server_url, query_dict,
-        i_username=m_config.get('OSTI', 'user'),
-        i_password=m_config.get('OSTI', 'password')
+    doi_xml = DOIOstiWebClient().query_doi(
+        url=o_server_url, query=query_dict,
+        username=m_config.get('OSTI', 'user'),
+        password=m_config.get('OSTI', 'password')
     )
 
     if output_file:
         with open(output_file, 'w') as outfile:
             outfile.write(doi_xml)
 
-    dois, _ = DOIOstiWebParser.parse_osti_response_xml(doi_xml)
+    dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
 
     return dois, o_server_url
 
@@ -258,7 +257,7 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     # start with the configured PDS DOI token, e.g. '10.17189'.
     # OSTI server(s) may contain records other than expected, especially the test
     # server. For normal operation use_doi_filtering_flag should be set to False.
-    # If set to True, the parameter pds_registration_doi_token in config/conf.ini
+    # If set to True, the parameter doi_prefix for OSTI in config/conf.ini
     # should be set to 10.17189.
     use_doi_filtering_flag = False
 
@@ -299,7 +298,7 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     # Write each Doi object as a row into the database.
     for item_index, doi in enumerate(dois):
         if use_doi_filtering_flag:
-            o_pds_doi_token = m_config.get('OTHER', 'pds_registration_doi_token')
+            o_pds_doi_token = m_config.get('OSTI', 'doi_prefix')
 
             if doi.doi and not doi.doi.startswith(o_pds_doi_token):
                 logger.warning("Skipping non-PDS DOI %s, index %d", doi.doi,
