@@ -19,7 +19,7 @@ The short answer:
 
 The longer answer:
 * To "reserve" a DOI, is to get a DOI from our DOI Provider associated with a data set for a future release. This is the ideal start for getting DOIs so you can get the DOI, and then add it to the PDS4 label metadata prior to release.
-* To "release" a DOI is to make the https://doi.org/<my_doi> URL live. This requires that the data is registered at EN, available online, and the landing pages are live (automated by EN Registry).
+* To "release" a DOI is to make the `https://doi.org/<my_doi>` URL live. This requires that the data is registered at EN, available online, and the landing pages are live (automated by EN Registry).
 
 ### How can I specify multiple authors in the DOI reserve spreadsheet?
 
