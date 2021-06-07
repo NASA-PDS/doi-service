@@ -2,6 +2,14 @@
 
 This page includes FAQs for the PDS DOI Service. If you require additional support, please contact the [PDS Operator](mailto:pds-operator@jpl.nasa.gov) for assistance.
 
+<!-- Use https://ecotrust-canada.github.io/markdown-toc/ to re-generate the TOC when new FAQs are added -->
+    + [How do I know whether I should reserve or release a DOI?](#how-do-i-know-whether-i-should-reserve-or-release-a-doi-)
+    + [How can I specify multiple authors in the DOI reserve spreadsheet?](#how-can-i-specify-multiple-authors-in-the-doi-reserve-spreadsheet-)
+    + [The DOI reserve spreadsheet seems very terse, can I provide more information?](#the-doi-reserve-spreadsheet-seems-very-terse--can-i-provide-more-information-)
+    + [What PDS4 products should we be assigning DOIs to?](#what-pds4-products-should-we-be-assigning-dois-to-)
+    + [What does it mean to have data registered?](#what-does-it-mean-to-have-data-registered-)
+    + [How do I register my PDS4 product with Engineering Node?](#how-do-i-register-my-pds4-product-with-engineering-node-)
+    + [How do I get a DOIs for PDS3 data sets and documents?](#how-do-i-get-a-dois-for-pds3-data-sets-and-documents-)
 
 ### How do I know whether I should reserve or release a DOI?
 
