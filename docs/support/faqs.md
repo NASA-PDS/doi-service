@@ -32,3 +32,9 @@ In order for the DOI Landing Pages to be generated, the products must be registe
 ### How do I register my PDS4 product with Engineering Node?
 
 Contact the [PDS Operator](mailto:pds-operator@jpl.nasa.gov) with the URL(s) to the applicable PDS4 product(s) you would like registered.
+
+### How do I get a DOIs for PDS3 data sets and documents?
+
+The PDS has gone through the exercise with each Discipline Node to mint DOIs for most PDS3 Data Sets. If we missed one or there is a new version available, please complete the following:
+
+Send an email with the DS.CAT for all applicable PDS3 Data Sets to [PDS Operator](mailto:pds-operator@jpl.nasa.gov) and [Ron Joyner](mailto:ronald.joyner@jpl.nasa.gov) with subject `Release DOI for PDS3 Data Set: some identifying info`. Be sure to indicate whether the data set is new to the system, the DS.cat been updated, and if it has already been registered at PDS Engineering Node.
