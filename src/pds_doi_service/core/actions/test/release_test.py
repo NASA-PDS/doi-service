@@ -65,85 +65,92 @@ class ReleaseActionTestCase(unittest.TestCase):
 
     def test_reserve_release_to_review(self):
         """Test release to review status with a reserved DOI entry"""
+        # Test with both XML and JSON format labels
+        for input_label in ('DOI_Release_20200727_from_reserve.xml',
+                            'DOI_Release_20210216_from_reserve.json'):
+            release_args = {
+                'input': join(self.input_dir, input_label),
+                'node': 'img',
+                'submitter': 'img-submitter@jpl.nasa.gov',
+                'force': True,
+                'no_review': False
+            }
 
-        release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_reserve.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': False
-        }
+            o_doi_label = self._action.run(**release_args)
 
-        o_doi_label = self._action.run(**release_args)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-        # Should get one DOI back that has been marked as ready for review
-        self.assertEqual(len(dois), 1)
-        self.assertTrue(dois[0].status == DoiStatus.Review)
+            # Should get one DOI back that has been marked as ready for review
+            self.assertEqual(len(dois), 1)
+            self.assertTrue(dois[0].status == DoiStatus.Review)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.DOIOstiWebClient,
         'submit_content', webclient_submit_patch)
     def test_reserve_release_to_osti(self):
         """Test release directly to OSTI with a reserved DOI entry"""
+        # Test with both XML and JSON format labels
+        for input_label in ('DOI_Release_20200727_from_reserve.xml',
+                            'DOI_Release_20210216_from_reserve.json'):
+            release_args = {
+                'input': join(self.input_dir, input_label),
+                'node': 'img',
+                'submitter': 'Qui.T.Chau@jpl.nasa.gov',
+                'force': True,
+                'no_review': True
+            }
 
-        release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_reserve.xml'),
-            'node': 'img',
-            'submitter': 'Qui.T.Chau@jpl.nasa.gov',
-            'force': True,
-            'no_review': True
-        }
+            o_doi_label = self._action.run(**release_args)
 
-        o_doi_label = self._action.run(**release_args)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-        # Should get one DOI back that has been marked as pending registration
-        self.assertEqual(len(dois), 1)
-        self.assertTrue(dois[0].status == DoiStatus.Pending)
+            # Should get one DOI back that has been marked as pending registration
+            self.assertEqual(len(dois), 1)
+            self.assertTrue(dois[0].status == DoiStatus.Pending)
 
     def test_draft_release_to_review(self):
         """Test release to review status with a draft DOI entry"""
+        # Test with both XML and JSON format labels
+        for input_label in ('DOI_Release_20200727_from_draft.xml',
+                            'DOI_Release_20210216_from_draft.json'):
+            release_args = {
+                'input': join(self.input_dir, input_label),
+                'node': 'img',
+                'submitter': 'img-submitter@jpl.nasa.gov',
+                'force': True,
+                'no_review': False
+            }
 
-        release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_draft.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': False
-        }
+            o_doi_label = self._action.run(**release_args)
 
-        o_doi_label = self._action.run(**release_args)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-        # Should get one DOI back with status 'review'
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(dois[0].status, DoiStatus.Review)
+            # Should get one DOI back with status 'review'
+            self.assertEqual(len(dois), 1)
+            self.assertEqual(dois[0].status, DoiStatus.Review)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.DOIOstiWebClient,
         'submit_content', webclient_submit_patch)
     def test_draft_release_to_osti(self):
         """Test release directly to OSTI with a draft DOI entry"""
+        for input_label in ('DOI_Release_20200727_from_draft.xml',
+                            'DOI_Release_20210216_from_draft.json'):
+            release_args = {
+                'input': join(self.input_dir, input_label),
+                'node': 'img',
+                'submitter': 'Qui.T.Chau@jpl.nasa.gov',
+                'force': True,
+                'no_review': True
+            }
 
-        release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_draft.xml'),
-            'node': 'img',
-            'submitter': 'Qui.T.Chau@jpl.nasa.gov',
-            'force': True,
-            'no_review': True
-        }
+            o_doi_label = self._action.run(**release_args)
 
-        o_doi_label = self._action.run(**release_args)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-        # Should get one DOI back with status 'pending'
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(dois[0].status, DoiStatus.Pending)
+            # Should get one DOI back with status 'pending'
+            self.assertEqual(len(dois), 1)
+            self.assertEqual(dois[0].status, DoiStatus.Pending)
 
     def test_review_release_to_review(self):
         """
@@ -151,44 +158,46 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         This is essentially a no-op, but it should work regardless
         """
+        for input_label in ('DOI_Release_20200727_from_review.xml',
+                            'DOI_Release_20210216_from_review.json'):
+            release_args = {
+                'input': join(self.input_dir, input_label),
+                'node': 'img',
+                'submitter': 'img-submitter@jpl.nasa.gov',
+                'force': True,
+                'no_review': False
+            }
 
-        release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': False
-        }
+            o_doi_label = self._action.run(**release_args)
 
-        o_doi_label = self._action.run(**release_args)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-        # Should get one DOI back with status 'review'
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(dois[0].status, DoiStatus.Review)
+            # Should get one DOI back with status 'review'
+            self.assertEqual(len(dois), 1)
+            self.assertEqual(dois[0].status, DoiStatus.Review)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.DOIOstiWebClient,
         'submit_content', webclient_submit_patch)
     def test_review_release_to_osti(self):
         """Test release directly to OSTI with a review DOI entry"""
+        for input_label in ('DOI_Release_20200727_from_review.xml',
+                            'DOI_Release_20210216_from_review.json'):
+            release_args = {
+                'input': join(self.input_dir, input_label),
+                'node': 'img',
+                'submitter': 'img-submitter@jpl.nasa.gov',
+                'force': True,
+                'no_review': True
+            }
 
-        release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': True
-        }
+            o_doi_label = self._action.run(**release_args)
 
-        o_doi_label = self._action.run(**release_args)
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-        # Should get one DOI back with status 'pending'
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(dois[0].status, DoiStatus.Pending)
+            # Should get one DOI back with status 'pending'
+            self.assertEqual(len(dois), 1)
+            self.assertEqual(dois[0].status, DoiStatus.Pending)
 
 
 if __name__ == '__main__':
