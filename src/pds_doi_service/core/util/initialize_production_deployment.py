@@ -68,7 +68,8 @@ from datetime import datetime
 
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    CriticalDOIException)
-from pds_doi_service.core.outputs.osti import DOIOstiWebClient, DOIOstiXmlWebParser
+from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -87,10 +88,10 @@ def create_cmd_parser():
                     'transaction database.'
     )
     parser.add_argument("-i", "--input", required=False,
-                        help="Input file to import existing DOIs from, or the "
-                             "URL of the OSTI server. If no value is provided, "
-                             "the OSTI server URL specified by the DOI service "
-                             "configuration INI file is used by default.")
+                        help="Input file to import existing DOIs from. "
+                             "If no value is provided, the OSTI server URL "
+                             "specified by the DOI service configuration INI "
+                             "file is used by default.")
     parser.add_argument("-s", "--submitter-email", required=False,
                         default='pds-operator@jpl.nasa.gov',
                         help="The email address of the user performing the "
@@ -144,27 +145,20 @@ def _parse_input(input_file):
                                f"File may not exist.")
 
 
-def get_dois_from_osti(target_url, output_file):
+def get_dois_from_osti(output_file):
     """
     Queries the OSTI server for all the current DOI associated with the PDS-USER
     account. The server name is fetched from the config file with the 'url'
-    field in the 'OSTI' grouping if target_url is None.
+    field in the 'OSTI' grouping.
 
     """
     query_dict = {}
 
-    o_server_url = target_url
-
-    if o_server_url is None:
-        o_server_url = m_config.get('OSTI', 'url')
+    o_server_url = m_config.get('OSTI', 'url')
 
     logger.info("Using OSTI server URL %s", o_server_url)
 
-    doi_xml = DOIOstiWebClient().query_doi(
-        url=o_server_url, query=query_dict,
-        username=m_config.get('OSTI', 'user'),
-        password=m_config.get('OSTI', 'password')
-    )
+    doi_xml = DOIOstiWebClient().query_doi(query=query_dict)
 
     if output_file:
         with open(output_file, 'w') as outfile:
@@ -280,16 +274,15 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
 
     transaction_builder = TransactionBuilder(o_db_name)
 
-    # If the input is provided and is a file, parse from it, otherwise query
-    # from the OSTI server.
-    if input_source and os.path.isfile(input_source):
+    # If the input is provided, parse from it. Otherwise query the OSTI server.
+    if input_source:
         dois = _parse_input(input_source)
         o_server_url = input_source
     else:
         # Get the dois from OSTI server.
         # Note that because the name of the server is in the config file,
         # it can be the OPS or TEST server.
-        dois, o_server_url = get_dois_from_osti(input_source, output_file)
+        dois, o_server_url = get_dois_from_osti(output_file)
 
     o_records_found = len(dois)
 
@@ -337,7 +330,7 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
             transaction = transaction_builder.prepare_transaction(
                 node_id,
                 submitter_email,
-                [doi]
+                doi
             )
 
             transaction.log()

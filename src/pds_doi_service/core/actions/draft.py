@@ -35,7 +35,8 @@ from pds_doi_service.core.input.exceptions import (UnknownNodeException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiWebParser
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -177,7 +178,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Re-commit transaction to official roll DOI back to draft status
         transaction = self.m_transaction_builder.prepare_transaction(
-            self._node, self._submitter, [doi], input_path=osti_label_file,
+            self._node, self._submitter, doi, input_path=osti_label_file,
             output_content_type=content_type
         )
 
@@ -225,23 +226,24 @@ class DOICoreActionDraft(DOICoreAction):
             # For each name found, transform the PDS4 label to an OSTI record,
             # then concatenate that record to o_doi_label to return.
             for input_file in list_of_inputs:
-                doi_label = self._run_single_file(
+                doi_labels = self._run_single_file(
                     input_file, self._node, self._submitter, self._force,
                     self._keywords
                 )
 
-                # It is possible that the value of doi_label is None if the file
+                # It is possible that doi_labels is empty if the file
                 # is not a valid label.
-                if not doi_label:
+                if not doi_labels:
                     continue
 
                 # Concatenate each label to o_doi_labels to return.
-                doc = etree.fromstring(doi_label.encode())
+                for doi_label in doi_labels:
+                    doc = etree.fromstring(doi_label.encode())
 
-                # OSTI uses 'record' tag for each record.
-                for element in doc.findall('record'):
-                    # Add the 'record' element
-                    o_doi_labels.append(copy.copy(element))
+                    # OSTI uses 'record' tag for each record.
+                    for element in doc.findall('record'):
+                        # Add the 'record' element
+                        o_doi_labels.append(copy.copy(element))
 
             # Make the output nice by indenting it.
             etree.indent(o_doi_labels)
@@ -275,6 +277,7 @@ class DOICoreActionDraft(DOICoreAction):
         input_util = DOIInputUtil(valid_extensions=['.json', '.xml'])
 
         o_dois = input_util.parse_dois_from_input_file(input_file)
+        o_doi_labels = []
 
         for o_doi in o_dois:
             o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
@@ -286,12 +289,14 @@ class DOICoreActionDraft(DOICoreAction):
             # Add any default keywords or extra keywords provided by the user.
             self._add_extra_keywords(keywords, o_doi)
 
-        # Generate the output OSTI record
-        o_doi_label = DOIOstiRecord().create_doi_record(o_dois)
+            # Generate the output OSTI record
+            o_doi_label = DOIOstiRecord().create_doi_record(o_doi)
 
-        # Return the label (which is text) and a list 'o_dois' representing
-        # all individual DOI's parsed.
-        return o_doi_label, o_dois
+            o_doi_labels.append(o_doi_label)
+
+        # Return the labels and a list 'o_dois' representing all individual
+        # DOI's parsed.
+        return o_doi_labels, o_dois
 
     def _run_single_file(self, input_file, node, submitter, force_flag, keywords):
         logger.info("Drafting input file %s", input_file)
@@ -301,20 +306,21 @@ class DOICoreActionDraft(DOICoreAction):
         exception_classes = []
         exception_messages = []
 
-        doi_label = None
-        dois_obj = None
+        i_doi_labels = None
+        o_doi_labels = []
+        doi_objs = None
 
         try:
             # Transform the input label to an OSTI record and list of Doi objects,
             # then validate each accordingly
-            doi_label, dois_obj = self._transform_label_into_osti_record(
+            i_doi_labels, doi_objs = self._transform_label_into_osti_record(
                 input_file, keywords
             )
 
-            if doi_label:
+            for doi_label in i_doi_labels:
                 self._osti_validator.validate(doi_label, action=self._name)
 
-            for doi_obj in dois_obj:
+            for doi_obj in doi_objs:
                 self._doi_validator.validate(doi_obj)
         # Collect any exceptions/warnings for now and decide whether to
         # raise or log them later on
@@ -342,20 +348,21 @@ class DOICoreActionDraft(DOICoreAction):
             raise_or_warn_exceptions(exception_classes, exception_messages,
                                      log=force_flag)
 
-        if doi_label and dois_obj:
-            # Use the service of TransactionBuilder to prepare all things
-            # related to writing a transaction.
-            transaction = self.m_transaction_builder.prepare_transaction(
-                node, submitter, dois_obj, input_path=input_file
-            )
+        if i_doi_labels and doi_objs:
+            for doi_obj in doi_objs:
+                # Use the service of TransactionBuilder to prepare all things
+                # related to writing a transaction.
+                transaction = self.m_transaction_builder.prepare_transaction(
+                    node, submitter, doi_obj, input_path=input_file
+                )
 
-            # Commit the transaction to the database
-            transaction.log()
+                # Commit the transaction to the database
+                transaction.log()
 
-            # Return the most up-to-date version of output label
-            doi_label = transaction.output_content
+                # Return the most up-to-date version of output label
+                o_doi_labels.append(transaction.output_content)
 
-        return doi_label
+        return o_doi_labels
 
     def run(self, **kwargs):
         """

@@ -2,15 +2,18 @@
 
 from datetime import datetime
 import os
-from os.path import abspath, dirname, join
+from os.path import abspath, join
 import unittest
 import tempfile
+
+from pkg_resources import resource_filename
 
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException, WarningDOIException
-from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiXmlWebParser, DOIOstiJsonWebParser
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser, DOIOstiJsonWebParser
 
 
 class DraftActionTestCase(unittest.TestCase):
@@ -18,7 +21,7 @@ class DraftActionTestCase(unittest.TestCase):
     # required for each test as the command line is not parsed.
 
     def setUp(self):
-        self.test_dir = abspath(dirname(__file__))  # FIXME: use pkg_resources
+        self.test_dir = resource_filename(__name__, '')
         self.input_dir = abspath(
             join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
@@ -333,7 +336,7 @@ class DraftActionTestCase(unittest.TestCase):
                 'force': True
             }
 
-            review_osti_doi = self._review_action.run(**review_kwargs)
+            review_osti_doi = self._review_action.run(**review_kwargs)[0]
 
         dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(review_osti_doi)
 

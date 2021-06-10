@@ -5,14 +5,15 @@ from __future__ import absolute_import
 from datetime import datetime
 import json
 import os
-from os.path import abspath, dirname, exists, join
+from os.path import abspath, exists, join
 import unittest
 from unittest.mock import patch
 
 from lxml import etree
+from pkg_resources import resource_filename
 
 import pds_doi_service.api.controllers.dois_controller
-import pds_doi_service.core.outputs.osti
+import pds_doi_service.core.outputs.osti.osti_web_client
 import pds_doi_service.core.outputs.transaction
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
@@ -27,15 +28,14 @@ class TestDoisController(BaseTestCase):
     # This attribute is defined at class level so it may be accessed
     # by patched methods
     test_data_dir = None
-    # FIXME: use pkg_resources
-    input_dir = abspath(
-        join(dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir, 'input')
-    )
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = abspath(dirname(__file__))
+        cls.test_dir = resource_filename(__name__, '')
         cls.test_data_dir = join(cls.test_dir, 'data')
+        cls.input_dir = abspath(
+            join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
+        )
 
         # Path to a temporary database to re-instantiate for every test
         cls.temp_db = join(cls.test_data_dir, 'temp.db')
@@ -819,8 +819,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(response.status_code, 501)
 
-    def webclient_query_patch(self, url, query=None, username=None,
-                              password=None, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch(self, query=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.webclient_query_doi().
 
@@ -848,7 +847,7 @@ class TestDoisController(BaseTestCase):
         return
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch)
     @patch.object(
         pds_doi_service.core.outputs.transaction.Transaction,

@@ -5,6 +5,8 @@ import os
 import unittest
 from os.path import abspath, dirname, join
 
+from pkg_resources import resource_filename
+
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.exceptions import InputFormatException
@@ -13,9 +15,9 @@ from pds_doi_service.core.input.exceptions import InputFormatException
 class InputUtilTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.test_dir = abspath(dirname(__file__))  # FIXME: use pkg_resources
+        self.test_dir = resource_filename(__name__, '')
         self.input_dir = abspath(
-            join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input') 
+            join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
 
     def test_parse_dois_from_input_file(self):

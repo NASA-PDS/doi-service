@@ -40,7 +40,7 @@ class DOIOstiRecordTestCase(unittest.TestCase):
 
             # Now create an output label from the parsed Doi
             output_xml = DOIOstiRecord().create_doi_record(
-                input_dois, content_type=CONTENT_TYPE_XML
+                input_dois[0], content_type=CONTENT_TYPE_XML
             )
             output_dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(output_xml)
 
@@ -69,12 +69,12 @@ class DOIOstiRecordTestCase(unittest.TestCase):
 
             # Now create an output label from the parsed Doi
             output_json = DOIOstiRecord().create_doi_record(
-                dois, content_type=CONTENT_TYPE_JSON
+                dois[0], content_type=CONTENT_TYPE_JSON
             )
 
         # Massage the output a bit so we can do a straight dict comparison
         input_json = json.loads(input_json)[0]
-        output_json = json.loads(output_json)[0]
+        output_json = json.loads(output_json)
 
         # Add/update dates are always overwritten when parsing Doi objects
         # from input labels, so remove these key/values from the comparison

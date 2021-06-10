@@ -27,7 +27,8 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.node_util import NodeUtil
-from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiWebClient
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
@@ -197,10 +198,8 @@ class DOICoreActionRelease(DOICoreAction):
         Returns
         -------
         o_doi_label : str
-            The output OSTI label, reflecting the status of the released
-            input DOI's. A copy of this label is associated with the
-            database transaction for this run.
-
+            The output OSTI label(s), reflecting the status of the released
+            input DOI's.
         Raises
         ------
         CriticalDOIException
@@ -208,6 +207,8 @@ class DOICoreActionRelease(DOICoreAction):
             the input DOI's.
 
         """
+        output_labels = []
+
         self.parse_arguments(kwargs)
 
         try:
@@ -217,37 +218,34 @@ class DOICoreActionRelease(DOICoreAction):
             dois = self._complete_dois(dois)
             dois = self._validate_dois(dois)
 
-            # Create an JSON request label to send to OSTI
-            io_doi_label = DOIOstiRecord().create_doi_record(
-                dois, content_type=CONTENT_TYPE_JSON
-            )
-
-            # If the next step is to release to OSTI, submit to the server
-            # and use response label for the local transaction database entry
-            if self._no_review:
-                # Submit the text containing the 'release' action and its associated
-                # DOIs and optional metadata.
-                dois, o_doi_label = DOIOstiWebClient().submit_content(
-                    payload=io_doi_label,
-                    url=self._config.get('OSTI', 'url'),
-                    username=self._config.get('OSTI', 'user'),
-                    password=self._config.get('OSTI', 'password'),
-                    content_type=CONTENT_TYPE_JSON
+            for doi in dois:
+                # Create an JSON request label to send to OSTI
+                io_doi_label = DOIOstiRecord().create_doi_record(
+                    doi, content_type=CONTENT_TYPE_JSON
                 )
 
-            # Otherwise, if the next step is review, the label we've already
-            # created has marked all the Doi's as being the "review" step
-            # so its ready to be submitted to the local transaction history
-            transaction = self.m_transaction_builder.prepare_transaction(
-                self._node, self._submitter, dois, input_path=self._input,
-                output_content_type=CONTENT_TYPE_JSON
-            )
+                # If the next step is to release to OSTI, submit to the server
+                # and use response label for the local transaction database entry
+                if self._no_review:
+                    # Submit the text containing the 'release' action and its associated
+                    # DOIs and optional metadata.
+                    doi, o_doi_label = DOIOstiWebClient().submit_content(
+                        payload=io_doi_label,
+                        content_type=CONTENT_TYPE_JSON
+                    )
 
-            # Commit the transaction to the local database
-            transaction.log()
+                # Otherwise, if the next step is review, the label we've already
+                # created has marked all the Doi's as being the "review" step
+                # so its ready to be submitted to the local transaction history
+                transaction = self.m_transaction_builder.prepare_transaction(
+                    self._node, self._submitter, doi, input_path=self._input,
+                    output_content_type=CONTENT_TYPE_JSON
+                )
 
-            # Return up-to-date version of output label
-            return transaction.output_content
+                # Commit the transaction to the local database
+                transaction.log()
+
+                output_labels.append(transaction.output_content)
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically
@@ -256,3 +254,6 @@ class DOICoreActionRelease(DOICoreAction):
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
             raise CriticalDOIException(str(err))
+
+        # Return up-to-date version of output label(s)
+        return output_labels

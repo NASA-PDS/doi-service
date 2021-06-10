@@ -11,9 +11,10 @@ import unittest
 
 from email import message_from_bytes
 from os.path import abspath, dirname, join
+from pkg_resources import resource_filename
 from unittest.mock import patch
 
-import pds_doi_service.core.outputs.osti
+import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions.check import DOICoreActionCheck
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -22,7 +23,7 @@ from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
 class CheckActionTestCase(unittest.TestCase):
-    test_dir = abspath(dirname(__file__))  # FIXME: use pkg_resources
+    test_dir = resource_filename(__name__, '')
     input_dir = abspath(
         join(test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
     )
@@ -59,10 +60,9 @@ class CheckActionTestCase(unittest.TestCase):
         if os.path.exists(cls.db_name):
             os.remove(cls.db_name)
 
-    def webclient_query_patch_nominal(self, url, query=None, username=None,
-                                      password=None, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch_nominal(self, query, content_type=CONTENT_TYPE_XML):
         """
-        Patch for DOIOstiWebClient.webclient_query_doi().
+        Patch for DOIOstiWebClient.query_doi().
 
         Allows a pending check to occur without actually having to communicate
         with the OSTI test server.
@@ -77,10 +77,9 @@ class CheckActionTestCase(unittest.TestCase):
 
         return xml_contents
 
-    def webclient_query_patch_error(self, url, query=None, username=None,
-                                    password=None, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch_error(self, query, content_type=CONTENT_TYPE_XML):
         """
-        Patch for DOIOstiWebClient.webclient_query_doi().
+        Patch for DOIOstiWebClient.query_doi().
 
         Allows a pending check to occur without actually having to communicate
         with the OSTI test server.
@@ -95,10 +94,9 @@ class CheckActionTestCase(unittest.TestCase):
 
         return xml_contents
 
-    def webclient_query_patch_no_change(self, url, query=None, username=None,
-                                        password=None, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch_no_change(self, query, content_type=CONTENT_TYPE_XML):
         """
-        Patch for DOIOstiWebClient.webclient_query_doi().
+        Patch for DOIOstiWebClient.query_doi().
 
         Allows a pending check to occur without actually having to communicate
         with the OSTI test server.
@@ -114,7 +112,7 @@ class CheckActionTestCase(unittest.TestCase):
         return xml_contents
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch_nominal)
     def test_check_for_pending_entries(self):
         """Test check action that returns a successfully registered entry"""
@@ -131,7 +129,7 @@ class CheckActionTestCase(unittest.TestCase):
         self.assertEqual(pending_record['lidvid'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch_error)
     def test_check_for_pending_entries_w_error(self):
         """Test check action that returns an error result"""
@@ -151,7 +149,7 @@ class CheckActionTestCase(unittest.TestCase):
         self.assertIsNotNone(pending_record['message'])
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch_no_change)
     def test_check_for_pending_entries_w_no_change(self):
         """Test check action when no pending entries have been updated"""
@@ -192,7 +190,7 @@ class CheckActionTestCase(unittest.TestCase):
         pds_doi_service.core.util.config_parser.DOIConfigUtil,
         'get_config', get_config_patch)
     @patch.object(
-        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch_nominal)
     def test_email_receipt(self):
         """Test sending of the check action status via email"""
