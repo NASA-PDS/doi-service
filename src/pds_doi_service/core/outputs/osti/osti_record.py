@@ -135,7 +135,7 @@ class DOIOstiRecord(DOIRecord):
         renderer = pystache.Renderer()
 
         rendered_template = renderer.render_path(
-            self._template_map[content_type], {'doi': doi_fields}
+            self._template_map[content_type], {'dois': doi_fields}
         )
 
         # Reindent the output JSON to account for the kludging of the authors field
