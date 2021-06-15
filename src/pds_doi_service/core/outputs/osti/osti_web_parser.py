@@ -565,6 +565,11 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
         if 'records' in osti_response:
             osti_response = osti_response['records']
 
+        # Multiple records may come in a list, or a single dict may be provided
+        # for a single record, make the loop work either way
+        if not isinstance(osti_response, list):
+            osti_response = [osti_response]
+
         for index, record in enumerate(osti_response):
             if record.get('status', '').lower() == 'error':
                 logger.error(
@@ -641,6 +646,9 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
         """
         with open(label_file, 'r') as infile:
             records = json.load(infile)
+
+        if not isinstance(records, list):
+            records = [records]
 
         for record in records:
             if DOIOstiJsonWebParser._get_lidvid(record) == lidvid:
