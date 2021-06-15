@@ -427,6 +427,8 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
     """
     Class used to parse OSTI-format DOI labels in JSON format.
     """
+    _mandatory_fields = ['title', 'publication_date', 'site_url', 'product_type']
+
     @staticmethod
     def _parse_contributors(contributors_record):
         o_editors_list = list(
@@ -582,13 +584,10 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
                 errors[index] = cur_errors
 
             # Make sure all the mandatory fields are present
-            mandatory_fields = ['title', 'publication_date', 'site_url',
-                                'product_type']
-
-            if not all([field in record for field in mandatory_fields]):
+            if not all([field in record for field in DOIOstiJsonWebParser._mandatory_fields]):
                 raise InputFormatException(
                     'Provided JSON is missing one or more mandatory fields: '
-                    f'({", ".join(mandatory_fields)})'
+                    f'({", ".join(DOIOstiJsonWebParser._mandatory_fields)})'
                 )
 
             lidvid = DOIOstiJsonWebParser._get_lidvid(record)

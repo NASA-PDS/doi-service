@@ -23,7 +23,10 @@ class DOIWebParser:
     to a DOI service endpoint.
     """
     _optional_fields = []
-    """The optional field names parsed from labels."""
+    """The optional Doi field names parsed from labels."""
+
+    _mandatory_fields = []
+    """The mandatory Doi field names parsed from labels."""
 
     @staticmethod
     def _get_lidvid_from_site_url(site_url):
