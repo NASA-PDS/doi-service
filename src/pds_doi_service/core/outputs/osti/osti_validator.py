@@ -6,9 +6,9 @@
 #
 
 """
-=======================
-osti_input_validator.py
-=======================
+=================
+osti_validator.py
+=================
 
 Contains functions for validating the contents of an input OSTI XML label.
 """
@@ -31,9 +31,9 @@ from pds_doi_service.core.input.exceptions import InputFormatException
 logger = get_logger(__name__)
 
 
-class OSTIInputValidator:
+class OSTIValidator:
     """
-    OSTIInputValidator provides some functions to validate the input to
+    OSTIValidator provides some functions to validate the input to
     'release' action specific to OSTI. Other data centers may have a different
     format.
     """
