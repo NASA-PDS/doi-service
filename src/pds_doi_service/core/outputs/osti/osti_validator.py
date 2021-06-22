@@ -33,9 +33,7 @@ logger = get_logger(__name__)
 
 class OSTIValidator:
     """
-    OSTIValidator provides some functions to validate the input to
-    'release' action specific to OSTI. Other data centers may have a different
-    format.
+    OSTIValidator provides functions to validate the input specific to OSTI.
     """
     m_doi_config_util = DOIConfigUtil()
 

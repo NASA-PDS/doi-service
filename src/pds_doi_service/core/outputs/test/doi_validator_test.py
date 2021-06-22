@@ -19,7 +19,7 @@ from pds_doi_service.core.input.exceptions import (DuplicatedTitleDOIException,
                                                    IllegalDOIActionException,
                                                    UnexpectedDOIActionException)
 
-from pds_doi_service.core.util.doi_validator import DOIValidator
+from pds_doi_service.core.outputs.doi_validator import DOIValidator
 
 
 class DoiValidatorTest(unittest.TestCase):

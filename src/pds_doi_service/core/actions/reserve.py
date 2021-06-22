@@ -26,11 +26,11 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
-from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
-from pds_doi_service.core.util.doi_validator import DOIValidator
+from pds_doi_service.core.outputs.doi_validator import DOIValidator
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_validator import OSTIValidator
+from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -45,7 +45,7 @@ class DOICoreActionReserve(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._osti_validator = OSTIInputValidator()
+        self._osti_validator = OSTIValidator()
         self._input_util = DOIInputUtil()
 
         self._input = None
