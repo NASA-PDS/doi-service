@@ -34,14 +34,14 @@ class DoiStatus(str, Enum):
 
     The workflow stages consist of:
         Error -
-            An error has occurred with the DOI submission to OSTI.
+            An error has occurred with the DOI submission.
         Unknown -
             Default starting state for DOI transactions.
         Reserve_not_submitted -
-            DOI reserve request in local database, but not published to OSTI.
+            DOI reserve request in local database, but not published/released.
             Used for testing of the reserve action.
         Reserved -
-            DOI reserve request submitted to OSTI, but not yet published.
+            DOI reserve request submitted, but not yet published/released.
         Draft -
             DOI request stored as draft in local database to allow additional
             metadata to be assigned before review request is made.
@@ -50,9 +50,9 @@ class DoiStatus(str, Enum):
             ready for review by the Engineering Node.
         Pending -
             DOI request has been reviewed by Engineering Node and released
-            (submitted to OSTI), but not yet published (by OSTI).
+            (submitted to DOI service provider), but not yet published.
         Registered -
-            DOI request has been registered with OSTI.
+            DOI request has been registered with the service provider.
 
     """
     Error = 'error'

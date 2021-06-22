@@ -70,8 +70,8 @@ class DOICoreActionReserve(DOICoreAction):
         action_parser.add_argument(
             '-f', '--force', required=False, action='store_true',
             help='If provided, forces the reserve action to proceed even if '
-                 'warnings are encountered during submission of the reserve to '
-                 'OSTI. Without this flag, any warnings encountered are '
+                 'warnings are encountered during submission of the reserve '
+                 'request. Without this flag, any warnings encountered are '
                  'treated as fatal exceptions.'
         )
         action_parser.add_argument(
@@ -87,8 +87,8 @@ class DOICoreActionReserve(DOICoreAction):
         )
         action_parser.add_argument(
             '-dry-run', '--dry-run', required=False, action='store_true',
-            help="Performs the Reserve request without submitting the record to "
-                 "OSTI. The record is logged to the local database with a status "
+            help="Performs the Reserve request without submitting the record. "
+                 "The record is logged to the local database with a status "
                  "of 'reserved_not_submitted'."
         )
 
@@ -98,7 +98,7 @@ class DOICoreActionReserve(DOICoreAction):
     def _complete_dois(self, dois):
         """
         Ensures the list of Doi objects to reserve have the requisite fields,
-        such as status or contributor, filled in prior to submission to OSTI.
+        such as status or contributor, filled in prior to submission.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class DOICoreActionReserve(DOICoreAction):
 
     def _validate_dois(self, dois):
         """
-        Validates the list of Doi objects prior to their submission to OSTI.
+        Validates the list of Doi objects prior to their submission.
 
         Depending on the configuration of the DOI service, Doi objects may
         be validated against the OSTI XSD, schematron, as well as the internal
@@ -191,7 +191,7 @@ class DOICoreActionReserve(DOICoreAction):
         Returns
         -------
         o_doi_label : str
-            The output OSTI label(s), reflecting the status of the reserved
+            The output label(s), reflecting the status of the reserved
             input DOI's.
 
         Raises
@@ -212,12 +212,12 @@ class DOICoreActionReserve(DOICoreAction):
             dois = self._validate_dois(dois)
 
             for doi in dois:
-                # Create an JSON request label to send to OSTI
+                # Create the JSON request label to send
                 io_doi_label = DOIOstiRecord().create_doi_record(
                     doi, content_type=CONTENT_TYPE_JSON
                 )
 
-                # Submit the Reserve request to OSTI if this isn't a dry run
+                # Submit the Reserve request if this isn't a dry run
                 if not self._dry_run:
                     doi, o_doi_label = DOIOstiWebClient().submit_content(
                         payload=io_doi_label,

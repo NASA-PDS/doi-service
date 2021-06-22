@@ -91,7 +91,7 @@ def _write_csv_from_labels(temp_file, labels):
     temp_file.flush()
 
 
-def _records_from_dois(dois, node=None, submitter=None, osti_label=None):
+def _records_from_dois(dois, node=None, submitter=None, doi_label=None):
     """
     Reformats a list of DOI objects into a corresponding list of DoiRecord
     objects.
@@ -105,8 +105,8 @@ def _records_from_dois(dois, node=None, submitter=None, osti_label=None):
         The PDS node to associate with each record.
     submitter : str, optional
         Submitter email address to associate with each record.
-    osti_label : str, optional
-        OSTI label to associate with each record.
+    doi_label : str, optional
+        DOI label to associate with each record.
 
     Returns
     -------
@@ -131,7 +131,7 @@ def _records_from_dois(dois, node=None, submitter=None, osti_label=None):
                 node=node, submitter=submitter, status=doi.status,
                 creation_date=list_result['release_date'],
                 update_date=list_result['update_date'],
-                record=osti_label,
+                record=doi_label,
                 message=doi.message
             )
         )
@@ -312,10 +312,10 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     'dry_run': False
                 }
 
-                osti_label = reserve_action.run(**reserve_kwargs)
+                doi_label = reserve_action.run(**reserve_kwargs)
 
-            # Parse the OSTI JSON string back into a list of DOIs
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(osti_label)
+            # Parse the JSON string back into a list of DOIs
+            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(doi_label)
         elif action == 'draft':
             if not body and not url:
                 raise ValueError('No requestBody or URL parameter provided '
@@ -333,7 +333,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     'force': force
                 }
 
-                osti_label = draft_action.run(**draft_kwargs)
+                doi_label = draft_action.run(**draft_kwargs)
             else:
                 # Swagger def only specified application/xml and application/json
                 # as potential input types, so it should be sufficient to just
@@ -341,7 +341,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 if connexion.request.is_json:
                     raise ValueError(
                         'JSON requestBody provided for draft POST request. '
-                        'Body must be an XML PDS4/OSTI label.'
+                        'Body must be an XML PDS4/DOI label.'
                     )
 
                 with NamedTemporaryFile('wb', prefix='labels_', suffix='.xml') as xml_file:
@@ -357,10 +357,10 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                         'force': force
                     }
 
-                    osti_label = draft_action.run(**draft_kwargs)
+                    doi_label = draft_action.run(**draft_kwargs)
 
-            # Parse the OSTI XML string back into a list of DOIs
-            dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(osti_label)
+            # Parse the XML string back into a list of DOIs
+            dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_label)
         else:
             raise ValueError('Action must be either "draft" or "reserve". '
                              'Received "{}"'.format(action))
@@ -373,7 +373,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         return format_exceptions(err), 500
 
     records = _records_from_dois(
-        dois, node=node, submitter=submitter, osti_label=osti_label
+        dois, node=node, submitter=submitter, doi_label=doi_label
     )
 
     logger.info('Posted %d record(s) to status "%s"', len(records), action)
@@ -434,25 +434,25 @@ def post_release_doi(lidvid, force=False, **kwargs):
         # Get the latest transaction record for this LIDVID
         list_record = list_action.transaction_for_lidvid(lidvid)
 
-        # Make sure we can locate the output OSTI label associated with this
+        # Make sure we can locate the output label associated with this
         # transaction
         transaction_location = list_record['transaction_key']
-        osti_label_files = glob.glob(join(transaction_location, 'output.*'))
+        label_files = glob.glob(join(transaction_location, 'output.*'))
 
-        if not osti_label_files or not exists(osti_label_files[0]):
+        if not label_files or not exists(label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
-                'Could not find an OSTI Label associated with LIDVID {}. '
+                'Could not find a DOI label associated with LIDVID {}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
                 .format(lidvid)
             )
 
-        osti_label_file = osti_label_files[0]
+        label_file = label_files[0]
 
-        # An output OSTI label may contain entries other than the requested
+        # An output label may contain entries other than the requested
         # LIDVID, extract only the appropriate record into its own temporary
         # file and feed it to the release action
-        record, content_type = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
+        record, content_type = DOIOstiWebParser.get_record_for_lidvid(label_file, lidvid)
 
         with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
             logger.debug('Writing temporary label to %s', temp_file.name)
@@ -469,18 +469,18 @@ def post_release_doi(lidvid, force=False, **kwargs):
                 'input': temp_file.name,
                 'force': force,
                 # Default for this endpoint should be to skip review and release
-                # directly to OSTI
+                # directly to the DOI service provider
                 'no_review': kwargs.get('no_review', True)
             }
 
-            osti_release_label = release_action.run(**release_kwargs)[0]
+            release_label = release_action.run(**release_kwargs)[0]
 
-        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(osti_release_label)
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(release_label)
 
-        # Propagate any errors returned from OSTI in a single exception
+        # Propagate any errors returned from the attempt in a single exception
         if errors:
             raise WarningDOIException(
-                'Received the following errors from the release request to OSTI:\n'
+                'Received the following errors from the release request:\n'
                 '{}'.format('\n'.join(errors))
             )
     except (ValueError, WarningDOIException) as err:
@@ -495,7 +495,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        osti_label=osti_release_label
+        doi_label=release_label
     )
 
     logger.info('Posted %d record(s) to status "%s"', len(records),
@@ -540,24 +540,24 @@ def get_doi_from_id(lidvid):  # noqa: E501
         list_record = next(filter(lambda list_result: list_result['is_latest'],
                                   list_results))
 
-        # Make sure we can locate the output OSTI label associated with this
+        # Make sure we can locate the output label associated with this
         # transaction
         transaction_location = list_record['transaction_key']
-        osti_label_files = glob.glob(join(transaction_location, 'output.*'))
+        label_files = glob.glob(join(transaction_location, 'output.*'))
 
-        if not osti_label_files or not exists(osti_label_files[0]):
+        if not label_files or not exists(label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
-                'Could not find an OSTI Label associated with LIDVID {}. '
+                'Could not find a DOI label associated with LIDVID {}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
                 .format(lidvid)
             )
 
-        osti_label_file = osti_label_files[0]
+        label_file = label_files[0]
 
         # Get only the record corresponding to the requested LIDVID
-        (osti_label_for_lidvid,
-         content_type) = DOIOstiWebParser.get_record_for_lidvid(osti_label_file, lidvid)
+        (label_for_lidvid,
+         content_type) = DOIOstiWebParser.get_record_for_lidvid(label_file, lidvid)
     except UnknownLIDVIDException as err:
         # Return "not found" code
         return format_exceptions(err), 404
@@ -566,7 +566,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
         return format_exceptions(err), 500
 
     # Parse the label associated with the lidvid so we can return a full DoiRecord
-    dois, _ = DOIOstiWebParser.parse_dois_from_label(osti_label_for_lidvid, content_type)
+    dois, _ = DOIOstiWebParser.parse_dois_from_label(label_for_lidvid, content_type)
 
     # Create a return label in XML, since this is the format expected by
     # consumers of the response (such as the UI)
@@ -574,7 +574,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        osti_label=xml_label_for_lidvid
+        doi_label=xml_label_for_lidvid
     )
 
     # Should only ever be one record since we filtered by lidvid

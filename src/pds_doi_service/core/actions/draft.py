@@ -45,7 +45,7 @@ logger = get_logger(__name__)
 
 class DOICoreActionDraft(DOICoreAction):
     _name = 'draft'
-    _description = 'Prepare an OSTI record from PDS4 labels'
+    _description = 'Prepare a draft DOI record from PDS4 labels'
     _order = 10
     _run_arguments = ('input', 'node', 'submitter', 'lidvid', 'force', 'keywords')
 
@@ -69,15 +69,16 @@ class DOICoreActionDraft(DOICoreAction):
     @classmethod
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
-            cls._name, description='Create a draft of OSTI records, '
-                                   'from existing PDS4 or OSTI labels'
+            cls._name,
+            description='Create a draft DOI record, from existing PDS4 or DOI '
+                        'labels'
         )
 
         node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument(
             '-i', '--input', required=False,
             metavar='input/bundle_in_with_contributors.xml',
-            help='An input PDS4/OSTI label. May be a local path or an HTTP address '
+            help='An input PDS4/DOI label. May be a local path or an HTTP address '
                  'resolving to a label file. Multiple inputs may be provided '
                  'via comma-delimited list. Must be provided if --lidvid is not '
                  'specified.'
@@ -112,8 +113,8 @@ class DOICoreActionDraft(DOICoreAction):
         )
         action_parser.add_argument(
             '-t', '--target',  required=False, default='osti', metavar='osti',
-            help='The system target to mint the DOI. Currently, only the value '
-                 '"osti" is supported.'
+            help='The target service provider to mint the DOI. Currently, only '
+                 'the value "osti" is supported.'
         )
 
     def _set_lidvid_to_draft(self, lidvid):
@@ -130,8 +131,7 @@ class DOICoreActionDraft(DOICoreAction):
         Returns
         -------
         doi_label : str
-            The OSTI XML label for the provided LIDVID reflecting its draft
-            (pending) status.
+            The XML label for the provided LIDVID reflecting its draft status.
 
         Raises
         ------
@@ -140,28 +140,28 @@ class DOICoreActionDraft(DOICoreAction):
             database, but no local transaction history can be found.
 
         """
-        # Get the output OSTI label produced from the last transaction
+        # Get the output label produced from the last transaction
         # with this LIDVID
         transaction_record = self._list_obj.transaction_for_lidvid(lidvid)
 
-        # Make sure we can locate the output OSTI label associated with this
+        # Make sure we can locate the output label associated with this
         # transaction
         transaction_location = transaction_record['transaction_key']
-        osti_label_files = glob.glob(join(transaction_location, 'output.*'))
+        label_files = glob.glob(join(transaction_location, 'output.*'))
 
-        if not osti_label_files or not exists(osti_label_files[0]):
+        if not label_files or not exists(label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
-                f'Could not find an OSTI Label associated with LIDVID {lidvid}. '
+                f'Could not find a DOI label associated with LIDVID {lidvid}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
             )
 
-        osti_label_file = osti_label_files[0]
+        label_file = label_files[0]
 
         # Label could contain entries for multiple LIDVIDs, so extract
         # just the one we care about
         lidvid_record, content_type = DOIOstiWebParser.get_record_for_lidvid(
-            osti_label_file, lidvid
+            label_file, lidvid
         )
 
         # Format label into an in-memory DOI object
@@ -178,7 +178,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Re-commit transaction to official roll DOI back to draft status
         transaction = self.m_transaction_builder.prepare_transaction(
-            self._node, self._submitter, doi, input_path=osti_label_file,
+            self._node, self._submitter, doi, input_path=label_file,
             output_content_type=content_type
         )
 
@@ -201,7 +201,7 @@ class DOICoreActionDraft(DOICoreAction):
         Returns
         -------
         doi_label : str
-            A OSTI XML label containing the draft records for requested inputs.
+            An XML DOI label containing the draft records for requested inputs.
 
         Raises
         ------
@@ -220,7 +220,7 @@ class DOICoreActionDraft(DOICoreAction):
                 filter(lambda input_file: len(input_file), list_of_inputs)
             )
 
-            # OSTI uses 'records' as the root tag.
+            # OSTI XML schema uses 'records' as the root tag.
             o_doi_labels = etree.Element("records")
 
             # For each name found, transform the PDS4 label to an OSTI record,
@@ -240,7 +240,7 @@ class DOICoreActionDraft(DOICoreAction):
                 for doi_label in doi_labels:
                     doc = etree.fromstring(doi_label.encode())
 
-                    # OSTI uses 'record' tag for each record.
+                    # OSTI XML schema uses 'record' tag for each record.
                     for element in doc.findall('record'):
                         # Add the 'record' element
                         o_doi_labels.append(copy.copy(element))

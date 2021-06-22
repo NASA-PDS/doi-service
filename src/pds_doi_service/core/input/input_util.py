@@ -99,7 +99,7 @@ class DOIInputUtil:
     def parse_xml_file(self, xml_path):
         """
         Parses DOIs from a file with an .xml extension. The file is expected
-        to conform either to the PDS4 label or OSTI output label schema.
+        to conform either to the PDS4 label or a DOI output label schema.
 
         """
         dois = []
@@ -189,8 +189,8 @@ class DOIInputUtil:
 
     def _parse_rows_to_doi_meta(self, xl_sheet):
         """
-        Given all rows in input file, parse each row and return the aggregated
-        XML of all records in OSTI format.
+        Given all rows in input file, parse each row and return a list of
+        Doi objects.
         """
         doi_records = []
         timestamp = datetime.now()
