@@ -152,7 +152,7 @@ See the results in https://cae-testrail.jpl.nasa.gov/testrail/index.php?/project
 
 See in this repository:
 
-https://github.com/NASA-PDS/pds-doi-service/tree/master/docs
+https://github.com/NASA-PDS/pds-doi-service/tree/main/docs
 
 ### User documentation
 
