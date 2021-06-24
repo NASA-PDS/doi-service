@@ -32,27 +32,7 @@
                 "last_name": "Maki"
             }
         ],
-        "contributors": [
-            {
-                "first_name": "P. H.",
-                "last_name": "Smith",
-                "contributor_type": "Editor"
-            },
-            {
-                "first_name": "M.",
-                "last_name": "Lemmon",
-                "contributor_type": "Editor"
-            },
-            {
-                "first_name": "R. F.",
-                "last_name": "Beebe",
-                "contributor_type": "Editor"
-            },
-            {
-                "full_name": "Planetary Data System: Cartography and Imaging Sciences Discipline Node",
-                "contributor_type": "DataCurator"
-            }
-        ],
+        "contributors": [],
         "contact_name": "PDS Operator",
         "contact_org": "PDS",
         "contact_email": "pds-operator@jpl.nasa.gov",

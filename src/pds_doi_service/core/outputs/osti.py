@@ -724,17 +724,20 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
             )
         )
 
-        data_curator = next(
+        data_curator = list(
             filter(
                 lambda contributor: contributor['contributor_type'] == 'DataCurator',
                 contributors_record
             )
         )
 
-        o_node_name = data_curator['full_name']
-        o_node_name = o_node_name.replace('Planetary Data System:', '')
-        o_node_name = o_node_name.replace('Node', '')
-        o_node_name = o_node_name.strip()
+        o_node_name = None
+
+        if data_curator:
+            o_node_name = data_curator[0]['full_name']
+            o_node_name = o_node_name.replace('Planetary Data System:', '')
+            o_node_name = o_node_name.replace('Node', '')
+            o_node_name = o_node_name.strip()
 
         for editor in o_editors_list:
             editor.pop('contributor_type')

@@ -128,6 +128,44 @@ class ReserveActionTestCase(unittest.TestCase):
         self.assertTrue(all([doi.status == DoiStatus.Reserved
                              for doi in dois]))
 
+    def test_reserve_json_dry_run(self):
+        """
+        Test Reserve action with a local JSON file, using the dry run flag
+        to avoid submission to OSTI.
+        """
+        o_doi_label = self._action.run(
+            input=join(self.input_dir, 'DOI_Release_20210216_from_reserve.json'),
+            node='img', submitter='my_user@my_node.gov', dry_run=True,
+            force=True
+        )
+
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+        self.assertTrue(all([doi.status == DoiStatus.Reserved_not_submitted
+                             for doi in dois]))
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        'submit_content', webclient_submit_patch)
+    def test_reserve_json_and_submit(self):
+        """
+        Test Reserve action with a local CSV file, submitting the result to OSTI.
+        """
+        o_doi_label = self._action.run(
+            input=join(self.input_dir, 'DOI_Release_20210216_from_reserve.json'),
+            node='img', submitter='my_user@my_node.gov', dry_run=False,
+            force=True
+        )
+
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+        self.assertTrue(all([doi.status == DoiStatus.Reserved
+                             for doi in dois]))
+
 
 if __name__ == '__main__':
     unittest.main()
