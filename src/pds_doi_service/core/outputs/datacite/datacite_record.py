@@ -1,0 +1,99 @@
+#
+#  Copyright 2021 by the California Institute of Technology.  ALL RIGHTS
+#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
+#  use must be negotiated with the Office of Technology Transfer at the
+#  California Institute of Technology.
+#
+
+"""
+==================
+datacite_record.py
+==================
+
+Contains classes used to create DataCite-compatible labels from Doi objects in
+memory.
+"""
+
+from os.path import exists
+
+import jinja2
+from pkg_resources import resource_filename
+
+from pds_doi_service.core.entities.doi import ProductType
+from pds_doi_service.core.outputs.doi_record import DOIRecord, CONTENT_TYPE_JSON
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.util.general_util import get_logger
+
+logger = get_logger(__name__)
+
+
+class DOIDataCiteRecord(DOIRecord):
+    """
+    Class used to create a DOI record suitable for submission to the DataCite
+    DOI service.
+
+    This class only supports output of DOI records in JSON format.
+    """
+    def __init__(self):
+        """Creates a new instance of DOIDataCiteRecord"""
+        self._config = DOIConfigUtil().get_config()
+
+        # Locate the jinja template
+        self._json_template_path = resource_filename(
+            __name__, 'DOI_DataCite_template_20210520-jinja2.json'
+        )
+
+        if not exists(self._json_template_path):
+            raise RuntimeError(
+                'Could not find the DOI template needed by this module\n'
+                f'Expected JSON template: {self._json_template_path}'
+            )
+
+        with open(self._json_template_path, 'r') as infile:
+            self._template = jinja2.Template(infile.read())
+
+    def create_doi_record(self, doi, content_type=CONTENT_TYPE_JSON):
+        if not content_type == CONTENT_TYPE_JSON:
+            raise ValueError(
+                f'Only {CONTENT_TYPE_JSON} is supported for records created '
+                f'from {__name__}'
+            )
+
+        # Filter out any keys with None as the value, so the string literal
+        # "None" is not written out to the template
+        doi_fields = (
+            dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
+        )
+
+        # If this entry does not have a DOI assigned (i.e. reserve request),
+        # DataCite wants to know our assigned prefix instead
+        if not doi.doi:
+            doi_fields['prefix'] = self._config.get('DATACITE', 'doi_prefix')
+
+        # 'Bundle' is not supported as a product type in DataCite, so
+        # promote to 'Collection'
+        if doi.product_type == ProductType.Bundle:
+            doi_fields['product_type'] = ProductType.Collection.value
+
+        # Sort keywords so we can output them in the same order each time
+        doi_fields['keywords'] = sorted(doi.keywords)
+
+        # Convert datetime objects to isoformat strings
+        if doi.date_record_added:
+            doi_fields['date_record_added'] = doi.date_record_added.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        if doi.date_record_updated:
+            doi_fields['date_record_updated'] = doi.date_record_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        # Remove any extraneous whitespace from a provided description
+        if doi.description:
+            doi_fields['description'] = str.strip(doi.description)
+
+        # Publication year is a must-have
+        doi_fields['publication_year'] = doi.publication_date.strftime('%Y')
+
+        template_vars = {'doi': doi_fields}
+
+        rendered_template = self._template.render(template_vars)
+
+        return rendered_template
