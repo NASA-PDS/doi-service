@@ -23,7 +23,10 @@ class DOIWebParser:
     to a DOI service endpoint.
     """
     _optional_fields = []
-    """The optional field names parsed from labels."""
+    """The optional Doi field names parsed from labels."""
+
+    _mandatory_fields = []
+    """The mandatory Doi field names parsed from labels."""
 
     @staticmethod
     def _get_lidvid_from_site_url(site_url):
@@ -69,8 +72,8 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            'Subclasses of DOIWebParser must provide an implementation for '
-            'parse_dois_from_label()'
+            f'Subclasses of {DOIWebParser.__name__} must provide an '
+            f'implementation for parse_dois_from_label()'
         )
 
     @staticmethod
@@ -96,6 +99,6 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            'Subclasses of DOIWebParser must provide an implementation for '
-            'get_record_for_lidvid()'
+            f'Subclasses of {DOIWebParser.__name__} must provide an '
+            f'implementation for get_record_for_lidvid()'
         )

@@ -27,7 +27,8 @@ from pds_doi_service.core.input.exceptions import (CriticalDOIException,
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
-from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiWebClient
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.util.doi_validator import DOIValidator
 from pds_doi_service.core.util.general_util import get_logger
@@ -179,6 +180,29 @@ class DOICoreActionReserve(DOICoreAction):
         return dois
 
     def run(self, **kwargs):
+        """
+        Performs a reserve of a new DOI.
+
+        Parameters
+        ----------
+        kwargs : dict
+            The parsed command-line arguments for the release action.
+
+        Returns
+        -------
+        o_doi_label : str
+            The output OSTI label(s), reflecting the status of the reserved
+            input DOI's.
+
+        Raises
+        ------
+        CriticalDOIException
+            If any unrecoverable errors are encountered during validation of
+            the input DOI's.
+
+        """
+        output_labels = []
+
         self.parse_arguments(kwargs)
 
         try:
@@ -187,32 +211,30 @@ class DOICoreActionReserve(DOICoreAction):
             dois = self._complete_dois(dois)
             dois = self._validate_dois(dois)
 
-            # Create an JSON request label to send to OSTI
-            io_doi_label = DOIOstiRecord().create_doi_record(
-                dois, content_type=CONTENT_TYPE_JSON
-            )
-
-            # Submit the Reserve request to OSTI if this isn't a dry run
-            if not self._dry_run:
-                dois, o_doi_label = DOIOstiWebClient().submit_content(
-                    payload=io_doi_label,
-                    url=self._config.get('OSTI', 'url'),
-                    username=self._config.get('OSTI', 'user'),
-                    password=self._config.get('OSTI', 'password'),
-                    content_type=CONTENT_TYPE_JSON
+            for doi in dois:
+                # Create an JSON request label to send to OSTI
+                io_doi_label = DOIOstiRecord().create_doi_record(
+                    doi, content_type=CONTENT_TYPE_JSON
                 )
 
-            # Log the inputs and outputs of this transaction
-            transaction = self.m_transaction_builder.prepare_transaction(
-                self._node, self._submitter, dois, input_path=self._input,
-                output_content_type=CONTENT_TYPE_JSON
-            )
+                # Submit the Reserve request to OSTI if this isn't a dry run
+                if not self._dry_run:
+                    doi, o_doi_label = DOIOstiWebClient().submit_content(
+                        payload=io_doi_label,
+                        content_type=CONTENT_TYPE_JSON
+                    )
 
-            # Commit the transaction to the local database
-            transaction.log()
+                # Log the inputs and outputs of this transaction
+                transaction = self.m_transaction_builder.prepare_transaction(
+                    self._node, self._submitter, doi, input_path=self._input,
+                    output_content_type=CONTENT_TYPE_JSON
+                )
 
-            # Return up-to-date version of output label
-            return transaction.output_content
+                # Commit the transaction to the local database
+                transaction.log()
+
+                output_labels.append(transaction.output_content)
+
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically
@@ -221,3 +243,6 @@ class DOICoreActionReserve(DOICoreAction):
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
             raise CriticalDOIException(err)
+
+        # Return up-to-date version of output label(s)
+        return output_labels

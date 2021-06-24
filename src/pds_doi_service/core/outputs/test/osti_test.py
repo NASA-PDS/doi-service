@@ -9,12 +9,13 @@ import unittest
 from pkg_resources import resource_filename
 
 from pds_doi_service.core.entities.doi import ProductType, DoiStatus
-from pds_doi_service.core.outputs.osti import DOIOstiRecord, DOIOstiXmlWebParser, DOIOstiJsonWebParser
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser, DOIOstiJsonWebParser
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 
 
-class OutputOstiTestCase(unittest.TestCase):
-    """Unit tests for the osti.py module"""
+class DOIOstiRecordTestCase(unittest.TestCase):
+    """Unit tests for the osti_record.py module"""
 
     @classmethod
     def setUpClass(cls):
@@ -27,7 +28,7 @@ class OutputOstiTestCase(unittest.TestCase):
         )
 
     def test_create_osti_label_xml(self):
-        """Test creation of an OSTI XML label from Doi objects"""
+        """Test creation of an OSTI XML label from a Doi object"""
         # Parse sample input to obtain a Doi object
         input_xml_file = join(
             self.input_dir, 'DOI_Release_20200727_from_release.xml'
@@ -39,7 +40,7 @@ class OutputOstiTestCase(unittest.TestCase):
 
             # Now create an output label from the parsed Doi
             output_xml = DOIOstiRecord().create_doi_record(
-                input_dois, content_type=CONTENT_TYPE_XML
+                input_dois[0], content_type=CONTENT_TYPE_XML
             )
             output_dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(output_xml)
 
@@ -47,7 +48,7 @@ class OutputOstiTestCase(unittest.TestCase):
         input_doi_fields = input_dois[0].__dict__
         output_doi_fields = output_dois[0].__dict__
 
-        # Add/update dates are always overwritten when parsing Doi objects
+        # Added/updated dates are always overwritten when parsing Doi objects
         # from input labels, so remove these key/values from the comparison
         for date_key in ('date_record_added', 'date_record_updated'):
             input_doi_fields.pop(date_key, None)
@@ -66,14 +67,14 @@ class OutputOstiTestCase(unittest.TestCase):
             input_json = infile.read()
             dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(input_json)
 
-            # Now create an output label from parsed Doi
+            # Now create an output label from the parsed Doi
             output_json = DOIOstiRecord().create_doi_record(
-                dois, content_type=CONTENT_TYPE_JSON
+                dois[0], content_type=CONTENT_TYPE_JSON
             )
 
         # Massage the output a bit so we can do a straight dict comparison
         input_json = json.loads(input_json)[0]
-        output_json = json.loads(output_json)[0]
+        output_json = json.loads(output_json)
 
         # Add/update dates are always overwritten when parsing Doi objects
         # from input labels, so remove these key/values from the comparison
@@ -84,7 +85,7 @@ class OutputOstiTestCase(unittest.TestCase):
         self.assertDictEqual(input_json, output_json)
 
 
-class OstiWebParserTestCase(unittest.TestCase):
+class DOIOstiWebParserTestCase(unittest.TestCase):
     """Unit tests for the osti_web_parser.py module"""
 
     @classmethod
@@ -199,3 +200,7 @@ class OstiWebParserTestCase(unittest.TestCase):
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 1)
+
+
+if __name__ == '__main__':
+    unittest.main()

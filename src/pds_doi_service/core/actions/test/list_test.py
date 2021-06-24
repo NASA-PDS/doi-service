@@ -2,22 +2,24 @@
 
 import json
 import os
-from os.path import abspath, dirname, join
+from os.path import abspath, join
 import unittest
 import tempfile
+
+from pkg_resources import resource_filename
 
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti import DOIOstiXmlWebParser, DOIOstiJsonWebParser
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser, DOIOstiJsonWebParser
 
 
 class ListActionTestCase(unittest.TestCase):
     # TODO: add additional unit tests for other list query parameters
 
     def setUp(self):
-        self.test_dir = abspath(dirname(__file__))  # FIXME: use pkg_resources
+        self.test_dir = resource_filename(__name__, '')
         self.input_dir = abspath(
             join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
@@ -73,7 +75,7 @@ class ListActionTestCase(unittest.TestCase):
                 'no_review': False
             }
 
-            review_json = self._release_action.run(**review_kwargs)
+            review_json = self._release_action.run(**review_kwargs)[0]
 
         dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(review_json)
         doi = dois[0]

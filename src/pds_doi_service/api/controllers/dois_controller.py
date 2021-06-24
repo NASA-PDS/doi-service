@@ -35,10 +35,10 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    UnknownLIDVIDException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
-from pds_doi_service.core.outputs.osti import (DOIOstiRecord,
-                                               DOIOstiWebParser,
-                                               DOIOstiXmlWebParser,
-                                               DOIOstiJsonWebParser)
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiWebParser,
+                                                               DOIOstiXmlWebParser,
+                                                               DOIOstiJsonWebParser)
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -473,7 +473,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
                 'no_review': kwargs.get('no_review', True)
             }
 
-            osti_release_label = release_action.run(**release_kwargs)
+            osti_release_label = release_action.run(**release_kwargs)[0]
 
         dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(osti_release_label)
 
@@ -570,7 +570,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
 
     # Create a return label in XML, since this is the format expected by
     # consumers of the response (such as the UI)
-    xml_label_for_lidvid = DOIOstiRecord().create_doi_record(dois)
+    xml_label_for_lidvid = DOIOstiRecord().create_doi_record(dois[0])
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],

@@ -8,12 +8,12 @@ import uuid
 
 import logging
 
-from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException, IllegalDOIActionException
+from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException
 from pds_doi_service.core.util.doi_xml_differ import DOIDiffer
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.actions.release import DOICoreActionRelease
-from pds_doi_service.core.outputs.osti import DOIOstiWebClient
+from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 logging.basicConfig(level=logging.INFO)
@@ -208,11 +208,8 @@ def step_doi_label_is_submitted_impl(context):
 
     # The payload is now ready to be submitted to OSTI.
     if g_submit_flag:
-        (dois, response_str) = DOIOstiWebClient().submit_content(
-            payload=etree.tostring(out_root),
-            url=m_config.get('OSTI', 'url'),
-            username=m_config.get('OSTI', 'user'),
-            password=m_config.get('OSTI', 'password')
+        doi, response_str = DOIOstiWebClient().submit_content(
+            payload=etree.tostring(out_root)
         )
     else:
         logger.info(f"g_submit_flag is False")
