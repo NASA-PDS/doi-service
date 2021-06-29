@@ -13,6 +13,7 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiJsonWebParser
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 
 
 class ReserveActionTestCase(unittest.TestCase):
@@ -31,7 +32,9 @@ class ReserveActionTestCase(unittest.TestCase):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
 
-    def webclient_submit_patch(self, payload, content_type=CONTENT_TYPE_XML):
+    def webclient_submit_patch(self, payload, url=None, username=None,
+                               password=None, method=WEB_METHOD_POST,
+                               content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.submit_content().
 
