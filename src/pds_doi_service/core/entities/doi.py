@@ -53,6 +53,13 @@ class DoiStatus(str, Enum):
             (submitted to DOI service provider), but not yet published.
         Registered -
             DOI request has been registered with the service provider.
+            Note that for DataCite entries, registered must still be pushed
+            to "Findable" to be considered published.
+        Findable -
+            DOI request has been marked as "findable" by DataCite, meaning it
+            is publicly available.
+        Deactivated -
+            The submitted DOI has been deactivated (deleted).
 
     """
     Error = 'error'
@@ -63,6 +70,7 @@ class DoiStatus(str, Enum):
     Review = 'review'
     Pending = 'pending'
     Registered = 'registered'
+    Findable = 'findable'
     Deactivated = 'deactivated'
 
 
