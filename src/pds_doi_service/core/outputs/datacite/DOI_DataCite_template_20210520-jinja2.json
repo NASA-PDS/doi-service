@@ -1,8 +1,10 @@
 {
     "data":
     {
+        {% if doi.doi %}"id": "{{ doi.doi }}",{% endif %}
         "type": "dois",
         "attributes": {
+            {% if doi.status.value == "reserved" %}"event": "register",{% elif doi.status.value == "pending" %}"event": "publish",{% endif %}
             {% if doi.doi %}"doi": "{{ doi.doi }}",{% else %}"prefix": "{{ doi.prefix }}",{% endif %}
             {% if doi.id %}"suffix": "{{ doi.id }}",{% endif %}
             "creators": [{% for author in doi.authors %}
@@ -14,7 +16,10 @@
                 }{% if not loop.last %},{% endif %}{% endfor %}
             ],
             "titles": [
-                { "title": "{{ doi.title }}" }
+                {
+                    "title": "{{ doi.title }}",
+                    "lang": "en"
+                }
             ],
             "publisher": "{{ doi.publisher }}",
             "publicationYear": "{{ doi.publication_year }}",
@@ -51,13 +56,14 @@
                 {
                     "description": "{{ doi.description }}",
                     "descriptionType": "Abstract",
-                    "lang": "english"
+                    "lang": "en"
                 }
             ],{% endif %}
             {% if doi.site_url %}"url": "{{ doi.site_url }}",{% else %}"url": ":tba",{% endif %}
             {% if doi.date_record_added %}"created": "{{ doi.date_record_added }}",{% endif %}
             {% if doi.date_record_updated %}"updated": "{{ doi.date_record_updated }}",{% endif %}
-            "state": "{{ doi.status.value }}"
+            "state": "{{ doi.status.value }}",
+            "language": "en"
         }
     }
 }
