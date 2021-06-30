@@ -74,7 +74,7 @@ class DOIOstiRecordTestCase(unittest.TestCase):
 
         # Massage the output a bit so we can do a straight dict comparison
         input_json = json.loads(input_json)[0]
-        output_json = json.loads(output_json)
+        output_json = json.loads(output_json)[0]
 
         # Add/update dates are always overwritten when parsing Doi objects
         # from input labels, so remove these key/values from the comparison
