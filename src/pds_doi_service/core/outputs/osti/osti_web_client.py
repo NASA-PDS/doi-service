@@ -22,7 +22,7 @@ from requests.auth import HTTPBasicAuth
 from pds_doi_service.core.input.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiWebParser
-from pds_doi_service.core.outputs.web_client import DOIWebClient
+from pds_doi_service.core.outputs.web_client import DOIWebClient, WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -49,7 +49,8 @@ class DOIOstiWebClient(DOIWebClient):
     MAX_TOTAL_ROWS_RETRIEVE = 1000000000
     """Maximum numbers of rows to request from a query to OSTI"""
 
-    def submit_content(self, payload, content_type=CONTENT_TYPE_XML):
+    def submit_content(self, payload, url=None, username=None, password=None,
+                       method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
         """
         Submits a payload to the OSTI DOI service via the POST action.
 
@@ -64,10 +65,22 @@ class DOIOstiWebClient(DOIWebClient):
         payload : str
             Payload to submit to the OSTI DOI service. Should correspond to
             an OSTI-format label file containing a single DOI record.
-        content_type : str
+        url : str, optional
+            The URL to submit the request to. If not submitted, it is pulled
+            from the INI config OSTI url field.
+        username : str, optional
+            The username to authenticate the request as. If not submitted, it
+            is pulled from the INI config OSTI user field.
+        password : str, optional
+            The password to authenticate the request with. If not submitted, it
+            is pulled from the INI config OSTI password field.
+        method : str, optional
+            The HTTP method type to use with the request. Should be one of
+            GET, POST, PUT or DELETE. Defaults to POST.
+        content_type : str, optional
             The content type to specify the format of the payload, as well as
             the format of the response from OSTI. Currently, 'xml' and 'json'
-            are supported.
+            are supported. Defaults to xml.
 
         Returns
         -------
@@ -81,9 +94,10 @@ class DOIOstiWebClient(DOIWebClient):
 
         response_text = super()._submit_content(
             payload,
-            url=config.get('OSTI', 'url'),
-            username=config.get('OSTI', 'user'),
-            password=config.get('OSTI', 'password'),
+            url=url or config.get('OSTI', 'url'),
+            username=username or config.get('OSTI', 'user'),
+            password=password or config.get('OSTI', 'password'),
+            method=method,
             content_type=content_type
         )
 
@@ -93,19 +107,36 @@ class DOIOstiWebClient(DOIWebClient):
 
         return dois[0], response_text
 
-    def query_doi(self, query, content_type=CONTENT_TYPE_XML):
+    def query_doi(self, query, url=None, username=None, password=None,
+                  content_type=CONTENT_TYPE_XML):
         """
         Queries the status of a DOI from the OSTI server and returns the
         response text.
 
-        The format of i_url is: https://www.osti.gov/iad2test/api/records/
-        and will be appended by fields in query_dict:
+        Parameters
+        ----------
+        query : dict
+            Key/value pairs to append as parameters to the URL for the GET
+            endpoint.
+        url : str, optional
+            The URL to submit the request to. If not submitted, it is pulled
+            from the INI config for the appropriate service provider.
+        username : str, optional
+            The username to authenticate the request as. If not submitted, it
+            is pulled from the INI config OSTI user field.
+        password : str, optional
+            The password to authenticate the request with. If not submitted, it
+            is pulled from the INI config OSTI password field.
+        content_type : str, optional
+            The content type to specify the format of the payload, as well as
+            the format of the response from OSTI. Currently, 'xml' and 'json'
+            are supported. Defaults to xml.
 
-            if query = {'id':14108,'status':'Error'}
-                then https://www.osti.gov/iad2test/api/records?id=14108&status=Error
+        Returns
+        -------
+        response_text : str
+            Body of the response text from the endpoint.
 
-            if query = {'id'=1327397,'status'='Registered'}
-                then https://www.osti.gov/iad2test/api/records?id=1327397&status=Registered
         """
         config = self._config_util.get_config()
 
@@ -114,7 +145,8 @@ class DOIOstiWebClient(DOIWebClient):
                              f'{",".join(list(self._content_type_map.keys()))}')
 
         auth = HTTPBasicAuth(
-            config.get('OSTI', 'user'), config.get('OSTI', 'password')
+            username or config.get('OSTI', 'user'),
+            password or config.get('OSTI', 'password')
         )
 
         headers = {
@@ -133,7 +165,7 @@ class DOIOstiWebClient(DOIWebClient):
         else:
             query = initial_payload
 
-        url = config.get('OSTI', 'url')
+        url = url or config.get('OSTI', 'url')
 
         logger.debug("initial_payload: %s", initial_payload)
         logger.debug("query_dict: %s", query)

@@ -21,7 +21,9 @@ from requests.auth import HTTPBasicAuth
 
 from pds_doi_service.core.input.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
-from pds_doi_service.core.outputs.web_client import DOIWebClient
+from pds_doi_service.core.outputs.web_client import (DOIWebClient,
+                                                     WEB_METHOD_GET,
+                                                     WEB_METHOD_POST)
 from pds_doi_service.core.outputs.datacite.datacite_web_parser import DOIDataCiteWebParser
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -38,22 +40,32 @@ class DOIDataCiteWebClient(DOIWebClient):
         CONTENT_TYPE_JSON: 'application/vnd.api+json'
     }
 
-    def submit_content(self, payload, content_type=CONTENT_TYPE_JSON):
+    def submit_content(self, payload, url=None, username=None, password=None,
+                       method=WEB_METHOD_POST, content_type=CONTENT_TYPE_JSON):
         """
         Submits a payload to the DataCite DOI service via the POST action.
 
         The action taken by the service is determined by the contents of the
         payload.
 
-        The DataCite endpoint URL and authentication credentials for the request
-        are automatically pulled from the configuration file.
-
         Parameters
         ----------
         payload : str
             Payload to submit to the DataCite DOI service. Should correspond to
             an DataCite-format label file (JSON) containing a single DOI record.
-        content_type : str
+        url : str, optional
+            The URL to submit the request to. If not submitted, it is pulled
+            from the INI config DATACITE url field.
+        username : str, optional
+            The username to authenticate the request as. If not submitted, it
+            is pulled from the INI config DATACITE user field.
+        password : str, optional
+            The password to authenticate the request with. If not submitted, it
+            is pulled from the INI config DATACITE password field.
+        method : str, optional
+            The HTTP method type to use with the request. Should be one of
+            GET, POST, PUT or DELETE. Defaults to POST.
+        content_type : str, optional
             The content type to specify the format of the payload, as well as
             the format of the response from OSTI. Currently, only 'json' is
             supported.
@@ -70,29 +82,44 @@ class DOIDataCiteWebClient(DOIWebClient):
 
         response_text = super()._submit_content(
             payload,
-            url=config.get('DATACITE', 'url'),
-            username=config.get('DATACITE', 'user'),
-            password=config.get('DATACITE', 'password'),
+            url=url or config.get('DATACITE', 'url'),
+            username=username or config.get('DATACITE', 'user'),
+            password=password or config.get('DATACITE', 'password'),
+            method=method,
             content_type=content_type
         )
 
-        doi = self._web_parser.parse_dois_from_label(response_text)
+        dois, _ = self._web_parser.parse_dois_from_label(response_text)
 
-        return doi, response_text
+        return dois[0], response_text
 
-    def query_doi(self, query, content_type=CONTENT_TYPE_JSON):
+    def query_doi(self, query, url=None, username=None, password=None,
+                  content_type=CONTENT_TYPE_JSON):
         """
-        Queries the DataCite DOI endpoint for the status of one or more DOI
-        submissions.
+        Queries the DataCite DOI endpoint for the status of DOI submissions.
 
-        The DataCite endpoint URL and authentication credentials for the request
-        are automatically pulled from the configuration file.
+        Notes
+        -----
+        Queries are automatically filtered by this method to only include
+        DOI entries associated with the PDS client ID, which corresponds to the
+        username used with the query request.
 
         Parameters
         ----------
-        query : dict
-            Key/value pairs to append as parameters to the URL for the GET
-            endpoint.
+        query : str or dict
+            If a string is provided, it is used as the single query term to
+            search against all fields of all submitted DOI entries.
+            If a dictionary is provided, the key/value pairs are appended as
+            specific query parameters to search against all submitted DOI entries.
+        url : str, optional
+            The URL to submit the request to. If not submitted, it is pulled
+            from the INI config DATACITE url field.
+        username : str, optional
+            The username to authenticate the request as. If not submitted, it
+            is pulled from the INI config DATACITE user field.
+        password : str, optional
+            The password to authenticate the request with. If not submitted, it
+            is pulled from the INI config DATACITE password field.
         content_type : str
             The content type to specify the the format of the response from the
             endpoint. Only 'json' is currently supported.
@@ -110,7 +137,8 @@ class DOIDataCiteWebClient(DOIWebClient):
                              f'{",".join(list(self._content_type_map.keys()))}')
 
         auth = HTTPBasicAuth(
-            config.get('DATACITE', 'user'), config.get('DATACITE', 'password')
+            username or config.get('DATACITE', 'user'),
+            password or config.get('DATACITE', 'password')
         )
 
         headers = {
@@ -120,17 +148,18 @@ class DOIDataCiteWebClient(DOIWebClient):
         if isinstance(query, dict):
             query_string = ' '.join([f'{k}:{v}' for k, v in query.items()])
         else:
-            query_string = ' '.join(list(map(str, query)))
+            query_string = str(query)
 
-        url = config.get('DATACITE', 'url')
+        url = url or config.get('DATACITE', 'url')
+        client_id = (username or config.get('DATACITE', 'user')).lower()
 
         logger.debug('query_string: %s', query_string)
         logger.debug('url: %s', url)
+        logger.debug('client_id: %s', client_id)
 
-        datacite_response = requests.get(
-            url=url, auth=auth, headers=headers,
-            params={"query": query_string,
-                    'client-id': config.get('DATACITE', 'user').lower()}
+        datacite_response = requests.request(
+            WEB_METHOD_GET, url=url, auth=auth, headers=headers,
+            params={"query": query_string, "client-id": client_id}
         )
 
         try:

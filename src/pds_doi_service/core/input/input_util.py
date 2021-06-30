@@ -27,8 +27,8 @@ from lxml import etree
 
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
-from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
+from pds_doi_service.core.outputs.osti.osti_validator import OSTIValidator
 from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiXmlWebParser,
                                                                DOIOstiJsonWebParser)
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -99,7 +99,7 @@ class DOIInputUtil:
     def parse_xml_file(self, xml_path):
         """
         Parses DOIs from a file with an .xml extension. The file is expected
-        to conform either to the PDS4 label or OSTI output label schema.
+        to conform either to the PDS4 label or a DOI output label schema.
 
         """
         dois = []
@@ -128,7 +128,7 @@ class DOIInputUtil:
                         basename(xml_path))
 
             try:
-                OSTIInputValidator()._validate_against_xsd(xml_tree)
+                OSTIValidator()._validate_against_xsd(xml_tree)
 
                 dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(xml_contents)
             except XMLSchemaValidationError as err:
@@ -189,8 +189,8 @@ class DOIInputUtil:
 
     def _parse_rows_to_doi_meta(self, xl_sheet):
         """
-        Given all rows in input file, parse each row and return the aggregated
-        XML of all records in OSTI format.
+        Given all rows in input file, parse each row and return a list of
+        Doi objects.
         """
         doi_records = []
         timestamp = datetime.now()

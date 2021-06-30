@@ -23,6 +23,14 @@ from pds_doi_service.core.input.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
+WEB_METHOD_GET = 'GET'
+WEB_METHOD_POST = 'POST'
+WEB_METHOD_PUT = 'PUT'
+WEB_METHOD_DELETE = 'DELETE'
+VALID_WEB_METHODS = [WEB_METHOD_GET, WEB_METHOD_POST,
+                     WEB_METHOD_PUT, WEB_METHOD_DELETE]
+"""Constants for HTTP method types"""
+
 
 class DOIWebClient:
     """Abstract base class for clients of an HTTP DOI service endpoint"""
@@ -32,7 +40,7 @@ class DOIWebClient:
     _content_type_map = {}
 
     def _submit_content(self, payload, url, username, password,
-                        content_type=CONTENT_TYPE_XML):
+                        method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
         """
         Submits a payload to a DOI service endpoint via the POST action.
 
@@ -49,9 +57,13 @@ class DOIWebClient:
             The user name to authenticate to the DOI service as.
         password : str
             The password to authenticate to the DOI service with.
-        content_type : str
+        method : str, optional
+            The HTTP method type to use with the request. Should be one of
+            GET, POST, PUT or DELETE. Defaults to POST.
+        content_type : str, optional
             The content type to specify the format of the payload, as well as
-            the format of the response from the endpoint.
+            the format of the response from the endpoint. Defaults to
+            xml.
 
         Returns
         -------
@@ -59,6 +71,10 @@ class DOIWebClient:
             Body of the response text from the endpoint.
 
         """
+        if method not in VALID_WEB_METHODS:
+            raise ValueError('Invalid method requested, must be one of '
+                             f'{",".join(VALID_WEB_METHODS)}')
+
         if content_type not in self._content_type_map:
             raise ValueError('Invalid content type requested, must be one of '
                              f'{",".join(list(self._content_type_map.keys()))}')
@@ -70,7 +86,9 @@ class DOIWebClient:
             'Content-Type': self._content_type_map[content_type]
         }
 
-        response = requests.post(url, auth=auth, data=payload, headers=headers)
+        response = requests.request(
+            method, url, auth=auth, data=payload, headers=headers
+        )
 
         try:
             response.raise_for_status()
@@ -89,7 +107,8 @@ class DOIWebClient:
 
         return response.text
 
-    def submit_content(self, payload, content_type=CONTENT_TYPE_XML):
+    def submit_content(self, payload, url=None, username=None, password=None,
+                       method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
         """
         Submits the provided payload to a DOI service endpoint via the POST
         action.
@@ -106,9 +125,21 @@ class DOIWebClient:
         payload : str
             Payload to submit to the DOI service. Should only correspond
             to a single DOI record.
-        content_type : str
+        url : str, optional
+            The URL to submit the request to. If not submitted, it is pulled
+            from the INI config for the appropriate service provider.
+        username : str, optional
+            The username to authenticate the request as. If not submitted, it
+            is pulled from the INI config for the appropriate service provider.
+        password : str, optional
+            The password to authenticate the request with. If not submitted, it
+            is pulled from the INI config for the appropriate service provider.
+        method : str, optional
+            The HTTP method type to use with the request. Should be one of
+            GET, POST, PUT or DELETE. Defaults to POST.
+        content_type : str, optional
             The content type to specify the format of the payload, as well as
-            the format of the response from the endpoint.
+            the format of the response from the endpoint. Defaults to xml.
 
         Returns
         -------
@@ -123,22 +154,34 @@ class DOIWebClient:
             f'implementation for submit_content()'
         )
 
-    def query_doi(self, query, content_type=CONTENT_TYPE_XML):
+    def query_doi(self, query, url=None, username=None, password=None,
+                  content_type=CONTENT_TYPE_XML):
         """
-        Queries the DOI endpoint for the status of one or more DOI submissions.
+        Queries the DOI endpoint for the status of a DOI submission.
+        The query utilizes the GET HTTP method of the URL endpoint.
 
         Inheritors of DOIWebClient should pull any required endpoint specific
         parameters (URL, username, password, etc...) from the configuration
-        util bundled with the class.
+        util bundled with the class for optional arguments not provided by
+        the user.
 
         Parameters
         ----------
         query : dict
             Key/value pairs to append as parameters to the URL for the GET
             endpoint.
-        content_type : str
+        url : str, optional
+            The URL to submit the request to. If not submitted, it is pulled
+            from the INI config for the appropriate service provider.
+        username : str, optional
+            The username to authenticate the request as. If not submitted, it
+            is pulled from the INI config for the appropriate service provider.
+        password : str, optional
+            The password to authenticate the request with. If not submitted, it
+            is pulled from the INI config for the appropriate service provider.
+        content_type : str, optional
             The content type to specify the the format of the response from the
-            endpoint.
+            endpoint. Defaults to xml.
 
         Returns
         -------

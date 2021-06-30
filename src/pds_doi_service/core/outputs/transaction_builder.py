@@ -47,7 +47,8 @@ class TransactionBuilder:
         or release action. The Transaction object is returned.
 
         The field output_content is used for writing the content to disk.
-        This is typically the response text from an OSTI request.
+        This is typically the response text from a request to the DOI
+        service provider.
 
         """
         if output_content_type not in VALID_CONTENT_TYPES:

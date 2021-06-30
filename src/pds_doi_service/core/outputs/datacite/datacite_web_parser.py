@@ -50,7 +50,11 @@ class DOIDataCiteWebParser(DOIWebParser):
     @staticmethod
     def _parse_id(record):
         try:
-            return record['suffix']
+            if 'suffix' in record:
+                return record['suffix']
+            else:
+                # Parse the ID from the DOI field, it it's available
+                return DOIDataCiteWebParser._parse_doi(record).split('/')[-1]
         except KeyError as err:
             logger.warning('Could not parse id from record, reason: %s', err)
 

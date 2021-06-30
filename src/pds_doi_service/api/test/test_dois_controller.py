@@ -77,7 +77,7 @@ class TestDoisController(BaseTestCase):
         """
         Patch for DOICoreActionDraft.run()
 
-        Returns body of an OSTI XML label corresponding to a successful draft
+        Returns body of an XML label corresponding to a successful draft
         request.
         """
         draft_record_file = join(
@@ -89,7 +89,7 @@ class TestDoisController(BaseTestCase):
         """
         Patch for DOICoreActionReserve.run()
 
-        Returns body of an OSTI JSON label corresponding to a successful reserve
+        Returns body of a JSON label corresponding to a successful reserve
         (dry-run) request.
         """
         draft_record_file = join(
@@ -461,7 +461,7 @@ class TestDoisController(BaseTestCase):
         """
         Patch for DOICoreActionRelease.run()
 
-        Returns body of an OSTI XML label corresponding to a successful release
+        Returns body of an XML label corresponding to a successful release
         request.
         """
         draft_record_file = join(
@@ -534,8 +534,8 @@ class TestDoisController(BaseTestCase):
         """
         Patch for DOICoreActionRelease.run()
 
-        Returns body of an OSTI XML label corresponding to errors returned
-        from OSTI.
+        Returns body of a XML label corresponding to errors returned
+        from the DOI service provider.
         """
         draft_record_file = join(
             TestDoisController.test_data_dir, 'error_osti_record.xml')
@@ -667,7 +667,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
         self.assertIn(
-            'Could not find an OSTI Label associated with LIDVID '
+            'Could not find a DOI label associated with LIDVID '
             'urn:nasa:pds:insight_cameras::1.1',
             errors[0]['message']
         )
@@ -782,7 +782,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
         self.assertIn(
-            'Could not find an OSTI Label associated with LIDVID '
+            'Could not find a DOI label associated with LIDVID '
             'urn:nasa:pds:insight_cameras::1.1',
             errors[0]['message']
         )

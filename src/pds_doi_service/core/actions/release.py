@@ -25,12 +25,12 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
-from pds_doi_service.core.input.osti_input_validator import OSTIInputValidator
 from pds_doi_service.core.input.node_util import NodeUtil
-from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
-from pds_doi_service.core.util.doi_validator import DOIValidator
+from pds_doi_service.core.outputs.doi_validator import DOIValidator
+from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
+from pds_doi_service.core.outputs.osti.osti_validator import OSTIValidator
+from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -45,7 +45,7 @@ class DOICoreActionRelease(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._osti_validator = OSTIInputValidator()
+        self._osti_validator = OSTIValidator()
         self._input_util = DOIInputUtil(valid_extensions=['.xml', '.json'])
 
         self._input = None
@@ -59,7 +59,7 @@ class DOICoreActionRelease(DOICoreAction):
         action_parser = subparsers.add_parser(
             cls._name, description='Release a DOI, in draft or reserve status, '
                                    'for review. A DOI may also be released to '
-                                   'the OSTI server directly.'
+                                   'the DOI service provider directly.'
         )
 
         node_values = NodeUtil.get_permissible_values()
@@ -71,8 +71,8 @@ class DOICoreActionRelease(DOICoreAction):
         action_parser.add_argument(
             '-f', '--force', required=False, action='store_true',
             help='If provided, forces the release action to proceed even if '
-                 'warning are encountered during submission of the release to '
-                 'OSTI. Without this flag, any warnings encountered are '
+                 'warning are encountered during submission of the release '
+                 'request. Without this flag, any warnings encountered are '
                  'treated as fatal exceptions.'
         )
         action_parser.add_argument(
@@ -91,8 +91,8 @@ class DOICoreActionRelease(DOICoreAction):
         action_parser.add_argument(
             '--no-review', required=False, action='store_true',
             help='If provided, the requested DOI will be released directly to '
-                 'the OSTI server for registration. Use to override the default '
-                 'behavior of releasing a DOI to "review" status.'
+                 'the DOI service provider for registration. Use to override the '
+                 'default behavior of releasing a DOI to "review" status.'
         )
 
     def _parse_input(self, input_file):
@@ -101,7 +101,7 @@ class DOICoreActionRelease(DOICoreAction):
     def _complete_dois(self, dois):
         """
         Ensures the list of Doi objects to reserve have the requisite fields,
-        such as status or contributor, filled in prior to submission to OSTI.
+        such as status or contributor, filled in prior to submission.
 
         Parameters
         ----------
@@ -126,7 +126,7 @@ class DOICoreActionRelease(DOICoreAction):
 
     def _validate_dois(self, dois):
         """
-        Validates the list of Doi objects prior to their submission to OSTI.
+        Validates the list of Doi objects prior to their submission.
 
         Depending on the configuration of the DOI service, Doi objects may
         be validated against the OSTI XSD, schematron, as well as the internal
@@ -184,7 +184,7 @@ class DOICoreActionRelease(DOICoreAction):
         Performs a release of a DOI that has been previously reserved.
 
         A reserved DOI can be "released" either to the review step, or
-        released directly to OSTI for immediate registration.
+        released directly to the DOI service provider for immediate registration.
 
         The input is an XML text file containing the previously returned output
         of a 'reserve' or 'draft' action. The only required field is 'id'.
@@ -198,7 +198,7 @@ class DOICoreActionRelease(DOICoreAction):
         Returns
         -------
         o_doi_label : str
-            The output OSTI label(s), reflecting the status of the released
+            The output label(s), reflecting the status of the released
             input DOI's.
         Raises
         ------
@@ -213,19 +213,19 @@ class DOICoreActionRelease(DOICoreAction):
 
         try:
             # Parse, complete and validate the input dois prior to their
-            # submission to OSTI
+            # submission
             dois = self._parse_input(self._input)
             dois = self._complete_dois(dois)
             dois = self._validate_dois(dois)
 
             for doi in dois:
-                # Create an JSON request label to send to OSTI
+                # Create an JSON request label to send to the service provider
                 io_doi_label = DOIOstiRecord().create_doi_record(
                     doi, content_type=CONTENT_TYPE_JSON
                 )
 
-                # If the next step is to release to OSTI, submit to the server
-                # and use response label for the local transaction database entry
+                # If the next step is to release, submit to the server and
+                # use the response label for the local transaction database entry
                 if self._no_review:
                     # Submit the text containing the 'release' action and its associated
                     # DOIs and optional metadata.

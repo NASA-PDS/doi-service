@@ -37,9 +37,9 @@ logger = get_logger(__name__)
 
 class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
-    _description = ('Check DOI pending status at OSTI and update the local '
-                    'database. Should be run regularly, for example in a '
-                    'crontab.')
+    _description = ('Check pending DOI statuses from the service provider and '
+                    'update the local database. Should be run regularly, for '
+                    'example in a crontab.')
     _order = 30
     _run_arguments = ('submitter', 'email', 'attachment')
 
@@ -95,7 +95,7 @@ class DOICoreActionCheck(DOICoreAction):
 
     def _update_transaction_db(self, pending_record):
         """
-        Processes the result from the one 'check' query to OSTI server.
+        Processes the result from the one 'check' query to DOI service provider.
 
         If the status has changed from initial status, update the old record in
         the database and write a new record to the database and return DOI just
@@ -106,7 +106,7 @@ class DOICoreActionCheck(DOICoreAction):
         lidvid = '::'.join([pending_record['lid'], pending_record['vid']])
 
         logger.info(
-            'Checking OSTI release status for DOI %s (LIDVID %s)',
+            'Checking release status for DOI %s (LIDVID %s)',
             doi_value, lidvid
         )
 
@@ -129,10 +129,10 @@ class DOICoreActionCheck(DOICoreAction):
                 # Update the previous status we store in the transaction database
                 doi.previous_status = DoiStatus.Pending
 
-                # Update the last updated time to mark the successful query to OSTI
+                # Update the last updated time to mark the successful query
                 pending_record['update_date'] = doi.date_record_updated.isoformat()
 
-                # If there was an error submitting to OSTI, include the details.
+                # If there was a submission error, include the details.
                 # Since we only check one DOI at a time, should be safe
                 # to index by 0 here
                 if errors:
@@ -159,7 +159,7 @@ class DOICoreActionCheck(DOICoreAction):
             pending_record.pop('is_latest', None)
         else:
             logger.error(
-                "No record for DOI %s (LIDVID %s) found at OSTI",
+                "No record for DOI %s (LIDVID %s) found at the service provider",
                 pending_record['doi'], lidvid
             )
 
@@ -343,12 +343,12 @@ class DOICoreActionCheck(DOICoreAction):
     def run(self, **kwargs):
         """
         Queries the local database for latest Pending state records and checks
-        the OSTI server for all the records with criteria specified in
-        query_criterias, returning the results either in JSON or XML.
+        the DOI service provider server for all the records with criteria
+        specified in query_criterias, returning the results either in JSON or XML.
 
         Once the query is returned, every record is checked against its initial
-        status and the status returned from OSTI. If the status has changed from
-        initial, this function writes a new record to the database.
+        status and the status returned from the provider. If the status has
+        changed from initial, this function writes a new record to the database.
 
         All parameters are optional and may be useful for tests.
 

@@ -60,7 +60,8 @@ class CheckActionTestCase(unittest.TestCase):
         if os.path.exists(cls.db_name):
             os.remove(cls.db_name)
 
-    def webclient_query_patch_nominal(self, query, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch_nominal(self, query,  url=None, username=None,
+                                      password=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.query_doi().
 
@@ -77,7 +78,8 @@ class CheckActionTestCase(unittest.TestCase):
 
         return xml_contents
 
-    def webclient_query_patch_error(self, query, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch_error(self, query, url=None, username=None,
+                                    password=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.query_doi().
 
@@ -94,7 +96,8 @@ class CheckActionTestCase(unittest.TestCase):
 
         return xml_contents
 
-    def webclient_query_patch_no_change(self, query, content_type=CONTENT_TYPE_XML):
+    def webclient_query_patch_no_change(self, query, url=None, username=None,
+                                        password=None, content_type=CONTENT_TYPE_XML):
         """
         Patch for DOIOstiWebClient.query_doi().
 

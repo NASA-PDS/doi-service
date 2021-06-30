@@ -385,8 +385,8 @@ class DOIValidator:
 
     def validate(self, doi: Doi):
         """
-        Given a Doi object, validate certain fields before sending them to OSTI
-        or other data center(s). Exception(s) will be raised.
+        Given a Doi object, validate certain fields before sending them to
+        the DOI service provider. Exception(s) will be raised.
         """
         self._check_doi_for_existing_lidvid(doi)
         self._check_lidvid_for_existing_doi(doi)

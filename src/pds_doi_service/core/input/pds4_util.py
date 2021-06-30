@@ -256,12 +256,12 @@ class DOIPDS4LabelUtil:
                     "Cannot split the authors using comma or semi-colon."
                 )
 
-            osti_id = None
+            doi_suffix = None
 
             if 'doi' in pds4_fields:
                 doi_prefix_suffix = pds4_fields['doi'].split('/')
                 if len(doi_prefix_suffix) == 2:
-                    osti_id = doi_prefix_suffix[1]
+                    doi_suffix = doi_prefix_suffix[1]
 
             timestamp = datetime.now()
 
@@ -278,7 +278,7 @@ class DOIPDS4LabelUtil:
                       keywords=self.get_keywords(pds4_fields),
                       date_record_added=timestamp,
                       date_record_updated=timestamp,
-                      id=osti_id)
+                      id=doi_suffix)
         except KeyError as key_err:
             missing_key = key_err.args[0]
             msg = (f"Could not find a value for an expected PS4 label field: {key_err}.\n"
