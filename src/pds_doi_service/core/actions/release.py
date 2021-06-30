@@ -207,7 +207,7 @@ class DOICoreActionRelease(DOICoreAction):
             the input DOI's.
 
         """
-        output_labels = []
+        output_labels = ''
 
         self.parse_arguments(kwargs)
 
@@ -245,7 +245,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # Commit the transaction to the local database
                 transaction.log()
 
-                output_labels.append(transaction.output_content)
+                output_labels += transaction.output_content
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically
