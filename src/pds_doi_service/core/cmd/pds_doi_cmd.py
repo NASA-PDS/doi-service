@@ -37,7 +37,12 @@ def main():
     action = action_class()
     action.parse_arguments_from_cmd(arguments)
     output = action.run()
-    print(output)
+
+    if isinstance(output, list):
+        for e in output:
+            print(e)
+    else:
+        print(output)
 
 
 if __name__ == '__main__':
