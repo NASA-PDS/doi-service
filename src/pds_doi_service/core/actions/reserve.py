@@ -190,9 +190,9 @@ class DOICoreActionReserve(DOICoreAction):
 
         Returns
         -------
-        o_doi_label : str
-            The output label(s), reflecting the status of the reserved
-            input DOI's.
+        output_label : str
+            The output label, in OSTI json format, reflecting the status of the
+            reserved input DOI's.
 
         Raises
         ------
@@ -201,7 +201,7 @@ class DOICoreActionReserve(DOICoreAction):
             the input DOI's.
 
         """
-        output_labels = ''
+        output_dois = []
 
         self.parse_arguments(kwargs)
 
@@ -233,7 +233,9 @@ class DOICoreActionReserve(DOICoreAction):
                 # Commit the transaction to the local database
                 transaction.log()
 
-                output_labels += transaction.output_content
+                # Append the latest version of the Doi object to return
+                # as a label
+                output_dois.append(doi)
 
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
@@ -244,5 +246,8 @@ class DOICoreActionReserve(DOICoreAction):
         except Exception as err:
             raise CriticalDOIException(err)
 
-        # Return up-to-date version of output label(s)
-        return output_labels
+        output_label = DOIOstiRecord().create_doi_record(
+            output_dois, content_type=CONTENT_TYPE_JSON
+        )
+
+        return output_label
