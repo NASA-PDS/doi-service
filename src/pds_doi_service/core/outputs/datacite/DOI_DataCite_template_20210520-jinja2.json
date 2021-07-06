@@ -1,69 +1,73 @@
 {
     "data":
-    {
-        {% if doi.doi %}"id": "{{ doi.doi }}",{% endif %}
-        "type": "dois",
-        "attributes": {
-            {% if doi.status.value == "reserved" %}"event": "register",{% elif doi.status.value == "pending" %}"event": "publish",{% endif %}
-            {% if doi.doi %}"doi": "{{ doi.doi }}",{% else %}"prefix": "{{ doi.prefix }}",{% endif %}
-            {% if doi.id %}"suffix": "{{ doi.id }}",{% endif %}
-            "creators": [{% for author in doi.authors %}
-                {
-                    "nameType": "Personal",
-                    "name": "{{ author['last_name'] }}, {{ author['first_name'] }}",
-                    "givenName": "{{ author['first_name'] }}",
-                    "familyName": "{{ author['last_name'] }}"
-                }{% if not loop.last %},{% endif %}{% endfor %}
-            ],
-            "titles": [
-                {
-                    "title": "{{ doi.title }}",
-                    "lang": "en"
-                }
-            ],
-            "publisher": "{{ doi.publisher }}",
-            "publicationYear": "{{ doi.publication_year }}",
-            "subjects": [{% for keyword in doi.keywords %}
-                { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif %}{% endfor %}
-            ],
-            "contributors": [{% for editor in doi.editors %}
-                {
-                    "nameType": "Personal",
-                    "name": "{{ editor['last_name'] }}, {{ editor['first_name'] }}",
-                    "givenName": "{{ editor['first_name'] }}",
-                    "familyName": "{{ editor['last_name'] }}",
-                    "contributorType": "Editor"
-                }, {% endfor %}
-                {
-                    "nameType": "Organizational",
-                    "name": "Planetary Data System: {{ doi.contributor }} Node",
-                    "contributorType": "DataCurator"
-                }
-            ],
-            "types": {
-                "resourceTypeGeneral": "{{ doi.product_type.value }}",
-                "resourceType": "{{ doi.product_type_specific }}"
-            },
-            "relatedIdentifiers": [
-                {
-                    "relatedIdentifier": "{{ doi.related_identifier }}",
-                    "relatedIdentifierType": "URN",
-                    "relationType": "HasMetadata",
-                    "resourceTypeGeneral": "Text"
-                }
-            ],
-            {% if doi.description %}"descriptions": [
-                {
-                    "description": "{{ doi.description }}",
-                    "descriptionType": "Abstract",
-                    "lang": "en"
-                }
-            ],{% endif %}
-            {% if doi.site_url %}"url": "{{ doi.site_url }}",{% else %}"url": ":tba",{% endif %}
-            {% if doi.date_record_added %}"created": "{{ doi.date_record_added }}",{% endif %}
-            {% if doi.date_record_updated %}"updated": "{{ doi.date_record_updated }}",{% endif %}
-            "state": "{{ doi.status.value }}",
-            "language": "en"
-        }
-    }
+    {% if dois|length > 1 %}[{% endif -%}
+    {% for doi in dois %}
+        {
+            {% if doi.doi %}"id": "{{ doi.doi }}",{% endif -%}
+            "type": "dois",
+            "attributes": {
+                {% if doi.status.value == "reserved" %}"event": "register",{% elif doi.status.value == "pending" %}"event": "publish",{% endif %}
+                {% if doi.doi %}"doi": "{{ doi.doi }}",{% else %}"prefix": "{{ doi.prefix }}",{% endif %}
+                {% if doi.id %}"suffix": "{{ doi.id }}",{% endif %}
+                "creators": [{% for author in doi.authors %}
+                    {
+                        "nameType": "Personal",
+                        "name": "{{ author['last_name'] }}, {{ author['first_name'] }}",
+                        "givenName": "{{ author['first_name'] }}",
+                        "familyName": "{{ author['last_name'] }}"
+                    }{% if not loop.last %},{% endif %}{% endfor %}
+                ],
+                "titles": [
+                    {
+                        "title": "{{ doi.title }}",
+                        "lang": "en"
+                    }
+                ],
+                "publisher": "{{ doi.publisher }}",
+                "publicationYear": "{{ doi.publication_year }}",
+                "subjects": [{% for keyword in doi.keywords %}
+                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif %}{% endfor %}
+                ],
+                "contributors": [{% for editor in doi.editors %}
+                    {
+                        "nameType": "Personal",
+                        "name": "{{ editor['last_name'] }}, {{ editor['first_name'] }}",
+                        "givenName": "{{ editor['first_name'] }}",
+                        "familyName": "{{ editor['last_name'] }}",
+                        "contributorType": "Editor"
+                    }, {% endfor %}
+                    {
+                        "nameType": "Organizational",
+                        "name": "Planetary Data System: {{ doi.contributor }} Node",
+                        "contributorType": "DataCurator"
+                    }
+                ],
+                "types": {
+                    "resourceTypeGeneral": "{{ doi.product_type.value }}",
+                    "resourceType": "{{ doi.product_type_specific }}"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relatedIdentifier": "{{ doi.related_identifier }}",
+                        "relatedIdentifierType": "URN",
+                        "relationType": "HasMetadata",
+                        "resourceTypeGeneral": "Text"
+                    }
+                ],
+                {% if doi.description %}"descriptions": [
+                    {
+                        "description": "{{ doi.description }}",
+                        "descriptionType": "Abstract",
+                        "lang": "en"
+                    }
+                ],{% endif %}
+                {% if doi.site_url %}"url": "{{ doi.site_url }}",{% else %}"url": ":tba",{% endif %}
+                {% if doi.date_record_added %}"created": "{{ doi.date_record_added }}",{% endif %}
+                {% if doi.date_record_updated %}"updated": "{{ doi.date_record_updated }}",{% endif %}
+                "state": "{{ doi.status.value }}",
+                "language": "en"
+            }
+        }{% if not loop.last %},{% endif -%}
+    {% endfor %}
+    {% if dois|length > 1 %}]{% endif %}
 }

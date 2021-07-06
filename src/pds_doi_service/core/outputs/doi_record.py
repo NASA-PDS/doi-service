@@ -23,15 +23,15 @@ VALID_CONTENT_TYPES = [CONTENT_TYPE_JSON, CONTENT_TYPE_XML]
 
 class DOIRecord:
     """Abstract base class for DOI record generating classes"""
-    def create_doi_record(self, doi, content_type=CONTENT_TYPE_XML):
+    def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
         """
         Creates a DOI record from the provided list of Doi objects in the
         specified format.
 
         Parameters
         ----------
-        doi : Doi
-            The Doi object to format into the returned record.
+        dois : Doi or list of Doi
+            The Doi object(s) to format into the returned record.
         content_type : str
             The type of record to return.
 
