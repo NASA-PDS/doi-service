@@ -2,7 +2,15 @@
 
 ## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-08)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
+
+**Defects:**
+
+- pytest does not work [\#219](https://github.com/NASA-PDS/pds-doi-service/issues/219) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
+
+## [v21.2.0](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.0) (2021-07-08)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...v21.2.0)
 
 **Requirements:**
 
@@ -23,7 +31,7 @@
 
 ## [v1.1.1](https://github.com/NASA-PDS/pds-doi-service/tree/v1.1.1) (2021-05-27)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.2.0-dev...v1.1.1)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.0...v1.1.1)
 
 **Requirements:**
 
@@ -45,13 +53,9 @@
 
 - As a product owner, I want to test the service with historical PDS DOIs [\#189](https://github.com/NASA-PDS/pds-doi-service/issues/189)
 
-## [v1.2.0-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v1.2.0-dev) (2021-04-19)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.0...v1.2.0-dev)
-
 ## [v1.1.0](https://github.com/NASA-PDS/pds-doi-service/tree/v1.1.0) (2021-04-13)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.0-dev...v1.1.0)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v9.8.7...v1.1.0)
 
 **Requirements:**
 
@@ -66,7 +70,13 @@
 - API POST /dois should accept DOI OSTI format in payload [\#148](https://github.com/NASA-PDS/pds-doi-service/issues/148)
 - enable filter by status in sub-action 'pds-doi-cmd list' [\#144](https://github.com/NASA-PDS/pds-doi-service/issues/144)
 - Update submission to OSTI to handle the removal of a field from the OSTI metadata [\#140](https://github.com/NASA-PDS/pds-doi-service/issues/140)
+- Update API to deactivate 'release' end point, create a 'submit' end-point [\#135](https://github.com/NASA-PDS/pds-doi-service/issues/135)
+- Update draft action with new option --lidvid to change from review to draft the status of a DOI [\#134](https://github.com/NASA-PDS/pds-doi-service/issues/134)
+- Update status management in code with Enumeration [\#132](https://github.com/NASA-PDS/pds-doi-service/issues/132)
 - Update DOI UI and Service with new workflow for operational deployment [\#125](https://github.com/NASA-PDS/pds-doi-service/issues/125)
+- Develop User Access / Management Strategy [\#91](https://github.com/NASA-PDS/pds-doi-service/issues/91)
+- validate the submitted OSTI record against a schema [\#56](https://github.com/NASA-PDS/pds-doi-service/issues/56)
+- API Implementation for DOI Service [\#52](https://github.com/NASA-PDS/pds-doi-service/issues/52)
 
 **Defects:**
 
@@ -76,48 +86,19 @@
 - when doing draft with warnings \(e.g. duplicated title\) the -f option does not help [\#150](https://github.com/NASA-PDS/pds-doi-service/issues/150) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - when release command keywords are broken with encoded characters [\#143](https://github.com/NASA-PDS/pds-doi-service/issues/143) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - api does not ignore '/' at the end of url [\#141](https://github.com/NASA-PDS/pds-doi-service/issues/141) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
+- xlsx file extension for reserve not supported [\#138](https://github.com/NASA-PDS/pds-doi-service/issues/138) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
+- 'pds-doi-cmd draft' chokes on a legit Product\_Document [\#129](https://github.com/NASA-PDS/pds-doi-service/issues/129) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+- command pds-doi-cmd list returns update date in timestamp instead of iso8601 [\#128](https://github.com/NASA-PDS/pds-doi-service/issues/128) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
+- update\_date management [\#127](https://github.com/NASA-PDS/pds-doi-service/issues/127) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+- get /dois/{lidvid} [\#126](https://github.com/NASA-PDS/pds-doi-service/issues/126) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+- the sqllite database should be created at the same location, whereever the command are launched from [\#122](https://github.com/NASA-PDS/pds-doi-service/issues/122) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - Raise a specific exception when the OSTI server is not reachable [\#119](https://github.com/NASA-PDS/pds-doi-service/issues/119) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
 
 **Other closed issues:**
 
 - Analyze/Test the dataCite API for dataCite [\#170](https://github.com/NASA-PDS/pds-doi-service/issues/170)
-
-## [v1.1.0-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v1.1.0-dev) (2021-02-03)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.0.2-dev...v1.1.0-dev)
-
-**Improvements:**
-
-- Update API to deactivate 'release' end point, create a 'submit' end-point [\#135](https://github.com/NASA-PDS/pds-doi-service/issues/135)
-- Update draft action with new option --lidvid to change from review to draft the status of a DOI [\#134](https://github.com/NASA-PDS/pds-doi-service/issues/134)
-- Update status management in code with Enumeration [\#132](https://github.com/NASA-PDS/pds-doi-service/issues/132)
-- Develop User Access / Management Strategy [\#91](https://github.com/NASA-PDS/pds-doi-service/issues/91)
-
-**Defects:**
-
-- xlsx file extension for reserve not supported [\#138](https://github.com/NASA-PDS/pds-doi-service/issues/138) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
-- 'pds-doi-cmd draft' chokes on a legit Product\_Document [\#129](https://github.com/NASA-PDS/pds-doi-service/issues/129) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
-
-**Other closed issues:**
-
 - Update release action with --no-review option, make 'with review' default behavior [\#133](https://github.com/NASA-PDS/pds-doi-service/issues/133)
 - Document the security requirements for operational installation of DOI Service [\#124](https://github.com/NASA-PDS/pds-doi-service/issues/124)
-
-## [v1.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v1.0.2-dev) (2020-12-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v9.8.7...v1.0.2-dev)
-
-**Improvements:**
-
-- validate the submitted OSTI record against a schema [\#56](https://github.com/NASA-PDS/pds-doi-service/issues/56)
-- API Implementation for DOI Service [\#52](https://github.com/NASA-PDS/pds-doi-service/issues/52)
-
-**Defects:**
-
-- command pds-doi-cmd list returns update date in timestamp instead of iso8601 [\#128](https://github.com/NASA-PDS/pds-doi-service/issues/128) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
-- update\_date management [\#127](https://github.com/NASA-PDS/pds-doi-service/issues/127) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
-- get /dois/{lidvid} [\#126](https://github.com/NASA-PDS/pds-doi-service/issues/126) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
-- the sqllite database should be created at the same location, whereever the command are launched from [\#122](https://github.com/NASA-PDS/pds-doi-service/issues/122) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 
 ## [v9.8.7](https://github.com/NASA-PDS/pds-doi-service/tree/v9.8.7) (2020-11-24)
 
@@ -155,7 +136,7 @@
 
 ## [1.0.0](https://github.com/NASA-PDS/pds-doi-service/tree/1.0.0) (2020-10-13)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.8-dev...1.0.0)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...1.0.0)
 
 **Improvements:**
 
@@ -166,12 +147,16 @@
 - add check to ensure landing page is online prior to DOI release [\#70](https://github.com/NASA-PDS/pds-doi-service/issues/70)
 - Revise DOI Service Requirements [\#65](https://github.com/NASA-PDS/pds-doi-service/issues/65)
 - Add configuration documentation [\#60](https://github.com/NASA-PDS/pds-doi-service/issues/60)
+- create full\_name when first/last name cannot be parsed [\#58](https://github.com/NASA-PDS/pds-doi-service/issues/58)
 - Perform benchmark tests between original prototype software and new system [\#44](https://github.com/NASA-PDS/pds-doi-service/issues/44)
+- Update documentation for operational installation and usage [\#42](https://github.com/NASA-PDS/pds-doi-service/issues/42)
 - Develop simple regression test suite for deployment [\#41](https://github.com/NASA-PDS/pds-doi-service/issues/41)
+- Develop DOI metadata automated validation component [\#18](https://github.com/NASA-PDS/pds-doi-service/issues/18)
 
 **Defects:**
 
 - node is not provided as contributor in the reserve records [\#72](https://github.com/NASA-PDS/pds-doi-service/issues/72)
+- Update default DOI metadata according to changes in requirements [\#55](https://github.com/NASA-PDS/pds-doi-service/issues/55)
 
 **Other closed issues:**
 
@@ -179,54 +164,13 @@
 - Develop DOI Service Scope [\#63](https://github.com/NASA-PDS/pds-doi-service/issues/63)
 - Develop operational documentation and test suite [\#40](https://github.com/NASA-PDS/pds-doi-service/issues/40)
 
-## [0.0.8-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.8-dev) (2020-09-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.7-dev...0.0.8-dev)
-
-## [0.0.7-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.7-dev) (2020-09-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.6-dev...0.0.7-dev)
-
-## [0.0.6-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.6-dev) (2020-09-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.5-dev...0.0.6-dev)
-
-## [0.0.5-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.5-dev) (2020-09-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.4-dev...0.0.5-dev)
-
-## [0.0.4-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.4-dev) (2020-09-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3-dev...0.0.4-dev)
-
-**Improvements:**
-
-- create full\_name when first/last name cannot be parsed [\#58](https://github.com/NASA-PDS/pds-doi-service/issues/58)
-
-**Defects:**
-
-- Update default DOI metadata according to changes in requirements [\#55](https://github.com/NASA-PDS/pds-doi-service/issues/55)
-
-## [0.0.3-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.3-dev) (2020-08-18)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.2-dev...0.0.3-dev)
-
-**Improvements:**
-
-- Update documentation for operational installation and usage [\#42](https://github.com/NASA-PDS/pds-doi-service/issues/42)
-- Develop DOI metadata automated validation component [\#18](https://github.com/NASA-PDS/pds-doi-service/issues/18)
-
-## [0.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.2-dev) (2020-08-06)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.3...0.0.2-dev)
-
 ## [0.0.3](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.3) (2020-07-31)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.2...0.0.3)
 
 ## [0.0.2](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.2) (2020-07-31)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/0.0.1-dev...0.0.2)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...0.0.2)
 
 **Improvements:**
 
@@ -241,25 +185,15 @@
 - DOI Batch Processing capability [\#25](https://github.com/NASA-PDS/pds-doi-service/issues/25)
 - Update Released DOI capability [\#24](https://github.com/NASA-PDS/pds-doi-service/issues/24)
 - Release DOI capability [\#22](https://github.com/NASA-PDS/pds-doi-service/issues/22)
-- Develop Status / Query API and component for OSTI status of a DOI [\#4](https://github.com/NASA-PDS/pds-doi-service/issues/4)
-
-**Other closed issues:**
-
-- document requirements and tests [\#3](https://github.com/NASA-PDS/pds-doi-service/issues/3)
-
-## [0.0.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/0.0.1-dev) (2020-05-08)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/cc08fcdce4414bec5d83e1187998538152391642...0.0.1-dev)
-
-**Improvements:**
-
 - Reserve a DOI capability [\#21](https://github.com/NASA-PDS/pds-doi-service/issues/21)
 - Develop draft PDS Policy for Assigning DOIs [\#20](https://github.com/NASA-PDS/pds-doi-service/issues/20)
 - Design REST API and JSON response [\#19](https://github.com/NASA-PDS/pds-doi-service/issues/19)
+- Develop Status / Query API and component for OSTI status of a DOI [\#4](https://github.com/NASA-PDS/pds-doi-service/issues/4)
 - Create / Draft a DOI object capability [\#2](https://github.com/NASA-PDS/pds-doi-service/issues/2)
 
 **Other closed issues:**
 
+- document requirements and tests [\#3](https://github.com/NASA-PDS/pds-doi-service/issues/3)
 - Develop initial requirements and design for DOI Service [\#1](https://github.com/NASA-PDS/pds-doi-service/issues/1)
 
 
