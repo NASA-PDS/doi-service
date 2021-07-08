@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>📦 Installation &mdash; pds-doi-service  documentation</title>
@@ -85,7 +86,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">📦 Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
@@ -167,11 +168,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
+  <section id="installation">
 <h1>📦 Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>This section describes how to install the PDS DOI Service.</p>
 <p>The service is compose by a command line tool and a web API (which enable to activate the command line remotelly or via a web UI)</p>
-<div class="section" id="requirements">
+<section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>Prior to installing this software, ensure your system meets the following
 requirements:</p>
@@ -184,10 +185,11 @@ requirements:</p>
 the required packages. For those without system administrator access and are
 feeling anxious, you could try a local (home directory) <a class="reference external" href="https://www.python.org/">Python</a> 3 installation
 using a <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">Miniconda</a> installation.</p>
-</div>
-<div class="section" id="doing-the-installation">
+</section>
+<section id="doing-the-installation">
 <h2>Doing the Installation<a class="headerlink" href="#doing-the-installation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="install">
+<p>This setion tells how to do the installation.</p>
+<section id="install">
 <h3>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h3>
 <p>The easiest way to install this software is to use <a class="reference external" href="https://pip.pypa.io/en/stable/">Pip</a>, the Python Package
 Installer. If you have Python on your system, you probably already have Pip;
@@ -200,19 +202,26 @@ you can also use a <a class="reference external" href="https://docs.python.org/3
 To do so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p $HOME/.virtualenvs
 python3 -m venv $HOME/.virtualenvs/pds-doi-service
-source $HOME/.virtualenvs/pds-doi-service/bin/activate
 pip3 install pds-doi-service
 </pre></div>
 </div>
+<p>At this point, the PDS DOI Service commands are available in
+<code class="docutils literal notranslate"><span class="pre">$HOME/.virtualenvs/pds-doi-service/bin</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>“Activating” the virtual environment is deprecated, as per the Python
+philosophy of “explict &gt; implicit”. Instead, invoke the commands directly
+in <code class="docutils literal notranslate"><span class="pre">$HOME/.virtualenvs/pds-doi-service/bin</span></code></p>
 </div>
-<div class="section" id="configure">
+</section>
+<section id="configure">
 <h3>Configure<a class="headerlink" href="#configure" title="Permalink to this headline">¶</a></h3>
 <p>In the python installation directory, that you can find with command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import sys;print(sys.prefix)&quot;</span>
 </pre></div>
 </div>
-<p>Create a file <cite>pds_doi_service.ini</cite></p>
-<p>You can override in this file any option set in the file <cite>pds_doi_service/core/util/conf.ini.default</cite> found in package</p>
+<p>Create a file <code class="docutils literal notranslate"><span class="pre">pds_doi_service.ini</span></code>.</p>
+<p>You can override in this file any option set in the file <code class="docutils literal notranslate"><span class="pre">pds_doi_service/core/util/conf.ini.default</span></code> found in package.</p>
 <p>If you want to create production DOIs update the OSTI API server url:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">OSTI</span><span class="p">]</span>
  <span class="n">url</span> <span class="o">=</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">osti</span><span class="o">.</span><span class="n">gov</span><span class="o">/</span><span class="n">iad2</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">records</span>
@@ -237,8 +246,8 @@ pip3 install pds-doi-service
 </pre></div>
 </div>
 <p>Authorized values are DEBUG, INFO, ERROR… (see <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging-levels">https://docs.python.org/3/library/logging.html#logging-levels</a>)</p>
-</div>
-<div class="section" id="start-using-the-command-line-tool">
+</section>
+<section id="start-using-the-command-line-tool">
 <h3>Start using the command line tool<a class="headerlink" href="#start-using-the-command-line-tool" title="Permalink to this headline">¶</a></h3>
 <p>You can then run <code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span> <span class="pre">--help</span></code> to get a usage message and ensure
 it’s properly installed. You can go to the <a class="reference external" href="../usage/index.html">usage</a> documentation for details.</p>
@@ -250,22 +259,22 @@ To install former releases, you can do:</p>
 <p>The released versions are listed on: <a class="reference external" href="https://pypi.org/project/pds-doi-core/#history">https://pypi.org/project/pds-doi-core/#history</a></p>
 <p>If you want to use the latest unstable version, you can refer to the <a class="reference external" href="../development/index.html">development</a> documentation</p>
 </div>
-</div>
-<div class="section" id="start-the-api-server">
+</section>
+<section id="start-the-api-server">
 <h3>Start the API server<a class="headerlink" href="#start-the-api-server" title="Permalink to this headline">¶</a></h3>
-<p>You can simply start the web API  service with command line <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code></p>
+<p>You can simply start the web API  service with command line <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code>.</p>
 <p>You can explore the API documentation and test it from its UI: <a class="reference external" href="http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/">http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/</a></p>
-</div>
-</div>
-<div class="section" id="upgrade-software">
+</section>
+</section>
+<section id="upgrade-software">
 <h2>Upgrade Software<a class="headerlink" href="#upgrade-software" title="Permalink to this headline">¶</a></h2>
 <p>To check and install an upgrade to the software, run the following command in your
 virtual environment:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span> <span class="o">--</span><span class="n">upgrade</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

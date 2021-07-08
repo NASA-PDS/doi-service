@@ -25,6 +25,8 @@ using a Miniconda_ installation.
 Doing the Installation
 ----------------------
 
+This setion tells how to do the installation.
+
 Install
 ^^^^^^^
 
@@ -40,8 +42,16 @@ To do so::
 
     mkdir -p $HOME/.virtualenvs
     python3 -m venv $HOME/.virtualenvs/pds-doi-service
-    source $HOME/.virtualenvs/pds-doi-service/bin/activate
     pip3 install pds-doi-service
+
+At this point, the PDS DOI Service commands are available in
+``$HOME/.virtualenvs/pds-doi-service/bin``.
+
+.. note::
+    "Activating" the virtual environment is deprecated, as per the Python
+    philosophy of "explict > implicit". Instead, invoke the commands directly
+    in ``$HOME/.virtualenvs/pds-doi-service/bin``
+
 
 
 Configure
@@ -50,9 +60,9 @@ In the python installation directory, that you can find with command::
 
     python -c "import sys;print(sys.prefix)"
 
-Create a file `pds_doi_service.ini`
+Create a file ``pds_doi_service.ini``.
 
-You can override in this file any option set in the file `pds_doi_service/core/util/conf.ini.default` found in package
+You can override in this file any option set in the file ``pds_doi_service/core/util/conf.ini.default`` found in package.
 
 If you want to create production DOIs update the OSTI API server url::
 
@@ -105,7 +115,7 @@ it's properly installed. You can go to the `usage`_ documentation for details.
 Start the API server
 ^^^^^^^^^^^^^^^^^^^^
 
-You can simply start the web API  service with command line ``pds-doi-api``
+You can simply start the web API  service with command line ``pds-doi-api``.
 
 You can explore the API documentation and test it from its UI: http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
 
@@ -118,7 +128,7 @@ Upgrade Software
 To check and install an upgrade to the software, run the following command in your 
 virtual environment::
 
-  pip install pds-doi-service --upgrade
+  pip install --upgrade pds-doi-service
 
 
 .. References:

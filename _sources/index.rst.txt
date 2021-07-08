@@ -1,5 +1,5 @@
 PDS DOI Service
-===================
+===============
 
 The PDS DOI Service enable management of DOI for PDS with the following operations: reserve, draft, release, deactivate.
 
