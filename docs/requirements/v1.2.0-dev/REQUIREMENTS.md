@@ -84,6 +84,10 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a user, I want to see the lidvid of my DOIs in the email report ([#167](https://github.com/NASA-PDS/pds-doi-service/issues/167)) 
+
+
+This requirement is not impacted by the current version
 ## As an operator, I want to reserve a DOI through DataCite ([#171](https://github.com/NASA-PDS/pds-doi-service/issues/171)) 
 
 
@@ -121,6 +125,46 @@ This requirement is not impacted by the current version
 
 This requirement is not impacted by the current version
 ## As an API user, I want to always have an update date for the DOIs ([#184](https://github.com/NASA-PDS/pds-doi-service/issues/184)) 
+
+
+This requirement is not impacted by the current version
+## As a SA, I want the operational deployment of the service to be secure ([#187](https://github.com/NASA-PDS/pds-doi-service/issues/187)) 
+
+
+This requirement is not impacted by the current version
+## As a user, I want the application to support the history of PDS's DOIs, especially the one created for PDS3 products ([#192](https://github.com/NASA-PDS/pds-doi-service/issues/192)) 
+
+
+This requirement is not impacted by the current version
+## As a system administrator, I want to be able to deploy pds_doi_service with python 3.6 ([#197](https://github.com/NASA-PDS/pds-doi-service/issues/197)) 
+
+
+This requirement is not impacted by the current version
+## As a user, I want to use the API with ids containing a slash (/) ([#198](https://github.com/NASA-PDS/pds-doi-service/issues/198)) 
+
+
+This requirement is not impacted by the current version
+## As an operator, I want to know what version of the software I am running ([#200](https://github.com/NASA-PDS/pds-doi-service/issues/200)) 
+
+
+This requirement is not impacted by the current version
+## As an operator, I want to know how to deploy and use the API from the Sphinx documentation ([#201](https://github.com/NASA-PDS/pds-doi-service/issues/201)) 
+
+
+This requirement is not impacted by the current version
+## As an operator, I want one place to go for all DOI Service / API / UI documentation ([#202](https://github.com/NASA-PDS/pds-doi-service/issues/202)) 
+
+
+This requirement is not impacted by the current version
+## As a user of the command line, I don't want to see all the log info in the stdout ([#206](https://github.com/NASA-PDS/pds-doi-service/issues/206)) 
+
+
+This requirement is not impacted by the current version
+## As a command-line user, I want to be suggested to use -f option when a Warning exception is raised ([#207](https://github.com/NASA-PDS/pds-doi-service/issues/207)) 
+
+
+This requirement is not impacted by the current version
+## As a user, I want to run the commandline on windows ([#212](https://github.com/NASA-PDS/pds-doi-service/issues/212)) 
 
 
 This requirement is not impacted by the current version
