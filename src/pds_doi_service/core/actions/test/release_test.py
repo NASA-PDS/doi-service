@@ -68,6 +68,35 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         return doi, o_doi_label
 
+    def run_release_test(self, release_args, expected_dois, expected_status):
+        """
+        Helper function to run the release action and check the expected number
+        of DOI records and DOI status returned.
+
+        Parameters
+        ----------
+        release_args - dict
+            The keyword arguments to pass to the release action run method
+        expected_dois - int
+            The number of DOI records expected from the release action
+        expected_status - DoiStatus
+            The expected status of each returned record
+
+        """
+        o_doi_label = self._action.run(**release_args)
+
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
+
+        # Should get the expected number of parsed DOI's
+        self.assertEqual(len(dois), expected_dois)
+
+        # Shouldn't be any errors returned
+        self.assertEqual(len(errors), 0)
+
+        # Each DOI should have the expected status set
+        for doi in dois:
+            self.assertEqual(doi.status, expected_status)
+
     def test_reserve_release_to_review(self):
         """Test release to review status with a reserved DOI entry"""
 
@@ -79,14 +108,9 @@ class ReleaseActionTestCase(unittest.TestCase):
             'no_review': False
         }
 
-        o_doi_labels = self._action.run(**release_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            # Should get one DOI back that has been marked as ready for review
-            self.assertEqual(len(dois), 1)
-            self.assertTrue(dois[0].status == DoiStatus.Review)
+        self.run_release_test(
+            release_args, expected_dois=1, expected_status=DoiStatus.Review
+        )
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
@@ -102,14 +126,9 @@ class ReleaseActionTestCase(unittest.TestCase):
             'no_review': True
         }
 
-        o_doi_labels = self._action.run(**release_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            # Should get one DOI back that has been marked as pending registration
-            self.assertEqual(len(dois), 1)
-            self.assertTrue(dois[0].status == DoiStatus.Pending)
+        self.run_release_test(
+            release_args, expected_dois=1, expected_status=DoiStatus.Pending
+        )
 
     def test_draft_release_to_review(self):
         """Test release to review status with a draft DOI entry"""
@@ -122,14 +141,9 @@ class ReleaseActionTestCase(unittest.TestCase):
             'no_review': False
         }
 
-        o_doi_labels = self._action.run(**release_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            # Should get one DOI back with status 'review'
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(dois[0].status, DoiStatus.Review)
+        self.run_release_test(
+            release_args, expected_dois=1, expected_status=DoiStatus.Review
+        )
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
@@ -145,14 +159,9 @@ class ReleaseActionTestCase(unittest.TestCase):
             'no_review': True
         }
 
-        o_doi_labels = self._action.run(**release_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            # Should get one DOI back with status 'pending'
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(dois[0].status, DoiStatus.Pending)
+        self.run_release_test(
+            release_args, expected_dois=1, expected_status=DoiStatus.Pending
+        )
 
     def test_review_release_to_review(self):
         """
@@ -169,14 +178,9 @@ class ReleaseActionTestCase(unittest.TestCase):
             'no_review': False
         }
 
-        o_doi_labels = self._action.run(**release_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            # Should get one DOI back with status 'review'
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(dois[0].status, DoiStatus.Review)
+        self.run_release_test(
+            release_args, expected_dois=1, expected_status=DoiStatus.Review
+        )
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
@@ -192,14 +196,9 @@ class ReleaseActionTestCase(unittest.TestCase):
             'no_review': True
         }
 
-        o_doi_labels = self._action.run(**release_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            # Should get one DOI back with status 'pending'
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(dois[0].status, DoiStatus.Pending)
+        self.run_release_test(
+            release_args, expected_dois=1, expected_status=DoiStatus.Pending
+        )
 
 
 if __name__ == '__main__':

@@ -336,7 +336,7 @@ class DraftActionTestCase(unittest.TestCase):
                 'force': True
             }
 
-            review_osti_doi = self._review_action.run(**review_kwargs)[0]
+            review_osti_doi = self._review_action.run(**review_kwargs)
 
         dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(review_osti_doi)
 

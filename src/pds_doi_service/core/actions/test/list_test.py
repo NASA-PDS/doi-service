@@ -75,7 +75,7 @@ class ListActionTestCase(unittest.TestCase):
                 'no_review': False
             }
 
-            review_json = self._release_action.run(**review_kwargs)[0]
+            review_json = self._release_action.run(**review_kwargs)
 
         dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(review_json)
         doi = dois[0]

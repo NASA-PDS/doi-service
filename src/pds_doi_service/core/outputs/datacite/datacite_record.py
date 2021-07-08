@@ -19,7 +19,7 @@ from os.path import exists
 import jinja2
 from pkg_resources import resource_filename
 
-from pds_doi_service.core.entities.doi import ProductType
+from pds_doi_service.core.entities.doi import ProductType, Doi
 from pds_doi_service.core.outputs.doi_record import DOIRecord, CONTENT_TYPE_JSON
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -52,47 +52,74 @@ class DOIDataCiteRecord(DOIRecord):
         with open(self._json_template_path, 'r') as infile:
             self._template = jinja2.Template(infile.read())
 
-    def create_doi_record(self, doi, content_type=CONTENT_TYPE_JSON):
-        if not content_type == CONTENT_TYPE_JSON:
+    def create_doi_record(self, dois, content_type=CONTENT_TYPE_JSON):
+        """
+        Creates a DataCite format DOI record from the provided list of Doi
+        objects.
+
+        Parameters
+        ----------
+        dois : Doi or list of Doi
+            The Doi object(s) to format into the returned record.
+        content_type : str, optional
+            The type of record to return. Only 'json' is supported.
+
+        Returns
+        -------
+        record : str
+            The text body of the record created from the provided Doi objects.
+
+        """
+        if content_type != CONTENT_TYPE_JSON:
             raise ValueError(
                 f'Only {CONTENT_TYPE_JSON} is supported for records created '
                 f'from {__name__}'
             )
 
-        # Filter out any keys with None as the value, so the string literal
-        # "None" is not written out to the template
-        doi_fields = (
-            dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
-        )
+        # If a single DOI was provided, wrap it in a list so the iteration
+        # below still works
+        if isinstance(dois, Doi):
+            dois = [dois]
 
-        # If this entry does not have a DOI assigned (i.e. reserve request),
-        # DataCite wants to know our assigned prefix instead
-        if not doi.doi:
-            doi_fields['prefix'] = self._config.get('DATACITE', 'doi_prefix')
+        rendered_dois = []
 
-        # 'Bundle' is not supported as a product type in DataCite, so
-        # promote to 'Collection'
-        if doi.product_type == ProductType.Bundle:
-            doi_fields['product_type'] = ProductType.Collection.value
+        for doi in dois:
+            # Filter out any keys with None as the value, so the string literal
+            # "None" is not written out to the template
+            doi_fields = (
+                dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
+            )
 
-        # Sort keywords so we can output them in the same order each time
-        doi_fields['keywords'] = sorted(doi.keywords)
+            # If this entry does not have a DOI assigned (i.e. reserve request),
+            # DataCite wants to know our assigned prefix instead
+            if not doi.doi:
+                doi_fields['prefix'] = self._config.get('DATACITE', 'doi_prefix')
 
-        # Convert datetime objects to isoformat strings
-        if doi.date_record_added:
-            doi_fields['date_record_added'] = doi.date_record_added.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            # 'Bundle' is not supported as a product type in DataCite, so
+            # promote to 'Collection'
+            if doi.product_type == ProductType.Bundle:
+                doi_fields['product_type'] = ProductType.Collection.value
 
-        if doi.date_record_updated:
-            doi_fields['date_record_updated'] = doi.date_record_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            # Sort keywords so we can output them in the same order each time
+            doi_fields['keywords'] = sorted(doi.keywords)
 
-        # Remove any extraneous whitespace from a provided description
-        if doi.description:
-            doi_fields['description'] = str.strip(doi.description)
+            # Convert datetime objects to isoformat strings
+            if doi.date_record_added:
+                doi_fields['date_record_added'] = doi.date_record_added.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-        # Publication year is a must-have
-        doi_fields['publication_year'] = doi.publication_date.strftime('%Y')
+            if doi.date_record_updated:
+                doi_fields['date_record_updated'] = doi.date_record_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-        template_vars = {'doi': doi_fields}
+            # Remove any extraneous whitespace from a provided description
+            if doi.description:
+                doi_fields['description'] = str.strip(doi.description)
+
+            # Publication year is a must-have
+            doi_fields['publication_year'] = doi.publication_date.strftime('%Y')
+
+            rendered_dois.append(doi_fields)
+
+        template_vars = {'dois': rendered_dois}
 
         rendered_template = self._template.render(template_vars)
 

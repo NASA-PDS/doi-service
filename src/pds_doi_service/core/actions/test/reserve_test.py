@@ -18,10 +18,9 @@ from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 
 class ReserveActionTestCase(unittest.TestCase):
 
-    db_name = 'doi_temp.db'
-
     def setUp(self):
         # This setUp() function is called for every test.
+        self.db_name = 'doi_temp.db'
         self._action = DOICoreActionReserve(db_name=self.db_name)
         self.test_dir = resource_filename(__name__, '')
         self.input_dir = abspath(
@@ -55,6 +54,35 @@ class ReserveActionTestCase(unittest.TestCase):
 
         return doi, o_doi_label
 
+    def run_reserve_test(self, reserve_args, expected_dois, expected_status):
+        """
+        Helper function to run the release action and check the expected number
+        of DOI records and DOI status returned.
+
+        Parameters
+        ----------
+        reserve_args - dict
+            The keyword arguments to pass to the reserve action run method
+        expected_dois - int
+            The number of DOI records expected from the reserve action
+        expected_status - DoiStatus
+            The expected status of each returned record
+
+        """
+        o_doi_label = self._action.run(**reserve_args)
+
+        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
+
+        # Should get the expected number of parsed DOI's
+        self.assertEqual(len(dois), expected_dois)
+
+        # Shouldn't be any errors returned
+        self.assertEqual(len(errors), 0)
+
+        # Each DOI should have the expected status set
+        for doi in dois:
+            self.assertEqual(doi.status, expected_status)
+
     def test_reserve_xlsx_dry_run(self):
         """
         Test Reserve action with a local excel spreadsheet, using the
@@ -69,14 +97,9 @@ class ReserveActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        o_doi_labels = self._action.run(**reserve_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(len(errors), 0)
-            self.assertTrue(dois[0].status == DoiStatus.Reserved_not_submitted)
+        self.run_reserve_test(
+            reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved_not_submitted
+        )
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
@@ -95,14 +118,9 @@ class ReserveActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        o_doi_labels = self._action.run(**reserve_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(len(errors), 0)
-            self.assertTrue(dois[0].status == DoiStatus.Reserved)
+        self.run_reserve_test(
+            reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved
+        )
 
     def test_reserve_csv_dry_run(self):
         """
@@ -117,14 +135,9 @@ class ReserveActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        o_doi_labels = self._action.run(**reserve_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(len(errors), 0)
-            self.assertTrue(dois[0].status == DoiStatus.Reserved_not_submitted)
+        self.run_reserve_test(
+            reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved_not_submitted
+        )
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
@@ -141,14 +154,9 @@ class ReserveActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        o_doi_labels = self._action.run(**reserve_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(len(errors), 0)
-            self.assertTrue(dois[0].status == DoiStatus.Reserved)
+        self.run_reserve_test(
+            reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved
+        )
 
     def test_reserve_json_dry_run(self):
         """
@@ -163,14 +171,9 @@ class ReserveActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        o_doi_labels = self._action.run(**reserve_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(len(errors), 0)
-            self.assertTrue(dois[0].status == DoiStatus.Reserved_not_submitted)
+        self.run_reserve_test(
+            reserve_args, expected_dois=1, expected_status=DoiStatus.Reserved_not_submitted
+        )
 
     @patch.object(
         pds_doi_service.core.outputs.osti.DOIOstiWebClient,
@@ -187,14 +190,9 @@ class ReserveActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        o_doi_labels = self._action.run(**reserve_args)
-
-        for o_doi_label in o_doi_labels:
-            dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
-
-            self.assertEqual(len(dois), 1)
-            self.assertEqual(len(errors), 0)
-            self.assertTrue(dois[0].status == DoiStatus.Reserved)
+        self.run_reserve_test(
+            reserve_args, expected_dois=1, expected_status=DoiStatus.Reserved
+        )
 
 
 if __name__ == '__main__':

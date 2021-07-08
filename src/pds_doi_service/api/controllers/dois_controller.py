@@ -473,7 +473,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
                 'no_review': kwargs.get('no_review', True)
             }
 
-            release_label = release_action.run(**release_kwargs)[0]
+            release_label = release_action.run(**release_kwargs)
 
         dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(release_label)
 

@@ -61,14 +61,14 @@ class DOIOstiRecord(DOIRecord):
             CONTENT_TYPE_JSON: self._json_template_path
         }
 
-    def create_doi_record(self, doi, content_type=CONTENT_TYPE_XML):
+    def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
         """
         Creates a DOI record from the provided list of Doi objects in the
         specified format.
 
         Parameters
         ----------
-        doi : Doi
+        dois : Doi or list of Dois
             The Doi object to format into the returned record.
         content_type : str
             The type of record to return. Currently, 'xml' and 'json' are
@@ -84,58 +84,73 @@ class DOIOstiRecord(DOIRecord):
             raise ValueError('Invalid content type requested, must be one of '
                              f'{",".join(VALID_CONTENT_TYPES)}')
 
-        # Filter out any keys with None as the value, so the string literal
-        # "None" is not written out as an XML tag's text body
-        doi_fields = (
-            dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
-        )
+        # If a single DOI was provided, wrap it in a list so the iteration
+        # below still works
+        if isinstance(dois, Doi):
+            dois = [dois]
 
-        # Escape any necessary HTML characters from the site-url,
-        # we perform this step rather than pystache to avoid
-        # unintentional recursive escapes
-        if doi.site_url:
-            doi_fields['site_url'] = html.escape(doi.site_url)
+        doi_fields_list = []
 
-        # Convert set of keywords back to a semi-colon delimited string
-        if doi.keywords:
-            doi_fields['keywords'] = ";".join(sorted(doi.keywords))
-        else:
-            doi_fields.pop('keywords')
+        for index, doi in enumerate(dois):
+            # Filter out any keys with None as the value, so the string literal
+            # "None" is not written out as an XML tag's text body
+            doi_fields = (
+                dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
+            )
 
-        # Remove any extraneous whitespace from a provided description
-        if doi.description:
-            doi_fields['description'] = str.strip(doi.description)
+            # Escape any necessary HTML characters from the site-url,
+            # we perform this step rather than pystache to avoid
+            # unintentional recursive escapes
+            if doi.site_url:
+                doi_fields['site_url'] = html.escape(doi.site_url)
 
-        # publication_date is assigned to a Doi object as a datetime,
-        # need to convert to a string for the OSTI label. Note that
-        # even if we only had the publication year from the PDS4 label,
-        # the OSTI schema still expects YYYY-mm-dd format.
-        if isinstance(doi.publication_date, datetime):
-            doi_fields['publication_date'] = doi.publication_date.strftime('%Y-%m-%d')
+            # Convert set of keywords back to a semi-colon delimited string
+            if doi.keywords:
+                doi_fields['keywords'] = ";".join(sorted(doi.keywords))
+            else:
+                doi_fields.pop('keywords')
 
-        # Same goes for date_record_added and date_record_updated
-        if (doi.date_record_added and
-                isinstance(doi.date_record_added, datetime)):
-            doi_fields['date_record_added'] = doi.date_record_added.strftime('%Y-%m-%d')
+            # Remove any extraneous whitespace from a provided description
+            if doi.description:
+                doi_fields['description'] = str.strip(doi.description)
 
-        if (doi.date_record_updated and
-                isinstance(doi.date_record_updated, datetime)):
-            doi_fields['date_record_updated'] = doi.date_record_updated.strftime('%Y-%m-%d')
+            # publication_date is assigned to a Doi object as a datetime,
+            # need to convert to a string for the OSTI label. Note that
+            # even if we only had the publication year from the PDS4 label,
+            # the OSTI schema still expects YYYY-mm-dd format.
+            if isinstance(doi.publication_date, datetime):
+                doi_fields['publication_date'] = doi.publication_date.strftime('%Y-%m-%d')
 
-        # Pre-convert author map into a JSON string to make it play nice
-        # with pystache rendering
-        if doi.authors and content_type == CONTENT_TYPE_JSON:
-            doi_fields['authors'] = json.dumps(doi.authors)
+            # Same goes for date_record_added and date_record_updated
+            if (doi.date_record_added and
+                    isinstance(doi.date_record_added, datetime)):
+                doi_fields['date_record_added'] = doi.date_record_added.strftime('%Y-%m-%d')
 
-        # The OSTI IAD schema does not support 'Bundle' as a product type,
-        # so convert to collection here
-        if doi.product_type == ProductType.Bundle:
-            doi_fields['product_type'] = ProductType.Collection
+            if (doi.date_record_updated and
+                    isinstance(doi.date_record_updated, datetime)):
+                doi_fields['date_record_updated'] = doi.date_record_updated.strftime('%Y-%m-%d')
+
+            # Pre-convert author map into a JSON string to make it play nice
+            # with pystache rendering
+            if doi.authors and content_type == CONTENT_TYPE_JSON:
+                doi_fields['authors'] = json.dumps(doi.authors)
+
+            # The OSTI IAD schema does not support 'Bundle' as a product type,
+            # so convert to collection here
+            if doi.product_type == ProductType.Bundle:
+                doi_fields['product_type'] = ProductType.Collection
+
+            # Lastly, we need a kludge to inform the mustache template whether
+            # to include a comma between consecutive entries (JSON only)
+            if content_type == CONTENT_TYPE_JSON and index < len(dois) - 1:
+                doi_fields['comma'] = True
+
+            doi_fields_list.append(doi_fields)
 
         renderer = pystache.Renderer()
 
         rendered_template = renderer.render_path(
-            self._template_map[content_type], {'dois': doi_fields}
+            self._template_map[content_type], {'dois': doi_fields_list}
         )
 
         # Reindent the output JSON to account for the kludging of the authors field

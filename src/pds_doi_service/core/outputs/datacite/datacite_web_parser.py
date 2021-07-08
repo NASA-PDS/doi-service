@@ -54,23 +54,26 @@ class DOIDataCiteWebParser(DOIWebParser):
                 return record['suffix']
             else:
                 # Parse the ID from the DOI field, it it's available
-                return DOIDataCiteWebParser._parse_doi(record).split('/')[-1]
-        except KeyError as err:
-            logger.warning('Could not parse id from record, reason: %s', err)
+                return record.get('doi').split('/')[-1]
+        except (AttributeError, KeyError) as err:
+            logger.warning('Could not parse id from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_doi(record):
         try:
             return record['doi']
         except KeyError as err:
-            logger.warning('Could not parse doi from record, reason: %s', err)
+            logger.warning('Could not parse doi from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_description(record):
         try:
             return record['descriptions'][0]['description']
         except (IndexError, KeyError) as err:
-            logger.warning('Could not parse description from record, reason: %s', err)
+            logger.warning('Could not parse description from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_keywords(record):
@@ -78,7 +81,8 @@ class DOIDataCiteWebParser(DOIWebParser):
             return set(sorted(subject['subject']
                               for subject in record['subjects']))
         except KeyError as err:
-            logger.warning('Could not parse keywords from record, reason: %s', err)
+            logger.warning('Could not parse keywords from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_authors(record):
@@ -87,14 +91,16 @@ class DOIDataCiteWebParser(DOIWebParser):
                      'last_name': creator['familyName']}
                     for creator in record['creators']]
         except KeyError as err:
-            logger.warning('Could not parse authors from record, reason: %s', err)
+            logger.warning('Could not parse authors from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_site_url(record):
         try:
             return html.unescape(record['url'])
         except KeyError as err:
-            logger.warning('Could not parse site url from record, reason: %s', err)
+            logger.warning('Could not parse site url from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_editors(record):
@@ -104,28 +110,32 @@ class DOIDataCiteWebParser(DOIWebParser):
                     for contributor in record['contributors']
                     if contributor['contributorType'] == 'Editor']
         except KeyError as err:
-            logger.warning('Could not parse editors from record, reason: %s', err)
+            logger.warning('Could not parse editors from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_status(record):
         try:
             return DoiStatus(record['state'])
         except (KeyError, ValueError) as err:
-            logger.warning('Could not parse status from record, reason: %s', err)
+            logger.warning('Could not parse status from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_date_record_added(record):
         try:
             return isoparse(record['created'])
         except (KeyError, ValueError) as err:
-            logger.warning('Could not parse date added from record, reason: %s', err)
+            logger.warning('Could not parse date added from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_date_record_updated(record):
         try:
             return isoparse(record['updated'])
         except (KeyError, ValueError) as err:
-            logger.warning('Could not parse date updated from record, reason: %s', err)
+            logger.warning('Could not parse date updated from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_contributor(record):
@@ -143,7 +153,8 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             return contributor
         except (KeyError, StopIteration, ValueError) as err:
-            logger.warning('Could not parse a contributor from record, reason: %s', err)
+            logger.warning('Could not parse a contributor from record, reason: %s %s',
+                           err.__class__, err)
 
     @staticmethod
     def _parse_related_identifier(record):
@@ -155,7 +166,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                 return DOIWebParser._get_lidvid_from_site_url(record['url'])
             else:
                 logger.warning('Could not parse a related identifier from record, '
-                               'reason: %s', err)
+                               'reason: %s %s', err.__class__, err)
 
     @staticmethod
     def _parse_title(record):
@@ -163,7 +174,8 @@ class DOIDataCiteWebParser(DOIWebParser):
             return record['titles'][0]['title']
         except (IndexError, KeyError) as err:
             raise InputFormatException(
-                f'Failed to parse title from provided record, reason: {err}'
+                f'Failed to parse title from provided record, reason: '
+                f'{err.__class__} {err}'
             )
 
     @staticmethod
@@ -172,7 +184,8 @@ class DOIDataCiteWebParser(DOIWebParser):
             return record['publisher']
         except KeyError as err:
             raise InputFormatException(
-                f'Failed to parse publisher from provided record, reason: {err}'
+                f'Failed to parse publisher from provided record, reason: '
+                f'{err.__class__} {err}'
             )
 
     @staticmethod
@@ -182,7 +195,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         except (KeyError, ValueError) as err:
             raise InputFormatException(
                 'Failed to parse publication date from provided record, reason: '
-                f'{err}'
+                f'{err.__class__} {err}'
             )
 
     @staticmethod
@@ -192,7 +205,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         except (KeyError, ValueError) as err:
             raise InputFormatException(
                 'Failed to parse product type from provided record, reason: '
-                f'{err}'
+                f'{err.__class__} {err}'
             )
 
     @staticmethod
@@ -202,7 +215,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         except KeyError as err:
             raise InputFormatException(
                 'Failed to parse product type specific from provided record, '
-                f'reason: {err}'
+                f'reason: {err.__class__} {err}'
             )
 
     @staticmethod

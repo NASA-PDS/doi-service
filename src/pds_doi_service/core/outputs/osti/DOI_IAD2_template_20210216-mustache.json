@@ -59,6 +59,6 @@
         "contact_org": "PDS",
         "contact_email": "pds-operator@jpl.nasa.gov",
         "contact_phone": "818.393.7165"
-    }
+    }{{#comma}},{{/comma}}
     {{/dois}}
 ]
