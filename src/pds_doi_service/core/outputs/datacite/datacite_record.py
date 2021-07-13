@@ -50,7 +50,9 @@ class DOIDataCiteRecord(DOIRecord):
             )
 
         with open(self._json_template_path, 'r') as infile:
-            self._template = jinja2.Template(infile.read())
+            self._template = jinja2.Template(
+                infile.read(), lstrip_blocks=True, trim_blocks=True
+            )
 
     def create_doi_record(self, dois, content_type=CONTENT_TYPE_JSON):
         """
