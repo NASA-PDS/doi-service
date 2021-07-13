@@ -10,9 +10,7 @@
             {% endif %}
             "type": "dois",
             "attributes": {
-                {% if doi.status.value == "reserved" %}
-                "event": "register",
-                {% elif doi.status.value == "pending" %}
+                {% if doi.status.value == "pending" %}
                 "event": "publish",
                 {% elif doi.status.value == "findable" %}
                 "event": "hide",

@@ -65,16 +65,8 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
                        contributor='Engineering',
                        status=DoiStatus.Reserved)
 
-        # Create the label to submit to DataCite, since the Doi has been set
-        # to reserve, the label should contain the "register" event
-        reserve_label = DOIDataCiteRecord().create_doi_record(test_doi)
-        reserve_label_dict = json.loads(reserve_label)
-
-        self.assertIn('event', reserve_label_dict['data']['attributes'])
-        self.assertEqual(reserve_label_dict['data']['attributes']['event'], 'register')
-
-        # Now test with the Pending (release) state, which should map to the
-        # "publish" event
+        # Create the label to submit to DataCite, using  the Pending (release)
+        # state, which should map to the "publish" event
         test_doi.status = DoiStatus.Pending
 
         release_label = DOIDataCiteRecord().create_doi_record(test_doi)
