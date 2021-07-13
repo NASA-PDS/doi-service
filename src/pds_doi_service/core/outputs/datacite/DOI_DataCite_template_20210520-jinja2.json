@@ -14,6 +14,8 @@
                 "event": "register",
                 {% elif doi.status.value == "pending" %}
                 "event": "publish",
+                {% elif doi.status.value == "findable" %}
+                "event": "hide",
                 {% endif %}
                 {% if doi.doi %}
                 "doi": "{{ doi.doi }}",

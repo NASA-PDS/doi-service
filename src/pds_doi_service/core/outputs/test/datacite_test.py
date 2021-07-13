@@ -83,6 +83,17 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
         self.assertIn('event', release_label_dict['data']['attributes'])
         self.assertEqual(release_label_dict['data']['attributes']['event'], 'publish')
 
+        # If updating a record that has already been published (findable),
+        # we need to move it back to the registered stage via the "hide" event
+        test_doi.status = DoiStatus.Findable
+
+        back_to_reserve_label = DOIDataCiteRecord().create_doi_record(test_doi)
+
+        back_to_reserve_label_dict = json.loads(back_to_reserve_label)
+
+        self.assertIn('event', back_to_reserve_label_dict['data']['attributes'])
+        self.assertEqual(back_to_reserve_label_dict['data']['attributes']['event'], 'hide')
+
         # For any other state, we should not get an event field in the label
         test_doi.status = DoiStatus.Reserved_not_submitted
 
