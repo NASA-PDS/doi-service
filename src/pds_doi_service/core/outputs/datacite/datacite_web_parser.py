@@ -98,7 +98,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     def _parse_site_url(record):
         try:
             return html.unescape(record['url'])
-        except KeyError as err:
+        except (KeyError, TypeError) as err:
             logger.warning('Could not parse site url from record, reason: %s %s',
                            err.__class__, err)
 
