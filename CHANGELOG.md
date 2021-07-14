@@ -1,8 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-08)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-14)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
+
+**Requirements:**
+
+- As an operator, I want to update DOI metadata through DataCite [\#175](https://github.com/NASA-PDS/pds-doi-service/issues/175)
 
 **Defects:**
 
@@ -55,7 +59,7 @@
 
 ## [v1.1.0](https://github.com/NASA-PDS/pds-doi-service/tree/v1.1.0) (2021-04-13)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v9.8.7...v1.1.0)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.0.1...v1.1.0)
 
 **Requirements:**
 
@@ -99,10 +103,6 @@
 - Analyze/Test the dataCite API for dataCite [\#170](https://github.com/NASA-PDS/pds-doi-service/issues/170)
 - Update release action with --no-review option, make 'with review' default behavior [\#133](https://github.com/NASA-PDS/pds-doi-service/issues/133)
 - Document the security requirements for operational installation of DOI Service [\#124](https://github.com/NASA-PDS/pds-doi-service/issues/124)
-
-## [v9.8.7](https://github.com/NASA-PDS/pds-doi-service/tree/v9.8.7) (2020-11-24)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.0.1...v9.8.7)
 
 ## [v1.0.1](https://github.com/NASA-PDS/pds-doi-service/tree/v1.0.1) (2020-11-24)
 
