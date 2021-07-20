@@ -262,8 +262,8 @@ class DOIInputUtil:
         num_rows = len(csv_sheet.index)
 
         logger.debug("csv_sheet.head(): %s", str(csv_sheet.head()))
-        logger.debug("num_cols: %d", str(num_cols))
-        logger.debug("num_rows: %d", str(num_rows))
+        logger.debug("num_cols: %d", num_cols)
+        logger.debug("num_rows: %d", num_rows)
         logger.debug("data columns: %s", str(list(csv_sheet.columns)))
 
         if num_cols < self.EXPECTED_NUM_COLUMNS:
