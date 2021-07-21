@@ -32,6 +32,7 @@ db_file = doi.db
 db_table = doi
 api_host = 0.0.0.0
 api_port = 8080
+api_valid_referrers = localhost, 0.0.0.0
 emailer_local_host = localhost
 emailer_port       = 25
 emailer_sender     = pdsen-doi-test@jpl.nasa.gov

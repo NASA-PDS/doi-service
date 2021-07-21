@@ -25,9 +25,10 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 
 class TestDoisController(BaseTestCase):
     """DoisController integration test stubs"""
-    # This attribute is defined at class level so it may be accessed
+    # These attributes are defined at class level so it may be accessed
     # by patched methods
     test_data_dir = None
+    input_dir = None
 
     @classmethod
     def setUpClass(cls):
@@ -113,7 +114,8 @@ class TestDoisController(BaseTestCase):
 
         for endpoint in endpoints:
             response = self.client.open(endpoint, method='GET',
-                                        query_string=query_string)
+                                        query_string=query_string,
+                                        headers={'Referer': 'http://localhost'})
 
             self.assert200(
                 response,
@@ -131,7 +133,8 @@ class TestDoisController(BaseTestCase):
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                     method='GET',
-                                    query_string=query_string)
+                                    query_string=query_string,
+                                    headers={'Referer': 'http://localhost'})
 
         self.assert200(
             response,
@@ -161,7 +164,8 @@ class TestDoisController(BaseTestCase):
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                     method='GET',
-                                    query_string=query_string)
+                                    query_string=query_string,
+                                    headers={'Referer': 'http://localhost'})
 
         self.assert200(
             response,
@@ -188,7 +192,8 @@ class TestDoisController(BaseTestCase):
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                     method='GET',
-                                    query_string=query_string)
+                                    query_string=query_string,
+                                    headers={'Referer': 'http://localhost'})
 
         self.assert200(
             response,
@@ -214,7 +219,8 @@ class TestDoisController(BaseTestCase):
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                     method='GET',
-                                    query_string=query_string)
+                                    query_string=query_string,
+                                    headers={'Referer': 'http://localhost'})
 
         self.assert200(
             response,
@@ -233,7 +239,8 @@ class TestDoisController(BaseTestCase):
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                     method='GET',
-                                    query_string=query_string)
+                                    query_string=query_string,
+                                    headers={'Referer': 'http://localhost'})
 
         self.assert400(
             response,
@@ -260,7 +267,8 @@ class TestDoisController(BaseTestCase):
 
         draft_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                           method='POST',
-                                          query_string=query_string)
+                                          query_string=query_string,
+                                          headers={'Referer': 'http://localhost'})
 
         self.assert200(
             draft_response,
@@ -306,7 +314,8 @@ class TestDoisController(BaseTestCase):
                                           method='POST',
                                           data=body,
                                           content_type='application/xml',
-                                          query_string=query_string)
+                                          query_string=query_string,
+                                          headers={'Referer': 'http://localhost'})
 
         self.assert200(
             draft_response,
@@ -358,7 +367,8 @@ class TestDoisController(BaseTestCase):
                                             method='POST',
                                             data=JSONEncoder().encode(body),
                                             content_type='application/json',
-                                            query_string=query_string)
+                                            query_string=query_string,
+                                            headers={'Referer': 'http://localhost'})
 
         self.assert200(
             reserve_response,
@@ -386,7 +396,8 @@ class TestDoisController(BaseTestCase):
 
         error_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                           method='POST',
-                                          query_string=query_string)
+                                          query_string=query_string,
+                                          headers={'Referer': 'http://localhost'})
 
         self.assert400(
             error_response,
@@ -401,7 +412,8 @@ class TestDoisController(BaseTestCase):
 
         error_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                           method='POST',
-                                          query_string=query_string)
+                                          query_string=query_string,
+                                          headers={'Referer': 'http://localhost'})
 
         self.assert400(
             error_response,
@@ -419,7 +431,8 @@ class TestDoisController(BaseTestCase):
 
         error_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
                                           method='POST',
-                                          query_string=query_string)
+                                          query_string=query_string,
+                                          headers={'Referer': 'http://localhost'})
 
         self.assert400(
             error_response,
@@ -438,7 +451,8 @@ class TestDoisController(BaseTestCase):
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/submit'
                 .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='POST',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert200(
@@ -482,9 +496,10 @@ class TestDoisController(BaseTestCase):
 
         release_response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
-                .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='POST',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert404(
@@ -508,7 +523,8 @@ class TestDoisController(BaseTestCase):
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='POST',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert200(
@@ -561,7 +577,8 @@ class TestDoisController(BaseTestCase):
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='POST',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert400(
@@ -605,7 +622,8 @@ class TestDoisController(BaseTestCase):
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='POST',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert404(
@@ -653,7 +671,8 @@ class TestDoisController(BaseTestCase):
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='POST',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert500(
@@ -680,7 +699,8 @@ class TestDoisController(BaseTestCase):
         response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
-            method='GET'
+            method='GET',
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert200(
@@ -708,7 +728,8 @@ class TestDoisController(BaseTestCase):
         response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
             .format(lidvid='urn:nasa:pds:insight_cameras'),
-            method='GET'
+            method='GET',
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert200(
@@ -738,7 +759,8 @@ class TestDoisController(BaseTestCase):
         error_response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
-            method='GET'
+            method='GET',
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert404(
@@ -768,7 +790,8 @@ class TestDoisController(BaseTestCase):
         error_response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
-            method='GET'
+            method='GET',
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assert500(
@@ -797,7 +820,8 @@ class TestDoisController(BaseTestCase):
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='PUT',
-            query_string=query_string
+            query_string=query_string,
+            headers={'Referer': 'http://localhost'}
         )
 
         # Should return a Not Implemented code
@@ -814,7 +838,8 @@ class TestDoisController(BaseTestCase):
         response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
-            method='PUT'
+            method='PUT',
+            headers={'Referer': 'http://localhost'}
         )
 
         self.assertEqual(response.status_code, 501)
@@ -863,7 +888,8 @@ class TestDoisController(BaseTestCase):
 
         response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois/check',
                                     method='GET',
-                                    query_string=query_string)
+                                    query_string=query_string,
+                                    headers={'Referer': 'http://localhost'})
 
         self.assert200(
             response,
@@ -888,6 +914,41 @@ class TestDoisController(BaseTestCase):
                 self.assertEqual(record['status'], DoiStatus.Error)
                 # Make sure we got a message back with the error
                 self.assertIsNotNone(record['message'])
+
+    def test_filter_by_referrers(self):
+        """Test filtering of requests based on the referer header value"""
+
+        # By default, the INI config should specify localhost and 0.0.0.0 as
+        # valid hostnames, so attempting with any other referrer should
+        # return a 403 "forbidden" error
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    headers={'Referer': 'http://www.zombo.com'})
+
+        self.assert403(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Requests with no referrer provided should also fail with a 401
+        # "unauthorized" error
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET')
+
+        self.assert401(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
+
+        # Providing a valid referrer should make everything work again
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+                                    method='GET',
+                                    headers={'Referer': 'http://0.0.0.0'})
+
+        self.assert200(
+            response,
+            'Response body is : ' + response.data.decode('utf-8')
+        )
 
 
 if __name__ == '__main__':
