@@ -31,8 +31,8 @@ name: 😌 Stable integration & delivery
 
 on:
     push:
-        tags:
-            -  'v[0-9]+.[0-9]+.[0-9]+'
+        branches:
+            - 'release/*'
 
 
 # What to Do
