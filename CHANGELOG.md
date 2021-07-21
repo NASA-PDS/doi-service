@@ -1,29 +1,20 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-14)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-21)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...«unknown»)
 
 **Requirements:**
 
+- As a user, I want to use the API with ids containing a slash \(/\) [\#198](https://github.com/NASA-PDS/pds-doi-service/issues/198)
 - As an operator, I want to update DOI metadata through DataCite [\#175](https://github.com/NASA-PDS/pds-doi-service/issues/175)
-
-**Defects:**
-
-- pytest does not work [\#219](https://github.com/NASA-PDS/pds-doi-service/issues/219) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
-
-## [v21.2.0](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.0) (2021-07-08)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...v21.2.0)
-
-**Requirements:**
-
 - As an operator, I want to release a DOI through DataCite [\#174](https://github.com/NASA-PDS/pds-doi-service/issues/174)
 - As an operator, I want query for one or more minted DOIs from DataCite [\#172](https://github.com/NASA-PDS/pds-doi-service/issues/172)
 - As an operator, I want to reserve a DOI through DataCite [\#171](https://github.com/NASA-PDS/pds-doi-service/issues/171)
 
 **Defects:**
 
+- pytest does not work [\#219](https://github.com/NASA-PDS/pds-doi-service/issues/219) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - Release OSTI command line does not work in one case [\#218](https://github.com/NASA-PDS/pds-doi-service/issues/218) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - The issue \#140 does not work as expected [\#208](https://github.com/NASA-PDS/pds-doi-service/issues/208) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
 - When installing the pds-doi-service from scratch I had an error with Flask version compatibility [\#199](https://github.com/NASA-PDS/pds-doi-service/issues/199) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
