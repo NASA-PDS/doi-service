@@ -16,9 +16,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'pds-doi-service'
-copyright = '2020, pds engineering node'
-author = 'pds engineering node'
+project = 'PDS DOI Service'
+copyright = '2020 California Institute of Technology'
+author = 'NASA PDS Engineering Node'
 
 
 # -- General configuration ---------------------------------------------------
