@@ -1,8 +1,16 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-21)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-22)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
+
+**Requirements:**
+
+- As an admistrator of the application,  I want to restrict access to API by specific referrer [\#228](https://github.com/NASA-PDS/pds-doi-service/issues/228)
+
+## [v21.2.0](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.0) (2021-07-21)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...v21.2.0)
 
 **Requirements:**
 
