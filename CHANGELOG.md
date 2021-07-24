@@ -1,12 +1,20 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-22)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-24)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
 
 **Requirements:**
 
 - As an admistrator of the application,  I want to restrict access to API by specific referrer [\#228](https://github.com/NASA-PDS/pds-doi-service/issues/228)
+
+**Improvements:**
+
+- Update DOI service for handling existing DOIs acceptance criteria per \#175 [\#227](https://github.com/NASA-PDS/pds-doi-service/issues/227)
+
+**Defects:**
+
+- CI does not work on main branch for dev release [\#220](https://github.com/NASA-PDS/pds-doi-service/issues/220)
 
 ## [v21.2.0](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.0) (2021-07-21)
 
