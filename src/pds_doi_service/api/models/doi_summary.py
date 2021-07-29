@@ -12,15 +12,15 @@ class DoiSummary(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, doi: str = None, lidvid: str = None, title: str = None,
+    def __init__(self, doi: str = None, identifier: str = None, title: str = None,
                  node: str = None, submitter: str = None, status: str = None,
                  update_date: datetime = None):  # noqa: E501
         """DoiSummary - a model defined in Swagger
 
         :param doi: The doi of this DoiSummary.  # noqa: E501
         :type doi: str
-        :param lidvid: The lidvid of this DoiSummary.  # noqa: E501
-        :type lidvid: str
+        :param identifier: The PDS identifier of this DoiSummary.  # noqa: E501
+        :type identifier: str
         :param title: The title of this DoiRecord.  # noqa: E501
         :type title: str
         :param node: The node of this DoiSummary.  # noqa: E501
@@ -34,7 +34,7 @@ class DoiSummary(Model):
         """
         self.swagger_types = {
             'doi': str,
-            'lidvid': str,
+            'identifier': str,
             'title': str,
             'node': str,
             'submitter': str,
@@ -44,7 +44,7 @@ class DoiSummary(Model):
 
         self.attribute_map = {
             'doi': 'doi',
-            'lidvid': 'lidvid',
+            'identifier': 'identifier',
             'title': 'title',
             'node': 'node',
             'submitter': 'submitter',
@@ -52,7 +52,7 @@ class DoiSummary(Model):
             'update_date': 'update_date'
         }
         self._doi = doi
-        self._lidvid = lidvid
+        self._identifier = identifier
         self._title = title
         self._node = node
         self._submitter = submitter
@@ -92,25 +92,25 @@ class DoiSummary(Model):
         self._doi = doi
 
     @property
-    def lidvid(self) -> str:
-        """Gets the lidvid of this DoiSummary.
+    def identifier(self) -> str:
+        """Gets the PDS identifier of this DoiSummary.
 
 
-        :return: The lidvid of this DoiSummary.
+        :return: The identifier of this DoiSummary.
         :rtype: str
         """
-        return self._lidvid
+        return self._identifier
 
-    @lidvid.setter
-    def lidvid(self, lidvid: str):
-        """Sets the lidvid of this DoiSummary.
+    @identifier.setter
+    def identifier(self, identifier: str):
+        """Sets the identifier of this DoiSummary.
 
 
-        :param lidvid: The lidvid of this DoiSummary.
-        :type lidvid: str
+        :param identifier: The identifier of this DoiSummary.
+        :type identifier: str
         """
 
-        self._lidvid = lidvid
+        self._identifier = identifier
 
     @property
     def title(self) -> str:

@@ -12,7 +12,7 @@ class DoiRecord(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, doi: str = None, lidvid: str = None, title: str = None,
+    def __init__(self, doi: str = None, identifier: str = None, title: str = None,
                  node: str = None, submitter: str = None, status: str = None,
                  creation_date: datetime = None, update_date: datetime = None,
                  record: str = None, message: str = None):  # noqa: E501
@@ -20,8 +20,8 @@ class DoiRecord(Model):
 
         :param doi: The doi of this DoiRecord.  # noqa: E501
         :type doi: str
-        :param lidvid: The lidvid of this DoiRecord.  # noqa: E501
-        :type lidvid: str
+        :param identifier: The PDS identifier of this DoiRecord.  # noqa: E501
+        :type identifier: str
         :param title: The title of this DoiRecord.  # noqa: E501
         :type title: str
         :param node: The node of this DoiRecord.  # noqa: E501
@@ -41,7 +41,7 @@ class DoiRecord(Model):
         """
         self.swagger_types = {
             'doi': str,
-            'lidvid': str,
+            'identifier': str,
             'title': str,
             'node': str,
             'submitter': str,
@@ -54,7 +54,7 @@ class DoiRecord(Model):
 
         self.attribute_map = {
             'doi': 'doi',
-            'lidvid': 'lidvid',
+            'identifier': 'identifier',
             'title': 'title',
             'node': 'node',
             'submitter': 'submitter',
@@ -65,7 +65,7 @@ class DoiRecord(Model):
             'message': 'message'
         }
         self._doi = doi
-        self._lidvid = lidvid
+        self._identifier = identifier
         self._title = title
         self._node = node
         self._submitter = submitter
@@ -108,25 +108,25 @@ class DoiRecord(Model):
         self._doi = doi
 
     @property
-    def lidvid(self) -> str:
-        """Gets the lidvid of this DoiRecord.
+    def identifier(self) -> str:
+        """Gets the PDS identifier of this DoiRecord.
 
 
-        :return: The lidvid of this DoiRecord.
+        :return: The identifier of this DoiRecord.
         :rtype: str
         """
-        return self._lidvid
+        return self._identifier
 
-    @lidvid.setter
-    def lidvid(self, lidvid: str):
-        """Sets the lidvid of this DoiRecord.
+    @identifier.setter
+    def identifier(self, identifier: str):
+        """Sets the PDS identifier of this DoiRecord.
 
 
-        :param lidvid: The lidvid of this DoiRecord.
-        :type lidvid: str
+        :param identifier: The identifier of this DoiRecord.
+        :type identifier: str
         """
 
-        self._lidvid = lidvid
+        self._identifier = identifier
 
     @property
     def title(self) -> str:
