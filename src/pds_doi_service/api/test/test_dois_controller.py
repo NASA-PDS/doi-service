@@ -15,12 +15,14 @@ from pkg_resources import resource_filename
 import pds_doi_service.api.controllers.dois_controller
 import pds_doi_service.core.outputs.osti.osti_web_client
 import pds_doi_service.core.outputs.transaction
+
+from ._base import BaseTestCase
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import (DoiRecord, DoiSummary,
                                         LabelsPayload, LabelPayload)
-from ._base import BaseTestCase
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
 class TestDoisController(BaseTestCase):
@@ -46,6 +48,10 @@ class TestDoisController(BaseTestCase):
         # database instance to work with
         self.app.config['TESTING'] = True
 
+        # Make sure valid referrers is set as tests expect
+        config = DOIConfigUtil.get_config()
+        config.set('OTHER', 'api_valid_referrers', 'localhost,0.0.0.0')
+
     def tearDown(self):
         # Remove the temp DB so a new one is created before each test
         if exists(self.temp_db):
@@ -67,6 +73,7 @@ class TestDoisController(BaseTestCase):
                  "submitter": "eng-submitter@jpl.nasa.gov",
                  "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
                  "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
+                 # TODO: update once list action/DB schema is updated
                  "lid": "urn:nasa:pds:insight_cameras", "vid": "1.1",
                  "doi": '10.17189/28957',
                  "transaction_key": TestDoisController.test_data_dir,
@@ -109,8 +116,8 @@ class TestDoisController(BaseTestCase):
 
         # Ensure fetch-all endpoint works both with and without a trailing
         # slash
-        endpoints = ['/PDS_APIs/pds_doi_api/0.1/dois',
-                     '/PDS_APIs/pds_doi_api/0.1/dois/']
+        endpoints = ['/PDS_APIs/pds_doi_api/0.2/dois',
+                     '/PDS_APIs/pds_doi_api/0.2/dois/']
 
         for endpoint in endpoints:
             response = self.client.open(endpoint, method='GET',
@@ -131,7 +138,7 @@ class TestDoisController(BaseTestCase):
         query_string = [('node', 'eng'),
                         ('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     query_string=query_string,
                                     headers={'Referer': 'http://localhost'})
@@ -151,7 +158,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.node, 'eng')
         self.assertEqual(summary.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(summary.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(summary.identifier, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(summary.status, DoiStatus.Draft)
 
         # Test filtering by start/end date
@@ -162,7 +169,7 @@ class TestDoisController(BaseTestCase):
                         ('end_date', '2020-10-20T21:04:14.000000+08:00'),
                         ('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     query_string=query_string,
                                     headers={'Referer': 'http://localhost'})
@@ -182,15 +189,15 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.title, 'InSight Cameras Bundle 1.0')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
-        self.assertEqual(summary.lidvid, 'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(summary.identifier, 'urn:nasa:pds:insight_cameras::1.0')
         self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
 
         # Test fetching of a record that only has an LID (no VID) associated to it
         query_string = [('node', 'img'),
-                        ('lid', 'urn:nasa:pds:lab_shocked_feldspars'),
+                        ('ids', 'urn:nasa:pds:lab_shocked_feldspars'),
                         ('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     query_string=query_string,
                                     headers={'Referer': 'http://localhost'})
@@ -210,14 +217,14 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.node, 'img')
         self.assertEqual(summary.title, 'Laboratory Shocked Feldspars Bundle')
         self.assertEqual(summary.submitter, 'img-submitter@jpl.nasa.gov')
-        self.assertEqual(summary.lidvid, 'urn:nasa:pds:lab_shocked_feldspars')
+        self.assertEqual(summary.identifier, 'urn:nasa:pds:lab_shocked_feldspars')
         self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
 
         # Now try filtering by workflow status
         query_string = [('status', DoiStatus.Reserved_not_submitted.value),
                         ('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     query_string=query_string,
                                     headers={'Referer': 'http://localhost'})
@@ -237,7 +244,7 @@ class TestDoisController(BaseTestCase):
                         ('end_date', '10-20-2020 14:04'),
                         ('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     query_string=query_string,
                                     headers={'Referer': 'http://localhost'})
@@ -265,7 +272,7 @@ class TestDoisController(BaseTestCase):
                         ('url', input_bundle),
                         ('db_name', self.temp_db)]
 
-        draft_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        draft_response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                           method='POST',
                                           query_string=query_string,
                                           headers={'Referer': 'http://localhost'})
@@ -282,7 +289,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(draft_record.node, 'eng')
         self.assertEqual(draft_record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(draft_record.identifier, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(draft_record.doi, '10.17189/28957')
         self.assertEqual(draft_record.creation_date,
                          datetime.fromisoformat('2020-10-20T14:04:12.560568-07:00'))
@@ -310,7 +317,7 @@ class TestDoisController(BaseTestCase):
                         ('node', 'eng'),
                         ('db_name', self.temp_db)]
 
-        draft_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        draft_response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                           method='POST',
                                           data=body,
                                           content_type='application/xml',
@@ -329,7 +336,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(draft_record.node, 'eng')
         self.assertEqual(draft_record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(draft_record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(draft_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(draft_record.identifier, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(draft_record.doi, '10.17189/28957')
         self.assertEqual(draft_record.creation_date,
                          datetime.fromisoformat('2020-10-20T14:04:12.560568-07:00'))
@@ -363,7 +370,7 @@ class TestDoisController(BaseTestCase):
                         ('node', 'img'),
                         ('db_name', self.temp_db)]
 
-        reserve_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        reserve_response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                             method='POST',
                                             data=JSONEncoder().encode(body),
                                             content_type='application/json',
@@ -382,7 +389,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(reserve_record.node, 'img')
         self.assertEqual(reserve_record.title, 'InSight Cameras Bundle')
         self.assertEqual(reserve_record.submitter, 'img-submitter@jpl.nasa.gov')
-        self.assertEqual(reserve_record.lidvid, 'urn:nasa:pds:insight_cameras::2.0')
+        self.assertEqual(reserve_record.identifier, 'urn:nasa:pds:insight_cameras::2.0')
         self.assertEqual(reserve_record.status, DoiStatus.Reserved_not_submitted)
 
     def test_post_dois_invalid_requests(self):
@@ -394,7 +401,7 @@ class TestDoisController(BaseTestCase):
                         ('node', 'img'),
                         ('db_name', self.temp_db)]
 
-        error_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        error_response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                           method='POST',
                                           query_string=query_string,
                                           headers={'Referer': 'http://localhost'})
@@ -410,7 +417,7 @@ class TestDoisController(BaseTestCase):
                         ('node', 'img'),
                         ('db_name', self.temp_db)]
 
-        error_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        error_response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                           method='POST',
                                           query_string=query_string,
                                           headers={'Referer': 'http://localhost'})
@@ -429,7 +436,7 @@ class TestDoisController(BaseTestCase):
                         ('url', input_bundle),
                         ('db_name', self.temp_db)]
 
-        error_response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        error_response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                           method='POST',
                                           query_string=query_string,
                                           headers={'Referer': 'http://localhost'})
@@ -445,11 +452,11 @@ class TestDoisController(BaseTestCase):
     def test_post_submit(self):
         """Test the submit endpoint"""
         query_string = [('force', False),
-                        ('db_name', self.temp_db)]
+                        ('db_name', self.temp_db),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         release_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/submit'
-                .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/doi/submit',
             method='POST',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -467,7 +474,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(submit_record.node, 'eng')
         self.assertEqual(submit_record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(submit_record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(submit_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(submit_record.identifier, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(submit_record.status, DoiStatus.Review)
         self.assertEqual(submit_record.doi, '10.17189/28957')
 
@@ -492,11 +499,11 @@ class TestDoisController(BaseTestCase):
         for the corresponding unit tests.
         """
         query_string = [('force', False),
-                        ('db_name', self.temp_db)]
+                        ('db_name', self.temp_db),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         release_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/dois/release',
             method='POST',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -507,7 +514,7 @@ class TestDoisController(BaseTestCase):
             'Response body is : ' + release_response.data.decode('utf-8')
         )
 
-    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
+    @unittest.skip('dois/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
         'run', release_action_run_patch)
@@ -517,11 +524,11 @@ class TestDoisController(BaseTestCase):
     def test_post_release(self):
         """Test the release endpoint"""
         query_string = [('force', False),
-                        ('db_name', self.temp_db)]
+                        ('db_name', self.temp_db),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         release_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/dois/release',
             method='POST',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -539,7 +546,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(release_record.node, 'eng')
         self.assertEqual(release_record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(release_record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(release_record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(release_record.identifier, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(release_record.status, DoiStatus.Pending)
         self.assertEqual(release_record.doi, '10.17189/21734')
 
@@ -558,7 +565,7 @@ class TestDoisController(BaseTestCase):
         with open(draft_record_file, 'r') as infile:
             return infile.read()
 
-    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
+    @unittest.skip('dois/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
         'run', release_action_run_w_error_patch)
@@ -571,11 +578,11 @@ class TestDoisController(BaseTestCase):
         release action.
         """
         query_string = [('force', False),
-                        ('db_name', self.temp_db)]
+                        ('db_name', self.temp_db),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         error_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/dois/release',
             method='POST',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -606,7 +613,7 @@ class TestDoisController(BaseTestCase):
         """
         return '[]'
 
-    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
+    @unittest.skip('dois/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
         'run', list_action_run_patch_missing)
@@ -616,11 +623,11 @@ class TestDoisController(BaseTestCase):
         LID exists.
         """
         query_string = [('force', False),
-                        ('db_name', self.temp_db)]
+                        ('db_name', self.temp_db),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         error_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/dois/release',
             method='POST',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -655,7 +662,7 @@ class TestDoisController(BaseTestCase):
             ]
         )
 
-    @unittest.skip('dois/{lidvid}/release endpoint is disabled')
+    @unittest.skip('dois/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
         'run', list_action_run_patch_no_transaction_history)
@@ -665,11 +672,11 @@ class TestDoisController(BaseTestCase):
         with a missing transaction_key location.
         """
         query_string = [('force', False),
-                        ('db_name', self.temp_db)]
+                        ('db_name', self.temp_db),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         error_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}/release'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/dois/release',
             method='POST',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -686,7 +693,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
         self.assertIn(
-            'Could not find a DOI label associated with LIDVID '
+            'Could not find a DOI label associated with identifier '
             'urn:nasa:pds:insight_cameras::1.1',
             errors[0]['message']
         )
@@ -696,10 +703,13 @@ class TestDoisController(BaseTestCase):
         'run', list_action_run_patch)
     def test_get_doi_from_id(self):
         """Test case for get_doi_from_id"""
+        query_string = [ ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
+
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
+            '/PDS_APIs/pds_doi_api/0.2/doi'
             .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
             method='GET',
+            query_string=query_string,
             headers={'Referer': 'http://localhost'}
         )
 
@@ -715,7 +725,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.node, 'eng')
         self.assertEqual(record.title, 'InSight Cameras Bundle 1.1')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras::1.1')
+        self.assertEqual(record.identifier, 'urn:nasa:pds:insight_cameras::1.1')
         self.assertEqual(record.status, DoiStatus.Pending)
 
         # Make sure we only got one record back
@@ -725,10 +735,12 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(len(records), 1)
 
         # Test again with an LID only, should get the same result back
+        query_string = [('identifier', 'urn:nasa:pds:insight_cameras')]
+
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='urn:nasa:pds:insight_cameras'),
+            '/PDS_APIs/pds_doi_api/0.2/doi',
             method='GET',
+            query_string=query_string,
             headers={'Referer': 'http://localhost'}
         )
 
@@ -742,7 +754,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.node, 'eng')
         self.assertEqual(record.title, 'InSight Cameras Bundle')
         self.assertEqual(record.submitter, 'eng-submitter@jpl.nasa.gov')
-        self.assertEqual(record.lidvid, 'urn:nasa:pds:insight_cameras')
+        self.assertEqual(record.identifier, 'urn:nasa:pds:insight_cameras')
         self.assertEqual(record.status, DoiStatus.Pending)
 
         # Make sure we only got one record back
@@ -756,10 +768,12 @@ class TestDoisController(BaseTestCase):
         'run', list_action_run_patch_missing)
     def test_get_doi_missing_id(self):
         """Test get_doi_from_id where requested LIDVID is not found"""
+        query_string = [('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
+
         error_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/doi',
             method='GET',
+            query_string=query_string,
             headers={'Referer': 'http://localhost'}
         )
 
@@ -774,7 +788,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(errors[0]['name'], 'UnknownLIDVIDException')
         self.assertIn(
-            'No record(s) could be found for LIDVID '
+            'No record(s) could be found for identifier '
             'urn:nasa:pds:insight_cameras::1.1',
             errors[0]['message']
         )
@@ -787,10 +801,12 @@ class TestDoisController(BaseTestCase):
         Test get_doi_from_id where transaction history for LIDVID cannot be
         found
         """
+        query_string = [('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
+
         error_response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/doi',
             method='GET',
+            query_string=query_string,
             headers={'Referer': 'http://localhost'}
         )
 
@@ -805,7 +821,7 @@ class TestDoisController(BaseTestCase):
 
         self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
         self.assertIn(
-            'Could not find a DOI label associated with LIDVID '
+            'Could not find a DOI label associated with identifier '
             'urn:nasa:pds:insight_cameras::1.1',
             errors[0]['message']
         )
@@ -814,11 +830,11 @@ class TestDoisController(BaseTestCase):
         """Test case for put_doi_from_id"""
         query_string = [('submitter', 'img-submitter@jpl.nasa.gov'),
                         ('node', 'img'),
+                        ('identifier', 'urn:nasa:pds:insight_cameras::1.1'),
                         ('url', 'http://fake.url.net')]
 
         response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
+            '/PDS_APIs/pds_doi_api/0.2/doi',
             method='PUT',
             query_string=query_string,
             headers={'Referer': 'http://localhost'}
@@ -830,19 +846,9 @@ class TestDoisController(BaseTestCase):
         errors = response.json['errors']
         self.assertEqual(errors[0]['name'], 'NotImplementedError')
         self.assertIn(
-            'Please use the POST /dois/{lidvid} endpoint for record update',
+            'Please use the POST /doi endpoint for record update',
             errors[0]['message']
         )
-
-        # Try again with no query parameters, should still return not implemented
-        response = self.client.open(
-            '/PDS_APIs/pds_doi_api/0.1/dois/{lidvid}'
-            .format(lidvid='urn:nasa:pds:insight_cameras::1.1'),
-            method='PUT',
-            headers={'Referer': 'http://localhost'}
-        )
-
-        self.assertEqual(response.status_code, 501)
 
     def webclient_query_patch(self, query=None, content_type=CONTENT_TYPE_XML):
         """
@@ -886,7 +892,7 @@ class TestDoisController(BaseTestCase):
                         ('attachment', False),
                         ('db_name', test_db)]
 
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois/check',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois/check',
                                     method='GET',
                                     query_string=query_string,
                                     headers={'Referer': 'http://localhost'})
@@ -921,7 +927,7 @@ class TestDoisController(BaseTestCase):
         # By default, the INI config should specify localhost and 0.0.0.0 as
         # valid hostnames, so attempting with any other referrer should
         # return a 403 "forbidden" error
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     headers={'Referer': 'http://www.zombo.com'})
 
@@ -932,7 +938,7 @@ class TestDoisController(BaseTestCase):
 
         # Requests with no referrer provided should also fail with a 401
         # "unauthorized" error
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET')
 
         self.assert401(
@@ -941,7 +947,7 @@ class TestDoisController(BaseTestCase):
         )
 
         # Providing a valid referrer should make everything work again
-        response = self.client.open('/PDS_APIs/pds_doi_api/0.1/dois',
+        response = self.client.open('/PDS_APIs/pds_doi_api/0.2/dois',
                                     method='GET',
                                     headers={'Referer': 'http://0.0.0.0'})
 
