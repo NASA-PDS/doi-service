@@ -427,7 +427,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
     """
     Class used to parse OSTI-format DOI labels in JSON format.
     """
-    _mandatory_fields = ['title', 'publication_date', 'site_url', 'product_type']
+    _mandatory_fields = ['title', 'publication_date', 'product_type']
 
     @staticmethod
     def _parse_contributors(contributors_record):
