@@ -69,7 +69,9 @@ from datetime import datetime
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    CriticalDOIException)
 from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
+from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiXmlWebParser,
+                                                               DOIOstiJsonWebParser)
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -88,7 +90,7 @@ def create_cmd_parser():
                     'transaction database.'
     )
     parser.add_argument("-i", "--input", required=False,
-                        help="Input file to import existing DOIs from. "
+                        help="Input file (XML or JSON) to import existing DOIs from. "
                              "If no value is provided, the OSTI server URL "
                              "specified by the DOI service configuration INI "
                              "file is used by default.")
@@ -102,12 +104,12 @@ def create_cmd_parser():
                              "DOI records to. If not provided, the file name is "
                              "obtained from the DOI service INI config.")
     parser.add_argument("-o", "--output-file", required=False, default=None,
-                        help="Path to write out the DOI XML labels as returned "
+                        help="Path to write out the DOI JSON labels as returned "
                              "from OSTI. When created, this file can be used "
                              "with the --input option to import records at a "
                              "later time without re-querying the OSTI server. "
                              "This option has no effect if --input already "
-                             "specifies an input XML file.")
+                             "specifies an input file.")
     parser.add_argument("--dry-run", required=False, action="store_true",
                         help="Flag to suppress actual writing of DOIs to database.")
     parser.add_argument("--debug", required=False, action="store_true",
@@ -129,12 +131,27 @@ def _read_from_local_xml(path):
     return dois
 
 
+def _read_from_local_json(path):
+    """Read from a local JSON file containing output from an OSTI query."""
+    try:
+        with open(path, mode='r') as f:
+            doi_json = f.read()
+    except Exception as e:
+        raise CriticalDOIException(str(e))
+
+    dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(doi_json)
+
+    return dois
+
+
 def _read_from_path(path):
     if path.endswith('.xml'):
         return _read_from_local_xml(path)
+    elif path.endswith('.json'):
+        return _read_from_local_json(path)
 
     raise InputFormatException(f'File {path} is not supported. '
-                               f'Only .xml is supported.')
+                               f'Only .xml and .json are supported.')
 
 
 def _parse_input(input_file):
@@ -158,13 +175,15 @@ def get_dois_from_osti(output_file):
 
     logger.info("Using OSTI server URL %s", o_server_url)
 
-    doi_xml = DOIOstiWebClient().query_doi(query=query_dict)
+    doi_json = DOIOstiWebClient().query_doi(
+        query=query_dict, content_type=CONTENT_TYPE_JSON
+    )
 
     if output_file:
         with open(output_file, 'w') as outfile:
-            outfile.write(doi_xml)
+            outfile.write(doi_json)
 
-    dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
+    dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(doi_json)
 
     return dois, o_server_url
 
