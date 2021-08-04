@@ -1,12 +1,13 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-07-24)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-04)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
 
 **Requirements:**
 
 - As an admistrator of the application,  I want to restrict access to API by specific referrer [\#228](https://github.com/NASA-PDS/pds-doi-service/issues/228)
+- As a SA, I want the operational deployment of the service to be secure [\#187](https://github.com/NASA-PDS/pds-doi-service/issues/187)
 
 **Improvements:**
 
