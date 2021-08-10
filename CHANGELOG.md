@@ -1,8 +1,16 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-04)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-10)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...«unknown»)
+
+**Improvements:**
+
+- As a user, I want to see the PDS3 ids as they originally are [\#229](https://github.com/NASA-PDS/pds-doi-service/issues/229)
+
+## [v0.3.1](https://github.com/NASA-PDS/pds-doi-service/tree/v0.3.1) (2021-08-04)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...v0.3.1)
 
 **Requirements:**
 
