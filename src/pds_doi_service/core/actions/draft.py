@@ -142,7 +142,7 @@ class DOICoreActionDraft(DOICoreAction):
         """
         # Get the output label produced from the last transaction
         # with this LIDVID
-        transaction_record = self._list_obj.transaction_for_lidvid(lidvid)
+        transaction_record = self._list_obj.transaction_for_identifier(lidvid)
 
         # Make sure we can locate the output label associated with this
         # transaction
@@ -160,7 +160,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Label could contain entries for multiple LIDVIDs, so extract
         # just the one we care about
-        lidvid_record, content_type = DOIOstiWebParser.get_record_for_lidvid(
+        lidvid_record, content_type = DOIOstiWebParser.get_record_for_identifier(
             label_file, lidvid
         )
 
