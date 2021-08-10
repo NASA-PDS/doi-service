@@ -17,7 +17,7 @@ from unittest.mock import patch
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions.check import DOICoreActionCheck
 from pds_doi_service.core.db.doi_database import DOIDataBase
-from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
@@ -37,18 +37,19 @@ class CheckActionTestCase(unittest.TestCase):
         doi = '10.17189/29348'
         lid = 'urn:nasa:pds:lab_shocked_feldspars'
         vid = '1.0'
+        identifier = lid + '::' + vid
         transaction_key = './transaction_history/img/2020-06-15T18:42:45.653317'
-        release_date = datetime.datetime.now()
-        transaction_date = datetime.datetime.now()
+        date_added = datetime.datetime.now()
+        date_updated = datetime.datetime.now()
         status = DoiStatus.Pending
         title = 'Laboratory Shocked Feldspars Bundle'
-        product_type = 'Collection'
+        product_type = ProductType.Collection
         product_type_specific = 'PDS4 Collection'
         discipline_node = 'img'
         submitter = 'img-submitter@jpl.nasa.gov'
 
         cls._database_obj.write_doi_info_to_database(
-            lid, vid, transaction_key, doi, release_date, transaction_date, status,
+            identifier, transaction_key, doi, date_added, date_updated, status,
             title, product_type, product_type_specific, submitter, discipline_node
         )
 
@@ -129,7 +130,7 @@ class CheckActionTestCase(unittest.TestCase):
         self.assertEqual(pending_record['status'], DoiStatus.Registered)
         self.assertEqual(pending_record['submitter'], 'img-submitter@jpl.nasa.gov')
         self.assertEqual(pending_record['doi'], '10.17189/29348')
-        self.assertEqual(pending_record['lidvid'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
+        self.assertEqual(pending_record['identifier'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
@@ -146,7 +147,7 @@ class CheckActionTestCase(unittest.TestCase):
         self.assertEqual(pending_record['status'], DoiStatus.Error)
         self.assertEqual(pending_record['submitter'], 'img-submitter@jpl.nasa.gov')
         self.assertEqual(pending_record['doi'], '10.17189/29348')
-        self.assertEqual(pending_record['lidvid'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
+        self.assertEqual(pending_record['identifier'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
 
         # There should be a message to go along with the error
         self.assertIsNotNone(pending_record['message'])
@@ -166,7 +167,7 @@ class CheckActionTestCase(unittest.TestCase):
         self.assertEqual(pending_record['status'], DoiStatus.Pending)
         self.assertEqual(pending_record['submitter'], 'img-submitter@jpl.nasa.gov')
         self.assertEqual(pending_record['doi'], '10.17189/29348')
-        self.assertEqual(pending_record['lidvid'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
+        self.assertEqual(pending_record['identifier'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
 
     def get_config_patch(self):
         """

@@ -103,11 +103,11 @@ class DOICoreActionCheck(DOICoreAction):
 
         """
         doi_value = pending_record['doi']
-        lidvid = '::'.join([pending_record['lid'], pending_record['vid']])
+        identifier = pending_record['identifier']
 
         logger.info(
-            'Checking release status for DOI %s (LIDVID %s)',
-            doi_value, lidvid
+            'Checking release status for DOI %s (Identifier %s)',
+            doi_value, identifier
         )
 
         query_dict = {'doi': doi_value}
@@ -130,7 +130,7 @@ class DOICoreActionCheck(DOICoreAction):
                 doi.previous_status = DoiStatus.Pending
 
                 # Update the last updated time to mark the successful query
-                pending_record['update_date'] = doi.date_record_updated.isoformat()
+                pending_record['date_updated'] = doi.date_record_updated.isoformat()
 
                 # If there was a submission error, include the details.
                 # Since we only check one DOI at a time, should be safe
@@ -145,13 +145,13 @@ class DOICoreActionCheck(DOICoreAction):
 
                 transaction_obj.log()
             else:
-                logger.info('No change in %s status for DOI %s (LIDVID %s)',
-                            DoiStatus.Pending, doi_value, lidvid)
+                logger.info('No change in %s status for DOI %s (Identifier %s)',
+                            DoiStatus.Pending, doi_value, identifier)
 
             # Update the record we'll be using to populate the status email
             pending_record['previous_status'] = pending_record['status']
             pending_record['status'] = doi.status
-            pending_record['lidvid'] = lidvid
+            pending_record['identifier'] = identifier
             pending_record['message'] = doi.message
 
             # Remove some behind-the-scenes fields users shouldn't care about
@@ -159,8 +159,8 @@ class DOICoreActionCheck(DOICoreAction):
             pending_record.pop('is_latest', None)
         else:
             logger.error(
-                "No record for DOI %s (LIDVID %s) found at the service provider",
-                pending_record['doi'], lidvid
+                "No record for DOI %s (Identifier %s) found at the service provider",
+                pending_record['doi'], identifier
             )
 
     def _get_distinct_nodes_and_submitters(self, i_check_result):
@@ -229,8 +229,9 @@ class DOICoreActionCheck(DOICoreAction):
 
         # Build the email body containing the table of DOIs with status
         body_header = self.email_body_template.format(
-            record_index='#', id='ID', title='Title', doi='DOI', lidvid='LIDVID',
-            previous_status='Previous Status', status='Current Status'
+            record_index='#', id='ID', title='Title', doi='DOI',
+            identifier='PDS Identifier', previous_status='Previous Status',
+            status='Current Status'
         )
         body_divider = '-' * len(body_header)
         email_body = [body_header, body_divider]
