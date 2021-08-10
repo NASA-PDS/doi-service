@@ -68,13 +68,12 @@ class TestDoisController(BaseTestCase):
         return json.dumps(
             [
                 {"status": DoiStatus.Draft,
-                 "release_date": '2020-10-20T14:04:12.560568-07:00',
-                 "update_date": '2020-10-20T14:04:12.560568-07:00',
+                 "date_added": '2020-10-20T14:04:12.560568-07:00',
+                 "date_updated": '2020-10-20T14:04:12.560568-07:00',
                  "submitter": "eng-submitter@jpl.nasa.gov",
                  "title": "InSight Cameras Bundle 1.1", "type": "Dataset",
                  "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
-                 # TODO: update once list action/DB schema is updated
-                 "lid": "urn:nasa:pds:insight_cameras", "vid": "1.1",
+                 "identifier": "urn:nasa:pds:insight_cameras::1.1",
                  "doi": '10.17189/28957',
                  "transaction_key": TestDoisController.test_data_dir,
                  "is_latest": 1}
