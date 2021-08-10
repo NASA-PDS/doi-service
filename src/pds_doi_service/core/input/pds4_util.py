@@ -265,13 +265,18 @@ class DOIPDS4LabelUtil:
 
             timestamp = datetime.now()
 
+            identifier = pds4_fields['lid']
+
+            if pds4_fields['vid']:
+                identifier += '::' + pds4_fields['vid']
+
             doi = Doi(status=DoiStatus.Unknown,
                       title=pds4_fields['title'],
                       description=pds4_fields['description'],
                       publication_date=self.get_publication_date(pds4_fields),
                       product_type=product_type,
                       product_type_specific=product_specific_type,
-                      related_identifier=pds4_fields['lid'] + '::' + pds4_fields['vid'],
+                      related_identifier=identifier,
                       site_url=site_url,
                       authors=self.get_author_names(authors_list),
                       editors=editors,
