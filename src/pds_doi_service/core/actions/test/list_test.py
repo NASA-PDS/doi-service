@@ -59,8 +59,7 @@ class ListActionTestCase(unittest.TestCase):
         self.assertEqual(list_result['status'], doi.status)
         self.assertEqual(list_result['title'], doi.title)
         self.assertEqual(list_result['subtype'], doi.product_type_specific)
-        self.assertEqual(list_result['lid'] + '::' + list_result['vid'],
-                         doi.related_identifier)
+        self.assertEqual(list_result['identifier'], doi.related_identifier)
 
         # Now move the draft to review
         with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as temp_file:
@@ -93,8 +92,7 @@ class ListActionTestCase(unittest.TestCase):
         self.assertEqual(list_result['status'], doi.status)
         self.assertEqual(list_result['title'], doi.title)
         self.assertEqual(list_result['subtype'], doi.product_type_specific)
-        self.assertEqual(list_result['lid'] + '::' + list_result['vid'],
-                         doi.related_identifier)
+        self.assertEqual(list_result['identifier'], doi.related_identifier)
 
         # Finally, query for draft status again, should get no results back
         list_kwargs = {

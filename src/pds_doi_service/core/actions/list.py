@@ -13,8 +13,9 @@ list.py
 Contains the definition for the List action of the Core PDS DOI Service.
 """
 
-from datetime import datetime
 import json
+
+from dateutil.parser import isoparse
 
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.db.doi_database import DOIDataBase
@@ -28,9 +29,10 @@ logger = get_logger(__name__)
 
 class DOICoreActionList(DOICoreAction):
     _name = 'list'
-    _description = 'extract doi descriptions with criteria'
+    _description = ('List DOI entries within the transaction database that match '
+                    'the provided search criteria')
     _order = 40
-    _run_arguments = ('format', 'doi', 'lid', 'lidvid', 'node', 'status',
+    _run_arguments = ('format', 'doi', 'ids', 'node', 'status',
                       'start_update', 'end_update', 'submitter')
 
     def __init__(self, db_name=None):
@@ -58,20 +60,17 @@ class DOICoreActionList(DOICoreAction):
 
         self.parse_criteria(**criteria)
 
-    def parse_criteria(self, format='JSON', doi=None, lid=None, lidvid=None,
-                       node=None, status=None, start_update=None,
-                       end_update=None, submitter=None):
+    def parse_criteria(self, format='JSON', doi=None, ids=None, node=None,
+                       status=None, start_update=None, end_update=None,
+                       submitter=None):
 
         self._format = format
 
         if doi:
             self._query_criterias['doi'] = doi.split(',')
 
-        if lid:
-            self._query_criterias['lid'] = lid.split(',')
-
-        if lidvid:
-            self._query_criterias['lidvid'] = lidvid.split(',')
+        if ids:
+            self._query_criterias['ids'] = ids.split(',')
 
         if submitter:
             self._query_criterias['submitter'] = submitter.split(',')
@@ -83,10 +82,10 @@ class DOICoreActionList(DOICoreAction):
             self._query_criterias['status'] = status.strip().split(',')
 
         if start_update:
-            self._query_criterias['start_update'] = datetime.fromisoformat(start_update)
+            self._query_criterias['start_update'] = isoparse(start_update)
 
         if end_update:
-            self._query_criterias['end_update'] = datetime.fromisoformat(end_update)
+            self._query_criterias['end_update'] = isoparse(end_update)
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -101,13 +100,13 @@ class DOICoreActionList(DOICoreAction):
 
         action_parser.add_argument(
             '-n', '--node', required=False, metavar='"img,eng"',
-            help='A list of node names comma separated to return the matching '
-                 'DOI. Authorized values are: ' + ','.join(node_values)
+            help='A list of comma-separated node names to filter the available '
+                 'DOI entries by. Valid values are: ' + ','.join(node_values)
         )
         action_parser.add_argument(
             '-status', '--status', required=False, metavar="draft,review",
-            help='A list of comma-separated submission status values to pass '
-                 'as input to the database query. Valid status values are: '
+            help='A list of comma-separated submission status values to filter '
+                 'the database query results by. Valid status values are: '
                  '{}'.format(', '.join(status_values))
         )
         action_parser.add_argument(
@@ -117,68 +116,62 @@ class DOICoreActionList(DOICoreAction):
         )
         action_parser.add_argument(
             '-doi', '--doi', required=False, metavar='10.17189/21734',
-            help='A list of comma-delimited DOIs to pass as input to the '
+            help='A list of comma-delimited DOI values to use as filters with the '
                  'database query.'
         )
         action_parser.add_argument(
-            '-lid', '--lid', required=False,
+            '-i', '--ids', required=False,
             metavar='urn:nasa:pds:lab_shocked_feldspars',
-            help='A list of comma-delimited LIDs to pass as input to the '
-                 'database query. Each LID may contain one or more wildcards '
-                 '(*) to pattern match against.'
-        )
-        action_parser.add_argument(
-            '-lidvid', '--lidvid', required=False,
-            metavar='urn:nasa:pds:lab_shocked_feldspars::1.0',
-            help='A list of comma-delimited LIDVIDs to pass as input to the '
-                 'database query. Each LIDVID may contain one or more wildcards '
+            help='A list of comma-delimited PDS identifiers to use as filters with '
+                 'the database query. Each ID may contain one or more wildcards '
                  '(*) to pattern match against.'
         )
         action_parser.add_argument(
             '-start', '--start-update', required=False,
             metavar='2020-01-01T19:02:15.000000',
-            help='The start time of the record update to pass as input to the '
-                 'database query.'
+            help='The start time of the record update to use as a filter with the '
+                 'database query. Should conform to a valid isoformat date string.'
         )
         action_parser.add_argument(
             '-end', '--end-update', required=False,
             metavar='2020-12-311T23:59:00.000000',
-            help='The end time for record update time to pass as input to the '
-                 'database query.'
+            help='The end time for record update time to use as a filter with the '
+                 'database query. Should conform to a valid isoformat date string.'
         )
         action_parser.add_argument(
             '-s', '--submitter', required=False, metavar='"my.email@node.gov"',
-            help='A list of email addresses comma separated to pass as input to '
-                 'the database query.'
+            help='A list of comma-separated email addresses to use as a filter '
+                 'with the database query. Only entries containing the one of '
+                 'the provided addresses as the submitter will be returned.'
         )
 
-    def transaction_for_lidvid(self, lidvid):
+    def transaction_for_identifier(self, identifier):
         """
-        Returns the latest transaction record for the provided LIDVID.
+        Returns the latest transaction record for the provided PDS identifier.
 
         Parameters
         ----------
-        lidvid : str
-            The LIDVID to search for.
+        identifier : str
+            The PDS identifier to search for.
 
         Returns
         -------
         record : dict
-            Latest Transaction Database record for the given LIDVID.
+            Latest transaction database record for the given identifier.
 
         Raises
         ------
         UnknownLIDVIDException
             If no entry can be found in the transaction database for the
-            provided LIDVID.
+            provided identifier.
 
         """
-        list_kwargs = {'lidvid': lidvid}
+        list_kwargs = {'ids': identifier}
         list_results = json.loads(self.run(**list_kwargs))
 
         if not list_results:
             raise UnknownLIDVIDException(
-                f'No record(s) could be found for LIDVID {lidvid}.'
+                f'No record(s) could be found for identifier {identifier}.'
             )
 
         # Extract the latest record from all those returned
@@ -203,7 +196,7 @@ class DOICoreActionList(DOICoreAction):
 
             for row in rows:
                 # Convert the datetime objects to iso8601 strings
-                for time_col in ('release_date', 'update_date'):
+                for time_col in ('date_added', 'date_updated'):
                     row[columns.index(time_col)] = row[columns.index(time_col)].isoformat()
 
                 result_json.append(dict(zip(columns, row)))
