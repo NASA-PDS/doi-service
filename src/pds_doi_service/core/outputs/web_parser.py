@@ -29,14 +29,17 @@ class DOIWebParser:
     """The mandatory Doi field names parsed from labels."""
 
     @staticmethod
-    def _get_lidvid_from_site_url(site_url):
+    def _get_identifier_from_site_url(site_url):
         """
-        For some records, the lidvid can be parsed from site_url as a last resort.
+        For some records, the PDS identifier can be parsed from site_url as a
+        last resort.
 
         Ex:
-            https://pds.jpl.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0
+        PDS4: https://...?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0
+        PDS3: https://...?dsid=LRO-L-MRFLRO-2%2F3%2F5-BISTATIC-V1.0
 
         """
+        # TODO: rewrite to utilize urlparse and support PDS3 labels
         site_tokens = site_url.split("identifier=")
 
         identifier_tokens = site_tokens[1].split(";")
@@ -77,17 +80,18 @@ class DOIWebParser:
         )
 
     @staticmethod
-    def get_record_for_lidvid(label_file, lidvid):
+    def get_record_for_identifier(label_file, identifier):
         """
-        Returns a new label from the provided one containing only the DOI entry
-        corresponding to the specified lidvid.
+        Returns a new label from the provided containing only the DOI entry
+        corresponding to the specified PDS identifier.
 
         Parameters
         ----------
         label_file : str
             Path to the label file to pull a record from.
-        lidvid : str
-            The LIDVID to search for within the provided label file.
+        identifier : str
+            The PDS identifier (LIDVID or otherwise) to search for within the
+            provided label file.
 
         Returns
         -------
@@ -100,5 +104,5 @@ class DOIWebParser:
         """
         raise NotImplementedError(
             f'Subclasses of {DOIWebParser.__name__} must provide an '
-            f'implementation for get_record_for_lidvid()'
+            f'implementation for get_record_for_identifier()'
         )
