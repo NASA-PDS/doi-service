@@ -127,7 +127,7 @@ def _records_from_dois(dois, node=None, submitter=None, doi_label=None):
         records.append(
             DoiRecord(
                 doi=doi.doi or list_result['doi'],
-                lidvid=doi.related_identifier, title=doi.title,
+                identifier=doi.related_identifier, title=doi.title,
                 node=node, submitter=submitter, status=doi.status,
                 creation_date=list_result['release_date'],
                 update_date=list_result['update_date'],
@@ -139,7 +139,7 @@ def _records_from_dois(dois, node=None, submitter=None, doi_label=None):
     return records
 
 
-def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
+def get_dois(doi=None, submitter=None, node=None, status=None, ids=None,
              start_date=None, end_date=None):
     """
     List the DOI requests within the transaction database which match
@@ -159,9 +159,9 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
         List of DOI workflow status values to filter results by.
         Each status value should correspond to one of the enumeration values in
         DoiStatus.
-    lid : list of str, optional
-        List of LIDs to filter DOIs by. An LID may include the VID appended to
-        the end.
+    ids : list of str, optional
+        List of PDS identifiers to filter DOIs by. Each identifier may
+        contain one or more Unix-style wildcards (*) to pattern match against.
     start_date : str
         A start date to filter resulting DOI records by. Only records with an
         update time after this date will be returned. Value must be of the form
@@ -194,20 +194,13 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
     if status:
         status = ','.join(status)
 
-    lidvid = None
-
-    if lid:
-        # Separate the LID from LIDVID
-        lidvid = list(filter(lambda s: '::' in s, lid))
-        lid = list(set(lid) - set(lidvid))
-
-        lidvid = ','.join(lidvid)
-        lid = ','.join(lid)
+    if ids:
+        ids = ','.join(ids)
 
     list_kwargs = {
         'doi': doi,
-        'lid': lid,
-        'lidvid': lidvid,
+        # TODO: update once list action is updated
+        'lidvid': ids,
         'submitter': submitter,
         'node': node,
         'status': status,
@@ -230,6 +223,7 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
     records = []
 
     for result in json.loads(results):
+        # TODO: update once list action is updated
         lidvid = result['lid']
 
         # Check if we got back a vid to append to the lid
@@ -238,7 +232,7 @@ def get_dois(doi=None, submitter=None, node=None, status=None, lid=None,
 
         records.append(
             DoiSummary(
-                doi=result['doi'], lidvid=lidvid, title=result['title'],
+                doi=result['doi'], identifier=lidvid, title=result['title'],
                 node=result['node_id'], submitter=result['submitter'],
                 status=result['status'], update_date=result['update_date']
             )
@@ -381,14 +375,14 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     return records, 200
 
 
-def post_submit_doi(lidvid, force=None):
+def post_submit_doi(identifier, force=None):
     """
     Move a DOI record from draft/reserve status to "review".
 
     Parameters
     ----------
-    lidvid : str
-        The LIDVID associated with the record to submit for review.
+    identifier : str
+        The PDS identifier associated with the record to submit for review.
     force : bool, optional
         If true, forces a submit request to completion, ignoring any warnings
         encountered.
@@ -399,23 +393,23 @@ def post_submit_doi(lidvid, force=None):
         Record of the DOI submit action.
 
     """
-    logger.info('POST /dois/%s/submit request received', lidvid)
+    logger.info('POST /dois/submit request received for identifier %s', identifier)
 
     # A submit action is the same as invoking the release endpoint with
     # --no-review set to False
-    kwargs = {'lidvid': lidvid, 'force': force, 'no_review': False}
+    kwargs = {'identifier': identifier, 'force': force, 'no_review': False}
 
     return post_release_doi(**kwargs)
 
 
-def post_release_doi(lidvid, force=False, **kwargs):
+def post_release_doi(identifier, force=False, **kwargs):
     """
     Move a DOI record from draft/reserve status to "release".
 
     Parameters
     ----------
-    lidvid : str
-        The LIDVID associated with the record to release.
+    identifier : str
+        The PDS identifier associated with the record to release.
     force : bool, optional
         If true, forces a release request to completion, ignoring any warnings
         encountered.
@@ -431,8 +425,9 @@ def post_release_doi(lidvid, force=False, **kwargs):
     try:
         list_action = DOICoreActionList(db_name=_get_db_name())
 
-        # Get the latest transaction record for this LIDVID
-        list_record = list_action.transaction_for_lidvid(lidvid)
+        # Get the latest transaction record for this identifier
+        # TODO update name of list function
+        list_record = list_action.transaction_for_lidvid(identifier)
 
         # Make sure we can locate the output label associated with this
         # transaction
@@ -441,18 +436,18 @@ def post_release_doi(lidvid, force=False, **kwargs):
 
         if not label_files or not exists(label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
-                'Could not find a DOI label associated with LIDVID {}. '
+                'Could not find a DOI label associated with identifier {}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
-                .format(lidvid)
+                .format(identifier)
             )
 
         label_file = label_files[0]
 
         # An output label may contain entries other than the requested
-        # LIDVID, extract only the appropriate record into its own temporary
+        # identifier, extract only the appropriate record into its own temporary
         # file and feed it to the release action
-        record, content_type = DOIOstiWebParser.get_record_for_lidvid(label_file, lidvid)
+        record, content_type = DOIOstiWebParser.get_record_for_lidvid(label_file, identifier)
 
         with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
             logger.debug('Writing temporary label to %s', temp_file.name)
@@ -487,7 +482,7 @@ def post_release_doi(lidvid, force=False, **kwargs):
         # Some warning or error prevented release of the DOI
         return format_exceptions(err), 400
     except UnknownLIDVIDException as err:
-        # Could not find an entry for the requested LIDVID
+        # Could not find an entry for the requested ID
         return format_exceptions(err), 404
     except Exception as err:
         # Treat any unexpected Exception as an "Internal Error" and report back
@@ -504,28 +499,29 @@ def post_release_doi(lidvid, force=False, **kwargs):
     return records, 200
 
 
-def get_doi_from_id(lidvid):  # noqa: E501
+def get_doi_from_id(identifier):  # noqa: E501
     """
     Get the status of a DOI from the transaction database.
 
     Parameters
     ----------
-    lidvid : str
-        The LIDVID associated with the record to status.
+    identifier : str
+        The PDS identifier associated with the record to status.
 
     Returns
     -------
     record : DoiRecord
-        The record for the requested LIDVID.
+        The record for the requested identifier.
 
     """
-    logger.info('GET /dois/%s request received', lidvid)
+    logger.info('GET /doi request received for identifier %s', identifier)
 
     list_action = DOICoreActionList(db_name=_get_db_name())
 
     # Check for full lidvid vs. just a lid and map the list action arg accordingly
+    # TODO: fix after database schema change
     list_kwargs = {
-        'lidvid' if '::' in lidvid else 'lid': lidvid
+        'lidvid' if '::' in identifier else 'lid': identifier
     }
 
     try:
@@ -533,7 +529,7 @@ def get_doi_from_id(lidvid):  # noqa: E501
 
         if not list_results:
             raise UnknownLIDVIDException(
-                'No record(s) could be found for LIDVID {}'.format(lidvid)
+                'No record(s) could be found for identifier {}'.format(identifier)
             )
 
         # Extract the latest record from all those returned
@@ -547,17 +543,17 @@ def get_doi_from_id(lidvid):  # noqa: E501
 
         if not label_files or not exists(label_files[0]):
             raise NoTransactionHistoryForLIDVIDException(
-                'Could not find a DOI label associated with LIDVID {}. '
+                'Could not find a DOI label associated with identifier {}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
-                .format(lidvid)
+                .format(identifier)
             )
 
         label_file = label_files[0]
 
-        # Get only the record corresponding to the requested LIDVID
-        (label_for_lidvid,
-         content_type) = DOIOstiWebParser.get_record_for_lidvid(label_file, lidvid)
+        # Get only the record corresponding to the requested identifier
+        (label_for_id,
+         content_type) = DOIOstiWebParser.get_record_for_lidvid(label_file, identifier)
     except UnknownLIDVIDException as err:
         # Return "not found" code
         return format_exceptions(err), 404
@@ -566,18 +562,18 @@ def get_doi_from_id(lidvid):  # noqa: E501
         return format_exceptions(err), 500
 
     # Parse the label associated with the lidvid so we can return a full DoiRecord
-    dois, _ = DOIOstiWebParser.parse_dois_from_label(label_for_lidvid, content_type)
+    dois, _ = DOIOstiWebParser.parse_dois_from_label(label_for_id, content_type)
 
     # Create a return label in XML, since this is the format expected by
     # consumers of the response (such as the UI)
-    xml_label_for_lidvid = DOIOstiRecord().create_doi_record(dois[0])
+    xml_label_for_id = DOIOstiRecord().create_doi_record(dois[0])
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        doi_label=xml_label_for_lidvid
+        doi_label=xml_label_for_id
     )
 
-    # Should only ever be one record since we filtered by lidvid
+    # Should only ever be one record since we filtered by a single id
     return records[0], 200
 
 
@@ -627,7 +623,8 @@ def get_check_dois(submitter, email=False, attachment=False):
 
     records = [
         DoiRecord(
-            doi=pending_result['doi'], lidvid=pending_result['lidvid'],
+            # TODO: update once db schema is updated
+            doi=pending_result['doi'], identifier=pending_result['lidvid'],
             title=pending_result['title'], node=pending_result['node_id'],
             submitter=submitter, status=pending_result['status'],
             creation_date=pending_result['release_date'],
@@ -640,7 +637,7 @@ def get_check_dois(submitter, email=False, attachment=False):
     return records, 200
 
 
-def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
+def put_doi_from_id(identifier, submitter=None, node=None, url=None):  # noqa: E501
     """
     Update the record associated with an existing DOI.
 
@@ -650,8 +647,8 @@ def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
 
     Parameters
     ----------
-    lidvid : str
-        The LIDVID associated with the record to update.
+    identifier : str
+        The PDS identifier associated with the record to update.
     submitter : str, optional
         Email address of the DOI update requester.
     node : str, optional
@@ -669,6 +666,6 @@ def put_doi_from_id(lidvid, submitter=None, node=None, url=None):  # noqa: E501
 
     """
     return format_exceptions(
-        NotImplementedError('Please use the POST /dois/{lidvid} endpoint for record '
-                            'update')
+        NotImplementedError('Please use the POST /doi endpoint for record '
+                            'updates')
     ), 501

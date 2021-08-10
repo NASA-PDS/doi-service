@@ -73,17 +73,18 @@ def _check_referrer():
     logger = logging.getLogger(__name__)
     config = DOIConfigUtil().get_config()
 
-    valid_referrers = config.get('OTHER', 'api_valid_referrers')
-    valid_referrers = list(map(str.strip, valid_referrers.split(',')))
-    logger.debug("Valid referrers: %s", valid_referrers)
+    referrer = connexion.request.referrer
+    logger.debug("Referrer: %s", referrer)
+
+    valid_referrers = config.get('OTHER', 'api_valid_referrers', fallback=None)
 
     # if no valid referrers are configured, just return None to allow
     # request to go forward
     if not valid_referrers:
         return None
 
-    referrer = connexion.request.referrer
-    logger.debug("Referrer: %s", referrer)
+    valid_referrers = list(map(str.strip, valid_referrers.split(',')))
+    logger.debug("Valid referrers: %s", valid_referrers)
 
     if not referrer:
         raise InvalidReferrer('No referrer specified from request')
