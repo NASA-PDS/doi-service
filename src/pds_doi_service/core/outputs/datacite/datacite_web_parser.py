@@ -21,7 +21,7 @@ from dateutil.parser import isoparse
 
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import (InputFormatException,
-                                                   UnknownLIDVIDException)
+                                                   UnknownIdentifierException)
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
@@ -328,7 +328,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         if record_id == identifier:
             return json.dumps(record, indent=4), CONTENT_TYPE_JSON
         else:
-            raise UnknownLIDVIDException(
+            raise UnknownIdentifierException(
                 f'Could not find entry for identifier "{identifier}" in '
                 f'DataCite label file {label_file}.'
             )

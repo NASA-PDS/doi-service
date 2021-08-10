@@ -20,7 +20,7 @@ from dateutil.parser import isoparse
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.input.exceptions import UnknownLIDVIDException
+from pds_doi_service.core.input.exceptions import UnknownIdentifierException
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -170,7 +170,7 @@ class DOICoreActionList(DOICoreAction):
         list_results = json.loads(self.run(**list_kwargs))
 
         if not list_results:
-            raise UnknownLIDVIDException(
+            raise UnknownIdentifierException(
                 f'No record(s) could be found for identifier {identifier}.'
             )
 

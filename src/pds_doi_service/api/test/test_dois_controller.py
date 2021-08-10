@@ -785,7 +785,7 @@ class TestDoisController(BaseTestCase):
         # error message
         errors = error_response.json['errors']
 
-        self.assertEqual(errors[0]['name'], 'UnknownLIDVIDException')
+        self.assertEqual(errors[0]['name'], 'UnknownIdentifierException')
         self.assertIn(
             'No record(s) could be found for identifier '
             'urn:nasa:pds:insight_cameras::1.1',
@@ -818,7 +818,7 @@ class TestDoisController(BaseTestCase):
         # error message
         errors = error_response.json['errors']
 
-        self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForLIDVIDException')
+        self.assertEqual(errors[0]['name'], 'NoTransactionHistoryForIdentifierException')
         self.assertIn(
             'Could not find a DOI label associated with identifier '
             'urn:nasa:pds:insight_cameras::1.1',

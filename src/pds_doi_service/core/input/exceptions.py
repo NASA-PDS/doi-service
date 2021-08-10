@@ -28,22 +28,22 @@ class UnknownNodeException(Exception):
     pass
 
 
-class UnknownLIDVIDException(Exception):
-    """Raised when no corresponding DOI entry can be found for a given LIDVID."""
+class UnknownIdentifierException(Exception):
+    """Raised when no corresponding DOI entry can be found for a given PDS ID."""
     pass
 
 
-class InvalidLIDVIDException(Exception):
-    """Raised for DOI's with related identifiers that do not conform to LIDVID format."""
+class InvalidIdentifierException(Exception):
+    """Raised for DOI's with related identifiers that do not conform to the expected format."""
 
 
-class NoTransactionHistoryForLIDVIDException(Exception):
-    """Raised when no transaction database entry can be found for a given LIDVID."""
+class NoTransactionHistoryForIdentifierException(Exception):
+    """Raised when no transaction database entry can be found for a given PDS ID."""
     pass
 
 
 class DuplicatedTitleDOIException(Exception):
-    """Raised when a DOI title has already been used with another LIDVID."""
+    """Raised when a DOI title has already been used with another ID."""
     pass
 
 
@@ -52,7 +52,7 @@ class InvalidRecordException(Exception):
 
 
 class IllegalDOIActionException(Exception):
-    """Raised when attempting to create or modify a DOI for an existing LIDVID."""
+    """Raised when attempting to create or modify a DOI for an existing ID."""
     pass
 
 

@@ -21,7 +21,7 @@ from datetime import datetime
 from lxml import etree
 
 from pds_doi_service.core.entities.doi import Doi, ProductType, DoiStatus
-from pds_doi_service.core.input.exceptions import InputFormatException, UnknownLIDVIDException
+from pds_doi_service.core.input.exceptions import InputFormatException, UnknownIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
@@ -407,7 +407,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
                 result = record
                 break
         else:
-            raise UnknownLIDVIDException(
+            raise UnknownIdentifierException(
                 f'Could not find entry for identifier "{identifier}" in OSTI '
                 f'label file {label_file}.'
             )
@@ -647,7 +647,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
                 result = record
                 break
         else:
-            raise UnknownLIDVIDException(
+            raise UnknownIdentifierException(
                 f'Could not find entry for identifier "{identifier}" in OSTI '
                 f'label file {label_file}.'
             )

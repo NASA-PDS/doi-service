@@ -23,7 +23,7 @@ from pds_doi_service.core.entities.doi import Doi, DoiStatus
 from pds_doi_service.core.input.exceptions import (DuplicatedTitleDOIException,
                                                    IllegalDOIActionException,
                                                    InvalidRecordException,
-                                                   InvalidLIDVIDException,
+                                                   InvalidIdentifierException,
                                                    SiteURLNotExistException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException)
@@ -300,12 +300,12 @@ class DOIValidator:
         try:
             # Make sure we got a URN
             if lid_tokens[0] != 'urn':
-                raise InvalidLIDVIDException('LIDVID must start with "urn"')
+                raise InvalidIdentifierException('LIDVID must start with "urn"')
 
             # Make sure we got the minimum number of fields, and that
             # the number of fields is consistent with the product type
             if not MIN_LID_FIELDS <= len(lid_tokens) <= MAX_LID_FIELDS:
-                raise InvalidLIDVIDException(
+                raise InvalidIdentifierException(
                     f'LIDVID must contain only between {MIN_LID_FIELDS} '
                     f'and {MAX_LID_FIELDS} colon-delimited fields, '
                     f'got {len(lid_tokens)} field(s)'
@@ -316,7 +316,7 @@ class DOIValidator:
 
             for index, token in enumerate(lid_tokens):
                 if not token_regex.fullmatch(token):
-                    raise InvalidLIDVIDException(
+                    raise InvalidIdentifierException(
                         f'LIDVID field {index + 1} ({token}) is invalid. '
                         f'Fields must begin with a letter or digit, and only '
                         f'consist of letters, digits, hyphens (-), underscores (_) '
@@ -327,13 +327,13 @@ class DOIValidator:
             version_regex = re.compile(r'^\d+\.\d+$')
 
             if vid and not version_regex.fullmatch(vid):
-                raise InvalidLIDVIDException(
+                raise InvalidIdentifierException(
                     f'Parsed VID ({vid}) does not conform to a valid version identifier. '
                     'Version identifier must consist only of a major and minor version '
                     'joined with a period (ex: 1.0)'
                 )
-        except InvalidLIDVIDException as err:
-            raise InvalidLIDVIDException(
+        except InvalidIdentifierException as err:
+            raise InvalidIdentifierException(
                 f'The record identifier {doi.related_identifier} (DOI {doi.doi}) '
                 f'does not conform to a valid LIDVID format.\n'
                 f'Reason: {str(err)}\n'

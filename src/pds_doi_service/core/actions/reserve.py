@@ -18,7 +18,7 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    DuplicatedTitleDOIException,
                                                    InputFormatException,
-                                                   InvalidLIDVIDException,
+                                                   InvalidIdentifierException,
                                                    SiteURLNotExistException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    UnexpectedDOIActionException,
@@ -161,7 +161,7 @@ class DOICoreActionReserve(DOICoreAction):
             # Collect all warnings and exceptions so they can be combined into
             # a single WarningDOIException
             except (DuplicatedTitleDOIException,
-                    InvalidLIDVIDException,
+                    InvalidIdentifierException,
                     UnexpectedDOIActionException,
                     TitleDoesNotMatchProductTypeException,
                     SiteURLNotExistException) as err:
