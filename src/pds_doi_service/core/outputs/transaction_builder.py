@@ -56,7 +56,7 @@ class TransactionBuilder:
                              f'{",".join(VALID_CONTENT_TYPES)}')
 
         # Get the latest available entry in the DB for this lidvid, if it exists
-        query_criteria = {'lidvid': [doi.related_identifier]}
+        query_criteria = {'ids': [doi.related_identifier]}
         columns, rows = self.m_doi_database.select_latest_rows(query_criteria)
 
         # Get the latest transaction record for this LIDVID so we can carry
@@ -65,7 +65,7 @@ class TransactionBuilder:
             latest_row = dict(zip(columns, rows[0]))
 
             # Carry original release date forward
-            doi.date_record_added = latest_row['release_date']
+            doi.date_record_added = latest_row['date_added']
 
             # We might have a DOI already in the database from a previous reserve
             if not doi.doi and latest_row['doi']:

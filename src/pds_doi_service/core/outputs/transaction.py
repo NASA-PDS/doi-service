@@ -44,22 +44,6 @@ class Transaction:
         self._transaction_disk = TransactionOnDisk()
         self._transaction_db = transaction_db
 
-    @staticmethod
-    def get_lidvid(identifier: str):
-
-        if '::' in identifier:
-            lidvid_split = identifier.split('::')
-            lid = lidvid_split[0]
-            # sometimes, at least once, the vid is duplicated
-            # in the identifier, ...::1.0::1.0,
-            # this implementation only get the first one
-            vid = lidvid_split[1]
-        else:
-            lid = identifier
-            vid = None
-
-        return lid, vid
-
     @property
     def output_content(self):
         return self._output_content
@@ -71,17 +55,14 @@ class Transaction:
             output_content_type=self._output_content_type
         )
 
-        lid, vid = Transaction.get_lidvid(self._doi.related_identifier)
-
         doi_fields = self._doi.__dict__
 
         self._transaction_db.write_doi_info_to_database(
-            lid=lid,
-            vid=vid,
+            identifier=doi_fields['related_identifier'],
             transaction_key=transaction_io_dir,
             doi=doi_fields['doi'],
-            release_date=doi_fields.get('date_record_added', self._transaction_time),
-            transaction_date=doi_fields.get('date_record_updated', self._transaction_time),
+            date_added=doi_fields.get('date_record_added', self._transaction_time),
+            date_updated=doi_fields.get('date_record_updated', self._transaction_time),
             status=doi_fields['status'],
             title=doi_fields['title'],
             product_type=doi_fields['product_type'],
