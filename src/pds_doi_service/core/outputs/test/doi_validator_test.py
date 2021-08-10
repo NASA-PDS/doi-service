@@ -32,6 +32,7 @@ class DoiValidatorTest(unittest.TestCase):
 
         self.lid = 'urn:nasa:pds:lab_shocked_feldspars'
         self.vid = '1.0'
+        self.identifier = self.lid + '::' + self.vid
         self.transaction_key = './transaction_history/img/2020-06-15T18:42:45.653317'
         self.release_date = datetime.datetime.now()
         self.transaction_date = datetime.datetime.now()
@@ -48,7 +49,7 @@ class DoiValidatorTest(unittest.TestCase):
         # Write a record into database
         # All fields are valid.
         self._database_obj.write_doi_info_to_database(
-            self.lid, self.vid, self.transaction_key, self.doi,
+            self.identifier, self.transaction_key, self.doi,
             self.release_date, self.transaction_date,
             self.status, self.title, self.product_type,
             self.product_type_specific, self.submitter, self.discipline_node
