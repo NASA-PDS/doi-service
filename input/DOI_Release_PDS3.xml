@@ -1,0 +1,58 @@
+<records>
+ <record status="Registered">
+    <id>1520653</id>
+    <title>LRO MOON MINI-RF 2/3/5 BISTATIC RADAR V3.0</title>
+     <doi>10.17189/1520653</doi>
+    <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+    <accession_number>LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0</accession_number>
+    <publisher>NASA Planetary Data System</publisher>
+    <availability>NASA Planetary Data System</availability>
+    <publication_date>2019-12-13</publication_date>
+    <country>USA</country>
+    <description>This data set contains radar data of the lunar surface from bistatic
+                measurements utilizing the Arecibo Observatory transmitter and LRO
+            Mini-RF receiver.</description>
+    <site_url>https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid=LRO-L-MRFLRO-2%2F3%2F5-BISTATIC-V3.0</site_url>
+    <product_type>Dataset</product_type>
+    <product_type_specific>PDS3 Refereed Data Set</product_type_specific>
+    <date_record_added>2021-01-05</date_record_added>
+    <date_record_updated>2021-01-05</date_record_updated>
+    <keywords>LUNAR RECONNAISSANCE ORBITER; MOON; RADAR MAPPER; LRO; SATELLITE; MRFLRO; MINI-RF LRO</keywords>
+    <authors>
+      <author>
+        <full_name>ANDREW SANTO</full_name>
+        <affiliations/>
+      </author>
+      <author>
+        <full_name>G. WESLEY PATTERSON</full_name>
+        <affiliations/>
+      </author>
+    </authors>
+    <contributors>
+      <contributor>
+        <full_name>ANGELA STICKLE</full_name>
+        <contributor_type>Other</contributor_type>
+        <affiliations/>
+      </contributor>
+      <contributor>
+        <full_name>RAY ESPIRITU</full_name>
+        <contributor_type>Other</contributor_type>
+        <affiliations/>
+      </contributor>
+      <contributor>
+        <full_name>DAVID LAVALLEE</full_name>
+        <contributor_type>Other</contributor_type>
+        <affiliations/>
+      </contributor>
+      <contributor>
+        <full_name>Geosciences Node</full_name>
+        <contributor_type>DataCurator</contributor_type>
+        <affiliations/>
+      </contributor>
+    </contributors>
+     <contact_name>PDS Operator</contact_name>
+    <contact_org>PDS</contact_org>
+    <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+    <contact_phone>818.393.7165</contact_phone>
+  </record>
+</records>
