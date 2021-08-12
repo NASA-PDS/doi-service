@@ -26,9 +26,8 @@ extras_require     = {}
 test_suite         = 'pds_doi_service.test.suite'
 entry_points       = {
     'console_scripts': [
-        'pds-doi-start-dev=pds_doi_core.web_api.service:main',
-        'pds-doi-cmd=pds.doi_service.core.cmd.pds_doi_cmd:main',
-        'pds-doi-api=pds.doi_service.api.__main__:main'
+        'pds-doi-cmd=pds_doi_service.core.cmd.pds_doi_cmd:main',
+        'pds-doi-api=pds_doi_service.api.__main__:main'
     ]
 }
 package_data = {
