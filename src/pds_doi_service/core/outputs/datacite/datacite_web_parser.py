@@ -21,7 +21,7 @@ from dateutil.parser import isoparse
 
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import (InputFormatException,
-                                                   UnknownLIDVIDException)
+                                                   UnknownIdentifierException)
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
@@ -158,15 +158,22 @@ class DOIDataCiteWebParser(DOIWebParser):
 
     @staticmethod
     def _parse_related_identifier(record):
+        identifier = None
+
         try:
-            return record['relatedIdentifiers'][0]['relatedIdentifier']
+            identifier = record['relatedIdentifiers'][0]['relatedIdentifier']
         except (IndexError, KeyError) as err:
             if 'url' in record:
                 logger.info('Parsing related identifier from URL')
-                return DOIWebParser._get_lidvid_from_site_url(record['url'])
+                identifier = DOIWebParser._get_identifier_from_site_url(record['url'])
             else:
                 logger.warning('Could not parse a related identifier from record, '
                                'reason: %s %s', err.__class__, err)
+
+        if identifier:
+            identifier = identifier.strip()
+
+        return identifier
 
     @staticmethod
     def _parse_title(record):
@@ -283,17 +290,17 @@ class DOIDataCiteWebParser(DOIWebParser):
         return dois, errors
 
     @staticmethod
-    def get_record_for_lidvid(label_file, lidvid):
+    def get_record_for_identifier(label_file, identifier):
         """
         Returns a new label from the provided one containing only the DOI entry
-        corresponding to the specified lidvid.
+        corresponding to the specified PDS identifier.
 
         Parameters
         ----------
         label_file : str
             Path to the label file to pull a record from.
-        lidvid : str
-            The LIDVID to search for within the provided label file.
+        identifier : str
+            The PDS identifier to search for within the provided label file.
 
         Returns
         -------
@@ -316,10 +323,12 @@ class DOIDataCiteWebParser(DOIWebParser):
             # Strip off the stuff we don't care about
             record = record['data']['attributes']
 
-        if DOIDataCiteWebParser._parse_related_identifier(record) == lidvid:
+        record_id = DOIDataCiteWebParser._parse_related_identifier(record)
+
+        if record_id == identifier:
             return json.dumps(record, indent=4), CONTENT_TYPE_JSON
         else:
-            raise UnknownLIDVIDException(
-                f'Could not find entry for lidvid "{lidvid}" in DataCite label '
-                f'file {label_file}.'
+            raise UnknownIdentifierException(
+                f'Could not find entry for identifier "{identifier}" in '
+                f'DataCite label file {label_file}.'
             )

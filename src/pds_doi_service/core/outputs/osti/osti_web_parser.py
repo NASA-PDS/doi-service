@@ -21,7 +21,7 @@ from datetime import datetime
 from lxml import etree
 
 from pds_doi_service.core.entities.doi import Doi, ProductType, DoiStatus
-from pds_doi_service.core.input.exceptions import InputFormatException, UnknownLIDVIDException
+from pds_doi_service.core.input.exceptions import InputFormatException, UnknownIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
@@ -78,17 +78,17 @@ class DOIOstiWebParser(DOIWebParser):
         return dois, errors
 
     @staticmethod
-    def get_record_for_lidvid(label_file, lidvid):
+    def get_record_for_identifier(label_file, identifier):
         """
         Returns a new label from the provided one containing only the DOI entry
-        corresponding to the specified lidvid.
+        corresponding to the specified PDS identifier.
 
         Parameters
         ----------
         label_file : str
             Path to the label file to pull a record from.
-        lidvid : str
-            The LIDVID to search for within the provided label file.
+        identifier : str
+            The PDS identifier to search for within the provided label file.
 
         Returns
         -------
@@ -102,9 +102,9 @@ class DOIOstiWebParser(DOIWebParser):
         content_type = os.path.splitext(label_file)[-1][1:]
 
         if content_type == CONTENT_TYPE_XML:
-            record = DOIOstiXmlWebParser.get_record_for_lidvid(label_file, lidvid)
+            record = DOIOstiXmlWebParser.get_record_for_identifier(label_file, identifier)
         elif content_type == CONTENT_TYPE_JSON:
-            record = DOIOstiJsonWebParser.get_record_for_lidvid(label_file, lidvid)
+            record = DOIOstiJsonWebParser.get_record_for_identifier(label_file, identifier)
         else:
             raise InputFormatException(
                 'Unsupported file type provided. File must have one of the '
@@ -205,46 +205,42 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         return o_editors_list, o_node_name
 
     @staticmethod
-    def _get_lidvid(record):
+    def _get_identifier(record):
         """
-        Depending on versions, a lidvid can be stored in different locations.
-        This function searches each location, and returns the first encountered
-        LIDVID.
+        Depending on versions, a PDS identifier (lidvid or otherwise) can be
+        stored in different locations. This function searches each location,
+        and returns the first valid result.
         """
-        lidvid = None
+        identifier = None
 
         if record.xpath("accession_number"):
-            lidvid = record.xpath("accession_number")[0].text
+            identifier = record.xpath("accession_number")[0].text
         elif record.xpath("related_identifiers/related_identifier[./identifier_type='URL']"):
-            lidvid = record.xpath(
+            identifier = record.xpath(
                 "related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text
         elif record.xpath("related_identifiers/related_identifier[./identifier_type='URN']"):
-            lidvid = record.xpath(
+            identifier = record.xpath(
                 "related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text
         elif record.xpath("report_numbers"):
-            lidvid = record.xpath("report_numbers")[0].text
+            identifier = record.xpath("report_numbers")[0].text
         elif record.xpath("site_url"):
-            # For some record, the lidvid can be parsed from 'site_url' field as last resort.
-            lidvid = DOIWebParser._get_lidvid_from_site_url(record.xpath("site_url")[0].text)
+            # For some records, the identifier can be parsed from the 'site_url'
+            # field as last resort.
+            identifier = DOIWebParser._get_identifier_from_site_url(record.xpath("site_url")[0].text)
         else:
-            # For now, do not consider it an error if cannot get the lidvid.
+            # For now, do not consider it an error if cannot get an identifier.
             logger.warning(
-                "Could not parse a lidvid from the provided XML record. "
+                "Could not parse a PDS identifier from the provided XML record. "
                 "Expecting one of ['accession_number','identifier_type',"
                 "'report_numbers','site_url'] tags"
             )
 
-        if lidvid:
-            # Some related_identifier fields have been observed with leading and
+        if identifier:
+            # Some identifier fields have been observed with leading and
             # trailing whitespace, so remove it here
-            lidvid = lidvid.strip()
+            identifier = identifier.strip()
 
-            # Some PDS3 identifiers have been observed to contain forward
-            # slashes, which causes problems with the API endpoints, so
-            # replace them with hyphens
-            lidvid = lidvid.replace('/', '-')
-
-        return lidvid
+        return identifier
 
     @staticmethod
     def _parse_optional_fields(io_doi, record_element):
@@ -348,7 +344,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
 
                 errors[index] = cur_errors
 
-            lidvid = DOIOstiXmlWebParser._get_lidvid(record_element)
+            identifier = DOIOstiXmlWebParser._get_identifier(record_element)
 
             timestamp = datetime.now()
 
@@ -361,7 +357,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
                 publication_date=datetime.strptime(publication_date, '%Y-%m-%d'),
                 product_type=ProductType(product_type),
                 product_type_specific=product_type_specific,
-                related_identifier=lidvid,
+                related_identifier=identifier,
                 status=DoiStatus(status.lower()),
                 date_record_added=timestamp,
                 date_record_updated=timestamp
@@ -376,17 +372,18 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         return dois, errors
 
     @staticmethod
-    def get_record_for_lidvid(label_file, lidvid):
+    def get_record_for_identifier(label_file, identifier):
         """
-        Returns the record entry corresponding to the provided LIDVID from the
-        OSTI XML label file.
+        Returns the record entry corresponding to the provided PDS identifier
+        from the OSTI XML label file.
 
         Parameters
         ----------
         label_file : str
             Path to the OSTI XML label file to search.
-        lidvid : str
-            The LIDVID of the record to return from the OSTI label.
+        identifier : str
+            The PDS identifier (LIDVID or otherwise) to search for within the
+            provided label file.
 
         Returns
         -------
@@ -406,13 +403,13 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         records = root.xpath('record')
 
         for record in records:
-            if DOIOstiXmlWebParser._get_lidvid(record) == lidvid:
+            if DOIOstiXmlWebParser._get_identifier(record) == identifier:
                 result = record
                 break
         else:
-            raise UnknownLIDVIDException(
-                f'Could not find entry for lidvid "{lidvid}" in OSTI label file '
-                f'{label_file}.'
+            raise UnknownIdentifierException(
+                f'Could not find entry for identifier "{identifier}" in OSTI '
+                f'label file {label_file}.'
             )
 
         new_root = etree.Element('records')
@@ -511,39 +508,34 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
         return io_doi
 
     @staticmethod
-    def _get_lidvid(record):
-        lidvid = None
+    def _get_identifier(record):
+        identifier = None
 
         if "accession_number" in record:
-            lidvid = record["accession_number"]
+            identifier = record["accession_number"]
         elif "related_identifiers" in record:
             for related_identifier in record["related_identifiers"]:
                 if related_identifier.get("identifier_type") == "URL":
-                    lidvid = related_identifier["identifier_value"]
+                    identifier = related_identifier["identifier_value"]
                     break
         elif "report_numbers" in record:
-            lidvid = record["report_numbers"]
+            identifier = record["report_numbers"]
         elif "site_url" in record:
-            lidvid = DOIWebParser._get_lidvid_from_site_url(record["site_url"])
+            identifier = DOIWebParser._get_identifier_from_site_url(record["site_url"])
         else:
-            # For now, do not consider it an error if we cannot get a lidvid.
+            # For now, do not consider it an error if we cannot get an identifier.
             logger.warning(
-                "Could not parse a lidvid from the provided JSON record. "
+                "Could not parse a PDS identifier from the provided JSON record. "
                 "Expecting one of ['accession_number','identifier_type',"
                 "'report_numbers','site_url'] fields"
             )
 
-        if lidvid:
-            # Some related_identifier fields have been observed with leading and
+        if identifier:
+            # Some identifier fields have been observed with leading and
             # trailing whitespace, so remove it here
-            lidvid = lidvid.strip()
+            identifier = identifier.strip()
 
-            # Some PDS3 identifiers have been observed to contain forward
-            # slashes, which causes problems with the API endpoints, so
-            # replace them with hyphens
-            lidvid = lidvid.replace('/', '-')
-
-        return lidvid
+        return identifier
 
     @staticmethod
     def parse_dois_from_label(label_text, content_type=CONTENT_TYPE_JSON):
@@ -595,7 +587,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
                     f'({", ".join(DOIOstiJsonWebParser._mandatory_fields)})'
                 )
 
-            lidvid = DOIOstiJsonWebParser._get_lidvid(record)
+            identifier = DOIOstiJsonWebParser._get_identifier(record)
 
             timestamp = datetime.now()
 
@@ -604,7 +596,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
                 publication_date=datetime.strptime(record['publication_date'], '%Y-%m-%d'),
                 product_type=ProductType(record['product_type']),
                 product_type_specific=record.get('product_type_specific'),
-                related_identifier=lidvid,
+                related_identifier=identifier,
                 status=DoiStatus(record.get('status', DoiStatus.Unknown).lower()),
                 date_record_added=timestamp,
                 date_record_updated=timestamp
@@ -619,17 +611,17 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
         return dois, errors
 
     @staticmethod
-    def get_record_for_lidvid(label_file, lidvid):
+    def get_record_for_identifier(label_file, identifier):
         """
-        Returns the record entry corresponding to the provided LIDVID from the
-        OSTI JSON label file.
+        Returns the record entry corresponding to the provided PDS identifier
+        from the OSTI JSON label file.
 
         Parameters
         ----------
         label_file : str
             Path to the OSTI JSON label file to search.
-        lidvid : str
-            The LIDVID of the record to return from the OSTI label.
+        identifier : str
+            The PDS identifier of the record to return from the OSTI label.
 
         Returns
         -------
@@ -651,13 +643,13 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
             records = [records]
 
         for record in records:
-            if DOIOstiJsonWebParser._get_lidvid(record) == lidvid:
+            if DOIOstiJsonWebParser._get_identifier(record) == identifier:
                 result = record
                 break
         else:
-            raise UnknownLIDVIDException(
-                f'Could not find entry for lidvid "{lidvid}" in OSTI label file '
-                f'{label_file}.'
+            raise UnknownIdentifierException(
+                f'Could not find entry for identifier "{identifier}" in OSTI '
+                f'label file {label_file}.'
             )
 
         records = [result]

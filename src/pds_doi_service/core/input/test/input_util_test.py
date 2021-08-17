@@ -3,7 +3,7 @@
 import datetime
 import os
 import unittest
-from os.path import abspath, dirname, join
+from os.path import abspath, join
 
 from pkg_resources import resource_filename
 
@@ -127,6 +127,17 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime)
                              for doi in dois]))
 
+        # Test on a CSV containing a PD3 style identifier
+        i_filepath = join(self.input_dir, 'DOI_Reserved_PDS3.csv')
+        dois = doi_input_util.parse_csv_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        # Make sure the PDS3 identifier was saved off as expected
+        self.assertEqual(doi.related_identifier, 'LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0')
+
     def test_read_xml(self):
         """Test the DOIInputUtil.parse_xml_file() method"""
         doi_input_util = DOIInputUtil()
@@ -150,6 +161,19 @@ class InputUtilTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertIsInstance(doi, Doi)
+
+        # Test with an OSTI label containing a PDS3 identifier
+        i_filepath = join(self.input_dir, 'DOI_Release_PDS3.xml')
+        dois = doi_input_util.parse_xml_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertIsInstance(doi, Doi)
+
+        # Make sure the PDS3 identifier was saved off as expected
+        self.assertEqual(doi.related_identifier, 'LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0')
 
     def test_read_json(self):
         """Test the DOIInputUtil.parse_json_file() method"""

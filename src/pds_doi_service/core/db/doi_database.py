@@ -15,6 +15,7 @@ database (SQLite3).
 """
 
 import datetime
+from collections import OrderedDict
 from datetime import datetime, timezone, timedelta
 
 import sqlite3
@@ -33,12 +34,30 @@ class DOIDataBase:
     Provides a mechanism to write, update and read rows to/from a local SQLite3
     database.
     """
-
-    EXPECTED_NUM_COLS = 13
-    """"
-    We are only expecting 13 columns in the doi table. If table structure changes,
-    this value must be updated.
+    DOI_DB_SCHEMA = OrderedDict(
+        {
+            'identifier': 'TEXT NOT NULL',  # PDS identifier (any version)
+            'doi': 'TEXT',  # DOI (may be null for pending or draft)
+            'status': 'TEXT NOT NULL',  # current status
+            'title': 'TEXT',  # title used for the DOI
+            'submitter': 'TEXT',  # email of the submitter of the DOI
+            'type': 'TEXT',  # product type
+            'subtype': 'TEXT',  # subtype of the product
+            'node_id': 'TEXT NOT NULL',  # steward discipline node ID
+            'date_added': 'INT',  # as Unix epoch seconds
+            'date_updated': 'INT NOT NULL',  # as Unix epoch seconds
+            'transaction_key': 'TEXT NOT NULL',  # transaction (key is node id/datetime)
+            'is_latest': 'BOOLEAN'  # whether the transaction is the latest
+        }
+    )
     """
+    The schema used to define the DOI DB table. Each key corresponds to a column
+    name, and each value corresponds to the data type and column constraint as
+    expected by the Sqlite3 CREATE TABLE statement.
+    """
+
+    EXPECTED_NUM_COLS = len(DOI_DB_SCHEMA)
+    """"The expected number of columns as defined by the schema."""
 
     def __init__(self, db_file):
         self._config = DOIConfigUtil().get_config()
@@ -140,22 +159,32 @@ class DOIDataBase:
             self.m_my_conn.execute(f'DROP TABLE {table_name}')
 
     def query_string_for_table_creation(self, table_name):
-        """Build the query string to create a table in the SQLite database."""
+        """
+        Builds the query string to create a transaction table in the SQLite
+        database.
 
+        Parameters
+        ----------
+        table_name : str
+            Name of the table to build the query for.
+
+        Returns
+        -------
+        o_query_string : str
+            The Sqlite3 query string used to create the transaction table within
+            the database.
+
+        """
         o_query_string = f'CREATE TABLE {table_name} '
-        o_query_string += '(status TEXT NOT NULL'  # current status
-        o_query_string += ',update_date INT NOT NULL'  # as Unix Time
-        o_query_string += ',submitter TEXT'  # email of the submitter of the DOI
-        o_query_string += ',title TEXT'  # title used for the DOI
-        o_query_string += ',type TEXT'  # product type
-        o_query_string += ',subtype TEXT'  # subtype of the product
-        o_query_string += ',node_id TEXT NOT NULL'  # steward discipline node ID
-        o_query_string += ',lid TEXT'
-        o_query_string += ',vid TEXT'
-        o_query_string += ',doi TEXT'  # DOI (may be null for pending or draft)
-        o_query_string += ',release_date INT'  # as Unix Time
-        o_query_string += ',transaction_key TEXT NOT NULL'  # transaction (key is node id/datetime)
-        o_query_string += ',is_latest BOOLEAN NULL); '  # whether the transaction is the latest
+        o_query_string += '('
+
+        for index, (column, constraints) in enumerate(self.DOI_DB_SCHEMA.items()):
+            o_query_string += f'{column} {constraints}'
+
+            if index < (self.EXPECTED_NUM_COLS - 1):
+                o_query_string += ','
+
+        o_query_string += ');'
 
         logger.debug("CREATE o_query_string: %s", o_query_string)
 
@@ -163,61 +192,67 @@ class DOIDataBase:
 
     def query_string_for_transaction_insert(self, table_name):
         """
-        Build the query string used to insert a transaction row into the SQLite
+        Builds the query string used to insert a transaction row into the SQLite
         database table.
+
+        Parameters
+        ----------
+        table_name : str
+            Name of the table to build the query for.
+
+        Returns
+        -------
+        o_query_string : str
+            The Sqlite3 query string used to insert a new row into the database.
+
         """
         o_query_string = f'INSERT INTO {table_name} '
-        o_query_string += '(status'
-        o_query_string += ',update_date'
-        o_query_string += ',submitter'
-        o_query_string += ',title'
-        o_query_string += ',type'
-        o_query_string += ',subtype'
-        o_query_string += ',node_id'
-        o_query_string += ',lid'
-        o_query_string += ',vid'
-        o_query_string += ',doi'
-        o_query_string += ',release_date'
-        o_query_string += ',transaction_key'
-        o_query_string += ',is_latest) VALUES '
-        o_query_string += '(?,?,?,?,?,?,?,?,?,?,?,?,?)'
+
+        o_query_string += '('
+
+        for index, column in enumerate(self.DOI_DB_SCHEMA):
+            o_query_string += f'{column}'
+
+            if index < (self.EXPECTED_NUM_COLS - 1):
+                o_query_string += ','
+
+        o_query_string += ') '
+
+        o_query_string += f'VALUES ({",".join(["?"] * self.EXPECTED_NUM_COLS)})'
 
         logger.debug("INSERT o_query_string: %s", o_query_string)
 
         return o_query_string
 
-    def query_string_for_is_latest_update(self, table_name, lid, vid):
+    def query_string_for_is_latest_update(self, table_name, primary_key_column):
         """
-        Build the query string to update existing rows in the table with an
-        update_date field earlier than the current row in the SQLite database.
+        Build the query string to set the is_latest to False (0) for rows
+        in the table having a specified primary key (identifier) value.
 
-        The current row is the row inserted with the "update_date" value of
-        "latest_update". The comparison criteria is less than, meaning any rows
-        inserted earlier will be updated with the column "is_latest" to zero.
+        Parameters
+        ----------
+        table_name : str
+            Name of the table to build the query for.
+        primary_key_column: str
+            Name of the database column designated as the primary key.
 
-        The query string and named parameter values returned are determined
-        based on whether both a LID and VID are provided, or only a LID.
+        Returns
+        -------
+        o_query_string : str
+            The Sqlite3 query string used to perform the is_latest update.
 
         """
         # Note that we set column "is_latest" to 0 to signify that all previous
         # rows are now not the latest.
-        query_string = f'UPDATE {table_name} '
-        query_string += 'SET '
-        query_string += 'is_latest = 0 '
-        query_string += 'WHERE lid = ?'
+        o_query_string = f'UPDATE {table_name} '
+        o_query_string += 'SET '
+        o_query_string += 'is_latest = 0 '
+        o_query_string += f'WHERE {primary_key_column} = ?'
+        o_query_string += ';'  # Don't forget the last semi-colon for SQL to work.
 
-        if vid:
-            query_string += ' AND vid = ?'
-        else:
-            query_string += ' AND vid is null'
+        logger.debug("UPDATE o_query_string: %s", o_query_string)
 
-        query_string += ';'  # Don't forget the last semi-colon for SQL to work.
-
-        logger.debug("UPDATE o_query_string: %s", query_string)
-
-        named_parameter_values = (lid, vid) if vid else (lid,)
-
-        return query_string, named_parameter_values
+        return o_query_string
 
     def create_table(self, table_name):
         """Create a given table in the SQLite database."""
@@ -229,44 +264,88 @@ class DOIDataBase:
 
         logger.info("Table created successfully")
 
-    def write_doi_info_to_database(self, lid, vid, transaction_key, doi=None,
-                                   release_date=datetime.now(),
-                                   transaction_date=datetime.now(),
+    def write_doi_info_to_database(self, identifier, transaction_key, doi=None,
+                                   date_added=datetime.now(),
+                                   date_updated=datetime.now(),
                                    status=DoiStatus.Unknown, title='',
-                                   product_type='', product_type_specific='',
+                                   product_type=ProductType.Collection,
+                                   product_type_specific='',
                                    submitter='', discipline_node=''):
-        """Write some DOI info from a 'reserve' or 'draft' request to the database."""
+        """
+        Write a new row to the Sqlite3 transaction database with the provided
+        DOI entry information.
+
+        Parameters
+        ----------
+        identifier : str
+            The PDS identifier to associate as the primary key for the new row.
+        transaction_key : str
+            Path to the local transaction history location associated with the
+            new row.
+        doi : str, optional
+            The DOI value to associate with the new row. Defaults to None.
+        date_added : datetime, optional
+            Time that the row was initially added to the database. Defaults
+            to the current time.
+        date_updated : datetime, optional
+            Time that the row was last updated. Defaults to the current time.
+        status : DoiStatus
+            The status of the transaction. Defaults to DoiStatus.Unknown.
+        title : str
+            The title associated with the transaction. Defaults to an empty string.
+        product_type : ProductType
+            The product type associated with the transaction. Defaults to
+            ProductType.Collection.
+        product_type_specific : str
+            The specific product type associated with the transaction.
+            Defaults to an empty string.
+        submitter : str
+            The submitter email associated with the transaction. Defaults
+            to an empty string.
+        discipline_node : str
+            The discipline node ID associated with the transaction. Defaults
+            to an empty string.
+
+        Raises
+        ------
+        RuntimeError
+            If the database transaction cannot be committed for any reason.
+
+        """
         self.m_my_conn = self.get_connection()
 
         # Convert timestamps to Unix epoch floats for simpler table storage
-        release_date = release_date.replace(tzinfo=timezone.utc).timestamp()
-        update_date = transaction_date.replace(tzinfo=timezone.utc).timestamp()
+        date_added = date_added.replace(tzinfo=timezone.utc).timestamp()
+        date_updated = date_updated.replace(tzinfo=timezone.utc).timestamp()
 
-        data_tuple = (status,                 # status
-                      update_date,            # update_date
-                      submitter,              # submitter
-                      title,                  # title
-                      product_type,           # type
-                      product_type_specific,  # subtype
-                      discipline_node,        # node_id
-                      lid,                    # lid
-                      vid,                    # vid
-                      doi,                    # doi
-                      release_date,           # release_date
-                      transaction_key,        # transaction_key
-                      True)                   # is_latest
+        # Map the inputs to the appropriate column names. By doing so, we
+        # can ignore database column ordering for now.
+        data = {
+            'identifier': identifier,
+            'status': status,
+            'date_added': date_added,
+            'date_updated': date_updated,
+            'submitter': submitter,
+            'title': title,
+            'type': product_type,
+            'subtype': product_type_specific,
+            'node_id': discipline_node,
+            'doi': doi,
+            'transaction_key': transaction_key,
+            'is_latest': True
+        }
 
         try:
             # Create and execute the query to unset the is_latest field for all
-            # records with the same LIDVID and DOI fields.
-            query_string, named_parameters = self.query_string_for_is_latest_update(
-                self.m_default_table_name, lid, vid
+            # records with the same identifier field.
+            query_string = self.query_string_for_is_latest_update(
+                self.m_default_table_name, primary_key_column='identifier'
             )
 
-            self.m_my_conn.execute(query_string, named_parameters)
+            self.m_my_conn.execute(query_string, (identifier,))
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = (f"Failed to update is_latest field for LIDVID {lid}::{vid}, "
+            msg = (f"Failed to update is_latest field for identifier {identifier}, "
                    f"reason: {err}")
             logger.error(msg)
             raise RuntimeError(msg)
@@ -275,10 +354,14 @@ class DOIDataBase:
             # Combine the insert and update here so the commit can be applied to both actions.
             query_string = self.query_string_for_transaction_insert(self.m_default_table_name)
 
+            # Create the named parameters tuple in the order expected by the
+            # database schema
+            data_tuple = tuple([data[column] for column in self.DOI_DB_SCHEMA])
+
             self.m_my_conn.execute(query_string, data_tuple)
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = (f"Failed to commit transaction for LIDVID {lid}::{vid}, "
+            msg = (f"Failed to commit transaction for identifier {identifier}, "
                    f"reason: {err}")
             logger.error(msg)
             raise RuntimeError(msg)
@@ -289,9 +372,9 @@ class DOIDataBase:
         rather than the types which are convenient for table storage
         """
         for row in rows:
-            # Convert the release/update times from Unix epoch back to datetime,
+            # Convert the add/update times from Unix epoch back to datetime,
             # accounting for the expected (PST) timezone
-            for time_column in ('release_date', 'update_date'):
+            for time_column in ('date_added', 'date_updated'):
                 time_val = row[columns.index(time_column)]
                 time_val = (datetime.fromtimestamp(time_val, tz=timezone.utc)
                             .replace(tzinfo=timezone(timedelta(hours=--8.0))))
@@ -344,7 +427,7 @@ class DOIDataBase:
         criterias_str, criteria_dict = DOIDataBase.parse_criteria(query_criterias)
 
         query_string = (f'SELECT * from {table_name} '
-                        f'WHERE is_latest=1 {criterias_str} ORDER BY update_date')
+                        f'WHERE is_latest=1 {criterias_str} ORDER BY date_updated')
 
         logger.debug('SELECT query_string: %s', query_string)
 
@@ -420,20 +503,6 @@ class DOIDataBase:
         logger.debug("UPDATE query_string: %s", query_string)
 
         self.m_my_conn.execute(query_string)
-
-    @staticmethod
-    def _get_simple_in_criteria(v, column):
-        named_parameters = ','.join([':' + column + '_' + str(i) for i in range(len(v))])
-        named_parameter_values = {column + '_' + str(i): v[i].lower() for i in range(len(v))}
-        return f' AND lower({column}) IN ({named_parameters})', named_parameter_values
-
-    @staticmethod
-    def _get_query_criteria_title(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'title')
-
-    @staticmethod
-    def _get_query_criteria_doi(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'doi')
 
     @staticmethod
     def _form_query_with_wildcards(column_name, search_tokens):
@@ -513,34 +582,22 @@ class DOIDataBase:
         return where_subclause, named_parameter_values
 
     @staticmethod
-    def _get_query_criteria_lid(v):
-        lid_column_name = 'lid'
-        return DOIDataBase._form_query_with_wildcards(lid_column_name, v)
+    def _get_simple_in_criteria(v, column):
+        named_parameters = ','.join([':' + column + '_' + str(i) for i in range(len(v))])
+        named_parameter_values = {column + '_' + str(i): v[i].lower() for i in range(len(v))}
+        return f' AND lower({column}) IN ({named_parameters})', named_parameter_values
 
     @staticmethod
-    def _get_query_criteria_lidvid(v):
-        criterias_str = ''
-        criterias_dict = {}
+    def _get_query_criteria_title(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'title')
 
-        # First filter out any LID-only entries and query those separately
-        lidvids = list(filter(lambda s: '::' in s, v))
-        lids = list(set(v) - set(lidvids))
+    @staticmethod
+    def _get_query_criteria_doi(v):
+        return DOIDataBase._get_simple_in_criteria(v, 'doi')
 
-        if lids:
-            criterias_str, criterias_dict = DOIDataBase._get_query_criteria_lid(lids)
-
-        # To combine the 'lid' and 'vid' we need to add the '::' to compare to
-        # lidvid values
-        if lidvids:
-            lidvid_column_name = "lid || '::' || vid"
-            criteria_str, criteria_dict = DOIDataBase._form_query_with_wildcards(
-                lidvid_column_name, lidvids
-            )
-
-            criterias_str += criteria_str
-            criterias_dict.update(criteria_dict)
-
-        return criterias_str, criterias_dict
+    @staticmethod
+    def _get_query_criteria_ids(v):
+        return DOIDataBase._form_query_with_wildcards('identifier', v)
 
     @staticmethod
     def _get_query_criteria_submitter(v):
@@ -556,12 +613,12 @@ class DOIDataBase:
 
     @staticmethod
     def _get_query_criteria_start_update(v):
-        return (' AND update_date >= :start_update',
+        return (' AND date_updated >= :start_update',
                 {'start_update': v.replace(tzinfo=timezone.utc).timestamp()})
 
     @staticmethod
     def _get_query_criteria_end_update(v):
-        return (' AND update_date <= :end_update',
+        return (' AND date_updated <= :end_update',
                 {'end_update': v.replace(tzinfo=timezone.utc).timestamp()})
 
     @staticmethod

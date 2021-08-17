@@ -21,7 +21,7 @@ from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    SiteURLNotExistException,
                                                    CriticalDOIException,
-                                                   InvalidLIDVIDException,
+                                                   InvalidIdentifierException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -161,7 +161,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # Validate the object representation of the DOI
                 self._doi_validator.validate(doi)
             except (DuplicatedTitleDOIException,
-                    InvalidLIDVIDException,
+                    InvalidIdentifierException,
                     UnexpectedDOIActionException,
                     TitleDoesNotMatchProductTypeException,
                     SiteURLNotExistException) as err:

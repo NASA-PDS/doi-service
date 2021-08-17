@@ -25,11 +25,11 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import (UnknownNodeException,
                                                    DuplicatedTitleDOIException,
                                                    UnexpectedDOIActionException,
-                                                   NoTransactionHistoryForLIDVIDException,
+                                                   NoTransactionHistoryForIdentifierException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    InputFormatException,
                                                    CriticalDOIException,
-                                                   InvalidLIDVIDException,
+                                                   InvalidIdentifierException,
                                                    collect_exception_classes_and_messages,
                                                    raise_or_warn_exceptions)
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -142,7 +142,7 @@ class DOICoreActionDraft(DOICoreAction):
         """
         # Get the output label produced from the last transaction
         # with this LIDVID
-        transaction_record = self._list_obj.transaction_for_lidvid(lidvid)
+        transaction_record = self._list_obj.transaction_for_identifier(lidvid)
 
         # Make sure we can locate the output label associated with this
         # transaction
@@ -150,7 +150,7 @@ class DOICoreActionDraft(DOICoreAction):
         label_files = glob.glob(join(transaction_location, 'output.*'))
 
         if not label_files or not exists(label_files[0]):
-            raise NoTransactionHistoryForLIDVIDException(
+            raise NoTransactionHistoryForIdentifierException(
                 f'Could not find a DOI label associated with LIDVID {lidvid}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
@@ -160,7 +160,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Label could contain entries for multiple LIDVIDs, so extract
         # just the one we care about
-        lidvid_record, content_type = DOIOstiWebParser.get_record_for_lidvid(
+        lidvid_record, content_type = DOIOstiWebParser.get_record_for_identifier(
             label_file, lidvid
         )
 
@@ -325,7 +325,7 @@ class DOICoreActionDraft(DOICoreAction):
         # Collect any exceptions/warnings for now and decide whether to
         # raise or log them later on
         except (DuplicatedTitleDOIException,
-                InvalidLIDVIDException,
+                InvalidIdentifierException,
                 UnexpectedDOIActionException,
                 TitleDoesNotMatchProductTypeException) as err:
             (exception_classes,

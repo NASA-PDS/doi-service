@@ -31,8 +31,8 @@ from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    WebRequestException,
-                                                   NoTransactionHistoryForLIDVIDException,
-                                                   UnknownLIDVIDException,
+                                                   NoTransactionHistoryForIdentifierException,
+                                                   UnknownIdentifierException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
@@ -121,7 +121,7 @@ def _records_from_dois(dois, node=None, submitter=None, doi_label=None):
     for doi in dois:
         # Pull info from transaction database so we can get the most accurate
         # info for the DOI
-        list_kwargs = {'lidvid': doi.related_identifier}
+        list_kwargs = {'ids': doi.related_identifier}
         list_result = json.loads(list_action.run(**list_kwargs))[0]
 
         records.append(
@@ -129,8 +129,8 @@ def _records_from_dois(dois, node=None, submitter=None, doi_label=None):
                 doi=doi.doi or list_result['doi'],
                 identifier=doi.related_identifier, title=doi.title,
                 node=node, submitter=submitter, status=doi.status,
-                creation_date=list_result['release_date'],
-                update_date=list_result['update_date'],
+                creation_date=list_result['date_added'],
+                update_date=list_result['date_updated'],
                 record=doi_label,
                 message=doi.message
             )
@@ -199,8 +199,7 @@ def get_dois(doi=None, submitter=None, node=None, status=None, ids=None,
 
     list_kwargs = {
         'doi': doi,
-        # TODO: update once list action is updated
-        'lidvid': ids,
+        'ids': ids,
         'submitter': submitter,
         'node': node,
         'status': status,
@@ -223,18 +222,12 @@ def get_dois(doi=None, submitter=None, node=None, status=None, ids=None,
     records = []
 
     for result in json.loads(results):
-        # TODO: update once list action is updated
-        lidvid = result['lid']
-
-        # Check if we got back a vid to append to the lid
-        if result['lid'] and result['vid']:
-            lidvid = '::'.join([result['lid'], result['vid']])
-
         records.append(
             DoiSummary(
-                doi=result['doi'], identifier=lidvid, title=result['title'],
-                node=result['node_id'], submitter=result['submitter'],
-                status=result['status'], update_date=result['update_date']
+                doi=result['doi'], identifier=result['identifier'],
+                title=result['title'], node=result['node_id'],
+                submitter=result['submitter'], status=result['status'],
+                update_date=result['date_updated']
             )
         )
 
@@ -426,8 +419,7 @@ def post_release_doi(identifier, force=False, **kwargs):
         list_action = DOICoreActionList(db_name=_get_db_name())
 
         # Get the latest transaction record for this identifier
-        # TODO update name of list function
-        list_record = list_action.transaction_for_lidvid(identifier)
+        list_record = list_action.transaction_for_identifier(identifier)
 
         # Make sure we can locate the output label associated with this
         # transaction
@@ -435,7 +427,7 @@ def post_release_doi(identifier, force=False, **kwargs):
         label_files = glob.glob(join(transaction_location, 'output.*'))
 
         if not label_files or not exists(label_files[0]):
-            raise NoTransactionHistoryForLIDVIDException(
+            raise NoTransactionHistoryForIdentifierException(
                 'Could not find a DOI label associated with identifier {}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
@@ -447,7 +439,7 @@ def post_release_doi(identifier, force=False, **kwargs):
         # An output label may contain entries other than the requested
         # identifier, extract only the appropriate record into its own temporary
         # file and feed it to the release action
-        record, content_type = DOIOstiWebParser.get_record_for_lidvid(label_file, identifier)
+        record, content_type = DOIOstiWebParser.get_record_for_identifier(label_file, identifier)
 
         with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
             logger.debug('Writing temporary label to %s', temp_file.name)
@@ -481,7 +473,7 @@ def post_release_doi(identifier, force=False, **kwargs):
     except (ValueError, WarningDOIException) as err:
         # Some warning or error prevented release of the DOI
         return format_exceptions(err), 400
-    except UnknownLIDVIDException as err:
+    except UnknownIdentifierException as err:
         # Could not find an entry for the requested ID
         return format_exceptions(err), 404
     except Exception as err:
@@ -518,17 +510,13 @@ def get_doi_from_id(identifier):  # noqa: E501
 
     list_action = DOICoreActionList(db_name=_get_db_name())
 
-    # Check for full lidvid vs. just a lid and map the list action arg accordingly
-    # TODO: fix after database schema change
-    list_kwargs = {
-        'lidvid' if '::' in identifier else 'lid': identifier
-    }
+    list_kwargs = {'ids': identifier}
 
     try:
         list_results = json.loads(list_action.run(**list_kwargs))
 
         if not list_results:
-            raise UnknownLIDVIDException(
+            raise UnknownIdentifierException(
                 'No record(s) could be found for identifier {}'.format(identifier)
             )
 
@@ -542,7 +530,7 @@ def get_doi_from_id(identifier):  # noqa: E501
         label_files = glob.glob(join(transaction_location, 'output.*'))
 
         if not label_files or not exists(label_files[0]):
-            raise NoTransactionHistoryForLIDVIDException(
+            raise NoTransactionHistoryForIdentifierException(
                 'Could not find a DOI label associated with identifier {}. '
                 'The database and transaction history location may be out of sync. '
                 'Please try resubmitting the record in reserve or draft.'
@@ -553,8 +541,8 @@ def get_doi_from_id(identifier):  # noqa: E501
 
         # Get only the record corresponding to the requested identifier
         (label_for_id,
-         content_type) = DOIOstiWebParser.get_record_for_lidvid(label_file, identifier)
-    except UnknownLIDVIDException as err:
+         content_type) = DOIOstiWebParser.get_record_for_identifier(label_file, identifier)
+    except UnknownIdentifierException as err:
         # Return "not found" code
         return format_exceptions(err), 404
     except Exception as err:
@@ -623,12 +611,11 @@ def get_check_dois(submitter, email=False, attachment=False):
 
     records = [
         DoiRecord(
-            # TODO: update once db schema is updated
-            doi=pending_result['doi'], identifier=pending_result['lidvid'],
+            doi=pending_result['doi'], identifier=pending_result['identifier'],
             title=pending_result['title'], node=pending_result['node_id'],
             submitter=submitter, status=pending_result['status'],
-            creation_date=pending_result['release_date'],
-            update_date=pending_result['update_date'],
+            creation_date=pending_result['date_added'],
+            update_date=pending_result['date_updated'],
             message=pending_result['message']
         )
         for pending_result in pending_results

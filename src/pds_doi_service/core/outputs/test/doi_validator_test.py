@@ -14,7 +14,7 @@ from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import (DuplicatedTitleDOIException,
                                                    InvalidRecordException,
-                                                   InvalidLIDVIDException,
+                                                   InvalidIdentifierException,
                                                    TitleDoesNotMatchProductTypeException,
                                                    IllegalDOIActionException,
                                                    UnexpectedDOIActionException)
@@ -32,6 +32,7 @@ class DoiValidatorTest(unittest.TestCase):
 
         self.lid = 'urn:nasa:pds:lab_shocked_feldspars'
         self.vid = '1.0'
+        self.identifier = self.lid + '::' + self.vid
         self.transaction_key = './transaction_history/img/2020-06-15T18:42:45.653317'
         self.release_date = datetime.datetime.now()
         self.transaction_date = datetime.datetime.now()
@@ -48,7 +49,7 @@ class DoiValidatorTest(unittest.TestCase):
         # Write a record into database
         # All fields are valid.
         self._database_obj.write_doi_info_to_database(
-            self.lid, self.vid, self.transaction_key, self.doi,
+            self.identifier, self.transaction_key, self.doi,
             self.release_date, self.transaction_date,
             self.status, self.title, self.product_type,
             self.product_type_specific, self.submitter, self.discipline_node
@@ -264,41 +265,41 @@ class DoiValidatorTest(unittest.TestCase):
         doi_obj.related_identifier = 'url:nasa:pds:lab_shocked_feldspars::1.0'
 
         self.assertRaises(
-            InvalidLIDVIDException, self._doi_validator.validate, doi_obj
+            InvalidIdentifierException, self._doi_validator.validate, doi_obj
         )
 
         # Test invalid number of tokens (too few)
         doi_obj.related_identifier = 'url:nasa:pds::1.0'
 
         self.assertRaises(
-            InvalidLIDVIDException, self._doi_validator.validate, doi_obj
+            InvalidIdentifierException, self._doi_validator.validate, doi_obj
         )
 
         # Test invalid number of tokens (too many)
         doi_obj.related_identifier = 'url:nasa:pds:lab_shocked_feldspars:collection_1:product_1:dataset_1::1.0'
 
         self.assertRaises(
-            InvalidLIDVIDException, self._doi_validator.validate, doi_obj
+            InvalidIdentifierException, self._doi_validator.validate, doi_obj
         )
 
         # Test invalid field tokens (invalid characters)
         doi_obj.related_identifier = 'urn:nasa:_pds:lab_shocked_feldspars'
 
         self.assertRaises(
-            InvalidLIDVIDException, self._doi_validator.validate, doi_obj
+            InvalidIdentifierException, self._doi_validator.validate, doi_obj
         )
 
         doi_obj.related_identifier = 'urn:nasa:pds:lab_$hocked_feldspars'
 
         self.assertRaises(
-            InvalidLIDVIDException, self._doi_validator.validate, doi_obj
+            InvalidIdentifierException, self._doi_validator.validate, doi_obj
         )
 
         # Test invalid VID
         doi_obj.related_identifier = 'urn:nasa:pds:lab_shocked_feldspars::v1.0'
 
         self.assertRaises(
-            InvalidLIDVIDException, self._doi_validator.validate, doi_obj
+            InvalidIdentifierException, self._doi_validator.validate, doi_obj
         )
 
     def test_identifier_validation_doi_id_mismatch(self):
