@@ -1,6 +1,6 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-12)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-17)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...«unknown»)
 
