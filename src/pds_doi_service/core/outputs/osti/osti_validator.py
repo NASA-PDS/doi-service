@@ -10,7 +10,7 @@
 osti_validator.py
 =================
 
-Contains functions for validating the contents of an input OSTI XML label.
+Contains functions for validating the contents of OSTI XML labels.
 """
 
 import tempfile
@@ -24,21 +24,21 @@ from lxml import etree
 from lxml import isoschematron
 
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
+from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
 
 
-class OSTIValidator:
+class DOIOstiValidator(DOIServiceValidator):
     """
-    OSTIValidator provides functions to validate the input specific to OSTI.
+    DOIOstiValidator provides methods to validate XML labels submitted to OSTI
+    to ensure compliance with their expected format.
     """
-    m_doi_config_util = DOIConfigUtil()
 
     def __init__(self):
-        self._config = self.m_doi_config_util.get_config()
+        super().__init__()
 
         schematron_file = resource_filename(__name__, 'IAD3_schematron.sch')
 
@@ -71,6 +71,11 @@ class OSTIValidator:
         ----------
         osti_root : etree.Element
             Root of the parsed OSTI XML label.
+
+        Raises
+        ------
+        InputFormatException
+            If the provided XML fails validation against the OSTI schematron.
 
         """
         # Validate the given input (as an etree document now) against the schematron.
@@ -106,7 +111,7 @@ class OSTIValidator:
                 # exception and exit. It will report where/why the error occurred.
                 self._schema_validator.validate(temp_file.name)
 
-    def validate(self, osti_doi_label, action):
+    def validate(self, label_contents):
         """
         Validates an OSTI XML label using all available means. Any validation
         errors encountered will result in a raised exception with details of
@@ -114,16 +119,12 @@ class OSTIValidator:
 
         Parameters
         ----------
-        osti_doi_label : str
-            Contents of the OSTI XML label
-        action : str
-            The action performing the validation. Used to determine if
-            extra validation is required for the given action according to
-            the config file.
+        label_contents : str
+            Contents of the OSTI XML label.
 
         """
         # The return from fromstring() function is an Element type and is the root.
-        osti_root = etree.fromstring(osti_doi_label.encode())
+        osti_root = etree.fromstring(label_contents.encode())
 
         # First validate against the schematron, failure will raise an
         # exception
@@ -144,7 +145,7 @@ class OSTIValidator:
 
         # Check 1. Extraneous tags in <records> element.
         if len(osti_root.keys()) > 0:
-            msg = (f"File {osti_doi_label} cannot contain extraneous attribute(s) "
+            msg = (f"OSTI XML cannot contain extraneous attribute(s) "
                    f"in main tag: {osti_root.keys()}")
             logger.error(msg)
             raise InputFormatException(msg)
@@ -169,10 +170,10 @@ class OSTIValidator:
             # Keep track of which record working on for 'record' element.
             record_count += 1
 
-        # Determine if we need to validate against the XSD as well
-        validate_against_xsd = self._config.get(
-            'OTHER', f'{action.lower()}_validate_against_xsd_flag', fallback='False'
+        # Determine if we need to validate against the schema as well
+        validate_against_schema = self._config.get(
+            'OSTI', 'validate_against_schema', fallback='False'
         )
 
-        if strtobool(validate_against_xsd):
+        if strtobool(validate_against_schema):
             self._validate_against_xsd(osti_root)
