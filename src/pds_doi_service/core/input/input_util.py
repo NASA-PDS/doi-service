@@ -28,7 +28,7 @@ from lxml import etree
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
-from pds_doi_service.core.outputs.osti.osti_validator import OSTIValidator
+from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator
 from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiXmlWebParser,
                                                                DOIOstiJsonWebParser)
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -128,7 +128,7 @@ class DOIInputUtil:
                         basename(xml_path))
 
             try:
-                OSTIValidator()._validate_against_xsd(xml_tree)
+                DOIOstiValidator()._validate_against_xsd(xml_tree)
 
                 dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(xml_contents)
             except XMLSchemaValidationError as err:

@@ -36,7 +36,7 @@ from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_validator import OSTIValidator
+from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiWebParser
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -55,7 +55,7 @@ class DOICoreActionDraft(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._osti_validator = OSTIValidator()
+        self._osti_validator = DOIOstiValidator()
         self._list_obj = DOICoreActionList(db_name=db_name)
 
         self._input = None
@@ -318,7 +318,7 @@ class DOICoreActionDraft(DOICoreAction):
             )
 
             for doi_label in i_doi_labels:
-                self._osti_validator.validate(doi_label, action=self._name)
+                self._osti_validator.validate(doi_label)
 
             for doi_obj in doi_objs:
                 self._doi_validator.validate(doi_obj)

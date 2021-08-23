@@ -29,7 +29,7 @@ from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_validator import OSTIValidator
+from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator
 from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -45,7 +45,7 @@ class DOICoreActionReserve(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._osti_validator = OSTIValidator()
+        self._osti_validator = DOIOstiValidator()
         self._input_util = DOIInputUtil()
 
         self._input = None
@@ -154,7 +154,7 @@ class DOICoreActionReserve(DOICoreAction):
                 single_doi_label = DOIOstiRecord().create_doi_record(doi)
 
                 # Validate XML representation of the DOI
-                self._osti_validator.validate(single_doi_label, action=self._name)
+                self._osti_validator.validate(single_doi_label)
 
                 # Validate the object representation of the DOI
                 self._doi_validator.validate(doi)
