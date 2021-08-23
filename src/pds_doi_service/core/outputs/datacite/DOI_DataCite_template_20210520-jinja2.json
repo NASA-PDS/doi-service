@@ -23,6 +23,16 @@
                 {% if doi.id %}
                 "suffix": "{{ doi.id }}",
                 {% endif %}
+                "identifiers": [
+                    {
+                        {% if doi.doi %}
+                        "identifier": "{{ doi.doi }}",
+                        {% else %}
+                        "identifier": "TBD",
+                        {% endif %}
+                        "identifierType": "DOI"
+                    }
+                ],
                 "creators": [
                     {% for author in doi.authors %}
                     {
@@ -93,7 +103,8 @@
                 "updated": "{{ doi.date_record_updated }}",
                 {% endif %}
                 "state": "{{ doi.status.value }}",
-                "language": "en"
+                "language": "en",
+                "schemaVersion": "http://datacite.org/schema/kernel-4"
             }
         }{% if not loop.last %},{% endif +%}
     {% endfor %}
