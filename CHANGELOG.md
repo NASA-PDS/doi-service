@@ -1,12 +1,16 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-17)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-24)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...«unknown»)
 
 **Improvements:**
 
 - As a user, I want to see the PDS3 ids as they originally are [\#229](https://github.com/NASA-PDS/pds-doi-service/issues/229)
+
+**Other closed issues:**
+
+- Create Validator class for DataCite JSON Labels [\#236](https://github.com/NASA-PDS/pds-doi-service/issues/236)
 
 ## [v0.3.1](https://github.com/NASA-PDS/pds-doi-service/tree/v0.3.1) (2021-08-04)
 
