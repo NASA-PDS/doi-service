@@ -12,9 +12,8 @@ from unittest.mock import patch
 from pkg_resources import resource_filename
 
 from pds_doi_service.core.entities.doi import ProductType, Doi, DoiStatus
-from pds_doi_service.core.outputs.datacite.datacite_web_client import DOIDataCiteWebClient
-from pds_doi_service.core.outputs.datacite.datacite_record import DOIDataCiteRecord
-from pds_doi_service.core.outputs.datacite.datacite_web_parser import DOIDataCiteWebParser
+from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.outputs.datacite import *
 
 
 class DOIDataCiteRecordTestCase(unittest.TestCase):
@@ -230,6 +229,52 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         doi = dois[0]
 
         self._compare_doi_to_expected(doi)
+
+
+class DOIDataCiteValidatorTestCast(unittest.TestCase):
+    """Unit tests for the datacite_validator.py module"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_dir = resource_filename(__name__, '')
+        cls.input_dir = abspath(
+            join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
+        )
+
+    def test_json_label_validation(self):
+        """Test validation against a DataCite label created from a valid Doi object"""
+        validator = DOIDataCiteValidator()
+
+        # Parse sample input to obtain a Doi object
+        input_json_file = join(
+            self.input_dir, 'DOI_Release_20210615_from_reserve.json'
+        )
+
+        # Next, create a valid output DataCite label from the parsed Doi
+        with open(input_json_file, 'r') as infile:
+            input_json = infile.read()
+            input_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+            output_json = DOIDataCiteRecord().create_doi_record(input_dois[0])
+
+        # Label created from template should pass schema validation
+        validator.validate(output_json)
+
+        # Now remove some required fields to ensure its caught by validation
+        output_json = json.loads(output_json)
+        output_json['data']['attributes'].pop('publicationYear')
+        output_json['data']['attributes'].pop('schemaVersion')
+        output_json = json.dumps(output_json)
+
+        try:
+            validator.validate(output_json)
+
+            # Should never make it here
+            self.fail('Invalid JSON was accepted by DOIDataCiteValidator')
+        except InputFormatException as err:
+            # Make sure the error details the reasons we expect
+            self.assertIn("'publicationYear' is a required property", str(err))
+            self.assertIn("'schemaVersion' is a required property", str(err))
 
 
 if __name__ == '__main__':

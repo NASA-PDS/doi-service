@@ -8,5 +8,8 @@ classes of the outputs package.
 """
 
 from .osti_record import DOIOstiRecord
+from .osti_validator import DOIOstiValidator
 from .osti_web_client import DOIOstiWebClient
-from .osti_web_parser import DOIOstiJsonWebParser, DOIOstiXmlWebParser
+from .osti_web_parser import (DOIOstiWebParser,
+                              DOIOstiJsonWebParser,
+                              DOIOstiXmlWebParser)
