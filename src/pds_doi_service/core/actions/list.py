@@ -1,5 +1,5 @@
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -32,13 +32,12 @@ class DOICoreActionList(DOICoreAction):
     _description = ('List DOI entries within the transaction database that match '
                     'the provided search criteria')
     _order = 40
-    _run_arguments = ('format', 'doi', 'ids', 'node', 'status',
-                      'start_update', 'end_update', 'submitter')
+    _run_arguments = ('doi', 'ids', 'node', 'status', 'start_update',
+                      'end_update', 'submitter')
 
     def __init__(self, db_name=None):
-        super().__init__(db_name=None)
-        # Object self._config is already instantiated from the previous
-        # super().__init__() command, no need to do it again.
+        super().__init__(db_name=db_name)
+
         if db_name:
             # If database name is specified from user, use it.
             self.m_default_db_file = db_name
@@ -48,51 +47,13 @@ class DOICoreActionList(DOICoreAction):
 
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
-        self._query_criterias = {}
-        self._format = 'JSON'
-
-    def parse_arguments_from_cmd(self, arguments):
-        criteria = {}
-
-        for k, v in arguments._get_kwargs():
-            if k != 'subcommand':
-                criteria[k] = v
-
-        self.parse_criteria(**criteria)
-
-    def parse_criteria(self, format='JSON', doi=None, ids=None, node=None,
-                       status=None, start_update=None, end_update=None,
-                       submitter=None):
-
-        self._format = format
-
-        if doi:
-            self._query_criterias['doi'] = doi.split(',')
-
-        if ids:
-            self._query_criterias['ids'] = ids.split(',')
-
-        if submitter:
-            self._query_criterias['submitter'] = submitter.split(',')
-
-        if node:
-            self._query_criterias['node'] = node.strip().split(',')
-
-        if status:
-            self._query_criterias['status'] = status.strip().split(',')
-
-        if start_update:
-            self._query_criterias['start_update'] = isoparse(start_update)
-
-        if end_update:
-            self._query_criterias['end_update'] = isoparse(end_update)
-
     @classmethod
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
             cls._name, description='Extracts the submitted DOI from the local '
                                    'transaction database using the following '
-                                   'selection criteria.'
+                                   'selection criteria. Output is returned in '
+                                   'JSON format.'
         )
 
         node_values = NodeUtil.get_permissible_values()
@@ -108,11 +69,6 @@ class DOICoreActionList(DOICoreAction):
             help='A list of comma-separated submission status values to filter '
                  'the database query results by. Valid status values are: '
                  '{}'.format(', '.join(status_values))
-        )
-        action_parser.add_argument(
-            '-f', '--format',  default='JSON', required=False, metavar='JSON',
-            help='The format of the output from the database query. Currently, '
-                 'only JSON format is supported.'
         )
         action_parser.add_argument(
             '-doi', '--doi', required=False, metavar='10.17189/21734',
@@ -145,6 +101,70 @@ class DOICoreActionList(DOICoreAction):
                  'the provided addresses as the submitter will be returned.'
         )
 
+    def parse_arguments_from_cmd(self, arguments):
+        criteria = {}
+
+        for k, v in arguments._get_kwargs():
+            if k != 'subcommand':
+                criteria[k] = v
+
+        self.parse_criteria(**criteria)
+
+    def parse_criteria(self, doi=None, ids=None, node=None, status=None,
+                       start_update=None, end_update=None, submitter=None):
+        """
+        Parse the command-line criteria into a dictionary format suitable
+        for use to query the the local transaction database.
+
+        Parameters
+        ----------
+        doi : str
+            Comma-delimited string of DOI values to filter by.
+        ids : str
+            Comma-delimited string of PDS identifiers to filter by.
+        node : str
+            Comma-delimited string of PDS node ID's to filter by.
+        status : str
+            Comma-delimited string of DOI workflow status values to filter by.
+        start_update : str
+            ISO-format date string to serve as start date to filter by.
+        end_update : str
+            ISO-format date string to serve as end date to filter by.
+        submitter : str
+            Comma-delimited string of submitter email addresses to filter by.
+
+        Returns
+        -------
+        query_criteria : dict
+            Dictionary mapping each criteria type to the list of values to
+            filter by.
+
+        """
+        query_criteria = {}
+
+        if doi:
+            query_criteria['doi'] = doi.split(',')
+
+        if ids:
+            query_criteria['ids'] = ids.split(',')
+
+        if submitter:
+            query_criteria['submitter'] = submitter.split(',')
+
+        if node:
+            query_criteria['node'] = node.strip().split(',')
+
+        if status:
+            query_criteria['status'] = status.strip().split(',')
+
+        if start_update:
+            query_criteria['start_update'] = isoparse(start_update)
+
+        if end_update:
+            query_criteria['end_update'] = isoparse(end_update)
+
+        return query_criteria
+
     def transaction_for_identifier(self, identifier):
         """
         Returns the latest transaction record for the provided PDS identifier.
@@ -161,7 +181,7 @@ class DOICoreActionList(DOICoreAction):
 
         Raises
         ------
-        UnknownLIDVIDException
+        UnknownIdentifierException
             If no entry can be found in the transaction database for the
             provided identifier.
 
@@ -174,9 +194,8 @@ class DOICoreActionList(DOICoreAction):
                 f'No record(s) could be found for identifier {identifier}.'
             )
 
-        # Extract the latest record from all those returned
-        record = next(filter(lambda list_result: list_result['is_latest'],
-                             list_results))
+        # Latest record should be the only one returned
+        record = list_results[0]
 
         return record
 
@@ -185,25 +204,33 @@ class DOICoreActionList(DOICoreAction):
         Lists all the latest records in the named database, returning the
         the results in JSON format.
 
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary containing the list action argument names mapped
+            to the criteria to filter results by.
+
+        Returns
+        -------
+        o_query_result : str
+            JSON formatted results from the list action query filtered by the
+            provided criteria dictionary.
+
         """
-        self.parse_criteria(**kwargs)
+        query_criteria = self.parse_criteria(**kwargs)
 
-        columns, rows = self._database_obj.select_latest_rows(self._query_criterias)
+        columns, rows = self._database_obj.select_latest_rows(query_criteria)
 
-        # generate output
-        if self._format == 'JSON':
-            result_json = []
+        result_json = []
 
-            for row in rows:
-                # Convert the datetime objects to iso8601 strings
-                for time_col in ('date_added', 'date_updated'):
-                    row[columns.index(time_col)] = row[columns.index(time_col)].isoformat()
+        for row in rows:
+            # Convert the datetime objects to iso8601 strings
+            for time_col in ('date_added', 'date_updated'):
+                row[columns.index(time_col)] = row[columns.index(time_col)].isoformat()
 
-                result_json.append(dict(zip(columns, row)))
+            result_json.append(dict(zip(columns, row)))
 
-            o_query_result = json.dumps(result_json)
-            logger.debug("o_select_result: %s", o_query_result)
-        else:
-            raise ValueError(f"Output format type {self._format} is not supported.")
+        o_query_result = json.dumps(result_json)
+        logger.debug("o_select_result: %s", o_query_result)
 
         return o_query_result

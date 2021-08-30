@@ -12,7 +12,7 @@ from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser, DOIOstiJsonWebParser
+from pds_doi_service.core.outputs.service import DOIServiceFactory
 
 
 class ListActionTestCase(unittest.TestCase):
@@ -27,6 +27,8 @@ class ListActionTestCase(unittest.TestCase):
         self._list_action = DOICoreActionList(db_name=self.db_name)
         self._draft_action = DOICoreActionDraft(db_name=self.db_name)
         self._release_action = DOICoreActionRelease(db_name=self.db_name)
+        self._web_parser = DOIServiceFactory.get_web_parser_service()
+        self._record_service = DOIServiceFactory.get_doi_record_service()
 
     def tearDown(self):
         if os.path.isfile(self.db_name):
@@ -42,9 +44,9 @@ class ListActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        draft_xml = self._draft_action.run(**draft_kwargs)
+        doi_label = self._draft_action.run(**draft_kwargs)
 
-        dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(draft_xml)
+        dois, _ = self._web_parser.parse_dois_from_label(doi_label)
         doi = dois[0]
 
         list_kwargs = {
@@ -61,9 +63,14 @@ class ListActionTestCase(unittest.TestCase):
         self.assertEqual(list_result['subtype'], doi.product_type_specific)
         self.assertEqual(list_result['identifier'], doi.related_identifier)
 
-        # Now move the draft to review
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as temp_file:
-            temp_file.write(draft_xml)
+        # Now move the draft to review, use JSON as the format to ensure
+        # this test works for both DataCite and OSTI
+        doi_label = self._record_service.create_doi_record(
+            dois, content_type='json'
+        )
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json') as temp_file:
+            temp_file.write(doi_label)
             temp_file.flush()
 
             review_kwargs = {
@@ -76,7 +83,10 @@ class ListActionTestCase(unittest.TestCase):
 
             review_json = self._release_action.run(**review_kwargs)
 
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(review_json)
+        dois, _ = self._web_parser.parse_dois_from_label(
+            review_json, content_type='json'
+        )
+
         doi = dois[0]
 
         # Now query for review status

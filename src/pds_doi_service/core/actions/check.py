@@ -24,11 +24,11 @@ from pkg_resources import resource_filename
 
 import pystache
 
-from pds_doi_service.core.actions.action import DOICoreAction
+from pds_doi_service.core.actions import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.util.emailer import Emailer
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -38,7 +38,7 @@ logger = get_logger(__name__)
 class DOICoreActionCheck(DOICoreAction):
     _name = 'check'
     _description = ('Check pending DOI statuses from the service provider and '
-                    'update the local database. Should be run regularly, for '
+                    'update the local database. May be run regularly, for '
                     'example in a crontab.')
     _order = 30
     _run_arguments = ('submitter', 'email', 'attachment')
@@ -48,6 +48,8 @@ class DOICoreActionCheck(DOICoreAction):
 
         self._list_obj = DOICoreActionList(db_name=db_name)
         self._emailer = Emailer()
+        self._web_client = DOIServiceFactory.get_web_client_service()
+        self._web_parser = DOIServiceFactory.get_web_parser_service()
 
         self._submitter = self._config.get('OTHER', 'emailer_sender')
         self._email = True
@@ -75,7 +77,10 @@ class DOICoreActionCheck(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(cls._name)
+        action_parser = subparsers.add_parser(
+            cls._name,
+            description='Check the status of all pending DOI submissions.'
+        )
 
         action_parser.add_argument(
             '-e', '--email', required=False, action='store_true',
@@ -101,6 +106,12 @@ class DOICoreActionCheck(DOICoreAction):
         the database and write a new record to the database and return DOI just
         updated.
 
+        Parameters
+        ----------
+        pending_record : dict
+            Contains details of the checked DOI entry. Key names correspond
+            to the column names of the transaction database.
+
         """
         doi_value = pending_record['doi']
         identifier = pending_record['identifier']
@@ -112,8 +123,8 @@ class DOICoreActionCheck(DOICoreAction):
 
         query_dict = {'doi': doi_value}
 
-        doi_xml = DOIOstiWebClient().query_doi(query=query_dict)
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(doi_xml)
+        doi_label = self._web_client.query_doi(query=query_dict)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         if dois:
             # Should only ever be one entry returned
@@ -140,7 +151,8 @@ class DOICoreActionCheck(DOICoreAction):
 
                 # Log the update to the DOI entry
                 transaction_obj = self.m_transaction_builder.prepare_transaction(
-                    pending_record['node_id'], self._submitter, doi
+                    pending_record['node_id'], self._submitter, doi,
+                    output_content_type=CONTENT_TYPE_JSON
                 )
 
                 transaction_obj.log()
@@ -158,15 +170,28 @@ class DOICoreActionCheck(DOICoreAction):
             pending_record.pop('transaction_key', None)
             pending_record.pop('is_latest', None)
         else:
-            logger.error(
-                "No record for DOI %s (Identifier %s) found at the service provider",
-                pending_record['doi'], identifier
-            )
+            message = (f"No record for DOI {pending_record['doi']} "
+                       f"(Identifier {identifier}) found at the service provider")
+            pending_record['message'] = message
+            logger.error(message)
+
 
     def _get_distinct_nodes_and_submitters(self, i_check_result):
         """
         Gets a list of distinct nodes and distinct submitters for each node from
-        a list of metadata i_check_result.
+        the provided list of metadata.
+
+        Parameters
+        ----------
+        i_check_result : list of dict
+            List of the pending results returned from the check action.
+
+        Returns
+        -------
+        o_distinct_info : dict
+            Dictionary mapping each PDS node identifier to the set of
+            submitters and list of records returned from the last check action.
+
         """
         o_distinct_info = {}
 
@@ -194,6 +219,18 @@ class DOICoreActionCheck(DOICoreAction):
         """
         Prepares an attachment by converting i_dicts_per_submitter to a JSON
         text and returns the o_attachment_part as MIMEMultipart object.
+
+        Parameters
+        ----------
+        i_dicts_per_submitter : list
+            The listing of records to include with the email attachment as
+            JSON.
+
+        Returns
+        -------
+        o_attachment_part : MIMEMultipart
+            The attachment(s) to provide with the outgoing email.
+
         """
         # Convert a list of dict to JSON text to make it human readable.
         attachment_text = json.dumps(
@@ -215,6 +252,22 @@ class DOICoreActionCheck(DOICoreAction):
         return o_attachment_part
 
     def _prepare_email_message(self, i_dicts_per_submitter):
+        """
+        Prepares the outgoing email message containing the results of the
+        last check action.
+
+        Parameters
+        ----------
+        i_dicts_per_submitter : list of dict
+            List of the pending records to serialize into the outgoing email
+            body.
+
+        Returns
+        -------
+        o_email_entire_message : str
+            The body text of the outgoing email.
+
+        """
         renderer = pystache.Renderer()
         today = date.today()
 
@@ -252,6 +305,25 @@ class DOICoreActionCheck(DOICoreAction):
 
     def _send_email(self, email_sender, final_receivers, subject_field,
                     email_entire_message, o_dicts_per_node):
+        """
+        Sends an email containing a summary of the results of the last check
+        action to the provided list of recipients.
+
+        Parameters
+        ----------
+        email_sender : str
+            Address to list as the sender of the outgoing email.
+        final_receivers : set
+            The set of recipients for the outgoing email.
+        subject_field : str
+            Text to display as the email subject line.
+        email_entire_message : str
+            The body text for the outgoing email.
+        o_dicts_per_node : list of dict
+            The listing of records to include with the email attachment as
+            JSON. Should all be specific to a PDS node identifier.
+
+        """
         if not self._attachment:
             # This sends a brief email message.
             self._emailer.sendmail(
@@ -280,6 +352,12 @@ class DOICoreActionCheck(DOICoreAction):
         From all records in i_check_result, group a list of records per
         submitter and send an email of the status of metadata of DOIs with
         status changed to receivers.
+
+        Parameters
+        ----------
+        i_check_result : list of dict
+            The list of pending records returned from the last check action.
+
         """
         # Get configurations related to sending email.
         email_sender = self._config.get('OTHER', 'emailer_sender')

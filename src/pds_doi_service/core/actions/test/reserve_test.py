@@ -7,48 +7,61 @@ from unittest.mock import patch
 
 from pkg_resources import resource_filename
 
+import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiJsonWebParser
+from pds_doi_service.core.outputs.service import DOIServiceFactory, SERVICE_TYPE_OSTI
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 
 
 class ReserveActionTestCase(unittest.TestCase):
+    _record_service = None
+    _web_parser = None
 
-    def setUp(self):
-        # This setUp() function is called for every test.
-        self.db_name = 'doi_temp.db'
-        self._action = DOICoreActionReserve(db_name=self.db_name)
-        self.test_dir = resource_filename(__name__, '')
-        self.input_dir = abspath(
-            join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
+    @classmethod
+    def setUpClass(cls):
+        cls.test_dir = resource_filename(__name__, '')
+        cls.input_dir = abspath(
+            join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
+        cls.db_name = 'doi_temp.db'
 
-    def tearDown(self):
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
+        # Remove db_name if exist to have a fresh start otherwise exception will be
+        # raised about using existing lidvid.
+        if os.path.isfile(cls.db_name):
+            os.remove(cls.db_name)
+
+        cls._reserve_action = DOICoreActionReserve(db_name=cls.db_name)
+        cls._record_service = DOIServiceFactory.get_doi_record_service()
+        cls._web_parser = DOIServiceFactory.get_web_parser_service()
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isfile(cls.db_name):
+            os.remove(cls.db_name)
 
     def webclient_submit_patch(self, payload, url=None, username=None,
                                password=None, method=WEB_METHOD_POST,
                                content_type=CONTENT_TYPE_XML):
         """
-        Patch for DOIOstiWebClient.submit_content().
+        Patch for DOIWebClient.submit_content().
 
         Allows a non dry-run reserve to occur without actually submitting
-        anything to the OSTI test server.
+        anything to the service provider's test server.
         """
         # Parse the DOI's from the input label, update status to 'reserved',
         # and create the output label
-        dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(payload)
+        dois, _ = ReserveActionTestCase._web_parser.parse_dois_from_label(
+            payload, content_type=CONTENT_TYPE_JSON
+        )
 
         doi = dois[0]
 
         doi.status = DoiStatus.Reserved
 
-        o_doi_label = DOIOstiRecord().create_doi_record(
+        o_doi_label = ReserveActionTestCase._record_service.create_doi_record(
             doi, content_type=CONTENT_TYPE_JSON
         )
 
@@ -69,9 +82,11 @@ class ReserveActionTestCase(unittest.TestCase):
             The expected status of each returned record
 
         """
-        o_doi_label = self._action.run(**reserve_args)
+        o_doi_label = self._reserve_action.run(**reserve_args)
 
-        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(o_doi_label)
+        dois, errors = self._web_parser.parse_dois_from_label(
+            o_doi_label, content_type=CONTENT_TYPE_JSON
+        )
 
         # Should get the expected number of parsed DOI's
         self.assertEqual(len(dois), expected_dois)
@@ -86,7 +101,7 @@ class ReserveActionTestCase(unittest.TestCase):
     def test_reserve_xlsx_dry_run(self):
         """
         Test Reserve action with a local excel spreadsheet, using the
-        dry run flag to avoid submission to OSTI.
+        dry run flag to avoid submission.
         """
         reserve_args = {
             'input': join(self.input_dir,
@@ -104,10 +119,13 @@ class ReserveActionTestCase(unittest.TestCase):
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'submit_content', webclient_submit_patch)
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
+        'submit_content', webclient_submit_patch)
     def test_reserve_xlsx_and_submit(self):
         """
         Test Reserve action with a local excel spreadsheet, submitting the
-        result to OSTI.
+        result to the service provider.
         """
         reserve_args = {
             'input': join(self.input_dir,
@@ -125,7 +143,7 @@ class ReserveActionTestCase(unittest.TestCase):
     def test_reserve_csv_dry_run(self):
         """
         Test Reserve action with a local CSV file, using the dry run flag
-        to avoid submission to OSTI.
+        to avoid submission to the service provider.
         """
         reserve_args = {
             'input': join(self.input_dir, 'DOI_Reserved_GEO_200318.csv'),
@@ -142,9 +160,13 @@ class ReserveActionTestCase(unittest.TestCase):
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'submit_content', webclient_submit_patch)
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
+        'submit_content', webclient_submit_patch)
     def test_reserve_csv_and_submit(self):
         """
-        Test Reserve action with a local CSV file, submitting the result to OSTI.
+        Test Reserve action with a local CSV file, submitting the result to the
+        service provider.
         """
         reserve_args = {
             'input': join(self.input_dir, 'DOI_Reserved_GEO_200318.csv'),
@@ -161,10 +183,17 @@ class ReserveActionTestCase(unittest.TestCase):
     def test_reserve_json_dry_run(self):
         """
         Test Reserve action with a local JSON file, using the dry run flag
-        to avoid submission to OSTI.
+        to avoid submission.
         """
+        # Select the appropriate JSON format based on the currently configured
+        # service
+        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
+            input_file = join(self.input_dir, 'DOI_Release_20210216_from_reserve.json')
+        else:
+            input_file = join(self.input_dir, 'DOI_Release_20210615_from_reserve.json')
+
         reserve_args = {
-            'input': join(self.input_dir, 'DOI_Release_20210216_from_reserve.json'),
+            'input': input_file,
             'node': 'img',
             'submitter': 'my_user@my_node.gov',
             'dry_run': True,
@@ -176,14 +205,25 @@ class ReserveActionTestCase(unittest.TestCase):
         )
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.DOIOstiWebClient,
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
+        'submit_content', webclient_submit_patch)
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
         'submit_content', webclient_submit_patch)
     def test_reserve_json_and_submit(self):
         """
-        Test Reserve action with a local JSON file, submitting the result to OSTI.
+        Test Reserve action with a local JSON file, submitting the result to
+        the service provider.
         """
+        # Select the appropriate JSON format based on the currently configured
+        # service
+        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
+            input_file = join(self.input_dir, 'DOI_Release_20210216_from_reserve.json')
+        else:
+            input_file = join(self.input_dir, 'DOI_Release_20210615_from_reserve.json')
+
         reserve_args = {
-            'input': join(self.input_dir, 'DOI_Release_20210216_from_reserve.json'),
+            'input': input_file,
             'node': 'img',
             'submitter': 'my_user@my_node.gov',
             'dry_run': False,

@@ -1,5 +1,5 @@
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -28,9 +28,8 @@ from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
-from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator
-from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
+from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -38,15 +37,18 @@ logger = get_logger(__name__)
 
 class DOICoreActionReserve(DOICoreAction):
     _name = 'reserve'
-    _description = 'Create or update a DOI before the data is published'
+    _description = ("Submit a request to reserve a DOI prior to public release. "
+                    "Reserved DOI's may be released after via the release action.")
     _order = 0
     _run_arguments = ('input', 'node', 'submitter', 'dry_run', 'force')
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._osti_validator = DOIOstiValidator()
         self._input_util = DOIInputUtil()
+        self._record_service = DOIServiceFactory.get_doi_record_service()
+        self._validator_service = DOIServiceFactory.get_validator_service()
+        self._web_client = DOIServiceFactory.get_web_client_service()
 
         self._input = None
         self._node = None
@@ -59,13 +61,13 @@ class DOICoreActionReserve(DOICoreAction):
         action_parser = subparsers.add_parser(
             cls._name, description='Create a DOI for one or more unpublished datasets. '
                                    'The input is a spreadsheet or CSV file '
-                                   'containing records to reserve DOIs for.')
-
-        node_values = NodeUtil.get_permissible_values()
+                                   'containing records to reserve DOIs for.'
+        )
         action_parser.add_argument(
             '-n', '--node', required=True, metavar='"img"',
             help="The PDS Discipline Node in charge of the submission of the DOI. "
-                 "Authorized values are: " + ','.join(node_values)
+                 "Authorized values are: {}"
+                 .format(','.join(NodeUtil.get_permissible_values()))
         )
         action_parser.add_argument(
             '-f', '--force', required=False, action='store_true',
@@ -93,22 +95,36 @@ class DOICoreActionReserve(DOICoreAction):
         )
 
     def _parse_input(self, input_file):
+        """
+        Parses the provided input file to one or more DOI objects.
+
+        Parameters
+        ----------
+        input_file : str
+            Path to the input file location to parse.
+
+        Returns
+        -------
+        dois : list of Doi
+            The DOI objects parsed from the input file.
+
+        """
         return self._input_util.parse_dois_from_input_file(input_file)
 
     def _complete_dois(self, dois):
         """
-        Ensures the list of Doi objects to reserve have the requisite fields,
+        Ensures the list of DOI objects to reserve have the requisite fields,
         such as status or contributor, filled in prior to submission.
 
         Parameters
         ----------
         dois : list of Doi
-            The list of Doi objects to complete
+            The list of DOI objects to complete
 
         Returns
         -------
         dois : list of Doi
-            The completed list of Doi objects.
+            The completed list of DOI objects.
 
         """
         for doi in dois:
@@ -124,26 +140,26 @@ class DOICoreActionReserve(DOICoreAction):
 
     def _validate_dois(self, dois):
         """
-        Validates the list of Doi objects prior to their submission.
+        Validates the list of DOI objects prior to their submission.
 
-        Depending on the configuration of the DOI service, Doi objects may
-        be validated against the OSTI XSD, schematron, as well as the internal
-        checks performed by the DOIValidator class.
+        Depending on the configuration of the DOI service, DOI objects may
+        be validated against a schema as well as the internal checks performed
+        by the validator class.
 
         Any exceptions or warnings encountered during the checks are stored
-        until all Doi's have been checked. Depending on the state of the
+        until all DOI's have been checked. Depending on the state of the
         force flag, these collected exceptions are either raised as a single
         exception, or simply logged.
 
         Parameters
         ----------
         dois : list of Doi
-            The Doi objects to validate.
+            The DOI objects to validate.
 
         Returns
         -------
         dois : list of Doi
-            The validated list of Doi objects.
+            The validated list of DOI objects.
 
         """
         exception_classes = []
@@ -151,10 +167,10 @@ class DOICoreActionReserve(DOICoreAction):
 
         for doi in dois:
             try:
-                single_doi_label = DOIOstiRecord().create_doi_record(doi)
+                single_doi_label = self._record_service.create_doi_record(doi)
 
-                # Validate XML representation of the DOI
-                self._osti_validator.validate(single_doi_label)
+                # Validate the label representation of the DOI
+                self._validator_service.validate(single_doi_label)
 
                 # Validate the object representation of the DOI
                 self._doi_validator.validate(doi)
@@ -186,12 +202,12 @@ class DOICoreActionReserve(DOICoreAction):
         Parameters
         ----------
         kwargs : dict
-            The parsed command-line arguments for the release action.
+            The parsed command-line arguments for the reserve action.
 
         Returns
         -------
         output_label : str
-            The output label, in OSTI json format, reflecting the status of the
+            The output label, in JSON format, reflecting the status of the
             reserved input DOI's.
 
         Raises
@@ -213,13 +229,16 @@ class DOICoreActionReserve(DOICoreAction):
 
             for doi in dois:
                 # Create the JSON request label to send
-                io_doi_label = DOIOstiRecord().create_doi_record(
+                io_doi_label = self._record_service.create_doi_record(
                     doi, content_type=CONTENT_TYPE_JSON
                 )
 
                 # Submit the Reserve request if this isn't a dry run
+                # Note that for both OSTI and DataCite, reserve requests should
+                # utilize the POST method
                 if not self._dry_run:
-                    doi, o_doi_label = DOIOstiWebClient().submit_content(
+                    doi, o_doi_label = self._web_client.submit_content(
+                        method=WEB_METHOD_POST,
                         payload=io_doi_label,
                         content_type=CONTENT_TYPE_JSON
                     )
@@ -246,7 +265,10 @@ class DOICoreActionReserve(DOICoreAction):
         except Exception as err:
             raise CriticalDOIException(err)
 
-        output_label = DOIOstiRecord().create_doi_record(
+        # Create the return output label containing records for all submitted DOI's
+        # Note this action always returns JSON format to ensure interoperability
+        # between the potential service providers
+        output_label = self._record_service.create_doi_record(
             output_dois, content_type=CONTENT_TYPE_JSON
         )
 
