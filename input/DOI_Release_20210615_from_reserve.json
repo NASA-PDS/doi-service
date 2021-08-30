@@ -6,7 +6,12 @@
             "doi": "10.13143/yzw2-vz66",
             "prefix": "10.13143",
             "suffix": "yzw2-vz66",
-            "identifiers": [],
+            "identifiers": [
+                {
+                    "identifier": "10.13143/yzw2-vz66",
+                    "identifierType": "DOI"
+                }
+            ],
             "alternateIdentifiers": [],
             "creators": [
                 {
@@ -49,7 +54,7 @@
             ],
             "publisher": "NASA Planetary Data System",
             "container": {},
-            "publicationYear": 2019,
+            "publicationYear": "2019",
             "subjects": [
                 {
                     "subject": "PDS"
@@ -143,7 +148,7 @@
                 }
             ],
             "dates": [],
-            "language": null,
+            "language": "en",
             "types": {
                 "schemaOrg": "Dataset",
                 "citeproc": "dataset",
@@ -162,7 +167,6 @@
             ],
             "sizes": [],
             "formats": [],
-            "version": null,
             "rightsList": [],
             "descriptions": [
                 {
@@ -177,7 +181,7 @@
             "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0",
             "contentUrl": null,
             "metadataVersion": 0,
-            "schemaVersion": null,
+            "schemaVersion": "http://datacite.org/schema/kernel-4",
             "source": "api",
             "isActive": false,
             "state": "draft",
