@@ -100,7 +100,7 @@ class DOIDataCiteRecord(DOIRecord):
             # 'Bundle' is not supported as a product type in DataCite, so
             # promote to 'Collection'
             if doi.product_type == ProductType.Bundle:
-                doi_fields['product_type'] = ProductType.Collection.value
+                doi_fields['product_type'] = ProductType.Collection
 
             # Sort keywords so we can output them in the same order each time
             doi_fields['keywords'] = sorted(doi.keywords)
