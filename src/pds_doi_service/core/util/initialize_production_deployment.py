@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#  Copyright 2020, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -11,19 +11,17 @@
 initialize_production_deployment.py
 ===================================
 
-Script used to import the available DOIs from OSTI server into a local
+Script used to import the available DOIs from the server provider into a local
 production database.
 """
 
 # Parameters to this script:
 #
 #    The -s (required) is email of the PDS operator: -s pds-operator@jpl.nasa.gov
-#    The -i is optional. If the input is provided and is a file, parse from it,
-#    otherwise query from the URL input: -i https://www.osti.gov/iad2/api/records
-#        The format of input XML file is the same format of text returned from
-#        querying the OSTI server via a browser or curl command.
-#        If provided and a URL of the OSTI server, this will override the url in
-#        the config file.
+#    The -i is optional. If the input is provided and is a file, parse from it
+#        The format of input file is the same format of text returned from
+#        querying the server via a browser or curl command.
+#        If provided,, this will override the url in the config file.
 #    The -d is optional.  If provided it is the name of the database file to
 #    write records to: -d doi.db
 #        If provided, this will override the db_name in the config file.
@@ -33,15 +31,11 @@ production database.
 #    The --debug parameter allows the code to print debug statements useful to
 #    see if something goes wrong.
 #
-# Make sure the -i parameter or the url parameter in config/conf.ini points to
-# the OPS server from OSTI 'https://www.osti.gov/iad2/api/records'
-# as the TEST server 'https://www.osti.gov/iad2test/api/records' only has test
-# records and it takes a long time to run.
 #
 # Example runs:
 #
 # initialize_production_deployment.py -s pds-operator@jpl.nasa.gov -i my_input.xml -d temp.db --dry-run --debug >& t1 ; tail -20 t1
-# initialize_production_deployment.py -s pds-operator@jpl.nasa.gov -i https://www.osti.gov/iad2/api/records -d temp.db --dry-run --debug >& t1 ; tail -20 t1
+# initialize_production_deployment.py -s pds-operator@jpl.nasa.gov -d temp.db --dry-run --debug >& t1 ; tail -20 t1
 # initialize_production_deployment.py -s pds-operator@jpl.nasa.gov -i my_input.xml -d temp.db --debug >& t1 ; tail -20 t1
 # initialize_production_deployment.py -s pds-operator@jpl.nasa.gov -d temp.db --debug >& t1 ; tail -20 t1
 
@@ -68,9 +62,8 @@ from datetime import datetime
 
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    CriticalDOIException)
-from pds_doi_service.core.outputs.osti.osti_web_client import DOIOstiWebClient
-from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiXmlWebParser,
-                                                               DOIOstiJsonWebParser)
+from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -86,12 +79,12 @@ m_config = m_doi_config_util.get_config()
 
 def create_cmd_parser():
     parser = argparse.ArgumentParser(
-        description='Script to import existing DOIs from OSTI into the local'
+        description='Script to bulk import existing DOIs into the local '
                     'transaction database.'
     )
     parser.add_argument("-i", "--input", required=False,
                         help="Input file (XML or JSON) to import existing DOIs from. "
-                             "If no value is provided, the OSTI server URL "
+                             "If no value is provided, the server URL "
                              "specified by the DOI service configuration INI "
                              "file is used by default.")
     parser.add_argument("-s", "--submitter-email", required=False,
@@ -105,9 +98,9 @@ def create_cmd_parser():
                              "obtained from the DOI service INI config.")
     parser.add_argument("-o", "--output-file", required=False, default=None,
                         help="Path to write out the DOI JSON labels as returned "
-                             "from OSTI. When created, this file can be used "
+                             "from the query. When created, this file can be used "
                              "with the --input option to import records at a "
-                             "later time without re-querying the OSTI server. "
+                             "later time without re-querying the server. "
                              "This option has no effect if --input already "
                              "specifies an input file.")
     parser.add_argument("--dry-run", required=False, action="store_true",
@@ -119,7 +112,7 @@ def create_cmd_parser():
 
 
 def _read_from_local_xml(path):
-    """Read from a local xml file containing output from an OSTI query."""
+    """Read from a local xml file containing output from a query."""
     try:
         with open(path, mode='r') as f:
             doi_xml = f.read()
@@ -132,14 +125,18 @@ def _read_from_local_xml(path):
 
 
 def _read_from_local_json(path):
-    """Read from a local JSON file containing output from an OSTI query."""
+    """Read from a local JSON file containing output from a query."""
     try:
         with open(path, mode='r') as f:
             doi_json = f.read()
     except Exception as e:
         raise CriticalDOIException(str(e))
 
-    dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(doi_json)
+    web_parser = DOIServiceFactory.get_web_parser_service()
+
+    dois, _ = web_parser.parse_dois_from_label(
+        doi_json, content_type=CONTENT_TYPE_JSON
+    )
 
     return dois
 
@@ -162,20 +159,24 @@ def _parse_input(input_file):
                                f"File may not exist.")
 
 
-def get_dois_from_osti(output_file):
+def get_dois_from_provider(output_file):
     """
-    Queries the OSTI server for all the current DOI associated with the PDS-USER
-    account. The server name is fetched from the config file with the 'url'
-    field in the 'OSTI' grouping.
+    Queries the service provider for all the current DOI associated with the
+    PDS-USER account. The server name is fetched from the config file with the
+    'url' field in the service provider grouping.
 
     """
     query_dict = {}
 
-    o_server_url = m_config.get('OSTI', 'url')
+    service_provider = DOIServiceFactory.get_service_type().upper()
 
-    logger.info("Using OSTI server URL %s", o_server_url)
+    o_server_url = m_config.get(service_provider, 'url')
 
-    doi_json = DOIOstiWebClient().query_doi(
+    logger.info("Using %s server URL %s", service_provider, o_server_url)
+
+    web_client = DOIServiceFactory.get_web_client_service()
+
+    doi_json = web_client.query_doi(
         query=query_dict, content_type=CONTENT_TYPE_JSON
     )
 
@@ -183,7 +184,11 @@ def get_dois_from_osti(output_file):
         with open(output_file, 'w') as outfile:
             outfile.write(doi_json)
 
-    dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(doi_json)
+    web_parser = DOIServiceFactory.get_web_parser_service()
+
+    dois, _ = web_parser.parse_dois_from_label(
+        doi_json, content_type=CONTENT_TYPE_JSON
+    )
 
     return dois, o_server_url
 
@@ -237,10 +242,10 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
                                output_file):
     """
     Imports all records from the input source into a local database.
-    The input source may either be an existing XML file containing DOIs to parse,
-    or a URL pointing to the OSTI server to pull existing records from.
+    The input source may either be an existing file containing DOIs to parse,
+    or a URL pointing to the server to pull existing records from.
 
-    Note that all records returned from the OSTI server are associated with the
+    Note that all records returned from the server are associated with the
     NASA-PDS user account.
 
     Parameters
@@ -248,8 +253,8 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     db_name : str
         Name of the database file to import DOI records to.
     input_source : str
-        Either a path to an existing XML file containing OSTI DOI records to
-        parse and import, or a URL to the OSTI server to query for existing
+        Either a path to an existing file containing DOI records to
+        parse and import, or a URL to the server to query for existing
         records.
     dry_run : bool
         If true, do not actually commit any parsed DOI records to the local
@@ -257,21 +262,21 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     submitter_email : str
         Email address of the user initiating the import.
     output_file : str
-        Path to write out the XML label obtained from OSTI. If not specified,
+        Path to write out the label obtained from the server. If not specified,
         no file is written.
 
     """
-    o_records_found = 0  # Number of records returned from OSTI
+    o_records_found = 0  # Number of records returned
     o_records_processed = 0  # At the end, this value should be = o_records_found - o_records_skipped
     o_records_written = 0  # Number of records actually written to database
     o_records_dois_skipped = 0  # Number of records skipped due to missing lidvid or invalid prefix
 
     # If use_doi_filtering_flag is set to True, we will allow only DOIs that
     # start with the configured PDS DOI token, e.g. '10.17189'.
-    # OSTI server(s) may contain records other than expected, especially the test
+    # Servers may contain records other than expected, especially the test
     # server. For normal operation use_doi_filtering_flag should be set to False.
-    # If set to True, the parameter doi_prefix for OSTI in config/conf.ini
-    # should be set to 10.17189.
+    # If set to True, the parameter doi_prefix in config/conf.ini
+    # should be set appropriately.
     use_doi_filtering_flag = False
 
     # If flag skip_db_write_flag set to True, will skip writing of records to
@@ -293,15 +298,15 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
 
     transaction_builder = TransactionBuilder(o_db_name)
 
-    # If the input is provided, parse from it. Otherwise query the OSTI server.
+    # If the input is provided, parse from it. Otherwise query the server.
     if input_source:
         dois = _parse_input(input_source)
         o_server_url = input_source
     else:
-        # Get the dois from OSTI server.
+        # Get the dois from the server.
         # Note that because the name of the server is in the config file,
         # it can be the OPS or TEST server.
-        dois, o_server_url = get_dois_from_osti(output_file)
+        dois, o_server_url = get_dois_from_provider(output_file)
 
     o_records_found = len(dois)
 
@@ -310,7 +315,8 @@ def perform_import_to_database(db_name, input_source, dry_run, submitter_email,
     # Write each Doi object as a row into the database.
     for item_index, doi in enumerate(dois):
         if use_doi_filtering_flag:
-            o_pds_doi_token = m_config.get('OSTI', 'doi_prefix')
+            service_provider = DOIServiceFactory.get_service_type().upper()
+            o_pds_doi_token = m_config.get(service_provider, 'doi_prefix')
 
             if doi.doi and not doi.doi.startswith(o_pds_doi_token):
                 logger.warning("Skipping non-PDS DOI %s, index %d", doi.doi,
@@ -375,7 +381,7 @@ def main():
     logger.info('Starting DOI import to local database...')
     logger.debug('Command-line args: %r', arguments)
 
-    # Do the import operation from OSTI server to database.
+    # Do the import operation from remote server to database.
     (records_found,
      records_processed,
      records_written,
