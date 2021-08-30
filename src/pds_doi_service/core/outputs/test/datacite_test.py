@@ -13,7 +13,10 @@ from pkg_resources import resource_filename
 
 from pds_doi_service.core.entities.doi import ProductType, Doi, DoiStatus
 from pds_doi_service.core.input.exceptions import InputFormatException
-from pds_doi_service.core.outputs.datacite import *
+from pds_doi_service.core.outputs.datacite import (DOIDataCiteValidator,
+                                                   DOIDataCiteWebParser,
+                                                   DOIDataCiteWebClient,
+                                                   DOIDataCiteRecord)
 
 
 class DOIDataCiteRecordTestCase(unittest.TestCase):

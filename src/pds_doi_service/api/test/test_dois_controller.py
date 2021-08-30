@@ -9,7 +9,6 @@ from os.path import abspath, exists, join
 import unittest
 from unittest.mock import patch
 
-from lxml import etree
 from pkg_resources import resource_filename
 
 import pds_doi_service.api.controllers.dois_controller
@@ -23,6 +22,7 @@ from pds_doi_service.api.models import (DoiRecord, DoiSummary,
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.outputs.service import DOIServiceFactory, SERVICE_TYPE_DATACITE
 
 
 class TestDoisController(BaseTestCase):
@@ -31,6 +31,7 @@ class TestDoisController(BaseTestCase):
     # by patched methods
     test_data_dir = None
     input_dir = None
+    service_type = None
 
     @classmethod
     def setUpClass(cls):
@@ -39,6 +40,7 @@ class TestDoisController(BaseTestCase):
         cls.input_dir = abspath(
             join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
+        cls.service_type = DOIServiceFactory.get_service_type()
 
         # Path to a temporary database to re-instantiate for every test
         cls.temp_db = join(cls.test_data_dir, 'temp.db')
@@ -63,7 +65,7 @@ class TestDoisController(BaseTestCase):
 
         Returns a JSON string corresponding to a successful search.
         The transaction_key is modified to point to the local test data
-        directory.
+        directory appropriate for the current service.
         """
         return json.dumps(
             [
@@ -75,20 +77,31 @@ class TestDoisController(BaseTestCase):
                  "subtype": "PDS4 Refereed Data Bundle", "node_id": "eng",
                  "identifier": "urn:nasa:pds:insight_cameras::1.1",
                  "doi": '10.17189/28957',
-                 "transaction_key": TestDoisController.test_data_dir,
+                 "transaction_key": join(
+                     TestDoisController.test_data_dir, TestDoisController.service_type
+                 ),
                  "is_latest": 1}
             ]
         )
+
+    def list_action_run_patch_missing(self, **kwargs):
+        """
+        Patch for DOICoreActionList.run()
+
+        Returns a result corresponding to an unsuccessful search.
+        """
+        return '[]'
 
     def draft_action_run_patch(self, **kwargs):
         """
         Patch for DOICoreActionDraft.run()
 
-        Returns body of an XML label corresponding to a successful draft
+        Returns body of a label corresponding to a successful draft
         request.
         """
         draft_record_file = join(
-            TestDoisController.test_data_dir, 'draft_osti_record.xml')
+            TestDoisController.test_data_dir, TestDoisController.service_type,
+            'draft_record')
         with open(draft_record_file, 'r') as infile:
             return infile.read()
 
@@ -96,13 +109,67 @@ class TestDoisController(BaseTestCase):
         """
         Patch for DOICoreActionReserve.run()
 
-        Returns body of a JSON label corresponding to a successful reserve
+        Returns body of a label corresponding to a successful reserve
         (dry-run) request.
         """
         draft_record_file = join(
-            TestDoisController.test_data_dir, 'reserve_osti_record.json')
+            TestDoisController.test_data_dir, TestDoisController.service_type,
+            'reserve_record')
         with open(draft_record_file, 'r') as infile:
             return infile.read()
+
+    def release_action_run_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionRelease.run()
+
+        Returns body of a label corresponding to a successful release
+        request.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, TestDoisController.service_type,
+            'release_record')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    def release_action_run_w_error_patch(self, **kwargs):
+        """
+        Patch for DOICoreActionRelease.run()
+
+        Returns body of a label corresponding to errors returned
+        from the DOI service provider.
+        """
+        draft_record_file = join(
+            TestDoisController.test_data_dir, TestDoisController.service_type,
+            'error_record')
+        with open(draft_record_file, 'r') as infile:
+            return infile.read()
+
+    def transaction_log_patch(self):
+        """No-op patch for Transaction.log() to avoid modifying our test DB"""
+        return
+
+    def webclient_query_patch(self, query=None, content_type=CONTENT_TYPE_XML):
+        """
+        Patch for DOIOstiWebClient.webclient_query_doi().
+
+        Allows a pending check to occur without actually having to communicate
+        with the OSTI test server.
+        """
+        # Return dummy xml results containing the statuses we expect
+        # Released
+        if query['doi'] == '10.17189/28957':
+            xml_file = 'DOI_Release_20200727_from_register.xml'
+        # Pending
+        elif query['doi'] == '10.17189/29348':
+            xml_file = 'DOI_Release_20200727_from_release.xml'
+        # Error
+        else:
+            xml_file = 'DOI_Release_20200727_from_error.xml'
+
+        with open(join(TestDoisController.input_dir, xml_file), 'r') as infile:
+            xml_contents = infile.read()
+
+        return xml_contents
 
     def test_get_dois(self):
         """Test case for get_dois"""
@@ -477,18 +544,6 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(submit_record.status, DoiStatus.Review)
         self.assertEqual(submit_record.doi, '10.17189/28957')
 
-    def release_action_run_patch(self, **kwargs):
-        """
-        Patch for DOICoreActionRelease.run()
-
-        Returns body of an XML label corresponding to a successful release
-        request.
-        """
-        draft_record_file = join(
-            TestDoisController.test_data_dir, 'release_osti_record.xml')
-        with open(draft_record_file, 'r') as infile:
-            return infile.read()
-
     def test_disabled_release_endpoint(self):
         """
         Test to ensure that the dois/{lidvid}/release is not reachable.
@@ -552,18 +607,6 @@ class TestDoisController(BaseTestCase):
         # Record field should match what we provided via patch method
         self.assertEqual(release_record.record, self.release_action_run_patch())
 
-    def release_action_run_w_error_patch(self, **kwargs):
-        """
-        Patch for DOICoreActionRelease.run()
-
-        Returns body of a XML label corresponding to errors returned
-        from the DOI service provider.
-        """
-        draft_record_file = join(
-            TestDoisController.test_data_dir, 'error_osti_record.xml')
-        with open(draft_record_file, 'r') as infile:
-            return infile.read()
-
     @unittest.skip('dois/release endpoint is disabled')
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionRelease,
@@ -603,14 +646,6 @@ class TestDoisController(BaseTestCase):
         self.assertIn('A product type is required', errors[0]['message'])
         self.assertIn('A specific product type is required for non-dataset types',
                       errors[0]['message'])
-
-    def list_action_run_patch_missing(self, **kwargs):
-        """
-        Patch for DOICoreActionList.run()
-
-        Returns a result corresponding to an unsuccessful search.
-        """
-        return '[]'
 
     @unittest.skip('dois/release endpoint is disabled')
     @patch.object(
@@ -702,7 +737,7 @@ class TestDoisController(BaseTestCase):
         'run', list_action_run_patch)
     def test_get_doi_from_id(self):
         """Test case for get_doi_from_id"""
-        query_string = [ ('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
+        query_string = [('identifier', 'urn:nasa:pds:insight_cameras::1.1')]
 
         response = self.client.open(
             '/PDS_APIs/pds_doi_api/0.2/doi'
@@ -728,10 +763,9 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.status, DoiStatus.Pending)
 
         # Make sure we only got one record back
-        root = etree.fromstring(bytes(record.record, encoding='utf-8'))
-        records = root.xpath('record')
+        dois, _ = DOIServiceFactory.get_web_parser_service().parse_dois_from_label(record.record)
 
-        self.assertEqual(len(records), 1)
+        self.assertEqual(len(dois), 1)
 
         # Test again with an LID only, should get the same result back
         query_string = [('identifier', 'urn:nasa:pds:insight_cameras')]
@@ -757,10 +791,9 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.status, DoiStatus.Pending)
 
         # Make sure we only got one record back
-        root = etree.fromstring(bytes(record.record, encoding='utf-8'))
-        records = root.xpath('record')
+        dois, _ = DOIServiceFactory.get_web_parser_service().parse_dois_from_label(record.record)
 
-        self.assertEqual(len(records), 1)
+        self.assertEqual(len(dois), 1)
 
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
@@ -849,33 +882,8 @@ class TestDoisController(BaseTestCase):
             errors[0]['message']
         )
 
-    def webclient_query_patch(self, query=None, content_type=CONTENT_TYPE_XML):
-        """
-        Patch for DOIOstiWebClient.webclient_query_doi().
-
-        Allows a pending check to occur without actually having to communicate
-        with the OSTI test server.
-        """
-        # Return dummy xml results containing the statuses we expect
-        # Released
-        if query['doi'] == '10.17189/28957':
-            xml_file = 'DOI_Release_20200727_from_register.xml'
-        # Pending
-        elif query['doi'] == '10.17189/29348':
-            xml_file = 'DOI_Release_20200727_from_release.xml'
-        # Error
-        else:
-            xml_file = 'DOI_Release_20200727_from_error.xml'
-
-        with open(join(TestDoisController.input_dir, xml_file), 'r') as infile:
-            xml_contents = infile.read()
-
-        return xml_contents
-
-    def transaction_log_patch(self):
-        """No-op patch for Transaction.log() to avoid modifying our test DB"""
-        return
-
+    @unittest.skipIf(DOIServiceFactory.get_service_type() == SERVICE_TYPE_DATACITE,
+                     "DataCite does not assign a pending state to release requests")
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch)
@@ -884,6 +892,7 @@ class TestDoisController(BaseTestCase):
         'log', transaction_log_patch)
     def test_get_check_dois(self):
         """Test case for get_check_dois"""
+        # TODO need datacite version
         test_db = join(self.test_data_dir, 'pending_dois.db')
 
         query_string = [('submitter', 'doi-checker@jpl.nasa.gov'),
