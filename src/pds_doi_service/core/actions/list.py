@@ -101,20 +101,13 @@ class DOICoreActionList(DOICoreAction):
                  'the provided addresses as the submitter will be returned.'
         )
 
-    def parse_arguments_from_cmd(self, arguments):
-        criteria = {}
-
-        for k, v in arguments._get_kwargs():
-            if k != 'subcommand':
-                criteria[k] = v
-
-        self.parse_criteria(**criteria)
-
     def parse_criteria(self, doi=None, ids=None, node=None, status=None,
                        start_update=None, end_update=None, submitter=None):
         """
         Parse the command-line criteria into a dictionary format suitable
         for use to query the the local transaction database.
+
+        Note that this method takes the place of DOICoreAction.parse_arguments.
 
         Parameters
         ----------
