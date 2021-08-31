@@ -1,3 +1,7 @@
+[SERVICE]
+# Should be one of OSTI, DataCite (case-insensitive)
+provider = datacite
+
 [OSTI]
 url = https://www.osti.gov/iad2test/api/records
 #url = https://www.osti.gov/iad2/api/records

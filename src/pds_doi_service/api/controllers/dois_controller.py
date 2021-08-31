@@ -24,21 +24,19 @@ from flask import current_app
 
 from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.api.models import DoiRecord, DoiSummary
-from pds_doi_service.core.actions.check import DOICoreActionCheck
-from pds_doi_service.core.actions.draft import DOICoreActionDraft
-from pds_doi_service.core.actions.list import DOICoreActionList
-from pds_doi_service.core.actions.release import DOICoreActionRelease
-from pds_doi_service.core.actions.reserve import DOICoreActionReserve
+from pds_doi_service.core.actions import (DOICoreActionCheck,
+                                          DOICoreActionDraft,
+                                          DOICoreActionList,
+                                          DOICoreActionRelease,
+                                          DOICoreActionReserve)
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    WebRequestException,
                                                    NoTransactionHistoryForIdentifierException,
                                                    UnknownIdentifierException,
                                                    WarningDOIException)
 from pds_doi_service.core.input.input_util import DOIInputUtil
-from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiWebParser,
-                                                               DOIOstiXmlWebParser,
-                                                               DOIOstiJsonWebParser)
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON, CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -275,6 +273,9 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     """
     logger.info('POST /dois request received, action: %s', action)
 
+    # Get the appropriate parser for the currently configured service
+    web_parser = DOIServiceFactory.get_web_parser_service()
+
     try:
         if action == 'reserve':
             # Extract the list of labels from the requestBody, if one was provided
@@ -302,7 +303,9 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 doi_label = reserve_action.run(**reserve_kwargs)
 
             # Parse the JSON string back into a list of DOIs
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(doi_label)
+            dois, _ = web_parser.parse_dois_from_label(
+                doi_label, content_type=CONTENT_TYPE_JSON
+            )
         elif action == 'draft':
             if not body and not url:
                 raise ValueError('No requestBody or URL parameter provided '
@@ -326,28 +329,27 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 # as potential input types, so it should be sufficient to just
                 # check for JSON here
                 if connexion.request.is_json:
-                    raise ValueError(
-                        'JSON requestBody provided for draft POST request. '
-                        'Body must be an XML PDS4/DOI label.'
-                    )
+                    content_type = CONTENT_TYPE_JSON
+                else:
+                    content_type = CONTENT_TYPE_XML
 
-                with NamedTemporaryFile('wb', prefix='labels_', suffix='.xml') as xml_file:
-                    logger.debug('Writing temporary label to %s', xml_file.name)
+                with NamedTemporaryFile('wb', prefix='labels_', suffix=f'.{content_type}') as outfile:
+                    logger.debug('Writing temporary label to %s', outfile.name)
 
-                    xml_file.write(body)
-                    xml_file.flush()
+                    outfile.write(body)
+                    outfile.flush()
 
                     draft_kwargs = {
                         'node': node,
                         'submitter': submitter,
-                        'input': xml_file.name,
+                        'input': outfile.name,
                         'force': force
                     }
 
                     doi_label = draft_action.run(**draft_kwargs)
 
-            # Parse the XML string back into a list of DOIs
-            dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(doi_label)
+            # Parse the label back into a list of DOIs
+            dois, _ = web_parser.parse_dois_from_label(doi_label)
         else:
             raise ValueError('Action must be either "draft" or "reserve". '
                              'Received "{}"'.format(action))
@@ -439,7 +441,8 @@ def post_release_doi(identifier, force=False, **kwargs):
         # An output label may contain entries other than the requested
         # identifier, extract only the appropriate record into its own temporary
         # file and feed it to the release action
-        record, content_type = DOIOstiWebParser.get_record_for_identifier(label_file, identifier)
+        web_parser = DOIServiceFactory.get_web_parser_service()
+        record, content_type = web_parser.get_record_for_identifier(label_file, identifier)
 
         with NamedTemporaryFile('w', prefix='output_', suffix=f'.{content_type}') as temp_file:
             logger.debug('Writing temporary label to %s', temp_file.name)
@@ -462,7 +465,9 @@ def post_release_doi(identifier, force=False, **kwargs):
 
             release_label = release_action.run(**release_kwargs)
 
-        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(release_label)
+        dois, errors = web_parser.parse_dois_from_label(
+            release_label, content_type=CONTENT_TYPE_JSON
+        )
 
         # Propagate any errors returned from the attempt in a single exception
         if errors:
@@ -508,6 +513,9 @@ def get_doi_from_id(identifier):  # noqa: E501
     """
     logger.info('GET /doi request received for identifier %s', identifier)
 
+    # Get the appropriate parser for the currently configured service
+    web_parser = DOIServiceFactory.get_web_parser_service()
+
     list_action = DOICoreActionList(db_name=_get_db_name())
 
     list_kwargs = {'ids': identifier}
@@ -521,8 +529,7 @@ def get_doi_from_id(identifier):  # noqa: E501
             )
 
         # Extract the latest record from all those returned
-        list_record = next(filter(lambda list_result: list_result['is_latest'],
-                                  list_results))
+        list_record = list_results[0]
 
         # Make sure we can locate the output label associated with this
         # transaction
@@ -541,7 +548,7 @@ def get_doi_from_id(identifier):  # noqa: E501
 
         # Get only the record corresponding to the requested identifier
         (label_for_id,
-         content_type) = DOIOstiWebParser.get_record_for_identifier(label_file, identifier)
+         content_type) = web_parser.get_record_for_identifier(label_file, identifier)
     except UnknownIdentifierException as err:
         # Return "not found" code
         return format_exceptions(err), 404
@@ -550,15 +557,11 @@ def get_doi_from_id(identifier):  # noqa: E501
         return format_exceptions(err), 500
 
     # Parse the label associated with the lidvid so we can return a full DoiRecord
-    dois, _ = DOIOstiWebParser.parse_dois_from_label(label_for_id, content_type)
-
-    # Create a return label in XML, since this is the format expected by
-    # consumers of the response (such as the UI)
-    xml_label_for_id = DOIOstiRecord().create_doi_record(dois[0])
+    dois, _ = web_parser.parse_dois_from_label(label_for_id, content_type)
 
     records = _records_from_dois(
         dois, node=list_record['node_id'], submitter=list_record['submitter'],
-        doi_label=xml_label_for_id
+        doi_label=label_for_id
     )
 
     # Should only ever be one record since we filtered by a single id

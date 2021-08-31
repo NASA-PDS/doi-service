@@ -1,0 +1,262 @@
+{
+    "data":
+    [
+        {
+            "id": "10.17189/28606",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.17189/28606",
+                "suffix": "28606",
+                "identifiers": [
+                    {
+                        "identifier": "10.17189/28606",
+                        "identifierType": "DOI"
+                    }
+                ],
+                "creators": [
+                    {
+                        "nameType": "Personal",
+                        "name": "Linux, Reginald P.",
+                        "givenName": "Reginald P.",
+                        "familyName": "Linux"
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Laboratory Shocked Feldspars Bundle",
+                        "lang": "en"
+                    }
+                ],
+                "publisher": "NASA Planetary Data System",
+                "publicationYear": "2020",
+                "subjects": [
+                    { "subject": "PDS4" },
+                    { "subject": "PDS" }
+                ],
+                "contributors": [
+                    {
+                        "nameType": "Organizational",
+                        "name": "Planetary Data System: Cartography and Imaging Sciences Discipline Node",
+                        "contributorType": "DataCurator"
+                    }
+                ],
+                "types": {
+                    "resourceTypeGeneral": "Collection",
+                    "resourceType": "PDS4 Bundle"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relatedIdentifier": "urn:nasa:pds:lab_shocked_feldspars",
+                        "relatedIdentifierType": "URN",
+                        "relationType": "HasMetadata",
+                        "resourceTypeGeneral": "Text"
+                    }
+                ],
+                "url": "N/A",
+                "created": "2021-08-30T10:23:55.786257Z",
+                "updated": "2021-08-30T10:23:55.786257Z",
+                "state": "reserved",
+                "language": "en",
+                "schemaVersion": "http://datacite.org/schema/kernel-4"
+            }
+        },
+        {
+            "type": "dois",
+            "attributes": {
+                "event": "publish",
+                "prefix": "10.13143",
+                "identifiers": [
+                    {
+                        "identifier": "TBD",
+                        "identifierType": "DOI"
+                    }
+                ],
+                "creators": [
+                    {
+                        "nameType": "Personal",
+                        "name": "Deen, R.",
+                        "givenName": "R.",
+                        "familyName": "Deen"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Abarca, H.",
+                        "givenName": "H.",
+                        "familyName": "Abarca"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Zamani, P.",
+                        "givenName": "P.",
+                        "familyName": "Zamani"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Maki, J.",
+                        "givenName": "J.",
+                        "familyName": "Maki"
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "InSight Cameras Bundle 1.1",
+                        "lang": "en"
+                    }
+                ],
+                "publisher": "NASA Planetary Data System",
+                "publicationYear": "2019",
+                "subjects": [
+                    { "subject": "Engineering" },
+                    { "subject": "PDS4" },
+                    { "subject": "camera" },
+                    { "subject": "context" },
+                    { "subject": "data" },
+                    { "subject": "deployment" },
+                    { "subject": "edr" },
+                    { "subject": "experiment" },
+                    { "subject": "insight" },
+                    { "subject": "lander" },
+                    { "subject": "mars" },
+                    { "subject": "product" },
+                    { "subject": "raw" },
+                    { "subject": "rdr" },
+                    { "subject": "record" },
+                    { "subject": "reduced" },
+                    { "subject": "science" },
+                    { "subject": "PDS" }
+                ],
+                "contributors": [
+                    {
+                        "nameType": "Organizational",
+                        "name": "Planetary Data System: Engineering Node",
+                        "contributorType": "DataCurator"
+                    }
+                ],
+                "types": {
+                    "resourceTypeGeneral": "Dataset",
+                    "resourceType": "PDS4 Refereed Data Bundle"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relatedIdentifier": "urn:nasa:pds:insight_cameras::1.1",
+                        "relatedIdentifierType": "URN",
+                        "relationType": "HasMetadata",
+                        "resourceTypeGeneral": "Text"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+                        "descriptionType": "Abstract",
+                        "lang": "en"
+                    }
+                ],
+                "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.1",
+                "created": "2021-08-30T10:23:55.787806Z",
+                "updated": "2021-08-30T10:23:55.787806Z",
+                "state": "pending",
+                "language": "en",
+                "schemaVersion": "http://datacite.org/schema/kernel-4"
+            }
+        },
+        {
+            "type": "dois",
+            "attributes": {
+                "event": "publish",
+                "prefix": "10.13143",
+                "identifiers": [
+                    {
+                        "identifier": "TBD",
+                        "identifierType": "DOI"
+                    }
+                ],
+                "creators": [
+                    {
+                        "nameType": "Personal",
+                        "name": "Deen, R.",
+                        "givenName": "R.",
+                        "familyName": "Deen"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Abarca, H.",
+                        "givenName": "H.",
+                        "familyName": "Abarca"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Zamani, P.",
+                        "givenName": "P.",
+                        "familyName": "Zamani"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Maki, J.",
+                        "givenName": "J.",
+                        "familyName": "Maki"
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "InSight Cameras Bundle",
+                        "lang": "en"
+                    }
+                ],
+                "publisher": "NASA Planetary Data System",
+                "publicationYear": "2019",
+                "subjects": [
+                    { "subject": "Engineering" },
+                    { "subject": "PDS4" },
+                    { "subject": "camera" },
+                    { "subject": "context" },
+                    { "subject": "data" },
+                    { "subject": "deployment" },
+                    { "subject": "edr" },
+                    { "subject": "experiment" },
+                    { "subject": "insight" },
+                    { "subject": "lander" },
+                    { "subject": "mars" },
+                    { "subject": "product" },
+                    { "subject": "raw" },
+                    { "subject": "rdr" },
+                    { "subject": "record" },
+                    { "subject": "reduced" },
+                    { "subject": "science" },
+                    { "subject": "PDS" }
+                ],
+                "contributors": [
+                    {
+                        "nameType": "Organizational",
+                        "name": "Planetary Data System: Engineering Node",
+                        "contributorType": "DataCurator"
+                    }
+                ],
+                "types": {
+                    "resourceTypeGeneral": "Dataset",
+                    "resourceType": "PDS4 Refereed Data Bundle"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relatedIdentifier": "urn:nasa:pds:insight_cameras",
+                        "relatedIdentifierType": "URN",
+                        "relationType": "HasMetadata",
+                        "resourceTypeGeneral": "Text"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+                        "descriptionType": "Abstract",
+                        "lang": "en"
+                    }
+                ],
+                "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.1",
+                "created": "2021-08-30T10:23:55.789762Z",
+                "updated": "2021-08-30T10:23:55.789762Z",
+                "state": "pending",
+                "language": "en",
+                "schemaVersion": "http://datacite.org/schema/kernel-4"
+            }
+        }
+    ]
+}

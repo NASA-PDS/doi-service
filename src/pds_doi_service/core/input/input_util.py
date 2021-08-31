@@ -28,9 +28,10 @@ from lxml import etree
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator
-from pds_doi_service.core.outputs.osti.osti_web_parser import (DOIOstiXmlWebParser,
-                                                               DOIOstiJsonWebParser)
+from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
+from pds_doi_service.core.outputs.service import DOIServiceFactory, SERVICE_TYPE_DATACITE
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -85,8 +86,8 @@ class DOIInputUtil:
         # function pointers
         self._parser_map = {
             '.xml': self.parse_xml_file,
-            '.xls': self.parse_sxls_file,
-            '.xlsx': self.parse_sxls_file,
+            '.xls': self.parse_xls_file,
+            '.xlsx': self.parse_xls_file,
             '.csv': self.parse_csv_file,
             '.json': self.parse_json_file
         }
@@ -99,7 +100,23 @@ class DOIInputUtil:
     def parse_xml_file(self, xml_path):
         """
         Parses DOIs from a file with an .xml extension. The file is expected
-        to conform either to the PDS4 label or a DOI output label schema.
+        to conform either to a PDS4 label or the OSTI XML label schema.
+
+        Parameters
+        ----------
+        xml_path : str
+            Path to the XML file to parse.
+
+        Returns
+        -------
+        dois : List of Doi
+            DOI objects parsed from the provided XML file.
+
+        Raises
+        ------
+        InputFormatException
+            If the provided XML file cannot be parsed as a PDS4 label or
+            OSTI XML label.
 
         """
         dois = []
@@ -139,19 +156,36 @@ class DOIInputUtil:
 
         return dois
 
-    def parse_sxls_file(self, i_filepath):
+    def parse_xls_file(self, xls_path):
         """
-        Receives a URI containing SXLS format and writes one external file per
-        row to an output directory.
-        """
-        logger.info("i_filepath: %s", i_filepath)
+        Parses DOIs from an Excel file with an .xls or .xlsx extension.
+        Each row within the spreadsheet is parsed into a distinct DOI object.
 
-        xl_wb = pd.ExcelFile(i_filepath, engine='openpyxl')
+        Parameters
+        ----------
+        xls_path : str
+            Path to the Excel file to parse.
+
+        Returns
+        -------
+        dois : List of Doi
+            DOI objects parsed from the provided Excel file.
+
+        Raises
+        ------
+        InputFormatException
+            If the provided Excel file contains less than the expected number
+            of columns.
+
+        """
+        logger.info('Parsing xls file %s', basename(xls_path))
+
+        xl_wb = pd.ExcelFile(xls_path, engine='openpyxl')
 
         # We only want the first sheet.
         actual_sheet_name = xl_wb.sheet_names[0]
         xl_sheet = pd.read_excel(
-            i_filepath, actual_sheet_name,
+            xls_path, actual_sheet_name,
             # Parse 3rd column (1-indexed) as a pd.Timestamp, can't use
             # name of column since it hasn't been standardized yet
             parse_dates=[3],
@@ -162,8 +196,8 @@ class DOIInputUtil:
         num_cols = len(xl_sheet.columns)
         num_rows = len(xl_sheet.index)
 
-        logger.info("num_cols: %d", num_cols)
-        logger.info("num_rows: %d", num_rows)
+        logger.debug("num_cols: %d", num_cols)
+        logger.debug("num_rows: %d", num_rows)
         logger.debug("data columns: %s", str(list(xl_sheet.columns)))
 
         # rename columns in a simpler way
@@ -177,22 +211,32 @@ class DOIInputUtil:
 
         if num_cols < self.EXPECTED_NUM_COLUMNS:
             msg = (f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
-                   f"provided XLS file, but only found {num_cols} columns.")
+                   f"provided XLS file, but only found {num_cols} column(s).")
 
             logger.error(msg)
             raise InputFormatException(msg)
-        else:
-            dois = self._parse_rows_to_doi_meta(xl_sheet)
-            logger.info("FILE_WRITE_SUMMARY: num_rows " + str(num_rows))
+
+        dois = self._parse_rows_to_dois(xl_sheet)
 
         return dois
 
-    def _parse_rows_to_doi_meta(self, xl_sheet):
+    def _parse_rows_to_dois(self, xl_sheet):
         """
-        Given all rows in input file, parse each row and return a list of
-        Doi objects.
+        Given an in-memory Excel spreadsheet, parse each row and return a list
+        of DOI objects.
+
+        Parameters
+        ----------
+        xl_sheet : pandas.DataFrame
+            The in-memory spreadsheet to parse.
+
+        Returns
+        -------
+        dois : list of Doi
+            The DOI objects parsed from the Excel spreadsheet.
+
         """
-        doi_records = []
+        dois = []
         timestamp = datetime.now()
 
         for index, row in xl_sheet.iterrows():
@@ -210,9 +254,9 @@ class DOIInputUtil:
                       date_record_updated=timestamp)
 
             logger.debug("Parsed Doi: %r", doi.__dict__)
-            doi_records.append(doi)
+            dois.append(doi)
 
-        return doi_records
+        return dois
 
     @staticmethod
     def _parse_product_type(product_type_specific):
@@ -244,14 +288,33 @@ class DOIInputUtil:
 
         return product_type
 
-    def parse_csv_file(self, csv_filepath):
+    def parse_csv_file(self, csv_path):
         """
-        Receives a URI containing CSV format and create one external file per
-        row to output directory.
+        Parses DOIs from a file with a .csv extension.
+        Each row within the CSV is parsed into a distinct DOI object.
+
+        Parameters
+        ----------
+        csv_path : str
+            Path to the CSV file to parse.
+
+        Returns
+        -------
+        dois : List of Doi
+            DOI objects parsed from the provided CSV file.
+
+        Raises
+        ------
+        InputFormatException
+            If the provided CSV file contains less than the expected number
+            of columns.
+
         """
+        logger.info('Parsing csv file %s', basename(csv_path))
+
         # Read the CSV file into memory
         csv_sheet = pd.read_csv(
-            csv_filepath,
+            csv_path,
             # Have pandas auto-parse publication_date column as a datetime
             parse_dates=["publication_date"],
             # Remove automatic replacement of empty columns with NaN
@@ -268,44 +331,61 @@ class DOIInputUtil:
 
         if num_cols < self.EXPECTED_NUM_COLUMNS:
             msg = (f"Expecting {self.EXPECTED_NUM_COLUMNS} columns in the provided "
-                   f"CSV file, but only found {num_cols} columns.")
+                   f"CSV file, but only found {num_cols} column(s).")
 
             logger.error(msg)
-            logger.error("csv_filepath: %s", csv_filepath)
-            logger.error("data columns: %s", list(csv_sheet.columns))
             raise InputFormatException(msg)
-        else:
-            dois = self._parse_rows_to_doi_meta(csv_sheet)
-            logger.debug("FILE_WRITE_SUMMARY: num_rows %d", num_rows)
+
+        dois = self._parse_rows_to_dois(csv_sheet)
 
         return dois
 
-    def parse_json_file(self, json_filepath):
+    def parse_json_file(self, json_path):
         """
-        Parses DOIs from a file with a .json extension. The file is expected
-        to conform to the OSTI output JSON schema.
+        Parses DOI's from a file with a .json extension. The file is expected
+        to conform to the JSON schema associated to the service provider in use.
+
+        Parameters
+        ----------
+        json_path : str
+            Path to the JSON file to parse.
+
+        Returns
+        -------
+        dois : List of Doi
+            DOI objects parsed from the provided JSON file.
 
         """
+        logger.info('Parsing json file %s', basename(json_path))
+
         dois = []
+        web_parser = DOIServiceFactory.get_web_parser_service()
+        validator = DOIServiceFactory.get_validator_service()
 
         # First read the contents of the file
-        with open(json_filepath, 'r') as infile:
+        with open(json_path, 'r') as infile:
             json_contents = infile.read()
 
-        # We only support the OSTI json format currently, so attempt to
-        # parse Dois with the DOIOStiWebParser class. If it fails we'll return
-        # an empty list of Dois.
+        # Validate and parse the provide JSON label based on the service provider
+        # configured within the INI. If there's a mismatch, the validation step
+        # should catch it.
         try:
-            dois, _ = DOIOstiJsonWebParser.parse_dois_from_label(json_contents)
-        except InputFormatException:
-            logger.warning('Unable to parse any Doi objects from provided '
-                           'json file "%s"', json_filepath)
+            if DOIServiceFactory.get_service_type() == SERVICE_TYPE_DATACITE:
+                validator.validate(json_contents)
+
+            dois, _ = web_parser.parse_dois_from_label(
+                json_contents, content_type=CONTENT_TYPE_JSON
+            )
+        except InputFormatException as err:
+            logger.warning('Unable to parse DOI objects from provided '
+                           'json file "%s"\nReason: %s',
+                           json_path, str(err))
 
         return dois
 
     def _read_from_path(self, path):
         """
-        Parses Doi's from the file or files referenced by the provided path.
+        Parses DOI's from the file or files referenced by the provided path.
         If the path points to a single file, only that file is parsed. Otherwise,
         directories are walked for any files contained within. Any files with
         unsupported extensions are ignored.

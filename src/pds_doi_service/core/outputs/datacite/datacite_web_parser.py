@@ -252,7 +252,7 @@ class DOIDataCiteWebParser(DOIWebParser):
             )
 
         dois = []
-        errors = []  # TODO
+        errors = []  # DataCite does not return error information in response
 
         datacite_records = json.loads(label_text)['data']
 
@@ -278,7 +278,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                 parsed_value = getattr(
                     DOIDataCiteWebParser, f'_parse_{optional_field}')(datacite_record)
 
-                if parsed_value:
+                if parsed_value is not None:
                     doi_fields[optional_field] = parsed_value
                     logger.debug('Parsed value %s for optional field %s',
                                  parsed_value, optional_field)
@@ -312,21 +312,28 @@ class DOIDataCiteWebParser(DOIWebParser):
 
         Raises
         ------
-        UnknownLIDVIDException
-            If there is no record for the LIDVID in the provided label file.
+        UnknownIdentifierException
+            If there is no record for the PDS ID in the provided label file.
 
         """
         with open(label_file, 'r') as infile:
-            record = json.load(infile)
+            records = json.load(infile)
 
-        if 'data' in record and 'attributes' in record['data']:
+        if 'data' in records:
             # Strip off the stuff we don't care about
-            record = record['data']['attributes']
+            records = records['data']
 
-        record_id = DOIDataCiteWebParser._parse_related_identifier(record)
+        # May have been handed a single record, if so wrap in a list so loop
+        # below still works
+        if not isinstance(records, list):
+            records = [records]
 
-        if record_id == identifier:
-            return json.dumps(record, indent=4), CONTENT_TYPE_JSON
+        for record in records:
+            record_id = DOIDataCiteWebParser._parse_related_identifier(record['attributes'])
+
+            if record_id == identifier:
+                # Re-add the data key we stripped off earlier
+                return json.dumps({'data': record}, indent=4), CONTENT_TYPE_JSON
         else:
             raise UnknownIdentifierException(
                 f'Could not find entry for identifier "{identifier}" in '

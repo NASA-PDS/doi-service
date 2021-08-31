@@ -247,7 +247,7 @@ class DOIValidator:
 
         Raises
         ------
-        InvalidDOIException
+        InvalidRecordException
             If any of the identifier field checks fail
 
         """
@@ -282,7 +282,7 @@ class DOIValidator:
 
         Raises
         ------
-        InvalidLIDVIDException
+        InvalidIdentifierException
             If the related identifier field of the DOI does not conform to
             the LIDVID format. These exceptions should be able to be bypassed
             when the --force flag is provided.
@@ -368,9 +368,10 @@ class DOIValidator:
             # cause an error.
             if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:
                 msg = (
-                    f"There is a DOI record {doi_str} with status: '{prev_status.lower()}'. "
+                    f"There is a record for identifier {doi.related_identifier} "
+                    f"(DOI: {doi_str}) with status: '{prev_status.lower()}'.\n"
                     f"Are you sure you want to restart the workflow from step "
-                    f"'{doi.status}' for the identifier {doi.related_identifier}?"
+                    f"'{doi.status}'?"
                 )
 
                 raise UnexpectedDOIActionException(msg)

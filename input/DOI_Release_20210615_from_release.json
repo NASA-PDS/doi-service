@@ -5,7 +5,12 @@
             "type": "dois",
             "attributes": {
                 "doi": "10.13143/yzw2-vz66",
-                "identifiers": [],
+                "identifiers": [
+                    {
+                        "identifier": "10.13143/yzw2-vz66",
+                        "identifierType": "DOI"
+                    }
+                ],
                 "creators": [
                     {
                         "name": "Deen, R.",
@@ -47,7 +52,7 @@
                 ],
                 "publisher": "NASA Planetary Data System",
                 "container": {},
-                "publicationYear": 2019,
+                "publicationYear": "2019",
                 "subjects": [
                     {
                         "subject": "PDS"
@@ -141,7 +146,7 @@
                     }
                 ],
                 "dates": [],
-                "language": null,
+                "language": "en",
                 "types": {
                     "ris": "DATA",
                     "bibtex": "misc",
@@ -160,7 +165,6 @@
                 ],
                 "sizes": [],
                 "formats": [],
-                "version": null,
                 "rightsList": [],
                 "descriptions": [
                     {

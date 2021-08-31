@@ -10,6 +10,7 @@ from pkg_resources import resource_filename
 from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.outputs.service import DOIServiceFactory, SERVICE_TYPE_OSTI
 
 
 class InputUtilTestCase(unittest.TestCase):
@@ -69,7 +70,7 @@ class InputUtilTestCase(unittest.TestCase):
 
         # Test single entry spreadsheet
         i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318.xlsx')
-        dois = doi_input_util.parse_sxls_file(i_filepath)
+        dois = doi_input_util.parse_xls_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
 
@@ -90,7 +91,7 @@ class InputUtilTestCase(unittest.TestCase):
             'DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx'
         )
 
-        dois = doi_input_util.parse_sxls_file(i_filepath)
+        dois = doi_input_util.parse_xls_file(i_filepath)
 
         self.assertEqual(len(dois), 3)
         self.assertTrue(all([doi.title.startswith('Laboratory Shocked Feldspars')
@@ -179,8 +180,12 @@ class InputUtilTestCase(unittest.TestCase):
         """Test the DOIInputUtil.parse_json_file() method"""
         doi_input_util = DOIInputUtil()
 
-        # Test with an OSTI JSON label
-        i_filepath = join(self.input_dir, 'DOI_Release_20210216_from_reserve.json')
+        # Test with the appropriate JSON label for the current service
+        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
+            i_filepath = join(self.input_dir, 'DOI_Release_20210216_from_reserve.json')
+        else:
+            i_filepath = join(self.input_dir, 'DOI_Release_20210615_from_reserve.json')
+
         dois = doi_input_util.parse_json_file(i_filepath)
 
         self.assertEqual(len(dois), 1)

@@ -12,9 +12,7 @@ from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException, WarningDOIException
-from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
-from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser, DOIOstiJsonWebParser
-
+from pds_doi_service.core.outputs.service import DOIServiceFactory
 
 class DraftActionTestCase(unittest.TestCase):
     # Because validation has been added to each action, the force=True is
@@ -29,6 +27,9 @@ class DraftActionTestCase(unittest.TestCase):
         self._draft_action = DOICoreActionDraft(db_name=self.db_name)
         self._review_action = DOICoreActionRelease(db_name=self.db_name)
 
+        self._record_service = DOIServiceFactory.get_doi_record_service()
+        self._web_parser = DOIServiceFactory.get_web_parser_service()
+
     def tearDown(self):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
@@ -42,9 +43,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -54,8 +55,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.editors), 3)
         self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(doi.related_identifier, 'urn:nasa:pds:insight_cameras::1.0')
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -70,9 +70,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 2)
         self.assertEqual(len(errors), 0)
@@ -104,9 +104,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -116,8 +116,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.editors), 3)
         self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(doi.related_identifier, 'urn:nasa:pds:insight_cameras::1.0')
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -132,9 +131,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -143,8 +142,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.related_identifier,
-                         'urn:nasa:pds:insight_cameras::1.0')
+        self.assertEqual(doi.related_identifier, 'urn:nasa:pds:insight_cameras::1.0')
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -159,9 +157,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -201,9 +199,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -212,8 +210,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.related_identifier,
-                         'urn:nasa:pds:insight_cameras:data::1.0')
+        self.assertEqual(doi.related_identifier, 'urn:nasa:pds:insight_cameras:data::1.0')
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -228,9 +225,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -239,10 +236,8 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.related_identifier,
-                         'urn:nasa:pds:insight_cameras:browse::1.0')
-        self.assertEqual(doi.description,
-                         'Collection of BROWSE products.')
+        self.assertEqual(doi.related_identifier, 'urn:nasa:pds:insight_cameras:browse::1.0')
+        self.assertEqual(doi.description, 'Collection of BROWSE products.')
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -257,9 +252,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -286,9 +281,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        osti_doi = self._draft_action.run(**kwargs)
+        doi_label = self._draft_action.run(**kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -297,10 +292,8 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.related_identifier,
-                         'urn:nasa:pds:insight_cameras:document::1.0')
-        self.assertEqual(doi.description,
-                         'Collection of DOCUMENT products.')
+        self.assertEqual(doi.related_identifier, 'urn:nasa:pds:insight_cameras:document::1.0')
+        self.assertEqual(doi.description, 'Collection of DOCUMENT products.')
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -316,29 +309,33 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        draft_osti_doi = self._draft_action.run(**draft_kwargs)
+        draft_doi_label = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(draft_osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(draft_doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
         self.assertEqual(dois[0].status, DoiStatus.Draft)
 
         # Move the draft to review
-        with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
-            xml_file.write(draft_osti_doi)
-            xml_file.flush()
+        json_doi_label = self._record_service.create_doi_record(dois, content_type='json')
+
+        with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.json') as outfile:
+            outfile.write(json_doi_label)
+            outfile.flush()
 
             review_kwargs = {
-                'input': xml_file.name,
+                'input': outfile.name,
                 'node': 'img',
                 'submitter': 'my_user@my_node.gov',
                 'force': True
             }
 
-            review_osti_doi = self._review_action.run(**review_kwargs)
+            review_doi_label = self._review_action.run(**review_kwargs)
 
-        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(review_osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(
+            review_doi_label, content_type='json'
+        )
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -354,9 +351,11 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        draft_osti_doi = self._draft_action.run(**draft_kwargs)
+        draft_doi_label = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(draft_osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(
+            draft_doi_label, content_type='json'
+        )
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -374,9 +373,9 @@ class DraftActionTestCase(unittest.TestCase):
             'force': True
         }
 
-        draft_osti_doi = self._draft_action.run(**draft_kwargs)
+        draft_doi_label = self._draft_action.run(**draft_kwargs)
 
-        dois, errors = DOIOstiXmlWebParser.parse_dois_from_label(draft_osti_doi)
+        dois, errors = self._web_parser.parse_dois_from_label(draft_doi_label)
 
         self.assertEqual(len(dois), 1)
         self.assertEqual(len(errors), 0)
@@ -387,14 +386,14 @@ class DraftActionTestCase(unittest.TestCase):
         # Slightly modify the lidvid so we trigger the "duplicate title" warning
         doi.related_identifier += '.1'
 
-        modified_draft_label = DOIOstiRecord().create_doi_record(doi)
+        modified_draft_label = self._record_service.create_doi_record(doi, content_type='json')
 
-        with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.xml') as xml_file:
-            xml_file.write(modified_draft_label)
-            xml_file.flush()
+        with tempfile.NamedTemporaryFile(mode='w', dir=self.test_dir, suffix='.json') as outfile:
+            outfile.write(modified_draft_label)
+            outfile.flush()
 
             draft_kwargs = {
-                'input': xml_file.name,
+                'input': outfile.name,
                 'node': 'img',
                 'submitter': 'my_user@my_node.gov',
                 'force': False
@@ -407,7 +406,7 @@ class DraftActionTestCase(unittest.TestCase):
             # Now try again with the force flag set and we should bypass the
             # warning
             draft_kwargs = {
-                'input': xml_file.name,
+                'input': outfile.name,
                 'node': 'img',
                 'submitter': 'my_user@my_node.gov',
                 'force': True

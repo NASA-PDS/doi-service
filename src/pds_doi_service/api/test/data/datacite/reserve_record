@@ -1,0 +1,110 @@
+{
+    "data":
+        {
+            "type": "dois",
+            "attributes": {
+                "prefix": "10.13143",
+                "creators": [
+                    {
+                        "nameType": "Personal",
+                        "name": "Maki, J.",
+                        "givenName": "J.",
+                        "familyName": "Maki"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Zamani, P.",
+                        "givenName": "P.",
+                        "familyName": "Zamani"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Abarca, H.",
+                        "givenName": "H.",
+                        "familyName": "Abarca"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Deen, R.",
+                        "givenName": "R.",
+                        "familyName": "Deen"
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "InSight Cameras Bundle",
+                        "lang": "en"
+                    }
+                ],
+                "publisher": "NASA Planetary Data System",
+                "publicationYear": "2019",
+                "subjects": [
+                    { "subject": "Camera" },
+                    { "subject": "Context" },
+                    { "subject": "Deployment" },
+                    { "subject": "Insight" },
+                    { "subject": "Instrument" },
+                    { "subject": "Lander" },
+                    { "subject": "Mars" },
+                    { "subject": "Mission" },
+                    { "subject": "PDS" },
+                    { "subject": "Planet" },
+                    { "subject": "Raw" },
+                    { "subject": "Science" },
+                    { "subject": "Spacecraft" }
+                ],
+                "contributors": [
+                    {
+                        "nameType": "Personal",
+                        "name": "Beebe, R. F.",
+                        "givenName": "R. F.",
+                        "familyName": "Beebe",
+                        "contributorType": "Editor"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Lemmon, M.",
+                        "givenName": "M.",
+                        "familyName": "Lemmon",
+                        "contributorType": "Editor"
+                    },
+                    {
+                        "nameType": "Personal",
+                        "name": "Smith, P. H.",
+                        "givenName": "P. H.",
+                        "familyName": "Smith",
+                        "contributorType": "Editor"
+                    },
+                    {
+                        "nameType": "Organizational",
+                        "name": "Planetary Data System: Engineering Node",
+                        "contributorType": "DataCurator"
+                    }
+                ],
+                "types": {
+                    "resourceTypeGeneral": "Dataset",
+                    "resourceType": "PDS4 Refereed Data Bundle"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relatedIdentifier": "urn:nasa:pds:insight_cameras::2.0",
+                        "relatedIdentifierType": "URN",
+                        "relationType": "HasMetadata",
+                        "resourceTypeGeneral": "Text"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+                        "descriptionType": "Abstract",
+                        "lang": "en"
+                    }
+                ],
+                "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0",
+                "created": "2021-08-30T10:37:44.736133Z",
+                "updated": "2021-08-30T10:37:44.736133Z",
+                "state": "reserved_not_submitted",
+                "language": "en"
+            }
+        }
+}

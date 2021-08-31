@@ -81,17 +81,32 @@ class DOIDataCiteValidator(DOIServiceValidator):
         if strtobool(validate_against_schema):
             json_contents = json.loads(label_contents)
 
-            if 'data' in json_contents and 'attributes' in json_contents['data']:
+            if 'data' in json_contents:
                 # Strip off the stuff that is not covered by the JSON schema
-                json_contents = json_contents['data']['attributes']
+                json_contents = json_contents['data']
 
-            if not self._schema_validator.is_valid(json_contents):
-                error_message = 'Provided JSON does not conform to the DataCite Schema, reason(s):\n'
+            # DataCite labels can contain a single or multiple records,
+            # wrap single records in a list for a common interface
+            if not isinstance(json_contents, list):
+                json_contents = [json_contents]
 
-                for error in self._schema_validator.iter_errors(json_contents):
-                    error_message += '{path}: {message}\n'.format(
-                        path='/'.join(map(str, error.path)),
-                        message=error.message
-                    )
+            error_message = ""
 
+            for index, record in enumerate(json_contents):
+                if 'attributes' not in record:
+                    error_message += (f'JSON record at index {index} does not appear '
+                                      'to be in DataCite format.\n'
+                                      'Please ensure the label is valid DataCite '
+                                      'JSON (as opposed to OSTI-format).')
+                elif not self._schema_validator.is_valid(record['attributes']):
+                    error_message += (f'JSON record at index {index} does not '
+                                      f'conform to the DataCite Schema, reason(s):\n')
+
+                    for error in self._schema_validator.iter_errors(record['attributes']):
+                        error_message += '{path}: {message}\n'.format(
+                            path='/'.join(map(str, error.path)),
+                            message=error.message
+                        )
+
+            if error_message:
                 raise InputFormatException(error_message)

@@ -14,11 +14,15 @@ from os.path import abspath, dirname, join
 from pkg_resources import resource_filename
 from unittest.mock import patch
 
+import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
-from pds_doi_service.core.actions.check import DOICoreActionCheck
+from pds_doi_service.core.actions import DOICoreActionCheck
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.service import (DOIServiceFactory,
+                                                  SERVICE_TYPE_OSTI,
+                                                  SERVICE_TYPE_DATACITE)
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
@@ -64,33 +68,41 @@ class CheckActionTestCase(unittest.TestCase):
     def webclient_query_patch_nominal(self, query,  url=None, username=None,
                                       password=None, content_type=CONTENT_TYPE_XML):
         """
-        Patch for DOIOstiWebClient.query_doi().
+        Patch for DOIWebClient.query_doi().
 
         Allows a pending check to occur without actually having to communicate
-        with the OSTI test server.
+        with the test server.
 
-        This version simulates a successful registration response from OST.
+        This version simulates a successful registration response from the
+        appropriate service provider.
         """
-        # Read an XML output label that corresponds to the DOI we're
-        # checking for, and that has a status of 'registered'
-        with open(join(CheckActionTestCase.input_dir,
-                       'DOI_Release_20200727_from_register.xml'), 'r') as infile:
-            xml_contents = infile.read()
+        # Read an output label that corresponds to the DOI we're
+        # checking for, and that has a status of 'registered' or 'findable'
+        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
+            label = join(CheckActionTestCase.input_dir,
+                         'DOI_Release_20200727_from_register.xml')
+        else:
+            label = join(CheckActionTestCase.input_dir,
+                         'DOI_Release_20210615_from_release.json')
 
-        return xml_contents
+        with open(label, 'r') as infile:
+            label_contents = infile.read()
+
+        return label_contents
 
     def webclient_query_patch_error(self, query, url=None, username=None,
                                     password=None, content_type=CONTENT_TYPE_XML):
         """
-        Patch for DOIOstiWebClient.query_doi().
+        Patch for DOIWebClient.query_doi().
 
         Allows a pending check to occur without actually having to communicate
         with the OSTI test server.
 
-        This version simulates an erroneous registration response from OST.
+        This version simulates an erroneous registration response from the
+        service provider.
         """
-        # Read an XML output label that corresponds to the DOI we're
-        # checking for, and that has a status of 'registered'
+        # Read an output label that corresponds to the DOI we're
+        # checking for, and that has a status of 'error'
         with open(join(CheckActionTestCase.input_dir,
                        'DOI_Release_20200727_from_error.xml'), 'r') as infile:
             xml_contents = infile.read()
@@ -107,8 +119,8 @@ class CheckActionTestCase(unittest.TestCase):
 
         This version simulates an response that is still pending release.
         """
-        # Read an XML output label that corresponds to the DOI we're
-        # checking for, and that has a status of 'registered'
+        # Read an output label that corresponds to the DOI we're
+        # checking for, and that has a status of 'pending'
         with open(join(CheckActionTestCase.input_dir,
                        'DOI_Release_20200727_from_release.xml'), 'r') as infile:
             xml_contents = infile.read()
@@ -117,6 +129,9 @@ class CheckActionTestCase(unittest.TestCase):
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
+        'query_doi', webclient_query_patch_nominal)
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
         'query_doi', webclient_query_patch_nominal)
     def test_check_for_pending_entries(self):
         """Test check action that returns a successfully registered entry"""
@@ -127,11 +142,13 @@ class CheckActionTestCase(unittest.TestCase):
         pending_record = pending_records[0]
 
         self.assertEqual(pending_record['previous_status'], DoiStatus.Pending)
-        self.assertEqual(pending_record['status'], DoiStatus.Registered)
+        self.assertIn(pending_record['status'], (DoiStatus.Registered, DoiStatus.Findable))
         self.assertEqual(pending_record['submitter'], 'img-submitter@jpl.nasa.gov')
         self.assertEqual(pending_record['doi'], '10.17189/29348')
         self.assertEqual(pending_record['identifier'], 'urn:nasa:pds:lab_shocked_feldspars::1.0')
 
+    @unittest.skipIf(DOIServiceFactory.get_service_type() == SERVICE_TYPE_DATACITE,
+                     "DataCite does not return errors via label")
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch_error)
@@ -152,6 +169,8 @@ class CheckActionTestCase(unittest.TestCase):
         # There should be a message to go along with the error
         self.assertIsNotNone(pending_record['message'])
 
+    @unittest.skipIf(DOIServiceFactory.get_service_type() == SERVICE_TYPE_DATACITE,
+                     "DataCite does not assign a pending state to release requests")
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
         'query_doi', webclient_query_patch_no_change)
@@ -195,6 +214,9 @@ class CheckActionTestCase(unittest.TestCase):
         'get_config', get_config_patch)
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
+        'query_doi', webclient_query_patch_nominal)
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
         'query_doi', webclient_query_patch_nominal)
     def test_email_receipt(self):
         """Test sending of the check action status via email"""
