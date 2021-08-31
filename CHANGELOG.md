@@ -1,16 +1,19 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-24)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-31)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...«unknown»)
 
 **Improvements:**
 
 - As a user, I want to see the PDS3 ids as they originally are [\#229](https://github.com/NASA-PDS/pds-doi-service/issues/229)
+- review the full doi workflow and make it smooth for eng operators/users [\#145](https://github.com/NASA-PDS/pds-doi-service/issues/145)
 
 **Other closed issues:**
 
+- As an Administrator, I want to toggle the DOI service provider via the INI config [\#237](https://github.com/NASA-PDS/pds-doi-service/issues/237)
 - Create Validator class for DataCite JSON Labels [\#236](https://github.com/NASA-PDS/pds-doi-service/issues/236)
+- Deploy point build of DOI service and UI [\#90](https://github.com/NASA-PDS/pds-doi-service/issues/90)
 
 ## [v0.3.1](https://github.com/NASA-PDS/pds-doi-service/tree/v0.3.1) (2021-08-04)
 
