@@ -42,6 +42,18 @@ class DOICoreAction:
 
     @staticmethod
     def create_cmd_parser():
+        """
+        Creates an argument parser suitable for use with the action class.
+        The appropriate subparsers are added based on the available inheritors
+        of DOICoreAction and their associated implementations of add_to_subparser().
+
+        Returns
+        -------
+        parser : argparse.ArgumentParser
+            An argument parser with subparsers for each available action
+            subclass.
+
+        """
         parser = argparse.ArgumentParser(
             description='PDS core command for DOI management. '
                         'The available subcommands are:\n',
@@ -62,16 +74,70 @@ class DOICoreAction:
 
         return parser
 
-    def parse_arguments_from_cmd(self, arguments):
-        if arguments:
-            for arg in self._run_arguments:
-                if hasattr(arguments, arg):
-                    v = getattr(arguments, arg)
-                    setattr(self, f'_{arg}', v)
+    @classmethod
+    def add_to_subparser(cls, subparsers):
+        """
+        Method for actions to add their own subparser which defines the set
+        of command-line arguments specific to the action.
+
+        Inheritors of DOICoreAction must provide an implementation that invokes
+        add_parser on the provided subparsers object. The parser returned by
+        add_parser can then be used by the action to define its own command-line
+        arguments.
+
+        Parameters
+        ----------
+        subparsers : argparse._SubParsersAction
+            The set of subparsers for the action to add its own to.
+
+        """
+        return NotImplementedError(
+            f'Subclasses of {cls.__class__.__name__} must provide an '
+            f'implementation for add_to_subparser()'
+        )
 
     def parse_arguments(self, kwargs):
+        """
+        Parsers arguments from the provided keyword dictionary, assigning
+        only those arguments that are expected by the action (i.e. defined
+        in the _run_arguments attribute list).
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary of arguments to assign to the action class as attributes.
+
+        """
         for kwarg in self._run_arguments:
             if kwarg in kwargs:
                 setattr(self, f'_{kwarg}', kwargs[kwarg])
 
-            logger.info(f"{kwarg} = {getattr(self,  f'_{kwarg}')}")
+            logger.debug(f"{kwarg} = {getattr(self,  f'_{kwarg}')}")
+
+    def run(self, **kwargs):
+        """
+        Main entrypoint to the action class.
+
+        Inheritors must provide an implementation that performs the expected
+        actions of the class.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Keyword dictionary containing arguments for the action class,
+            typically as obtained from the command-line parser.
+
+        Returns
+        -------
+        result : str
+            The result of running the action with the provided arguments.
+            Typically this is the text body of a DOI label, or the results of
+            a database query operation. As pds_doi_cmd.py prints what is returned
+            to it, this value should always be a string (or have a valid string
+            representation).
+
+        """
+        return NotImplementedError(
+            f'Subclasses of {self.__class__.__name__} must provide an '
+            f'implementation for run()'
+        )
