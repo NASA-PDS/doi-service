@@ -25,6 +25,7 @@ class ProductType(str, Enum):
     Bundle = 'Bundle'
     Text = 'Text'
     Dataset = 'Dataset'
+    Other = 'Other'
 
 
 @unique
