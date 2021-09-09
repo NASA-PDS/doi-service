@@ -77,6 +77,31 @@ class DOIServiceFactory:
     _config = DOIConfigUtil().get_config()
 
     @staticmethod
+    def _check_service_type(service_type):
+        """
+        Checks if the provided service type is among the expected values.
+
+        Parameters
+        ----------
+        service_type : str
+            Service type to check. Is automatically converted to lowercase
+            to provide a case-insensitive check.
+
+        Raises
+        ------
+        ValueError
+            If the service type is not among the valid types recognized by this
+            class (or if no type is specified by the INI config at all).
+
+        """
+        if service_type.lower() not in VALID_SERVICE_TYPES:
+            raise ValueError(
+                f'Unsupported service type "{service_type}" provided.\n'
+                f'Service type should be assigned to the SERVICE.provider field of '
+                f'the INI config with one of the following values: {VALID_SERVICE_TYPES}'
+            )
+
+    @staticmethod
     def get_service_type():
         """
         Returns the configured service type as defined within the INI config.
@@ -87,30 +112,23 @@ class DOIServiceFactory:
             The service type to be used. This value is converted to lowercase
             by this method before it is returned.
 
-        Raises
-        ------
-        ValueError
-            If the service type is not among the valid types recognized by this
-            class (or if no type is specified by the INI config at all).
-
         """
         service_type = DOIServiceFactory._config.get(
             'SERVICE', 'provider', fallback='unassigned'
         )
 
-        if service_type.lower() not in VALID_SERVICE_TYPES:
-            raise ValueError(
-                f'Unsupported service type "{service_type}" provided.\n'
-                f'Service type must be assigned to the SERVICE.provider field of '
-                f'the INI config with one of the following values: {VALID_SERVICE_TYPES}'
-            )
-
         return service_type.lower()
 
     @staticmethod
-    def get_doi_record_service():
+    def get_doi_record_service(service_type=None):
         """
         Returns the appropriate DOIRecord subclass for the current service type.
+
+        Parameters
+        ----------
+        service_type : str, optional
+            The service type to return a DOIRecord subclass for. Defaults to
+            the SERVICE.provider value of the INI config.
 
         Returns
         -------
@@ -119,7 +137,10 @@ class DOIServiceFactory:
             DOI service type.
 
         """
-        service_type = DOIServiceFactory.get_service_type()
+        if not service_type:
+            service_type = DOIServiceFactory.get_service_type()
+
+        DOIServiceFactory._check_service_type(service_type)
 
         doi_record_class = DOIServiceFactory._DOI_RECORD_MAP[service_type]
         logger.debug('Returning instance of %s for service type %s',
@@ -128,9 +149,15 @@ class DOIServiceFactory:
         return doi_record_class()
 
     @staticmethod
-    def get_validator_service():
+    def get_validator_service(service_type=None):
         """
         Returns the appropriate DOIValidator subclass for the current service type.
+
+        Parameters
+        ----------
+        service_type : str, optional
+            The service type to return a DOIValidator subclass for. Defaults to
+            the SERVICE.provider value of the INI config.
 
         Returns
         -------
@@ -139,7 +166,10 @@ class DOIServiceFactory:
             DOI service type.
 
         """
-        service_type = DOIServiceFactory.get_service_type()
+        if not service_type:
+            service_type = DOIServiceFactory.get_service_type()
+
+        DOIServiceFactory._check_service_type(service_type)
 
         doi_validator_class = DOIServiceFactory._SERVICE_VALIDATOR_MAP[service_type]
         logger.debug('Returning instance of %s for service type %s',
@@ -148,9 +178,15 @@ class DOIServiceFactory:
         return doi_validator_class()
 
     @staticmethod
-    def get_web_client_service():
+    def get_web_client_service(service_type=None):
         """
         Returns the appropriate DOIWebClient subclass for the current service type.
+
+        Parameters
+        ----------
+        service_type : str, optional
+            The service type to return a DOIWebClient subclass for. Defaults to
+            the SERVICE.provider value of the INI config.
 
         Returns
         -------
@@ -159,7 +195,10 @@ class DOIServiceFactory:
             DOI service type.
 
         """
-        service_type = DOIServiceFactory.get_service_type()
+        if not service_type:
+            service_type = DOIServiceFactory.get_service_type()
+
+        DOIServiceFactory._check_service_type(service_type)
 
         web_client_class = DOIServiceFactory._WEB_CLIENT_MAP[service_type]
         logger.debug('Returning instance of %s for service type %s',
@@ -168,9 +207,15 @@ class DOIServiceFactory:
         return web_client_class()
 
     @staticmethod
-    def get_web_parser_service():
+    def get_web_parser_service(service_type=None):
         """
         Returns the appropriate DOIWebParser subclass for the current service type.
+
+        Parameters
+        ----------
+        service_type : str, optional
+            The service type to return a DOIWebParser subclass for. Defaults to
+            the SERVICE.provider value of the INI config.
 
         Returns
         -------
@@ -179,7 +224,10 @@ class DOIServiceFactory:
             DOI service type.
 
         """
-        service_type = DOIServiceFactory.get_service_type()
+        if not service_type:
+            service_type = DOIServiceFactory.get_service_type()
+
+        DOIServiceFactory._check_service_type(service_type)
 
         web_parser_class = DOIServiceFactory._WEB_PARSER_MAP[service_type]
         logger.debug('Returning instance of %s for service type %s',
