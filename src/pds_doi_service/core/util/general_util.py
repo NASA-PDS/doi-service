@@ -13,9 +13,32 @@ general_util.py
 General utility functions for things like logging.
 """
 
+import re
 import logging
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+
+
+def sanitize_json_string(string):
+    """
+    Cleans up extraneous whitespace from the provided string so it may be
+    written to a JSON file. Extraneous whitespace include any before or after
+    the provided string, as well as between words.
+
+    Parameters
+    ----------
+    string : str
+        The string to sanitize.
+
+    Returns
+    -------
+    string : str
+        The provided string, sanitized of extraneous whitespace.
+
+    """
+    # Clean up whitespace (including line breaks) both between words and
+    # at the ends of the string
+    return re.sub(r"\s+", " ", string, flags=re.UNICODE).strip()
 
 
 def get_logger(module_name=''):
@@ -34,6 +57,5 @@ def get_logger(module_name=''):
     logger.setLevel(getattr(logging, logging_level.upper()))
 
     return logger
-
 
 
