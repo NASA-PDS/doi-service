@@ -43,12 +43,16 @@ class DOIValidator:
 
     # The workflow_order dictionary contains the progression of the status of a DOI:
     m_workflow_order = {
+        DoiStatus.Error: 0,
+        DoiStatus.Unknown: 0,
         DoiStatus.Reserved_not_submitted: 0,
         DoiStatus.Reserved: 1,
         DoiStatus.Draft: 2,
         DoiStatus.Review: 3,
         DoiStatus.Pending: 4,
-        DoiStatus.Registered: 5
+        DoiStatus.Registered: 5,
+        DoiStatus.Findable: 5,
+        DoiStatus.Deactivated: 5
     }
 
     def __init__(self, db_name=None):
