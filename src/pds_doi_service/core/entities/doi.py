@@ -75,6 +75,26 @@ class DoiStatus(str, Enum):
     Deactivated = 'deactivated'
 
 
+@unique
+class DoiEvent(str, Enum):
+    """
+    Enumerates the possible DOI events that can be requested in a submission
+    to DataCite.
+
+    Events consist of:
+        Publish -
+            Moves a DOI from draft or registered state to findable
+        Register -
+            Moves a DOI from draft to registered
+        Hide -
+            Moves a DOI from findable back to registered
+
+    """
+    Publish = 'publish'
+    Register = 'register'
+    Hide = 'hide'
+
+
 @dataclass
 class Doi:
     """The dataclass definition for a Doi object."""
@@ -97,3 +117,4 @@ class Doi:
     message: str = None
     date_record_added: datetime = None
     date_record_updated: datetime = None
+    event: DoiEvent = None

@@ -14,7 +14,7 @@ Contains the definition for the Release action of the Core PDS DOI Service.
 """
 
 from pds_doi_service.core.actions.action import DOICoreAction
-from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import DoiEvent, DoiStatus
 from pds_doi_service.core.input.exceptions import (InputFormatException,
                                                    DuplicatedTitleDOIException,
                                                    UnexpectedDOIActionException,
@@ -136,6 +136,11 @@ class DOICoreActionRelease(DOICoreAction):
 
             # Add 'status' field so the ranking in the workflow can be determined.
             doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
+
+            if self._no_review:
+                # Add the event field to instruct DataCite to publish DOI to
+                # findable state (should have no effect for other providers)
+                doi.event = DoiEvent.Publish
 
         return dois
 
