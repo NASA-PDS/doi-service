@@ -103,6 +103,7 @@ class Doi:
     product_type: ProductType
     product_type_specific: str
     related_identifier: str
+    identifiers: list = field(default_factory=list)
     authors: list = None
     keywords: set = field(default_factory=set)
     editors: list = None
