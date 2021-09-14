@@ -93,10 +93,9 @@ class DOIWebClient:
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
-            # Detail text is not always present, which can cause json parsing
-            # issues
+            # Detail text is not always present
             details = (
-                f'Details: {pprint.pformat(json.loads(response.text))}'
+                f'Details: {pprint.pformat(response.text)}'
                 if response.text else ''
             )
 

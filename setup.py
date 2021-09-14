@@ -16,7 +16,7 @@ import setuptools, versioneer
 
 
 name               = 'pds-doi-service'
-description        = 'A short description, about 100–120 characters, suitable for search summaries'
+description        = 'PDS DOI Registration Service'
 keywords           = ['pds', 'doi', 'osti', 'dataCite']
 zip_safe           = False
 python_requires    = '>=3.7'
@@ -34,12 +34,14 @@ package_data = {
     'pds.doi_service': [
         'api/swagger/swagger.yaml',
         'core/util/conf.ini.default',
-        'core/actions/email_template_header.mustache',
+        'core/actions/email_template_header.txt',
         'core/actions/email_template_body.txt',
-        'core/outputs/DOI_template_20200407-mustache.xml',
-        'core/outputs/DOI_IAD2_reserved_template_20200205-mustache.xml',
-        'core/input/IAD3_scheematron.sch',
-        'core/util/iad_schema.xsd'
+        'core/outputs/datacite/datacite_4.3_schema.json',
+        'core/outputs/datacite/DOI_DataCite_template_20210520-jinja2.json',
+        'core/outputs/osti/DOI_IAD2_template_20210914-jinja2.xml',
+        'core/outputs/osti/DOI_IAD2_template_20210914-jinja2.json',
+        'core/outputs/osti/IAD3_schematron.sch',
+        'core/outputs/osti/iad_schema.xsd'
     ]
 }
 classifiers = [
