@@ -14,7 +14,7 @@ Feature: reserve a OSTI DOI
   Scenario Outline: Reserve an OSTI DOI with an invalid PDS4 label
     Given an invalid PDS4 label at <input_value>
     When reserve DOI in OSTI format at <node_value>
-    Then a reading error report is generated for <input_value> 
+    Then a reading error report is generated for <input_value>
     Examples: Invalid PDS4 labels
       | input_type   | node_value | input_value                   | error_report  |
       | bundle       | img        | tests/data/invalid_bundle.xml | tests/data/reserve_error_report.txt |
@@ -47,15 +47,3 @@ Feature: reserve a OSTI DOI
 #      | aaDOI_production_submitted_labels     | rms        | RINGS_reserve_VIMS_20200406/aaaSubmitted_by_RINGS_reserve_20200406/DOI_RMS_Cassini-Reserved-2020-03-31_edited.xlsx | RINGS_reserve_VIMS_20200406/aaaRegistered_by_EN_reserve_20200316/DOI_reserved_all_records.xml |
 # This next doesn't compare due to "[Showalter #2], new:[Showalter #3]'
 #      | aaDOI_production_submitted_labels     | rms        | RINGS_reserve_VIMS_20200406/aaaSubmitted_by_RINGS_reserve_20200406/DOI_RMS_Cassini-Reserved-2020-03-31_edited.xlsx | RINGS_reserve_VIMS_20200406/aaaRegistered_by_EN_reserve_20200316/DOI_reserved_cassini_vims_saturn_document_vims-browse-interpretation-key_edit.xml |
-
-
-
-
-
-
-
-
-
-
-
-

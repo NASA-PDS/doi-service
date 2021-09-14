@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =============
 input_util.py
@@ -12,28 +11,28 @@ input_util.py
 
 Contains classes for working with input label files, be they local or remote.
 """
-
 import os
-import urllib.parse
 import tempfile
+import urllib.parse
 from datetime import datetime
 from os.path import basename
-
-from xmlschema import XMLSchemaValidationError
 
 import pandas as pd
 import requests
 from lxml import etree
-
-from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
+from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
-from pds_doi_service.core.outputs.service import DOIServiceFactory, SERVICE_TYPE_DATACITE
+from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+from xmlschema import XMLSchemaValidationError
 
 # Get the common logger
 logger = get_logger(__name__)
@@ -44,15 +43,21 @@ class DOIInputUtil:
     EXPECTED_NUM_COLUMNS = 7
     """Expected number of columns in an input CSV file."""
 
-    MANDATORY_COLUMNS = ['status', 'title', 'publication_date',
-                         'product_type_specific', 'author_last_name',
-                         'author_first_name', 'related_resource']
+    MANDATORY_COLUMNS = [
+        "status",
+        "title",
+        "publication_date",
+        "product_type_specific",
+        "author_last_name",
+        "author_first_name",
+        "related_resource",
+    ]
     """The names of the expected columns within a CSV file."""
 
     EXPECTED_PUBLICATION_DATE_LEN = 10
     """Expected minimum length of a parsed publication date."""
 
-    DEFAULT_VALID_EXTENSIONS = ['.xml', '.csv', '.xlsx', '.xls', '.json']
+    DEFAULT_VALID_EXTENSIONS = [".xml", ".csv", ".xlsx", ".xls", ".json"]
     """The default list of valid input file extensions this module can read."""
 
     def __init__(self, valid_extensions=None):
@@ -74,9 +79,7 @@ class DOIInputUtil:
 
         """
         self._config = DOIConfigUtil().get_config()
-        self._label_util = DOIPDS4LabelUtil(
-            landing_page_template=self._config.get('LANDING_PAGES', 'url')
-        )
+        self._label_util = DOIPDS4LabelUtil(landing_page_template=self._config.get("LANDING_PAGES", "url"))
         self._valid_extensions = valid_extensions or self.DEFAULT_VALID_EXTENSIONS
 
         if not isinstance(self._valid_extensions, (list, tuple, set)):
@@ -85,17 +88,15 @@ class DOIInputUtil:
         # Set up the mapping of supported extensions to the corresponding read
         # function pointers
         self._parser_map = {
-            '.xml': self.parse_xml_file,
-            '.xls': self.parse_xls_file,
-            '.xlsx': self.parse_xls_file,
-            '.csv': self.parse_csv_file,
-            '.json': self.parse_json_file
+            ".xml": self.parse_xml_file,
+            ".xls": self.parse_xls_file,
+            ".xlsx": self.parse_xls_file,
+            ".csv": self.parse_csv_file,
+            ".json": self.parse_json_file,
         }
 
-        if not all([extension in self._parser_map
-                    for extension in self._valid_extensions]):
-            raise ValueError('One or more the provided extensions are not '
-                             'supported by the DOIInputUtil class.')
+        if not all([extension in self._parser_map for extension in self._valid_extensions]):
+            raise ValueError("One or more the provided extensions are not " "supported by the DOIInputUtil class.")
 
     def parse_xml_file(self, xml_path):
         """
@@ -122,27 +123,22 @@ class DOIInputUtil:
         dois = []
 
         # First read the contents of the file
-        with open(xml_path, 'r') as infile:
+        with open(xml_path, "r") as infile:
             xml_contents = infile.read()
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
         # Check if we were handed a PSD4 label
         if self._label_util.is_pds4_label(xml_tree):
-            logger.info('Parsing xml file %s as a PSD4 label',
-                        basename(xml_path))
+            logger.info("Parsing xml file %s as a PSD4 label", basename(xml_path))
 
             try:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
             except Exception as err:
-                raise InputFormatException(
-                    'Could not parse the provided xml file as a PDS4 label.\n'
-                    f'Reason: {err}'
-                )
+                raise InputFormatException("Could not parse the provided xml file as a PDS4 label.\n" f"Reason: {err}")
         # Otherwise, assume OSTI format
         else:
-            logger.info('Parsing xml file %s as an OSTI label',
-                        basename(xml_path))
+            logger.info("Parsing xml file %s as an OSTI label", basename(xml_path))
 
             try:
                 DOIOstiValidator()._validate_against_xsd(xml_tree)
@@ -150,8 +146,7 @@ class DOIInputUtil:
                 dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(xml_contents)
             except XMLSchemaValidationError as err:
                 raise InputFormatException(
-                    'Could not parse the provided xml file as an OSTI label.\n'
-                    f'Reason: {err.reason}'
+                    "Could not parse the provided xml file as an OSTI label.\n" f"Reason: {err.reason}"
                 )
 
         return dois
@@ -178,19 +173,20 @@ class DOIInputUtil:
             of columns.
 
         """
-        logger.info('Parsing xls file %s', basename(xls_path))
+        logger.info("Parsing xls file %s", basename(xls_path))
 
-        xl_wb = pd.ExcelFile(xls_path, engine='openpyxl')
+        xl_wb = pd.ExcelFile(xls_path, engine="openpyxl")
 
         # We only want the first sheet.
         actual_sheet_name = xl_wb.sheet_names[0]
         xl_sheet = pd.read_excel(
-            xls_path, actual_sheet_name,
+            xls_path,
+            actual_sheet_name,
             # Parse 3rd column (1-indexed) as a pd.Timestamp, can't use
             # name of column since it hasn't been standardized yet
             parse_dates=[3],
             # Remove automatic replacement of empty columns with NaN
-            na_filter=False
+            na_filter=False,
         )
 
         num_cols = len(xl_sheet.columns)
@@ -203,15 +199,17 @@ class DOIInputUtil:
         # rename columns in a simpler way
         xl_sheet = xl_sheet.rename(
             columns={
-                'publication_date (yyyy-mm-dd)': 'publication_date',
-                'product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)': 'product_type_specific',
-                'related_resource\nLIDVID': 'related_resource'
+                "publication_date (yyyy-mm-dd)": "publication_date",
+                "product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)": "product_type_specific",
+                "related_resource\nLIDVID": "related_resource",
             }
         )
 
         if num_cols < self.EXPECTED_NUM_COLUMNS:
-            msg = (f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
-                   f"provided XLS file, but only found {num_cols} column(s).")
+            msg = (
+                f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
+                f"provided XLS file, but only found {num_cols} column(s)."
+            )
 
             logger.error(msg)
             raise InputFormatException(msg)
@@ -242,16 +240,17 @@ class DOIInputUtil:
         for index, row in xl_sheet.iterrows():
             logger.debug(f"row {row}")
 
-            doi = Doi(status=DoiStatus(row['status'].lower()),
-                      title=row['title'],
-                      publication_date=row['publication_date'],
-                      product_type=self._parse_product_type(row['product_type_specific']),
-                      product_type_specific=row['product_type_specific'],
-                      related_identifier=row['related_resource'],
-                      authors=[{'first_name': row['author_first_name'],
-                                'last_name': row['author_last_name']}],
-                      date_record_added=timestamp,
-                      date_record_updated=timestamp)
+            doi = Doi(
+                status=DoiStatus(row["status"].lower()),
+                title=row["title"],
+                publication_date=row["publication_date"],
+                product_type=self._parse_product_type(row["product_type_specific"]),
+                product_type_specific=row["product_type_specific"],
+                related_identifier=row["related_resource"],
+                authors=[{"first_name": row["author_first_name"], "last_name": row["author_last_name"]}],
+                date_record_added=timestamp,
+                date_record_updated=timestamp,
+            )
 
             logger.debug("Parsed Doi: %r", doi.__dict__)
             dois.append(doi)
@@ -280,11 +279,10 @@ class DOIInputUtil:
 
         try:
             product_type = ProductType(product_type_specific_suffix.capitalize())
-            logger.debug('Parsed %s from %s', product_type, product_type_specific)
+            logger.debug("Parsed %s from %s", product_type, product_type_specific)
         except ValueError:
             product_type = ProductType.Collection
-            logger.debug('Could not parsed product type from %s, defaulting to %s',
-                         product_type_specific, product_type)
+            logger.debug("Could not parsed product type from %s, defaulting to %s", product_type_specific, product_type)
 
         return product_type
 
@@ -310,7 +308,7 @@ class DOIInputUtil:
             of columns.
 
         """
-        logger.info('Parsing csv file %s', basename(csv_path))
+        logger.info("Parsing csv file %s", basename(csv_path))
 
         # Read the CSV file into memory
         csv_sheet = pd.read_csv(
@@ -318,7 +316,7 @@ class DOIInputUtil:
             # Have pandas auto-parse publication_date column as a datetime
             parse_dates=["publication_date"],
             # Remove automatic replacement of empty columns with NaN
-            na_filter=False
+            na_filter=False,
         )
 
         num_cols = len(csv_sheet.columns)
@@ -330,8 +328,10 @@ class DOIInputUtil:
         logger.debug("data columns: %s", str(list(csv_sheet.columns)))
 
         if num_cols < self.EXPECTED_NUM_COLUMNS:
-            msg = (f"Expecting {self.EXPECTED_NUM_COLUMNS} columns in the provided "
-                   f"CSV file, but only found {num_cols} column(s).")
+            msg = (
+                f"Expecting {self.EXPECTED_NUM_COLUMNS} columns in the provided "
+                f"CSV file, but only found {num_cols} column(s)."
+            )
 
             logger.error(msg)
             raise InputFormatException(msg)
@@ -356,14 +356,14 @@ class DOIInputUtil:
             DOI objects parsed from the provided JSON file.
 
         """
-        logger.info('Parsing json file %s', basename(json_path))
+        logger.info("Parsing json file %s", basename(json_path))
 
         dois = []
         web_parser = DOIServiceFactory.get_web_parser_service()
         validator = DOIServiceFactory.get_validator_service()
 
         # First read the contents of the file
-        with open(json_path, 'r') as infile:
+        with open(json_path, "r") as infile:
             json_contents = infile.read()
 
         # Validate and parse the provide JSON label based on the service provider
@@ -373,13 +373,11 @@ class DOIInputUtil:
             if DOIServiceFactory.get_service_type() == SERVICE_TYPE_DATACITE:
                 validator.validate(json_contents)
 
-            dois, _ = web_parser.parse_dois_from_label(
-                json_contents, content_type=CONTENT_TYPE_JSON
-            )
+            dois, _ = web_parser.parse_dois_from_label(json_contents, content_type=CONTENT_TYPE_JSON)
         except InputFormatException as err:
-            logger.warning('Unable to parse DOI objects from provided '
-                           'json file "%s"\nReason: %s',
-                           json_path, str(err))
+            logger.warning(
+                "Unable to parse DOI objects from provided " 'json file "%s"\nReason: %s', json_path, str(err)
+            )
 
         return dois
 
@@ -404,7 +402,7 @@ class DOIInputUtil:
         dois = []
 
         if os.path.isfile(path):
-            logger.info('Reading local file path %s', path)
+            logger.info("Reading local file path %s", path)
 
             extension = os.path.splitext(path)[-1]
 
@@ -415,14 +413,14 @@ class DOIInputUtil:
                 try:
                     dois = read_function(path)
                 except OSError as err:
-                    msg = f'Error reading file {path}, reason: {str(err)}'
+                    msg = f"Error reading file {path}, reason: {str(err)}"
 
                     logger.error(msg)
                     raise InputFormatException(msg)
             else:
-                logger.info('File %s has unsupported extension, ignoring', path)
+                logger.info("File %s has unsupported extension, ignoring", path)
         else:
-            logger.info('Reading files within directory %s', path)
+            logger.info("Reading files within directory %s", path)
 
             for sub_path in os.listdir(path):
                 dois.extend(self._read_from_path(os.path.join(path, sub_path)))
@@ -467,9 +465,7 @@ class DOIInputUtil:
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
-            raise InputFormatException(
-                f'Could not read remote file {input_url}, reason: {str(http_err)}'
-            )
+            raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
         with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
             temp_file.write(response.content)
@@ -505,15 +501,14 @@ class DOIInputUtil:
 
         """
         # See if we were handed a URL
-        if input_file.startswith('http'):
+        if input_file.startswith("http"):
             dois = self._read_from_remote(input_file)
         # Otherwise see if its a local file
         elif os.path.exists(input_file):
             dois = self._read_from_path(input_file)
         else:
             raise InputFormatException(
-                f"Error reading file {input_file}, path does not correspond to "
-                f"a remote URL or a local file path."
+                f"Error reading file {input_file}, path does not correspond to " f"a remote URL or a local file path."
             )
 
         # Make sure we got back at least one Doi

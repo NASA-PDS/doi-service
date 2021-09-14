@@ -1,15 +1,15 @@
 # NASA PDS DOI Service
 
-The PDS DOI Service provides tools for PDS operators to mint DOIs.
+The PDS DOI Service provides tools for PDS operators to mint [DOI](https://www.doi.org/)s.
 
 ## Prerequisites
 
 - Python 3.7 or above
 - a login to OSTI server
 
-## User Documentation 
+## User Documentation
 
-    https://nasa-pds.github.io/pds-doi-service/ 
+    https://nasa-pds.github.io/pds-doi-service/
 
 ## Developers
 
@@ -17,24 +17,24 @@ Get the code and work on a branch
 
     git clone ...
     git checkout -b "#<issue number>"
-    
+
 
 Install virtual env
 
     pip install virtualenv
     python -m venv venv
     source venv/bin/activate
-    
+
 
 Deploy dependencies:
 
     pip install -r requirements.txt
     pip install -r requirements_dev.txt
-    
+
 or
-    
+
     pip install -e .
-    
+
 
 Update your local configuration to access the OSTI test server
 
@@ -46,18 +46,18 @@ the following may be used as a template
     password = <ask pds-operator@jpl.nasa.gov>
     release_input_schematron = config/IAD3_scheematron.sch
     input_xsd = config/iad_schema.xsd
-    
+
     [PDS4_DICTIONARY]
     url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
     pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
-    
+
     [LANDING_PAGES]
     # template url, arguments are
     # 1) product_class suffix, after _
     # 2) lid
     # 3) vid
     url = https://pds.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}
-    
+
     [OTHER]
     doi_publisher = NASA Planetary Data System
     global_keyword_values = PDS; PDS4;
@@ -77,12 +77,12 @@ the following may be used as a template
     pds_registration_doi_token = 10.17189
     logging_level=DEBUG
 
-    
+
 ## Launch API server
 
     $ pip install pds-doi-service
     $ pds-doi-api
-    
+
 The started service documentation is available on http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
 
 ## Running with Docker
@@ -109,7 +109,7 @@ This will launch the DOI Service container using the top-level `docker-compose.y
 specifies that environment variables be imported from `doi_service.env`. Modify `doi_service.env`
 to define any configuration values to override when the service is launched.
 
-## Test 
+## Test
 
 ### Unit tests (for developers) :
 
@@ -125,9 +125,9 @@ Note this will download reference test data. If they need to be updated you have
 
 You can also run them for a nicer reporting:
 
-    behave -f allure_behave.formatter:AllureFormatter -o ./allure ./features 
+    behave -f allure_behave.formatter:AllureFormatter -o ./allure ./features
     allure service allure
-    
+
 #### To report to testrail
 
 Test reports can be pushed to testrail: https://cae-testrail.jpl.nasa.gov/testrail/
@@ -139,13 +139,13 @@ Set you environment:
 
     export TESTRAIL_USER=<your email in testrail>
     export TESTRAIL_KEY=<your API key in tesrail>
-    
+
 Run the tests:
 
     behave
-    
+
 See the results in https://cae-testrail.jpl.nasa.gov/testrail/index.php?/projects/overview/168
-    
+
 ## Documentation management
 
 ### Design :
@@ -161,7 +161,7 @@ Managed with sphinx
     brew install sphinx-doc
     pip install -r requirements_dev.txt
     cd docs
-    sphinx-build -b html source build -a 
+    sphinx-build -b html source build -a
 
 ## Build & Release
 

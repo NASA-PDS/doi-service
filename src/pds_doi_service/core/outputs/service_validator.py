@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ====================
 service_validator.py
@@ -12,7 +11,6 @@ service_validator.py
 
 Contains the base class for creating service-specific validator objects.
 """
-
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
@@ -37,6 +35,5 @@ class DOIServiceValidator:
 
         """
         raise NotImplementedError(
-            f'Subclasses of {self.__class__.__name__} must provide an '
-            f'implementation for validate()'
+            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for validate()"
         )

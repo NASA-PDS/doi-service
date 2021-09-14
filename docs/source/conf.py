@@ -17,7 +17,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'PDS DOI Service'
-copyright = '2020 California Institute of Technology'
+copyright = '2020–2021 California Institute of Technology'
 author = 'NASA PDS Engineering Node'
 
 
@@ -76,3 +76,8 @@ html_theme_options = {
 
 html_logo = '_static/images/PDS_Planets.png'
 
+html_context = {
+    'css_files': [
+        '_static/theme_overrides.css',  # override wide tables in RTD theme
+    ],
+}

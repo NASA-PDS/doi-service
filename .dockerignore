@@ -4,5 +4,6 @@ doi_temp.db
 transaction_history/
 **/test*
 **/.DS_Store
+**/._*
 **/__pycache__
 **/.pytest_cache

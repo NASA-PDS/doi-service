@@ -17,8 +17,8 @@ requirements:
    --version`` to find out.
 
 Consult your operating system instructions or system administrator to install
-the required packages. For those without system administrator access and are 
-feeling anxious, you could try a local (home directory) Python_ 3 installation 
+the required packages. For those without system administrator access and are
+feeling anxious, you could try a local (home directory) Python_ 3 installation
 using a Miniconda_ installation.
 
 
@@ -125,7 +125,7 @@ You can explore the API documentation and test it from its UI: http://localhost:
 Upgrade Software
 ----------------
 
-To check and install an upgrade to the software, run the following command in your 
+To check and install an upgrade to the software, run the following command in your
 virtual environment::
 
   pip install --upgrade pds-doi-service

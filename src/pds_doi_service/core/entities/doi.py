@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ======
 doi.py
@@ -12,20 +11,22 @@ doi.py
 
 Contains the dataclass and enumeration definitions for Doi objects.
 """
-
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from datetime import datetime
-from enum import Enum, unique
+from enum import Enum
+from enum import unique
 
 
 @unique
 class ProductType(str, Enum):
     """Enumerates the types of products that can be assigned a DOI."""
-    Collection = 'Collection'
-    Bundle = 'Bundle'
-    Text = 'Text'
-    Dataset = 'Dataset'
-    Other = 'Other'
+
+    Collection = "Collection"
+    Bundle = "Bundle"
+    Text = "Text"
+    Dataset = "Dataset"
+    Other = "Other"
 
 
 @unique
@@ -63,16 +64,17 @@ class DoiStatus(str, Enum):
             The submitted DOI has been deactivated (deleted).
 
     """
-    Error = 'error'
-    Unknown = 'unknown'
-    Reserved_not_submitted = 'reserved_not_submitted'
-    Reserved = 'reserved'
-    Draft = 'draft'
-    Review = 'review'
-    Pending = 'pending'
-    Registered = 'registered'
-    Findable = 'findable'
-    Deactivated = 'deactivated'
+
+    Error = "error"
+    Unknown = "unknown"
+    Reserved_not_submitted = "reserved_not_submitted"
+    Reserved = "reserved"
+    Draft = "draft"
+    Review = "review"
+    Pending = "pending"
+    Registered = "registered"
+    Findable = "findable"
+    Deactivated = "deactivated"
 
 
 @unique
@@ -90,14 +92,16 @@ class DoiEvent(str, Enum):
             Moves a DOI from findable back to registered
 
     """
-    Publish = 'publish'
-    Register = 'register'
-    Hide = 'hide'
+
+    Publish = "publish"
+    Register = "register"
+    Hide = "hide"
 
 
 @dataclass
 class Doi:
     """The dataclass definition for a Doi object."""
+
     title: str
     publication_date: datetime
     product_type: ProductType

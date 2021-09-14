@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ===============
 doi_database.py
@@ -13,16 +12,17 @@ doi_database.py
 Contains classes and functions for interfacing with the local transaction
 database (SQLite3).
 """
-
 import datetime
-from collections import OrderedDict
-from datetime import datetime, timezone, timedelta
-
 import sqlite3
+from collections import OrderedDict
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from sqlite3 import Error
 
+from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pds_doi_service.core.entities.doi import DoiStatus, ProductType
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.
@@ -34,20 +34,21 @@ class DOIDataBase:
     Provides a mechanism to write, update and read rows to/from a local SQLite3
     database.
     """
+
     DOI_DB_SCHEMA = OrderedDict(
         {
-            'identifier': 'TEXT NOT NULL',  # PDS identifier (any version)
-            'doi': 'TEXT',  # DOI (may be null for pending or draft)
-            'status': 'TEXT NOT NULL',  # current status
-            'title': 'TEXT',  # title used for the DOI
-            'submitter': 'TEXT',  # email of the submitter of the DOI
-            'type': 'TEXT',  # product type
-            'subtype': 'TEXT',  # subtype of the product
-            'node_id': 'TEXT NOT NULL',  # steward discipline node ID
-            'date_added': 'INT',  # as Unix epoch seconds
-            'date_updated': 'INT NOT NULL',  # as Unix epoch seconds
-            'transaction_key': 'TEXT NOT NULL',  # transaction (key is node id/datetime)
-            'is_latest': 'BOOLEAN'  # whether the transaction is the latest
+            "identifier": "TEXT NOT NULL",  # PDS identifier (any version)
+            "doi": "TEXT",  # DOI (may be null for pending or draft)
+            "status": "TEXT NOT NULL",  # current status
+            "title": "TEXT",  # title used for the DOI
+            "submitter": "TEXT",  # email of the submitter of the DOI
+            "type": "TEXT",  # product type
+            "subtype": "TEXT",  # subtype of the product
+            "node_id": "TEXT NOT NULL",  # steward discipline node ID
+            "date_added": "INT",  # as Unix epoch seconds
+            "date_updated": "INT NOT NULL",  # as Unix epoch seconds
+            "transaction_key": "TEXT NOT NULL",  # transaction (key is node id/datetime)
+            "is_latest": "BOOLEAN",  # whether the transaction is the latest
         }
     )
     """
@@ -62,7 +63,7 @@ class DOIDataBase:
     def __init__(self, db_file):
         self._config = DOIConfigUtil().get_config()
         self.m_database_name = db_file
-        self.m_default_table_name = 'doi'
+        self.m_default_table_name = "doi"
         self.m_my_conn = None
 
     def get_database_name(self):
@@ -79,20 +80,15 @@ class DOIDataBase:
             # Set m_my_conn to None to signify that there is no connection.
             self.m_my_conn = None
         else:
-            logger.warn("Database connection to %s has not been started or is "
-                        "already closed", self.m_database_name)
+            logger.warn("Database connection to %s has not been started or is " "already closed", self.m_database_name)
 
     def create_connection(self):
         """Create and return a connection to the SQLite database."""
         if self.m_my_conn is not None:
-            logger.warning("There is already an open database connection, "
-                           "closing existing connection.")
+            logger.warning("There is already an open database connection, " "closing existing connection.")
             self.close_database()
 
-        logger.info(
-            "Connecting to SQLite3 (ver %s) database %s",
-            sqlite3.version, self.m_database_name
-        )
+        logger.info("Connecting to SQLite3 (ver %s) database %s", sqlite3.version, self.m_database_name)
 
         try:
             self.m_my_conn = sqlite3.connect(self.m_database_name)
@@ -129,26 +125,22 @@ class DOIDataBase:
         o_table_exists_flag = False
 
         if self.m_my_conn is None:
-            logger.warn("Not connected to %s, establishing new connection...",
-                        self.m_database_name)
+            logger.warn("Not connected to %s, establishing new connection...", self.m_database_name)
             self.create_connection()
 
         table_pointer = self.m_my_conn.cursor()
 
         # Get the count of tables with the given name.
-        query_string = (
-            "SELECT count(name) FROM sqlite_master WHERE type='table' AND "
-            f"name='{table_name}'"
-        )
+        query_string = "SELECT count(name) FROM sqlite_master WHERE type='table' AND " f"name='{table_name}'"
 
-        logger.info('Executing query: %s', query_string)
+        logger.info("Executing query: %s", query_string)
         table_pointer.execute(query_string)
 
         # If the count is 1, then table exists.
         if table_pointer.fetchone()[0] == 1:
             o_table_exists_flag = True
 
-        logger.debug('o_table_exists_flag: %s', o_table_exists_flag)
+        logger.debug("o_table_exists_flag: %s", o_table_exists_flag)
 
         return o_table_exists_flag
 
@@ -156,7 +148,7 @@ class DOIDataBase:
         """Delete the given table from the SQLite database."""
         if self.m_my_conn:
             logger.debug("Executing query: DROP TABLE %s", table_name)
-            self.m_my_conn.execute(f'DROP TABLE {table_name}')
+            self.m_my_conn.execute(f"DROP TABLE {table_name}")
 
     def query_string_for_table_creation(self, table_name):
         """
@@ -175,16 +167,16 @@ class DOIDataBase:
             the database.
 
         """
-        o_query_string = f'CREATE TABLE {table_name} '
-        o_query_string += '('
+        o_query_string = f"CREATE TABLE {table_name} "
+        o_query_string += "("
 
         for index, (column, constraints) in enumerate(self.DOI_DB_SCHEMA.items()):
-            o_query_string += f'{column} {constraints}'
+            o_query_string += f"{column} {constraints}"
 
             if index < (self.EXPECTED_NUM_COLS - 1):
-                o_query_string += ','
+                o_query_string += ","
 
-        o_query_string += ');'
+        o_query_string += ");"
 
         logger.debug("CREATE o_query_string: %s", o_query_string)
 
@@ -206,17 +198,17 @@ class DOIDataBase:
             The Sqlite3 query string used to insert a new row into the database.
 
         """
-        o_query_string = f'INSERT INTO {table_name} '
+        o_query_string = f"INSERT INTO {table_name} "
 
-        o_query_string += '('
+        o_query_string += "("
 
         for index, column in enumerate(self.DOI_DB_SCHEMA):
-            o_query_string += f'{column}'
+            o_query_string += f"{column}"
 
             if index < (self.EXPECTED_NUM_COLS - 1):
-                o_query_string += ','
+                o_query_string += ","
 
-        o_query_string += ') '
+        o_query_string += ") "
 
         o_query_string += f'VALUES ({",".join(["?"] * self.EXPECTED_NUM_COLS)})'
 
@@ -244,11 +236,11 @@ class DOIDataBase:
         """
         # Note that we set column "is_latest" to 0 to signify that all previous
         # rows are now not the latest.
-        o_query_string = f'UPDATE {table_name} '
-        o_query_string += 'SET '
-        o_query_string += 'is_latest = 0 '
-        o_query_string += f'WHERE {primary_key_column} = ?'
-        o_query_string += ';'  # Don't forget the last semi-colon for SQL to work.
+        o_query_string = f"UPDATE {table_name} "
+        o_query_string += "SET "
+        o_query_string += "is_latest = 0 "
+        o_query_string += f"WHERE {primary_key_column} = ?"
+        o_query_string += ";"  # Don't forget the last semi-colon for SQL to work.
 
         logger.debug("UPDATE o_query_string: %s", o_query_string)
 
@@ -264,13 +256,20 @@ class DOIDataBase:
 
         logger.info("Table created successfully")
 
-    def write_doi_info_to_database(self, identifier, transaction_key, doi=None,
-                                   date_added=datetime.now(),
-                                   date_updated=datetime.now(),
-                                   status=DoiStatus.Unknown, title='',
-                                   product_type=ProductType.Collection,
-                                   product_type_specific='',
-                                   submitter='', discipline_node=''):
+    def write_doi_info_to_database(
+        self,
+        identifier,
+        transaction_key,
+        doi=None,
+        date_added=datetime.now(),
+        date_updated=datetime.now(),
+        status=DoiStatus.Unknown,
+        title="",
+        product_type=ProductType.Collection,
+        product_type_specific="",
+        submitter="",
+        discipline_node="",
+    ):
         """
         Write a new row to the Sqlite3 transaction database with the provided
         DOI entry information.
@@ -321,32 +320,31 @@ class DOIDataBase:
         # Map the inputs to the appropriate column names. By doing so, we
         # can ignore database column ordering for now.
         data = {
-            'identifier': identifier,
-            'status': status,
-            'date_added': date_added,
-            'date_updated': date_updated,
-            'submitter': submitter,
-            'title': title,
-            'type': product_type,
-            'subtype': product_type_specific,
-            'node_id': discipline_node,
-            'doi': doi,
-            'transaction_key': transaction_key,
-            'is_latest': True
+            "identifier": identifier,
+            "status": status,
+            "date_added": date_added,
+            "date_updated": date_updated,
+            "submitter": submitter,
+            "title": title,
+            "type": product_type,
+            "subtype": product_type_specific,
+            "node_id": discipline_node,
+            "doi": doi,
+            "transaction_key": transaction_key,
+            "is_latest": True,
         }
 
         try:
             # Create and execute the query to unset the is_latest field for all
             # records with the same identifier field.
             query_string = self.query_string_for_is_latest_update(
-                self.m_default_table_name, primary_key_column='identifier'
+                self.m_default_table_name, primary_key_column="identifier"
             )
 
             self.m_my_conn.execute(query_string, (identifier,))
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = (f"Failed to update is_latest field for identifier {identifier}, "
-                   f"reason: {err}")
+            msg = f"Failed to update is_latest field for identifier {identifier}, " f"reason: {err}"
             logger.error(msg)
             raise RuntimeError(msg)
 
@@ -361,8 +359,7 @@ class DOIDataBase:
             self.m_my_conn.execute(query_string, data_tuple)
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = (f"Failed to commit transaction for identifier {identifier}, "
-                   f"reason: {err}")
+            msg = f"Failed to commit transaction for identifier {identifier}, " f"reason: {err}"
             logger.error(msg)
             raise RuntimeError(msg)
 
@@ -374,15 +371,16 @@ class DOIDataBase:
         for row in rows:
             # Convert the add/update times from Unix epoch back to datetime,
             # accounting for the expected (PST) timezone
-            for time_column in ('date_added', 'date_updated'):
+            for time_column in ("date_added", "date_updated"):
                 time_val = row[columns.index(time_column)]
-                time_val = (datetime.fromtimestamp(time_val, tz=timezone.utc)
-                            .replace(tzinfo=timezone(timedelta(hours=--8.0))))
+                time_val = datetime.fromtimestamp(time_val, tz=timezone.utc).replace(
+                    tzinfo=timezone(timedelta(hours=--8.0))
+                )
                 row[columns.index(time_column)] = time_val
 
             # Convert status/product type back to Enums
-            row[columns.index('status')] = DoiStatus(row[columns.index('status')].lower())
-            row[columns.index('type')] = ProductType(row[columns.index('type')].capitalize())
+            row[columns.index("status")] = DoiStatus(row[columns.index("status")].lower())
+            row[columns.index("type")] = ProductType(row[columns.index("type")].capitalize())
 
         return rows
 
@@ -393,14 +391,14 @@ class DOIDataBase:
 
         self.m_my_conn = self.get_connection(table_name)
 
-        query_string = f'SELECT * FROM {table_name}'
+        query_string = f"SELECT * FROM {table_name}"
 
         criterias_str, criteria_dict = DOIDataBase.parse_criteria(query_criterias)
 
         if len(query_criterias) > 0:
-            query_string += f' WHERE {criterias_str}'
+            query_string += f" WHERE {criterias_str}"
 
-        query_string += '; '
+        query_string += "; "
 
         logger.debug("SELECT query_string: %s", query_string)
 
@@ -413,7 +411,7 @@ class DOIDataBase:
 
         rows = self._normalize_rows(columns, rows)
 
-        logger.debug('Query returned %d result(s)', len(rows))
+        logger.debug("Query returned %d result(s)", len(rows))
 
         return columns, rows
 
@@ -426,10 +424,9 @@ class DOIDataBase:
 
         criterias_str, criteria_dict = DOIDataBase.parse_criteria(query_criterias)
 
-        query_string = (f'SELECT * from {table_name} '
-                        f'WHERE is_latest=1 {criterias_str} ORDER BY date_updated')
+        query_string = f"SELECT * from {table_name} " f"WHERE is_latest=1 {criterias_str} ORDER BY date_updated"
 
-        logger.debug('SELECT query_string: %s', query_string)
+        logger.debug("SELECT query_string: %s", query_string)
 
         cursor = self.m_my_conn.cursor()
         cursor.execute(query_string, criteria_dict)
@@ -440,7 +437,7 @@ class DOIDataBase:
 
         rows = self._normalize_rows(columns, rows)
 
-        logger.debug('Query returned %d result(s)', len(rows))
+        logger.debug("Query returned %d result(s)", len(rows))
 
         return columns, rows
 
@@ -451,7 +448,7 @@ class DOIDataBase:
 
         self.m_my_conn = self.get_connection(table_name)
 
-        query_string = f'SELECT * FROM {table_name};'
+        query_string = f"SELECT * FROM {table_name};"
 
         logger.debug("SELECT query_string %s", query_string)
 
@@ -464,7 +461,7 @@ class DOIDataBase:
 
         rows = self._normalize_rows(columns, rows)
 
-        logger.debug('Query returned %d result(s)', len(rows))
+        logger.debug("Query returned %d result(s)", len(rows))
 
         return columns, rows
 
@@ -478,7 +475,7 @@ class DOIDataBase:
 
         self.m_my_conn = self.get_connection(table_name)
 
-        query_string = f'UPDATE {table_name} SET '
+        query_string = f"UPDATE {table_name} SET "
 
         for ii in range(len(update_list)):
             # Build the SET column_1 = new_value_1,
@@ -487,18 +484,18 @@ class DOIDataBase:
             if ii == 0:
                 query_string += update_list[ii]
             else:
-                query_string += ',' + update_list[ii]
+                query_string += "," + update_list[ii]
 
         # Add any query_criterias
         if len(query_criterias) > 0:
-            query_string += ' WHERE '
+            query_string += " WHERE "
 
         # Build the WHERE clause
         for ii in range(len(query_criterias)):
             if ii == 0:
                 query_string += query_criterias[ii]
             else:
-                query_string += f' AND {query_criterias[ii]} '
+                query_string += f" AND {query_criterias[ii]} "
 
         logger.debug("UPDATE query_string: %s", query_string)
 
@@ -536,31 +533,31 @@ class DOIDataBase:
 
         """
         # Partition the tokens containing wildcards from the fully specified ones
-        wildcard_tokens = list(filter(lambda token: '*' in token, search_tokens))
+        wildcard_tokens = list(filter(lambda token: "*" in token, search_tokens))
         full_tokens = list(set(search_tokens) - set(wildcard_tokens))
 
         # Clean up the column name provided so it can be used as a suitable
         # named parameter placeholder token
-        filter_chars = [' ', '\'', ':', '|']
+        filter_chars = [" ", "'", ":", "|"]
         named_param_id = column_name
 
         for filter_char in filter_chars:
-            named_param_id = named_param_id.replace(filter_char, '')
+            named_param_id = named_param_id.replace(filter_char, "")
 
         # Set up the named parameters for the IN portion of the WHERE used
         # to find fully specified tokens
-        named_parameters = ','.join([f':{named_param_id}_{i}'
-                                     for i in range(len(full_tokens))])
-        named_parameter_values = {f'{named_param_id}_{i}': full_tokens[i]
-                                  for i in range(len(full_tokens))}
+        named_parameters = ",".join([f":{named_param_id}_{i}" for i in range(len(full_tokens))])
+        named_parameter_values = {f"{named_param_id}_{i}": full_tokens[i] for i in range(len(full_tokens))}
 
         # Set up the named parameters for the GLOB portion of the WHERE used
         # find tokens containing wildcards
-        glob_parameters = ' OR '.join([f'{column_name} GLOB :{named_param_id}_glob_{i}'
-                                       for i in range(len(wildcard_tokens))])
+        glob_parameters = " OR ".join(
+            [f"{column_name} GLOB :{named_param_id}_glob_{i}" for i in range(len(wildcard_tokens))]
+        )
 
-        named_parameter_values.update({f'{named_param_id}_glob_{i}': wildcard_tokens[i]
-                                       for i in range(len(wildcard_tokens))})
+        named_parameter_values.update(
+            {f"{named_param_id}_glob_{i}": wildcard_tokens[i] for i in range(len(wildcard_tokens))}
+        )
 
         # Build the portion of the WHERE clause combining the necessary
         # parameters needed to search for all the tokens we were provided
@@ -570,10 +567,10 @@ class DOIDataBase:
             where_subclause += f"{column_name} IN ({named_parameters}) "
 
         if full_tokens and wildcard_tokens:
-            where_subclause += ' OR '
+            where_subclause += " OR "
 
         if wildcard_tokens:
-            where_subclause += f'{glob_parameters}'
+            where_subclause += f"{glob_parameters}"
 
         where_subclause += ")"
 
@@ -583,53 +580,51 @@ class DOIDataBase:
 
     @staticmethod
     def _get_simple_in_criteria(v, column):
-        named_parameters = ','.join([':' + column + '_' + str(i) for i in range(len(v))])
-        named_parameter_values = {column + '_' + str(i): v[i].lower() for i in range(len(v))}
-        return f' AND lower({column}) IN ({named_parameters})', named_parameter_values
+        named_parameters = ",".join([":" + column + "_" + str(i) for i in range(len(v))])
+        named_parameter_values = {column + "_" + str(i): v[i].lower() for i in range(len(v))}
+        return f" AND lower({column}) IN ({named_parameters})", named_parameter_values
 
     @staticmethod
     def _get_query_criteria_title(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'title')
+        return DOIDataBase._get_simple_in_criteria(v, "title")
 
     @staticmethod
     def _get_query_criteria_doi(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'doi')
+        return DOIDataBase._get_simple_in_criteria(v, "doi")
 
     @staticmethod
     def _get_query_criteria_ids(v):
-        return DOIDataBase._form_query_with_wildcards('identifier', v)
+        return DOIDataBase._form_query_with_wildcards("identifier", v)
 
     @staticmethod
     def _get_query_criteria_submitter(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'submitter')
+        return DOIDataBase._get_simple_in_criteria(v, "submitter")
 
     @staticmethod
     def _get_query_criteria_node(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'node_id')
+        return DOIDataBase._get_simple_in_criteria(v, "node_id")
 
     @staticmethod
     def _get_query_criteria_status(v):
-        return DOIDataBase._get_simple_in_criteria(v, 'status')
+        return DOIDataBase._get_simple_in_criteria(v, "status")
 
     @staticmethod
     def _get_query_criteria_start_update(v):
-        return (' AND date_updated >= :start_update',
-                {'start_update': v.replace(tzinfo=timezone.utc).timestamp()})
+        return (" AND date_updated >= :start_update", {"start_update": v.replace(tzinfo=timezone.utc).timestamp()})
 
     @staticmethod
     def _get_query_criteria_end_update(v):
-        return (' AND date_updated <= :end_update',
-                {'end_update': v.replace(tzinfo=timezone.utc).timestamp()})
+        return (" AND date_updated <= :end_update", {"end_update": v.replace(tzinfo=timezone.utc).timestamp()})
 
     @staticmethod
     def parse_criteria(query_criterias):
-        criterias_str = ''
+        criterias_str = ""
         criteria_dict = {}
 
         for k, v in query_criterias.items():
             logger.debug("Calling get_query_criteria_%s with value %s", k, v)
 
-            criteria_str, dict_entry = getattr(DOIDataBase, '_get_query_criteria_' + k)(v)
+            criteria_str, dict_entry = getattr(DOIDataBase, "_get_query_criteria_" + k)(v)
 
             logger.debug("criteria_str: %s", criteria_str)
             logger.debug("dict_entry: %s", dict_entry)

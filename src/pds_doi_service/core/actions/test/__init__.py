@@ -1,12 +1,14 @@
 # encoding: utf-8
-
-'''
+"""
 Planetary Data System's Digital Object Identifier service — tests for core actions
-'''
-
-
+"""
 import unittest
-from . import check_test, draft_test, list_test, release_test, reserve_test
+
+from . import check_test
+from . import draft_test
+from . import list_test
+from . import release_test
+from . import reserve_test
 
 
 def suite():

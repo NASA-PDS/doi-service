@@ -40,7 +40,7 @@ The PDS Data Object Identifier (DOI) service is responsible for the management o
 1. PDS EN operator receives email on DOIs which:
     - have been pending for too long (e.g. 2 days)
     - have been in a reserved or draft status without release for too long (e.g. 2 years)
-    
+
 2. the PDS EN operator can see a dashboard of all the DOIs with status
 3. the submitter can see a summary and status of all the DOI submitted by its node.
 
@@ -104,7 +104,7 @@ Besides a service will automatically raise alerts on DOIs which have been for to
 
 #### Reserve a DOI
 
-TBD 
+TBD
 ---
 
 #### Draft a DOI
@@ -162,8 +162,8 @@ These records are saved in a file directory structure &lt;submitting discipline 
 - input.&lt;[xml|xlsx|csv]&gt;
 - output.xml
 - comment (optional)
-   
-    
+
+
 These databases will be handled locally and later synchronized with the tracking service.
 
 Every command line operation will interact and feed these databases locally.
@@ -217,5 +217,3 @@ TBD
 
 © 2020 California Institute of Technology.
 Government sponsorship acknowledged.
-
-

@@ -37,4 +37,3 @@ Usage Information
 
 .. _OSTI: https://www.osti.gov/data-services
 .. _dataCite: https://datacite.org
-

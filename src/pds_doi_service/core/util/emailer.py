@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ==========
 emailer.py
@@ -12,13 +11,12 @@ emailer.py
 
 Utilities for sending email messages.
 """
-
 import smtplib
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
-logger = get_logger('pds_doi_service.core.util.emailer')
+logger = get_logger("pds_doi_service.core.util.emailer")
 
 
 class Emailer:
@@ -29,8 +27,8 @@ class Emailer:
 
     def __init__(self):
         self._config = DOIConfigUtil().get_config()
-        self.m_localhost = self._config.get('OTHER', 'emailer_local_host')
-        self.m_email_port = int(self._config.get('OTHER', 'emailer_port'))
+        self.m_localhost = self._config.get("OTHER", "emailer_local_host")
+        self.m_email_port = int(self._config.get("OTHER", "emailer_port"))
 
     def sendmail(self, sender, receivers, subject, message_body):
         """
@@ -51,10 +49,7 @@ class Emailer:
         # Build the output message using all parameters.
         # Note that this format below allows the email recipient to see the
         # subject, sender, recipient(s) clearly
-        out_message = (f"From: {sender}\n"
-                       f"To: {','.join(receivers)}\n"
-                       f"Subject: {subject}\n\n"
-                       f"{message_body}")
+        out_message = f"From: {sender}\n" f"To: {','.join(receivers)}\n" f"Subject: {subject}\n\n" f"{message_body}"
 
         smtp = None
 

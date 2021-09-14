@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ==========
 service.py
@@ -13,23 +12,22 @@ service.py
 Contains the factory class for providing the appropriate objects based on the
 configured DOI service provider (OSTI, DataCite, etc...)
 """
-
-from pds_doi_service.core.outputs.datacite import (DOIDataCiteRecord,
-                                                   DOIDataCiteValidator,
-                                                   DOIDataCiteWebClient,
-                                                   DOIDataCiteWebParser)
-from pds_doi_service.core.outputs.osti import (DOIOstiRecord,
-                                               DOIOstiValidator,
-                                               DOIOstiWebClient,
-                                               DOIOstiWebParser)
+from pds_doi_service.core.outputs.datacite import DOIDataCiteRecord
+from pds_doi_service.core.outputs.datacite import DOIDataCiteValidator
+from pds_doi_service.core.outputs.datacite import DOIDataCiteWebClient
+from pds_doi_service.core.outputs.datacite import DOIDataCiteWebParser
+from pds_doi_service.core.outputs.osti import DOIOstiRecord
+from pds_doi_service.core.outputs.osti import DOIOstiValidator
+from pds_doi_service.core.outputs.osti import DOIOstiWebClient
+from pds_doi_service.core.outputs.osti import DOIOstiWebParser
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
 
 
-SERVICE_TYPE_OSTI = 'osti'
-SERVICE_TYPE_DATACITE = 'datacite'
+SERVICE_TYPE_OSTI = "osti"
+SERVICE_TYPE_DATACITE = "datacite"
 """Constants for the available service types supported by this module"""
 
 VALID_SERVICE_TYPES = [SERVICE_TYPE_OSTI, SERVICE_TYPE_DATACITE]
@@ -50,28 +48,17 @@ class DOIServiceFactory:
     DOIServiceFactory should be necessary.
 
     """
-    _DOI_RECORD_MAP = {
-        SERVICE_TYPE_OSTI: DOIOstiRecord,
-        SERVICE_TYPE_DATACITE: DOIDataCiteRecord
-    }
+
+    _DOI_RECORD_MAP = {SERVICE_TYPE_OSTI: DOIOstiRecord, SERVICE_TYPE_DATACITE: DOIDataCiteRecord}
     """The available DOIRecord subclasses mapped to the corresponding service types"""
 
-    _SERVICE_VALIDATOR_MAP = {
-        SERVICE_TYPE_OSTI: DOIOstiValidator,
-        SERVICE_TYPE_DATACITE: DOIDataCiteValidator
-    }
+    _SERVICE_VALIDATOR_MAP = {SERVICE_TYPE_OSTI: DOIOstiValidator, SERVICE_TYPE_DATACITE: DOIDataCiteValidator}
     """The available DOIValidator subclasses mapped to the corresponding service types"""
 
-    _WEB_CLIENT_MAP = {
-        SERVICE_TYPE_OSTI: DOIOstiWebClient,
-        SERVICE_TYPE_DATACITE: DOIDataCiteWebClient
-    }
+    _WEB_CLIENT_MAP = {SERVICE_TYPE_OSTI: DOIOstiWebClient, SERVICE_TYPE_DATACITE: DOIDataCiteWebClient}
     """The available DOIWebClient subclasses mapped to the corresponding service types"""
 
-    _WEB_PARSER_MAP = {
-        SERVICE_TYPE_OSTI: DOIOstiWebParser,
-        SERVICE_TYPE_DATACITE: DOIDataCiteWebParser
-    }
+    _WEB_PARSER_MAP = {SERVICE_TYPE_OSTI: DOIOstiWebParser, SERVICE_TYPE_DATACITE: DOIDataCiteWebParser}
     """The available DOIWebParser subclasses mapped to the corresponding service types"""
 
     _config = DOIConfigUtil().get_config()
@@ -97,8 +84,8 @@ class DOIServiceFactory:
         if service_type.lower() not in VALID_SERVICE_TYPES:
             raise ValueError(
                 f'Unsupported service type "{service_type}" provided.\n'
-                f'Service type should be assigned to the SERVICE.provider field of '
-                f'the INI config with one of the following values: {VALID_SERVICE_TYPES}'
+                f"Service type should be assigned to the SERVICE.provider field of "
+                f"the INI config with one of the following values: {VALID_SERVICE_TYPES}"
             )
 
     @staticmethod
@@ -113,9 +100,7 @@ class DOIServiceFactory:
             by this method before it is returned.
 
         """
-        service_type = DOIServiceFactory._config.get(
-            'SERVICE', 'provider', fallback='unassigned'
-        )
+        service_type = DOIServiceFactory._config.get("SERVICE", "provider", fallback="unassigned")
 
         return service_type.lower()
 
@@ -143,8 +128,7 @@ class DOIServiceFactory:
         DOIServiceFactory._check_service_type(service_type)
 
         doi_record_class = DOIServiceFactory._DOI_RECORD_MAP[service_type]
-        logger.debug('Returning instance of %s for service type %s',
-                     doi_record_class.__name__, service_type)
+        logger.debug("Returning instance of %s for service type %s", doi_record_class.__name__, service_type)
 
         return doi_record_class()
 
@@ -172,8 +156,7 @@ class DOIServiceFactory:
         DOIServiceFactory._check_service_type(service_type)
 
         doi_validator_class = DOIServiceFactory._SERVICE_VALIDATOR_MAP[service_type]
-        logger.debug('Returning instance of %s for service type %s',
-                     doi_validator_class.__name__, service_type)
+        logger.debug("Returning instance of %s for service type %s", doi_validator_class.__name__, service_type)
 
         return doi_validator_class()
 
@@ -201,8 +184,7 @@ class DOIServiceFactory:
         DOIServiceFactory._check_service_type(service_type)
 
         web_client_class = DOIServiceFactory._WEB_CLIENT_MAP[service_type]
-        logger.debug('Returning instance of %s for service type %s',
-                     web_client_class.__name__, service_type)
+        logger.debug("Returning instance of %s for service type %s", web_client_class.__name__, service_type)
 
         return web_client_class()
 
@@ -230,7 +212,6 @@ class DOIServiceFactory:
         DOIServiceFactory._check_service_type(service_type)
 
         web_parser_class = DOIServiceFactory._WEB_PARSER_MAP[service_type]
-        logger.debug('Returning instance of %s for service type %s',
-                     web_parser_class.__name__, service_type)
+        logger.debug("Returning instance of %s for service type %s", web_parser_class.__name__, service_type)
 
         return web_parser_class()

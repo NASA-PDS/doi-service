@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =======
 actions
@@ -13,8 +12,8 @@ actions
 This package contains the implementations for the user-facing action classes
 used to interact with the PDS DOI service.
 """
-
-from pds_doi_service.core.actions.action import DOICoreAction, create_parser
+from pds_doi_service.core.actions.action import create_parser
+from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.actions.check import DOICoreActionCheck
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.list import DOICoreActionList

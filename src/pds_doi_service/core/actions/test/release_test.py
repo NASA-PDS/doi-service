@@ -1,19 +1,19 @@
 #!/usr/bin/env python
-
 import os
-from os.path import abspath, join
 import unittest
+from os.path import abspath
+from os.path import join
 from unittest.mock import patch
-
-from pkg_resources import resource_filename
 
 import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pkg_resources import resource_filename
 
 
 class ReleaseActionTestCase(unittest.TestCase):
@@ -22,11 +22,9 @@ class ReleaseActionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, '')
-        cls.input_dir = abspath(
-            join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
-        )
-        cls.db_name = 'doi_temp.db'
+        cls.test_dir = resource_filename(__name__, "")
+        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.db_name = "doi_temp.db"
 
         # Remove db_name if exist to have a fresh start otherwise exception will be
         # raised about using existing lidvid.
@@ -42,9 +40,9 @@ class ReleaseActionTestCase(unittest.TestCase):
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
 
-    def webclient_submit_patch(self, payload, url=None, username=None,
-                               password=None, method=WEB_METHOD_POST,
-                               content_type=CONTENT_TYPE_XML):
+    def webclient_submit_patch(
+        self, payload, url=None, username=None, password=None, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML
+    ):
         """
         Patch for DOIWebClient.submit_content().
 
@@ -53,17 +51,13 @@ class ReleaseActionTestCase(unittest.TestCase):
         """
         # Parse the DOI's from the input label, update status to 'pending',
         # and create the output label
-        dois, _ = ReleaseActionTestCase._web_parser.parse_dois_from_label(
-            payload, content_type=CONTENT_TYPE_JSON
-        )
+        dois, _ = ReleaseActionTestCase._web_parser.parse_dois_from_label(payload, content_type=CONTENT_TYPE_JSON)
 
         doi = dois[0]
 
         doi.status = DoiStatus.Pending
 
-        o_doi_label = ReleaseActionTestCase._record_service.create_doi_record(
-            doi, content_type=CONTENT_TYPE_JSON
-        )
+        o_doi_label = ReleaseActionTestCase._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
         return doi, o_doi_label
 
@@ -84,9 +78,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """
         o_doi_label = self._release_action.run(**release_args)
 
-        dois, errors = self._web_parser.parse_dois_from_label(
-            o_doi_label, content_type=CONTENT_TYPE_JSON
-        )
+        dois, errors = self._web_parser.parse_dois_from_label(o_doi_label, content_type=CONTENT_TYPE_JSON)
 
         # Should get the expected number of parsed DOI's
         self.assertEqual(len(dois), expected_dois)
@@ -102,73 +94,69 @@ class ReleaseActionTestCase(unittest.TestCase):
         """Test release to review status with a reserved DOI entry"""
 
         release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_reserve.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': False
+            "input": join(self.input_dir, "DOI_Release_20200727_from_reserve.xml"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "no_review": False,
         }
 
-        self.run_release_test(
-            release_args, expected_dois=1, expected_status=DoiStatus.Review
-        )
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
-        'submit_content', webclient_submit_patch)
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
     @patch.object(
         pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
-        'submit_content', webclient_submit_patch)
+        "submit_content",
+        webclient_submit_patch,
+    )
     def test_reserve_release_to_provider(self):
         """Test release directly to the service provider with a reserved DOI entry"""
 
         release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_reserve.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': True
+            "input": join(self.input_dir, "DOI_Release_20200727_from_reserve.xml"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "no_review": True,
         }
 
-        self.run_release_test(
-            release_args, expected_dois=1, expected_status=DoiStatus.Pending
-        )
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Pending)
 
     def test_draft_release_to_review(self):
         """Test release to review status with a draft DOI entry"""
 
         release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_draft.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': False
+            "input": join(self.input_dir, "DOI_Release_20200727_from_draft.xml"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "no_review": False,
         }
 
-        self.run_release_test(
-            release_args, expected_dois=1, expected_status=DoiStatus.Review
-        )
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
-        'submit_content', webclient_submit_patch)
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
     @patch.object(
         pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
-        'submit_content', webclient_submit_patch)
+        "submit_content",
+        webclient_submit_patch,
+    )
     def test_draft_release_to_provider(self):
         """Test release directly to the service provider with a draft DOI entry"""
 
         release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_draft.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': True
+            "input": join(self.input_dir, "DOI_Release_20200727_from_draft.xml"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "no_review": True,
         }
 
-        self.run_release_test(
-            release_args, expected_dois=1, expected_status=DoiStatus.Pending
-        )
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Pending)
 
     def test_review_release_to_review(self):
         """
@@ -178,38 +166,36 @@ class ReleaseActionTestCase(unittest.TestCase):
         """
 
         release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': False
+            "input": join(self.input_dir, "DOI_Release_20200727_from_review.xml"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "no_review": False,
         }
 
-        self.run_release_test(
-            release_args, expected_dois=1, expected_status=DoiStatus.Review
-        )
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
 
     @patch.object(
-        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient,
-        'submit_content', webclient_submit_patch)
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
     @patch.object(
         pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
-        'submit_content', webclient_submit_patch)
+        "submit_content",
+        webclient_submit_patch,
+    )
     def test_review_release_to_osti(self):
         """Test release directly to the service provider with a review DOI entry"""
 
         release_args = {
-            'input': join(self.input_dir, 'DOI_Release_20200727_from_review.xml'),
-            'node': 'img',
-            'submitter': 'img-submitter@jpl.nasa.gov',
-            'force': True,
-            'no_review': True
+            "input": join(self.input_dir, "DOI_Release_20200727_from_review.xml"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "no_review": True,
         }
 
-        self.run_release_test(
-            release_args, expected_dois=1, expected_status=DoiStatus.Pending
-        )
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Pending)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

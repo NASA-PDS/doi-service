@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =============
 doi_record.py
@@ -13,8 +12,8 @@ doi_record.py
 Contains the base class for creating a record from DOI objects.
 """
 
-CONTENT_TYPE_XML = 'xml'
-CONTENT_TYPE_JSON = 'json'
+CONTENT_TYPE_XML = "xml"
+CONTENT_TYPE_JSON = "json"
 """Constants for the available content types to work with"""
 
 VALID_CONTENT_TYPES = [CONTENT_TYPE_JSON, CONTENT_TYPE_XML]
@@ -23,6 +22,7 @@ VALID_CONTENT_TYPES = [CONTENT_TYPE_JSON, CONTENT_TYPE_XML]
 
 class DOIRecord:
     """Abstract base class for DOI record generating classes"""
+
     def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
         """
         Creates a DOI record from the provided list of Doi objects in the
@@ -42,9 +42,5 @@ class DOIRecord:
 
         """
         raise NotImplementedError(
-            f'Subclasses of {self.__class__.__name__} must provide an '
-            f'implementation for create_doi_record()'
+            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for create_doi_record()"
         )
-
-
-

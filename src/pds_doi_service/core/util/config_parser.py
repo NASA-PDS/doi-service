@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ================
 config_parser.py
@@ -13,14 +12,15 @@ config_parser.py
 Classes and functions for locating and parsing the configuration file for the
 core DOI service.
 """
-
 import configparser
+import functools
 import logging
 import os
 import sys
+from os.path import abspath
+from os.path import dirname
+from os.path import join
 
-import functools
-from os.path import abspath, dirname, join
 from pkg_resources import resource_filename
 
 
@@ -50,7 +50,7 @@ class DOIConfigParser(configparser.ConfigParser):
         default ConfigParser.get() is returned.
 
         """
-        env_var_key = '_'.join([section, option]).upper()
+        env_var_key = "_".join([section, option]).upper()
 
         if env_var_key in os.environ:
             return os.environ[env_var_key]
@@ -59,13 +59,12 @@ class DOIConfigParser(configparser.ConfigParser):
 
 
 class DOIConfigUtil:
-
     @staticmethod
     def _resolve_relative_path(parser):
         # resolve relative path with sys.prefix base path
         for section in parser.sections():
             for (key, val) in parser.items(section):
-                if key.endswith('_file') or key.endswith('_dir'):
+                if key.endswith("_file") or key.endswith("_dir"):
                     parser[section][key] = os.path.abspath(os.path.join(sys.prefix, val))
 
         return parser
@@ -78,17 +77,15 @@ class DOIConfigUtil:
         parser = DOIConfigParser()
 
         # default configuration
-        conf_default = 'conf.ini.default'
+        conf_default = "conf.ini.default"
         conf_default_path = resource_filename(__name__, conf_default)
 
         # user-specified configuration for production
-        conf_user = 'pds_doi_service.ini'
+        conf_user = "pds_doi_service.ini"
         conf_user_prod_path = os.path.join(sys.prefix, conf_user)
 
         # user-specified configuration for development
-        conf_user_dev_path = abspath(
-            join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user)
-        )
+        conf_user_dev_path = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user))
 
         candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
 
@@ -97,8 +94,8 @@ class DOIConfigUtil:
 
         if not found:
             raise RuntimeError(
-                'Could not find an INI configuration file to '
-                f'parse from the following candidates: {candidates_full_path}'
+                "Could not find an INI configuration file to "
+                f"parse from the following candidates: {candidates_full_path}"
             )
 
         # When providing multiple configs they are parsed in successive order,

@@ -1,11 +1,9 @@
 # encoding: utf-8
-
-'''
+"""
 Planetary Data System's Digital Object Identifier service — tests for core outputs
-'''
-
-
+"""
 import unittest
+
 from . import datacite_test
 from . import doi_validator_test
 from . import osti_test

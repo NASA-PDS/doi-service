@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ==================
 osti_web_parser.py
@@ -12,17 +11,19 @@ osti_web_parser.py
 
 Contains classes used to parse response labels from OSTI DOI service requests.
 """
-
 import html
 import json
 import os
 from datetime import datetime
 
 from lxml import etree
-
-from pds_doi_service.core.entities.doi import Doi, ProductType, DoiStatus
-from pds_doi_service.core.input.exceptions import InputFormatException, UnknownIdentifierException
-from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML, CONTENT_TYPE_JSON
+from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import ProductType
+from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.input.exceptions import UnknownIdentifierException
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
 
@@ -36,10 +37,20 @@ class DOIOstiWebParser(DOIWebParser):
 
     This class supports parsing records in both XML and JSON formats.
     """
+
     _optional_fields = [
-        'id', 'doi', 'sponsoring_organization', 'publisher', 'availability',
-        'country', 'description', 'site_url', 'site_code', 'keywords',
-        'authors', 'contributors'
+        "id",
+        "doi",
+        "sponsoring_organization",
+        "publisher",
+        "availability",
+        "country",
+        "description",
+        "site_url",
+        "site_code",
+        "keywords",
+        "authors",
+        "contributors",
     ]
     """The optional field names we parse from input OSTI labels."""
 
@@ -71,8 +82,8 @@ class DOIOstiWebParser(DOIWebParser):
             dois, errors = DOIOstiJsonWebParser.parse_dois_from_label(label_text)
         else:
             raise InputFormatException(
-                'Unsupported content type provided. Value must be one of the '
-                f'following: [{CONTENT_TYPE_JSON}, {CONTENT_TYPE_XML}]'
+                "Unsupported content type provided. Value must be one of the "
+                f"following: [{CONTENT_TYPE_JSON}, {CONTENT_TYPE_XML}]"
             )
 
         return dois, errors
@@ -107,8 +118,8 @@ class DOIOstiWebParser(DOIWebParser):
             record = DOIOstiJsonWebParser.get_record_for_identifier(label_file, identifier)
         else:
             raise InputFormatException(
-                'Unsupported file type provided. File must have one of the '
-                f'following extensions: [{CONTENT_TYPE_JSON}, {CONTENT_TYPE_XML}]'
+                "Unsupported file type provided. File must have one of the "
+                f"following extensions: [{CONTENT_TYPE_JSON}, {CONTENT_TYPE_XML}]"
             )
 
         return record, content_type
@@ -118,6 +129,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
     """
     Class used to parse OSTI-format DOI labels in XML format.
     """
+
     @staticmethod
     def _parse_author_names(authors_element):
         """
@@ -129,24 +141,21 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         # If they exist, collect all the first name, middle name, last names or
         # full name fields into a list of dictionaries.
         for single_author in authors_element:
-            first_name = single_author.xpath('first_name')
-            last_name = single_author.xpath('last_name')
-            full_name = single_author.xpath('full_name')
-            middle_name = single_author.xpath('middle_name')
+            first_name = single_author.xpath("first_name")
+            last_name = single_author.xpath("last_name")
+            full_name = single_author.xpath("full_name")
+            middle_name = single_author.xpath("middle_name")
 
             author_dict = {}
 
             if full_name:
-                author_dict['full_name'] = full_name[0].text
+                author_dict["full_name"] = full_name[0].text
             else:
                 if first_name and last_name:
-                    author_dict.update(
-                        {'first_name': first_name[0].text,
-                         'last_name': last_name[0].text}
-                    )
+                    author_dict.update({"first_name": first_name[0].text, "last_name": last_name[0].text})
 
                 if middle_name:
-                    author_dict.update({'middle_name': middle_name[0].text})
+                    author_dict.update({"middle_name": middle_name[0].text})
 
             # It is possible that the record contains no authors.
             if author_dict:
@@ -162,42 +171,39 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         with type "Editor".
         """
         o_editors_list = []
-        o_node_name = ''
+        o_node_name = ""
 
         # If they exist, collect all the editor contributor fields into a list
         # of dictionaries.
         for single_contributor in contributors_element:
-            first_name = single_contributor.xpath('first_name')
-            last_name = single_contributor.xpath('last_name')
-            full_name = single_contributor.xpath('full_name')
-            middle_name = single_contributor.xpath('middle_name')
-            contributor_type = single_contributor.xpath('contributor_type')
+            first_name = single_contributor.xpath("first_name")
+            last_name = single_contributor.xpath("last_name")
+            full_name = single_contributor.xpath("full_name")
+            middle_name = single_contributor.xpath("middle_name")
+            contributor_type = single_contributor.xpath("contributor_type")
 
             if contributor_type:
-                if contributor_type[0].text == 'Editor':
+                if contributor_type[0].text == "Editor":
                     editor_dict = {}
 
                     if full_name:
-                        editor_dict['full_name'] = full_name[0].text
+                        editor_dict["full_name"] = full_name[0].text
                     else:
                         if first_name and last_name:
-                            editor_dict.update(
-                                {'first_name': first_name[0].text,
-                                 'last_name': last_name[0].text}
-                            )
+                            editor_dict.update({"first_name": first_name[0].text, "last_name": last_name[0].text})
 
                         if middle_name:
-                            editor_dict.update({'middle_name': middle_name[0].text})
+                            editor_dict.update({"middle_name": middle_name[0].text})
 
                     # It is possible that the record contains no contributor.
                     if editor_dict:
                         o_editors_list.append(editor_dict)
                 # Parse the node ID from the name of the data curator
-                elif contributor_type[0].text == 'DataCurator':
+                elif contributor_type[0].text == "DataCurator":
                     if full_name:
                         o_node_name = full_name[0].text
-                        o_node_name = o_node_name.replace('Planetary Data System:', '')
-                        o_node_name = o_node_name.replace('Node', '')
+                        o_node_name = o_node_name.replace("Planetary Data System:", "")
+                        o_node_name = o_node_name.replace("Node", "")
                         o_node_name = o_node_name.strip()
                     else:
                         logger.info("missing DataCurator %s", etree.tostring(single_contributor))
@@ -217,10 +223,12 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
             identifier = record.xpath("accession_number")[0].text
         elif record.xpath("related_identifiers/related_identifier[./identifier_type='URL']"):
             identifier = record.xpath(
-                "related_identifiers/related_identifier[./identifier_type='URL']/identifier_value")[0].text
+                "related_identifiers/related_identifier[./identifier_type='URL']/identifier_value"
+            )[0].text
         elif record.xpath("related_identifiers/related_identifier[./identifier_type='URN']"):
             identifier = record.xpath(
-                "related_identifiers/related_identifier[./identifier_type='URN']/identifier_value")[0].text
+                "related_identifiers/related_identifier[./identifier_type='URN']/identifier_value"
+            )[0].text
         elif record.xpath("report_numbers"):
             identifier = record.xpath("report_numbers")[0].text
         elif record.xpath("site_url"):
@@ -253,44 +261,28 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
             optional_field_element = record_element.xpath(optional_field)
 
             if optional_field_element and optional_field_element[0].text is not None:
-                if optional_field == 'keywords':
-                    io_doi.keywords = set(optional_field_element[0].text.split(';'))
-                    logger.debug(f"Adding optional field 'keywords': "
-                                 f"{io_doi.keywords}")
-                elif optional_field == 'authors':
-                    io_doi.authors = DOIOstiXmlWebParser._parse_author_names(
+                if optional_field == "keywords":
+                    io_doi.keywords = set(optional_field_element[0].text.split(";"))
+                    logger.debug(f"Adding optional field 'keywords': " f"{io_doi.keywords}")
+                elif optional_field == "authors":
+                    io_doi.authors = DOIOstiXmlWebParser._parse_author_names(optional_field_element[0])
+                    logger.debug(f"Adding optional field 'authors': " f"{io_doi.authors}")
+                elif optional_field == "contributors":
+                    (io_doi.editors, io_doi.contributor) = DOIOstiXmlWebParser._parse_contributors(
                         optional_field_element[0]
                     )
-                    logger.debug(f"Adding optional field 'authors': "
-                                 f"{io_doi.authors}")
-                elif optional_field == 'contributors':
-                    (io_doi.editors,
-                     io_doi.contributor) = DOIOstiXmlWebParser._parse_contributors(
-                        optional_field_element[0]
-                    )
-                    logger.debug(f"Adding optional field 'editors': "
-                                 f"{io_doi.editors}")
-                    logger.debug(f"Adding optional field 'contributor': "
-                                 f"{io_doi.contributor}")
-                elif optional_field == 'date_record_added':
-                    io_doi.date_record_added = datetime.strptime(
-                        optional_field_element[0].text, '%Y-%m-%d'
-                    )
-                    logger.debug(f"Adding optional field 'date_record_added': "
-                                 f"{io_doi.date_record_added}")
-                elif optional_field == 'date_record_updated':
-                    io_doi.date_record_updated = datetime.strptime(
-                        optional_field_element[0].text, '%Y-%m-%d'
-                    )
-                    logger.debug(f"Adding optional field 'date_record_updated': "
-                                 f"{io_doi.date_record_updated}")
+                    logger.debug(f"Adding optional field 'editors': " f"{io_doi.editors}")
+                    logger.debug(f"Adding optional field 'contributor': " f"{io_doi.contributor}")
+                elif optional_field == "date_record_added":
+                    io_doi.date_record_added = datetime.strptime(optional_field_element[0].text, "%Y-%m-%d")
+                    logger.debug(f"Adding optional field 'date_record_added': " f"{io_doi.date_record_added}")
+                elif optional_field == "date_record_updated":
+                    io_doi.date_record_updated = datetime.strptime(optional_field_element[0].text, "%Y-%m-%d")
+                    logger.debug(f"Adding optional field 'date_record_updated': " f"{io_doi.date_record_updated}")
                 else:
                     setattr(io_doi, optional_field, optional_field_element[0].text)
 
-                    logger.debug(
-                        f"Adding optional field "
-                        f"'{optional_field}': {getattr(io_doi, optional_field)}"
-                    )
+                    logger.debug(f"Adding optional field " f"'{optional_field}': {getattr(io_doi, optional_field)}")
 
         return io_doi
 
@@ -312,26 +304,23 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         my_root = doc.getroottree()
 
         # Trim down input to just fields we want.
-        for index, record_element in enumerate(my_root.findall('record')):
-            status = record_element.get('status')
+        for index, record_element in enumerate(my_root.findall("record")):
+            status = record_element.get("status")
 
             if status is None:
                 raise InputFormatException(
-                    f'Could not parse a status for record {index + 1} from the '
-                    f'provided OSTI XML.'
+                    f"Could not parse a status for record {index + 1} from the " f"provided OSTI XML."
                 )
 
-            if status.lower() == 'error':
+            if status.lower() == "error":
                 # The 'error' record is parsed differently and does not have all
                 # the attributes we desire.
-                logger.error(
-                    f"Errors reported for record index {index + 1}"
-                )
+                logger.error(f"Errors reported for record index {index + 1}")
 
                 # Check for any errors reported back from OSTI and save
                 # them off to be returned
-                errors_element = record_element.xpath('errors')
-                doi_message = record_element.xpath('doi_message')
+                errors_element = record_element.xpath("errors")
+                doi_message = record_element.xpath("doi_message")
 
                 cur_errors = []
 
@@ -348,19 +337,19 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
 
             timestamp = datetime.now()
 
-            publication_date = record_element.xpath('publication_date')[0].text
-            product_type = record_element.xpath('product_type')[0].text
-            product_type_specific = record_element.xpath('product_type_specific')[0].text
+            publication_date = record_element.xpath("publication_date")[0].text
+            product_type = record_element.xpath("product_type")[0].text
+            product_type_specific = record_element.xpath("product_type_specific")[0].text
 
             doi = Doi(
-                title=record_element.xpath('title')[0].text,
-                publication_date=datetime.strptime(publication_date, '%Y-%m-%d'),
+                title=record_element.xpath("title")[0].text,
+                publication_date=datetime.strptime(publication_date, "%Y-%m-%d"),
                 product_type=ProductType(product_type),
                 product_type_specific=product_type_specific,
                 related_identifier=identifier,
                 status=DoiStatus(status.lower()),
                 date_record_added=timestamp,
-                date_record_updated=timestamp
+                date_record_updated=timestamp,
             )
 
             # Parse for some optional fields that may not be present in
@@ -400,7 +389,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         """
         root = etree.parse(label_file).getroot()
 
-        records = root.xpath('record')
+        records = root.xpath("record")
 
         for record in records:
             if DOIOstiXmlWebParser._get_identifier(record) == identifier:
@@ -408,50 +397,42 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
                 break
         else:
             raise UnknownIdentifierException(
-                f'Could not find entry for identifier "{identifier}" in OSTI '
-                f'label file {label_file}.'
+                f'Could not find entry for identifier "{identifier}" in OSTI ' f"label file {label_file}."
             )
 
-        new_root = etree.Element('records')
+        new_root = etree.Element("records")
         new_root.append(result)
 
-        return etree.tostring(
-            new_root, pretty_print=True, xml_declaration=True, encoding='UTF-8'
-        ).decode('utf-8')
+        return etree.tostring(new_root, pretty_print=True, xml_declaration=True, encoding="UTF-8").decode("utf-8")
 
 
 class DOIOstiJsonWebParser(DOIOstiWebParser):
     """
     Class used to parse OSTI-format DOI labels in JSON format.
     """
-    _mandatory_fields = ['title', 'publication_date', 'product_type']
+
+    _mandatory_fields = ["title", "publication_date", "product_type"]
 
     @staticmethod
     def _parse_contributors(contributors_record):
         o_editors_list = list(
-            filter(
-                lambda contributor: contributor['contributor_type'] == 'Editor',
-                contributors_record
-            )
+            filter(lambda contributor: contributor["contributor_type"] == "Editor", contributors_record)
         )
 
         data_curator = list(
-            filter(
-                lambda contributor: contributor['contributor_type'] == 'DataCurator',
-                contributors_record
-            )
+            filter(lambda contributor: contributor["contributor_type"] == "DataCurator", contributors_record)
         )
 
         o_node_name = None
 
         if data_curator:
-            o_node_name = data_curator[0]['full_name']
-            o_node_name = o_node_name.replace('Planetary Data System:', '')
-            o_node_name = o_node_name.replace('Node', '')
+            o_node_name = data_curator[0]["full_name"]
+            o_node_name = o_node_name.replace("Planetary Data System:", "")
+            o_node_name = o_node_name.replace("Node", "")
             o_node_name = o_node_name.strip()
 
         for editor in o_editors_list:
-            editor.pop('contributor_type')
+            editor.pop("contributor_type")
 
         return o_editors_list, o_node_name
 
@@ -466,44 +447,30 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
             optional_field_value = record_element.get(optional_field)
 
             if optional_field_value is not None:
-                if optional_field == 'keywords':
-                    io_doi.keywords = set(optional_field_value.split(';'))
-                    logger.debug(f"Adding optional field 'keywords': "
-                                 f"{io_doi.keywords}")
-                elif optional_field == 'site_url':
+                if optional_field == "keywords":
+                    io_doi.keywords = set(optional_field_value.split(";"))
+                    logger.debug(f"Adding optional field 'keywords': " f"{io_doi.keywords}")
+                elif optional_field == "site_url":
                     # In order to match parsing behavior of lxml, unescape
                     # the site url
                     io_doi.site_url = html.unescape(optional_field_value)
-                    logger.debug(f"Adding optional field 'site_url': "
-                                 f"{io_doi.site_url}")
-                elif optional_field == 'contributors':
-                    (io_doi.editors,
-                     io_doi.contributor) = DOIOstiJsonWebParser._parse_contributors(
+                    logger.debug(f"Adding optional field 'site_url': " f"{io_doi.site_url}")
+                elif optional_field == "contributors":
+                    (io_doi.editors, io_doi.contributor) = DOIOstiJsonWebParser._parse_contributors(
                         optional_field_value
                     )
-                    logger.debug(f"Adding optional field 'editors': "
-                                 f"{io_doi.editors}")
-                    logger.debug(f"Adding optional field 'contributor': "
-                                 f"{io_doi.contributor}")
-                elif optional_field == 'date_record_added':
-                    io_doi.date_record_added = datetime.strptime(
-                        optional_field_value, '%Y-%m-%d'
-                    )
-                    logger.debug(f"Adding optional field 'date_record_added': "
-                                 f"{io_doi.date_record_added}")
-                elif optional_field == 'date_record_updated':
-                    io_doi.date_record_updated = datetime.strptime(
-                        optional_field_value, '%Y-%m-%d'
-                    )
-                    logger.debug(f"Adding optional field 'date_record_updated': "
-                                 f"{io_doi.date_record_updated}")
+                    logger.debug(f"Adding optional field 'editors': " f"{io_doi.editors}")
+                    logger.debug(f"Adding optional field 'contributor': " f"{io_doi.contributor}")
+                elif optional_field == "date_record_added":
+                    io_doi.date_record_added = datetime.strptime(optional_field_value, "%Y-%m-%d")
+                    logger.debug(f"Adding optional field 'date_record_added': " f"{io_doi.date_record_added}")
+                elif optional_field == "date_record_updated":
+                    io_doi.date_record_updated = datetime.strptime(optional_field_value, "%Y-%m-%d")
+                    logger.debug(f"Adding optional field 'date_record_updated': " f"{io_doi.date_record_updated}")
                 else:
                     setattr(io_doi, optional_field, optional_field_value)
 
-                    logger.debug(
-                        f"Adding optional field "
-                        f"'{optional_field}': {getattr(io_doi, optional_field)}"
-                    )
+                    logger.debug(f"Adding optional field " f"'{optional_field}': {getattr(io_doi, optional_field)}")
 
         return io_doi
 
@@ -554,8 +521,8 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
 
         # Responses from OSTI come wrapped in 'records' key, strip it off
         # before continuing
-        if 'records' in osti_response:
-            osti_response = osti_response['records']
+        if "records" in osti_response:
+            osti_response = osti_response["records"]
 
         # Multiple records may come in a list, or a single dict may be provided
         # for a single record, make the loop work either way
@@ -563,27 +530,25 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
             osti_response = [osti_response]
 
         for index, record in enumerate(osti_response):
-            if record.get('status', '').lower() == 'error':
-                logger.error(
-                    f"Errors reported for record index {index + 1}"
-                )
+            if record.get("status", "").lower() == "error":
+                logger.error(f"Errors reported for record index {index + 1}")
 
                 # Check for any errors reported back from OSTI and save
                 # them off to be returned
                 cur_errors = []
 
-                if 'errors' in record:
-                    cur_errors.extend(record['errors'])
+                if "errors" in record:
+                    cur_errors.extend(record["errors"])
 
-                if 'doi_message' in record and len(record['doi_message']):
-                    cur_errors.append(record['doi_message'])
+                if "doi_message" in record and len(record["doi_message"]):
+                    cur_errors.append(record["doi_message"])
 
                 errors[index] = cur_errors
 
             # Make sure all the mandatory fields are present
             if not all([field in record for field in DOIOstiJsonWebParser._mandatory_fields]):
                 raise InputFormatException(
-                    'Provided JSON is missing one or more mandatory fields: '
+                    "Provided JSON is missing one or more mandatory fields: "
                     f'({", ".join(DOIOstiJsonWebParser._mandatory_fields)})'
                 )
 
@@ -592,14 +557,14 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
             timestamp = datetime.now()
 
             doi = Doi(
-                title=record['title'],
-                publication_date=datetime.strptime(record['publication_date'], '%Y-%m-%d'),
-                product_type=ProductType(record['product_type']),
-                product_type_specific=record.get('product_type_specific'),
+                title=record["title"],
+                publication_date=datetime.strptime(record["publication_date"], "%Y-%m-%d"),
+                product_type=ProductType(record["product_type"]),
+                product_type_specific=record.get("product_type_specific"),
                 related_identifier=identifier,
-                status=DoiStatus(record.get('status', DoiStatus.Unknown).lower()),
+                status=DoiStatus(record.get("status", DoiStatus.Unknown).lower()),
                 date_record_added=timestamp,
-                date_record_updated=timestamp
+                date_record_updated=timestamp,
             )
 
             # Parse for some optional fields that may not be present in
@@ -636,7 +601,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
             label file.
 
         """
-        with open(label_file, 'r') as infile:
+        with open(label_file, "r") as infile:
             records = json.load(infile)
 
         if not isinstance(records, list):
@@ -648,8 +613,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
                 break
         else:
             raise UnknownIdentifierException(
-                f'Could not find entry for identifier "{identifier}" in OSTI '
-                f'label file {label_file}.'
+                f'Could not find entry for identifier "{identifier}" in OSTI ' f"label file {label_file}."
             )
 
         records = [result]
