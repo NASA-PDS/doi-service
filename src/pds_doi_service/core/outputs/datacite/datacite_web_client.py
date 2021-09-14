@@ -100,9 +100,9 @@ class DOIDataCiteWebClient(DOIWebClient):
 
         Notes
         -----
-        Queries are automatically filtered by this method to only include
-        DOI entries associated with the PDS client ID, which corresponds to the
-        username used with the query request.
+        Queries are NOT automatically filtered by this method. Callers should be
+        prepared to filter results as desired if more results are returned
+        by their query than expected.
 
         Parameters
         ----------
@@ -151,15 +151,13 @@ class DOIDataCiteWebClient(DOIWebClient):
             query_string = str(query)
 
         url = url or config.get('DATACITE', 'url')
-        client_id = (username or config.get('DATACITE', 'user')).lower()
 
         logger.debug('query_string: %s', query_string)
         logger.debug('url: %s', url)
-        logger.debug('client_id: %s', client_id)
 
         datacite_response = requests.request(
             WEB_METHOD_GET, url=url, auth=auth, headers=headers,
-            params={"query": query_string, "client-id": client_id}
+            params={"query": query_string}
         )
 
         try:

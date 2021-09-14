@@ -50,52 +50,6 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
 
         self.assertDictEqual(input_doi_fields, output_doi_fields)
 
-    def test_assign_datacite_event(self):
-        """
-        Test assignment of the event field when creating a label for a DOI
-        in the reserved or pending state
-        """
-        # Create a dummy Doi object to be reserved
-        test_doi = Doi(title='InSight Cameras Bundle',
-                       publication_date=datetime(2019, 1, 1, 0, 0),
-                       product_type=ProductType.Dataset,
-                       product_type_specific='PDS4 Refereed Data Bundle',
-                       related_identifier='urn:nasa:pds:insight_cameras::1.0',
-                       id='yzw2-vz66',
-                       doi='10.13143/yzw2-vz66',
-                       publisher='NASA Planetary Data System',
-                       contributor='Engineering',
-                       status=DoiStatus.Reserved)
-
-        # Create the label to submit to DataCite, using  the Pending (release)
-        # state, which should map to the "publish" event
-        test_doi.status = DoiStatus.Pending
-
-        release_label = DOIDataCiteRecord().create_doi_record(test_doi)
-        release_label_dict = json.loads(release_label)
-
-        self.assertIn('event', release_label_dict['data']['attributes'])
-        self.assertEqual(release_label_dict['data']['attributes']['event'], 'publish')
-
-        # If updating a record that has already been published (findable),
-        # we need to move it back to the registered stage via the "hide" event
-        test_doi.status = DoiStatus.Findable
-
-        back_to_reserve_label = DOIDataCiteRecord().create_doi_record(test_doi)
-
-        back_to_reserve_label_dict = json.loads(back_to_reserve_label)
-
-        self.assertIn('event', back_to_reserve_label_dict['data']['attributes'])
-        self.assertEqual(back_to_reserve_label_dict['data']['attributes']['event'], 'hide')
-
-        # For any other state, we should not get an event field in the label
-        test_doi.status = DoiStatus.Reserved_not_submitted
-
-        reserve_label = DOIDataCiteRecord().create_doi_record(test_doi)
-        reserve_label_dict = json.loads(reserve_label)
-
-        self.assertNotIn('event', reserve_label_dict['data']['attributes'])
-
 
 def requests_valid_request_patch(method, url, **kwargs):
     response = Response()
@@ -175,13 +129,13 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
             join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'input')
         )
 
-        cls.expected_authors = [{'first_name': 'R.', 'last_name': 'Deen'},
-                                {'first_name': 'H.', 'last_name': 'Abarca'},
-                                {'first_name': 'P.', 'last_name': 'Zamani'},
-                                {'first_name': 'J.', 'last_name': 'Maki'}]
-        cls.expected_editors = [{'first_name': 'P. H.', 'last_name': 'Smith'},
-                                {'first_name': 'M.', 'last_name': 'Lemmon'},
-                                {'first_name': 'R. F.', 'last_name': 'Beebe'}]
+        cls.expected_authors = [{'name': 'R. Deen', 'name_identifiers': [], 'name_type': 'Personal'},
+                                {'name': 'H. Abarca', 'name_identifiers': [], 'name_type': 'Personal'},
+                                {'name': 'P. Zamani', 'name_identifiers': [], 'name_type': 'Personal'},
+                                {'name': 'J. Maki', 'name_identifiers': [], 'name_type': 'Personal'}]
+        cls.expected_editors = [{'name': 'P. H. Smith', 'name_identifiers': []},
+                                {'name': 'M. Lemmon', 'name_identifiers': []},
+                                {'name': 'R. F. Beebe', 'name_identifiers': []}]
         cls.expected_keywords = {'data', 'rdr', 'product', 'experiment', 'lander',
                                  'context', 'PDS', 'raw', 'mars', 'record', 'reduced',
                                  'science', 'edr', 'PDS4', 'camera', 'deployment',

@@ -22,7 +22,7 @@ from pkg_resources import resource_filename
 from pds_doi_service.core.entities.doi import ProductType, Doi
 from pds_doi_service.core.outputs.doi_record import DOIRecord, CONTENT_TYPE_JSON
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import get_logger, sanitize_json_string
 
 logger = get_logger(__name__)
 
@@ -103,7 +103,7 @@ class DOIDataCiteRecord(DOIRecord):
                 doi_fields['product_type'] = ProductType.Collection
 
             # Sort keywords so we can output them in the same order each time
-            doi_fields['keywords'] = sorted(doi.keywords)
+            doi_fields['keywords'] = sorted(map(sanitize_json_string, doi.keywords))
 
             # Convert datetime objects to isoformat strings
             if doi.date_record_added:
@@ -112,9 +112,13 @@ class DOIDataCiteRecord(DOIRecord):
             if doi.date_record_updated:
                 doi_fields['date_record_updated'] = doi.date_record_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-            # Remove any extraneous whitespace from a provided description
+            # Cleanup extra whitespace that could break JSON format from title
+            # and description
+            if doi.title:
+                doi_fields['title'] = sanitize_json_string(doi.title)
+
             if doi.description:
-                doi_fields['description'] = str.strip(doi.description)
+                doi_fields['description'] = sanitize_json_string(doi.description)
 
             # Publication year is a must-have
             doi_fields['publication_year'] = doi.publication_date.strftime('%Y')

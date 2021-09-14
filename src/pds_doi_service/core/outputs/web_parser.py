@@ -40,16 +40,20 @@ class DOIWebParser:
 
         """
         # TODO: rewrite to utilize urlparse and support PDS3 labels
+        lid_vid_value = None
+
         site_tokens = site_url.split("identifier=")
 
         identifier_tokens = site_tokens[1].split(";")
 
         lid_vid_tokens = identifier_tokens[0].split("&version=")
-        lid_value = lid_vid_tokens[0].replace("%3A", ":")
-        vid_value = lid_vid_tokens[1]
 
-        # Finally combine the lid and vid together.
-        lid_vid_value = lid_value + '::' + vid_value
+        if len(lid_vid_tokens) >= 2:
+            lid_value = lid_vid_tokens[0].replace("%3A", ":")
+            vid_value = lid_vid_tokens[1]
+
+            # Finally combine the lid and vid together.
+            lid_vid_value = lid_value + '::' + vid_value
 
         return lid_vid_value
 

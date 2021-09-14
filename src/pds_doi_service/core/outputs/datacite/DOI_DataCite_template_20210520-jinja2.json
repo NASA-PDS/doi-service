@@ -10,10 +10,8 @@
             {% endif %}
             "type": "dois",
             "attributes": {
-                {% if doi.status.value == "pending" %}
-                "event": "publish",
-                {% elif doi.status.value == "findable" %}
-                "event": "hide",
+                {% if doi.event %}
+                "event": "{{ doi.event.value }}",
                 {% endif %}
                 {% if doi.doi %}
                 "doi": "{{ doi.doi }}",
@@ -24,6 +22,12 @@
                 "suffix": "{{ doi.id }}",
                 {% endif %}
                 "identifiers": [
+                    {% for identifier in doi.identifiers %}
+                    {
+                        "identifier": "{{ identifier.identifier.strip() }}",
+                        "identifierType": "{{ identifier.identifierType }}"
+                    },
+                    {% endfor %}
                     {
                         {% if doi.doi %}
                         "identifier": "{{ doi.doi }}",
@@ -36,10 +40,25 @@
                 "creators": [
                     {% for author in doi.authors %}
                     {
+                        {% if author.name_type %}
+                        "nameType": "{{author.name_type}}",
+                        {% else %}
                         "nameType": "Personal",
-                        "name": "{{ author['last_name'] }}, {{ author['first_name'] }}",
-                        "givenName": "{{ author['first_name'] }}",
-                        "familyName": "{{ author['last_name'] }}"
+                        {% endif %}
+                        {% if author.first_name and author.last_name %}
+                        "name": "{{ author.first_name }} {{ author.last_name }}",
+                        {% else %}
+                        "name": "{{ author.name }}",
+                        {% endif %}
+                        "nameIdentifiers": [
+                        {% for name_identifier in author.name_identifiers %}
+                            {
+                            {% for key, value in name_identifier.items() %}
+                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif +%}
+                            {% endfor %}
+                            }
+                        {% endfor %}
+                        ]
                     }{% if not loop.last %},{% endif +%}
                     {% endfor %}
                 ],
@@ -60,9 +79,20 @@
                     {% for editor in doi.editors %}
                     {
                         "nameType": "Personal",
-                        "name": "{{ editor['last_name'] }}, {{ editor['first_name'] }}",
-                        "givenName": "{{ editor['first_name'] }}",
-                        "familyName": "{{ editor['last_name'] }}",
+                        {% if editor.first_name and editor.last_name %}
+                        "name": "{{ editor.first_name }} {{ editor.last_name }}",
+                        {% else %}
+                        "name": "{{ editor.name }}",
+                        {% endif %}
+                        "nameIdentifiers": [
+                        {% for name_identifier in editor.name_identifiers %}
+                            {
+                            {% for key, value in name_identifier.items() %}
+                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif +%}
+                            {% endfor %}
+                            }
+                        {% endfor %}
+                        ],
                         "contributorType": "Editor"
                     },
                     {% endfor %}
@@ -79,9 +109,8 @@
                 "relatedIdentifiers": [
                     {
                         "relatedIdentifier": "{{ doi.related_identifier }}",
-                        "relatedIdentifierType": "URN",
-                        "relationType": "HasMetadata",
-                        "resourceTypeGeneral": "Text"
+                        "relatedIdentifierType": {% if doi.related_identifier.lower().startswith("urn") %}"URN"{% else %}"Handle"{% endif %},
+                        "relationType": "IsIdenticalTo"
                     }
                 ],
                 {% if doi.description %}

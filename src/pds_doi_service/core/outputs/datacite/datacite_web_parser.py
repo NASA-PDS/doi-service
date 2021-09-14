@@ -37,14 +37,14 @@ class DOIDataCiteWebParser(DOIWebParser):
     This class only supports parsing records in JSON format.
     """
     _optional_fields = [
-        'id', 'doi', 'description', 'keywords', 'authors', 'site_url',
-        'editors', 'status', 'date_record_added', 'date_record_updated',
-        'contributor', 'related_identifier'
+        'id', 'doi', 'identifiers', 'description', 'keywords', 'authors',
+        'site_url', 'editors', 'status', 'date_record_added',
+        'date_record_updated', 'contributor'
     ]
 
     _mandatory_fields = [
         'title', 'publisher', 'publication_date', 'product_type',
-        'product_type_specific'
+        'product_type_specific', 'related_identifier'
     ]
 
     @staticmethod
@@ -55,87 +55,114 @@ class DOIDataCiteWebParser(DOIWebParser):
             else:
                 # Parse the ID from the DOI field, it it's available
                 return record.get('doi').split('/')[-1]
-        except (AttributeError, KeyError) as err:
-            logger.warning('Could not parse id from record, reason: %s %s',
-                           err.__class__, err)
+        except (AttributeError, KeyError):
+            logger.warning('Could not parse optional field "id"')
 
     @staticmethod
     def _parse_doi(record):
         try:
             return record['doi']
-        except KeyError as err:
-            logger.warning('Could not parse doi from record, reason: %s %s',
-                           err.__class__, err)
+        except KeyError:
+            logger.warning('Could not parse optional field "doi"')
+
+    @staticmethod
+    def _parse_identifiers(record):
+        try:
+            identifiers = filter(
+                lambda identifier: identifier["identifierType"] != "DOI",
+                record['identifiers']
+            )
+            return list(identifiers)
+        except KeyError:
+            logger.warning('Could not parse optional field "identifiers"')
 
     @staticmethod
     def _parse_description(record):
         try:
             return record['descriptions'][0]['description']
-        except (IndexError, KeyError) as err:
-            logger.warning('Could not parse description from record, reason: %s %s',
-                           err.__class__, err)
+        except (IndexError, KeyError):
+            logger.warning('Could not parse optional field "description"')
 
     @staticmethod
     def _parse_keywords(record):
         try:
             return set(sorted(subject['subject']
                               for subject in record['subjects']))
-        except KeyError as err:
-            logger.warning('Could not parse keywords from record, reason: %s %s',
-                           err.__class__, err)
+        except KeyError:
+            logger.warning('Could not parse optional field "keywords"')
 
     @staticmethod
     def _parse_authors(record):
         try:
-            return [{'first_name': creator['givenName'],
-                     'last_name': creator['familyName']}
-                    for creator in record['creators']]
-        except KeyError as err:
-            logger.warning('Could not parse authors from record, reason: %s %s',
-                           err.__class__, err)
+            authors = []
+
+            for creator in record['creators']:
+                if all(name_type in creator for name_type in ('givenName', 'familyName')):
+                    name = f"{creator['givenName']} {creator['familyName']}"
+                else:
+                    name = creator['name']
+
+                authors.append(
+                    {
+                        'name': name,
+                        'name_type': creator['nameType'],
+                        'name_identifiers': creator.get('nameIdentifiers', [])
+                    }
+                )
+
+            return authors
+        except KeyError:
+            logger.warning('Could not parse optional field "authors"')
 
     @staticmethod
     def _parse_site_url(record):
         try:
             return html.unescape(record['url'])
-        except (KeyError, TypeError) as err:
-            logger.warning('Could not parse site url from record, reason: %s %s',
-                           err.__class__, err)
+        except (KeyError, TypeError):
+            logger.warning('Could not parse optional field "site_url"')
 
     @staticmethod
     def _parse_editors(record):
         try:
-            return [{'first_name': contributor['givenName'],
-                     'last_name': contributor['familyName']}
-                    for contributor in record['contributors']
-                    if contributor['contributorType'] == 'Editor']
-        except KeyError as err:
-            logger.warning('Could not parse editors from record, reason: %s %s',
-                           err.__class__, err)
+            editors = []
+
+            for contributor in record['contributors']:
+                if contributor['contributorType'] == 'Editor':
+                    if all(name_type in contributor for name_type in ('givenName', 'familyName')):
+                        name = f"{contributor['givenName']} {contributor['familyName']}"
+                    else:
+                        name = contributor['name']
+
+                    editors.append(
+                        {
+                            'name': name,
+                            'name_identifiers': contributor.get('nameIdentifiers', [])
+                        }
+                    )
+            return editors
+        except KeyError:
+            logger.warning('Could not parse optional field "editors"')
 
     @staticmethod
     def _parse_status(record):
         try:
             return DoiStatus(record['state'])
-        except (KeyError, ValueError) as err:
-            logger.warning('Could not parse status from record, reason: %s %s',
-                           err.__class__, err)
+        except (KeyError, ValueError):
+            logger.warning('Could not parse optional field "status"')
 
     @staticmethod
     def _parse_date_record_added(record):
         try:
             return isoparse(record['created'])
-        except (KeyError, ValueError) as err:
-            logger.warning('Could not parse date added from record, reason: %s %s',
-                           err.__class__, err)
+        except (KeyError, ValueError):
+            logger.warning('Could not parse optional field "date_record_added"')
 
     @staticmethod
     def _parse_date_record_updated(record):
         try:
             return isoparse(record['updated'])
         except (KeyError, ValueError) as err:
-            logger.warning('Could not parse date updated from record, reason: %s %s',
-                           err.__class__, err)
+            logger.warning('Could not parse optional field "date_record_updated"')
 
     @staticmethod
     def _parse_contributor(record):
@@ -152,9 +179,8 @@ class DOIDataCiteWebParser(DOIWebParser):
                                                .strip())
 
             return contributor
-        except (KeyError, StopIteration, ValueError) as err:
-            logger.warning('Could not parse a contributor from record, reason: %s %s',
-                           err.__class__, err)
+        except (KeyError, StopIteration, ValueError):
+            logger.warning('Could not parse optional field "contributor"')
 
     @staticmethod
     def _parse_related_identifier(record):
@@ -162,67 +188,66 @@ class DOIDataCiteWebParser(DOIWebParser):
 
         try:
             identifier = record['relatedIdentifiers'][0]['relatedIdentifier']
-        except (IndexError, KeyError) as err:
-            if 'url' in record:
+        except (IndexError, KeyError):
+            if 'identifiers' in record:
+                for identifier_record in record['identifiers']:
+                    if identifier_record["identifier"].startswith('urn:'):
+                        identifier = identifier_record["identifier"]
+                        break
+            elif 'url' in record:
                 logger.info('Parsing related identifier from URL')
                 identifier = DOIWebParser._get_identifier_from_site_url(record['url'])
-            else:
-                logger.warning('Could not parse a related identifier from record, '
-                               'reason: %s %s', err.__class__, err)
 
-        if identifier:
-            identifier = identifier.strip()
+        if identifier is None:
+            raise InputFormatException(
+                'Failed to parse mandatory field "related_identifier"'
+            )
 
-        return identifier
+        return identifier.strip()
 
     @staticmethod
     def _parse_title(record):
         try:
             return record['titles'][0]['title']
-        except (IndexError, KeyError) as err:
+        except (IndexError, KeyError):
             raise InputFormatException(
-                f'Failed to parse title from provided record, reason: '
-                f'{err.__class__} {err}'
+                'Failed to parse mandatory field "title"'
             )
 
     @staticmethod
     def _parse_publisher(record):
         try:
             return record['publisher']
-        except KeyError as err:
+        except KeyError:
             raise InputFormatException(
-                f'Failed to parse publisher from provided record, reason: '
-                f'{err.__class__} {err}'
+                'Failed to parse mandatory field "publisher"'
             )
 
     @staticmethod
     def _parse_publication_date(record):
         try:
             return datetime.strptime(str(record['publicationYear']), '%Y')
-        except (KeyError, ValueError) as err:
+        except (KeyError, ValueError):
             raise InputFormatException(
-                'Failed to parse publication date from provided record, reason: '
-                f'{err.__class__} {err}'
+                'Failed to parse mandatory field "publication_date"'
             )
 
     @staticmethod
     def _parse_product_type(record):
         try:
             return ProductType(record['types']['resourceTypeGeneral'])
-        except (KeyError, ValueError) as err:
+        except (KeyError, ValueError):
             raise InputFormatException(
-                'Failed to parse product type from provided record, reason: '
-                f'{err.__class__} {err}'
+                'Failed to parse mandatory field "product_type"'
             )
 
     @staticmethod
     def _parse_product_type_specific(record):
         try:
             return record['types']['resourceType']
-        except KeyError as err:
+        except KeyError:
             raise InputFormatException(
-                'Failed to parse product type specific from provided record, '
-                f'reason: {err.__class__} {err}'
+                'Failed to parse mandatory field "product_type_specific"'
             )
 
     @staticmethod
@@ -261,31 +286,39 @@ class DOIDataCiteWebParser(DOIWebParser):
         if not isinstance(datacite_records, list):
             datacite_records = [datacite_records]
 
-        for datacite_record in datacite_records:
-            doi_fields = {}
+        for index, datacite_record in enumerate(datacite_records):
+            try:
+                logger.info('Parsing record index %d', index)
+                doi_fields = {}
 
-            # Everything we care about in a DataCite response is under
-            # attributes
-            datacite_record = datacite_record['attributes']
+                # Everything we care about in a DataCite response is under
+                # attributes
+                datacite_record = datacite_record['attributes']
 
-            for mandatory_field in DOIDataCiteWebParser._mandatory_fields:
-                doi_fields[mandatory_field] = getattr(
-                    DOIDataCiteWebParser, f'_parse_{mandatory_field}')(datacite_record)
-                logger.debug('Parsed value %s for mandatory field %s',
-                             doi_fields[mandatory_field], mandatory_field)
+                for mandatory_field in DOIDataCiteWebParser._mandatory_fields:
+                    doi_fields[mandatory_field] = getattr(
+                        DOIDataCiteWebParser, f'_parse_{mandatory_field}')(datacite_record)
+                    logger.debug('Parsed value %s for mandatory field %s',
+                                 doi_fields[mandatory_field], mandatory_field)
 
-            for optional_field in DOIDataCiteWebParser._optional_fields:
-                parsed_value = getattr(
-                    DOIDataCiteWebParser, f'_parse_{optional_field}')(datacite_record)
+                for optional_field in DOIDataCiteWebParser._optional_fields:
+                    parsed_value = getattr(
+                        DOIDataCiteWebParser, f'_parse_{optional_field}')(datacite_record)
 
-                if parsed_value is not None:
-                    doi_fields[optional_field] = parsed_value
-                    logger.debug('Parsed value %s for optional field %s',
-                                 parsed_value, optional_field)
+                    if parsed_value is not None:
+                        doi_fields[optional_field] = parsed_value
+                        logger.debug('Parsed value %s for optional field %s',
+                                     parsed_value, optional_field)
 
-            doi = Doi(**doi_fields)
+                doi = Doi(**doi_fields)
 
-            dois.append(doi)
+                dois.append(doi)
+            except InputFormatException as err:
+                logger.warning('Failed to parse a DOI object from record index %d '
+                               'of the provided label, reason: %s', index, str(err))
+                continue
+
+        logger.info('Parsed %d DOI objects from %d records', len(dois), len(datacite_records))
 
         return dois, errors
 

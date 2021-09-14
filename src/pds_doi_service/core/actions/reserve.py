@@ -14,7 +14,7 @@ Contains the definition for the Reserve action of the Core PDS DOI Service.
 """
 
 from pds_doi_service.core.actions.action import DOICoreAction
-from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import DoiEvent, DoiStatus
 from pds_doi_service.core.input.exceptions import (CriticalDOIException,
                                                    DuplicatedTitleDOIException,
                                                    InputFormatException,
@@ -28,8 +28,8 @@ from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
-from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.outputs.service import DOIServiceFactory, SERVICE_TYPE_DATACITE
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST, WEB_METHOD_PUT
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -136,6 +136,12 @@ class DOICoreActionReserve(DOICoreAction):
             # Add 'status' field so the ranking in the workflow can be determined
             doi.status = DoiStatus.Reserved_not_submitted if self._dry_run else DoiStatus.Reserved
 
+            if not self._dry_run:
+                # Add the event field to instruct DataCite to make this entry
+                # hidden so it can be modified (should have no effect for other
+                # providers)
+                doi.event = DoiEvent.Hide
+
         return dois
 
     def _validate_dois(self, dois):
@@ -237,8 +243,24 @@ class DOICoreActionReserve(DOICoreAction):
                 # Note that for both OSTI and DataCite, reserve requests should
                 # utilize the POST method
                 if not self._dry_run:
+                    service_type = DOIServiceFactory.get_service_type()
+
+                    # If a DOI has already been assigned by DataCite,
+                    # we need to use a PUT request on the URL associated to the DOI
+                    if service_type == SERVICE_TYPE_DATACITE and doi.doi:
+                        method = WEB_METHOD_PUT
+                        url = '{url}/{doi}'.format(
+                            url=self._config.get('DATACITE', 'url'), doi=doi.doi
+                        )
+                    # Otherwise, for both DataCite and OSTI, just a POST request
+                    # on the default endpoint is sufficient
+                    else:
+                        method = WEB_METHOD_POST
+                        url = self._config.get(service_type.upper(), 'url')
+
                     doi, o_doi_label = self._web_client.submit_content(
-                        method=WEB_METHOD_POST,
+                        method=method,
+                        url=url,
                         payload=io_doi_label,
                         content_type=CONTENT_TYPE_JSON
                     )
