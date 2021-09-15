@@ -1,10 +1,7 @@
 # coding: utf-8
 from __future__ import absolute_import
 
-from datetime import date
 from datetime import datetime
-from typing import Dict
-from typing import List
 
 from pds_doi_service.api import util
 from pds_doi_service.api.models import Model

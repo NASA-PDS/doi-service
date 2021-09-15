@@ -1,5 +1,5 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -12,6 +12,9 @@ web_parser.py
 Contains the abstract base class for parsing DOI objects from label returned or
 provided to DOI service endpoints (OSTI, Datacite, etc...).
 """
+from typing import Any
+from typing import List
+
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 
 
@@ -21,10 +24,10 @@ class DOIWebParser:
     to a DOI service endpoint.
     """
 
-    _optional_fields = []
+    _optional_fields: List[Any] = []  # 🤔 TODO: should be ``List[str]``?
     """The optional Doi field names parsed from labels."""
 
-    _mandatory_fields = []
+    _mandatory_fields: List[Any] = []  # 🤔 TODO: should be ``List[str]``?
     """The mandatory Doi field names parsed from labels."""
 
     @staticmethod

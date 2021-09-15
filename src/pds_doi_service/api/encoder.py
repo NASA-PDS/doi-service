@@ -1,5 +1,5 @@
 import six
-from connexion.apps.flask_app import FlaskJSONEncoder
+from connexion.apps.flask_app import FlaskJSONEncoder  # type: ignore
 from pds_doi_service.api.models import Model
 
 

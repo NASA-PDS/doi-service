@@ -699,7 +699,7 @@ class TestDoisController(BaseTestCase):
         query_string = [("identifier", "urn:nasa:pds:insight_cameras::1.1")]
 
         response = self.client.open(
-            "/PDS_APIs/pds_doi_api/0.2/doi".format(lidvid="urn:nasa:pds:insight_cameras::1.1"),
+            "/PDS_APIs/pds_doi_api/0.2/doi",
             method="GET",
             query_string=query_string,
             headers={"Referer": "http://localhost"},

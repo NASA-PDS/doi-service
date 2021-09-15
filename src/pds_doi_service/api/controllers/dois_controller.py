@@ -1,5 +1,5 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -18,7 +18,7 @@ from os.path import exists
 from os.path import join
 from tempfile import NamedTemporaryFile
 
-import connexion
+import connexion  # type: ignore
 from flask import current_app
 from pds_doi_service.api.models import DoiRecord
 from pds_doi_service.api.models import DoiSummary

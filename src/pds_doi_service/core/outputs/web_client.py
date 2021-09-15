@@ -1,5 +1,5 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -14,10 +14,13 @@ endpoint.
 """
 import json
 import pprint
+from typing import Any
+from typing import Optional
 
 import requests
 from pds_doi_service.core.input.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from requests.auth import HTTPBasicAuth
 
@@ -33,9 +36,11 @@ class DOIWebClient:
     """Abstract base class for clients of an HTTP DOI service endpoint"""
 
     _config_util = DOIConfigUtil()
+    _service_name: Optional[str]
     _service_name = None
+    _web_parser: Optional[DOIWebParser]
     _web_parser = None
-    _content_type_map = {}
+    _content_type_map: dict[Any, Any] = {}  # 🤔 TODO: replace Any with what we expect
 
     def _submit_content(self, payload, url, username, password, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
         """

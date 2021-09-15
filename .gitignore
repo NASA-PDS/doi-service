@@ -59,6 +59,7 @@ var/
 *.xpr
 bin/
 .*.swp
+typescript
 
 # OS-specific artifacts
 .DS_Store

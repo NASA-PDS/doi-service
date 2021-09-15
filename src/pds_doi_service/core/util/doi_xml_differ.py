@@ -378,7 +378,6 @@ class DOIDiffer:
         # Rebuilt the historical tree in the order of the 'identifier_value' field.
         historical_root = etree.Element("records")
         for key in sorted(historical_dict_list.keys()):
-            publication_date = historical_dict_list[key].xpath("publication_date")[0].text
             historical_root.append(historical_dict_list[key])
 
         # Rebuilt the new tree in the order of the 'identifier_value' field.
@@ -386,7 +385,6 @@ class DOIDiffer:
         for key in sorted(new_dict_list.keys()):
             # It is possible that the historical doesn't have the record.  Check before adding so both will have the same number of records.
             if key in identifier_list_from_historical:
-                publication_date = new_dict_list[key].xpath("publication_date")[0].text
                 new_root.append(new_dict_list[key])
 
         # Re-parse both documents now with the 'record' elements in the same order.
@@ -415,19 +413,6 @@ class DOIDiffer:
             logger.debug(f"tag_name '{tag_name}' is not in indices_where_field_occur_dict:")
             return 0
 
-    def _setup_where_field_occur_dict():
-        # For fields that can have multiple occurences, a dictionary is necessary to
-        # remember where each field occur in the historical tree so it can be used to find the field in the new tree.
-        indices_where_field_occur_dict = {
-            "author_first_name": 0,
-            "author_last_name": 0,
-            "contributor_first_name": 0,
-            "contributor_last_name": 0,
-            "contributor_full_name": 0,
-            "contributor_contributor_type": 0,
-        }
-        return indices_where_field_occur_dict
-
     def _differ_single_record(
         new_doc,
         historical_element,
@@ -446,7 +431,6 @@ class DOIDiffer:
 
         # Loop through until cannot find any more elements.  Travel all way to the leaves and then compare the fields.
         child_index = 0
-        top_parent_name = historical_element.tag
 
         for child_level_1 in historical_element.iter():
             # The element with the tag 'record' is not useful, so it is skipped.

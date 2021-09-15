@@ -1,13 +1,13 @@
 import re
 
-import nltk
+import nltk  # type: ignore
 
 nltk.download("stopwords", quiet=True)
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords  # type: ignore # noqa: E402
 
 nltk.download("wordnet", quiet=True)
-from nltk.stem.wordnet import WordNetLemmatizer
-from pds_doi_service.core.util.general_util import get_logger
+from nltk.stem.wordnet import WordNetLemmatizer  # type: ignore # noqa: E402 # @nutjob4life: 😩
+from pds_doi_service.core.util.general_util import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -34,7 +34,7 @@ class KeywordTokenizer:
         text = re.sub("&lt;/?.*?&gt;", " &lt;&gt; ", text)
 
         # remove special characters
-        text = re.sub("(\|\\W)+", " ", text)
+        text = re.sub(r"(\|\\W)+", " ", text)
 
         # Convert to list from string
         text = text.split()

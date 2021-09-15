@@ -1,5 +1,5 @@
 #
-#  Copyright 2020-21 by the California Institute of Technology. ALL RIGHTS
+#  Copyright 2021–21 by the California Institute of Technology. ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -32,6 +32,7 @@ class DOICoreAction:
     _name = "unknown"
     _description = "no description"
     _order = 9999999  # used to sort actions in documentation
+    _run_arguments: tuple[str, ...]
     _run_arguments = ()
 
     def __init__(self, db_name=None):

@@ -1,5 +1,8 @@
 import logging
 import time
+from urllib.request import urlopen
+
+import requests
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -8,7 +11,6 @@ logger = logging.getLogger(__name__)
 target_url = "https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON"
 
 # fast method
-from urllib.request import urlopen
 
 timer_start = time.time()
 logger.info(f"TIMER_START:urlopen {target_url}")
@@ -22,7 +24,6 @@ logger.info(f"TIMER_ELAPSED:timer_elapsed {timer_elapsed}")
 
 # slow method
 logger.info("==============================")
-import requests
 
 timer_start = time.time()
 session = requests.session()

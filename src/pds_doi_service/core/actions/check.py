@@ -1,5 +1,5 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -20,7 +20,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from os.path import exists
 
-import pystache
+import pystache  # type: ignore
 from pds_doi_service.core.actions import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -414,7 +414,7 @@ class DOICoreActionCheck(DOICoreAction):
         o_doi_list = self._list_obj.run(status=DoiStatus.Pending)
         pending_state_list = json.loads(o_doi_list)
 
-        logger.info(f"Found %d %s record(s) to check", len(pending_state_list), DoiStatus.Pending)
+        logger.info("Found %d %s record(s) to check" % (len(pending_state_list), DoiStatus.Pending))
 
         if len(pending_state_list) > 0:
             for pending_record in pending_state_list:

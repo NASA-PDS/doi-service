@@ -1,5 +1,5 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -12,7 +12,6 @@ doi_database.py
 Contains classes and functions for interfacing with the local transaction
 database (SQLite3).
 """
-import datetime
 import sqlite3
 from collections import OrderedDict
 from datetime import datetime

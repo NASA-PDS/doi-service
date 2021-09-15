@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
@@ -8,9 +8,9 @@
 import logging
 from urllib.parse import urlparse
 
-import connexion
+import connexion  # type: ignore
 from flask import jsonify
-from flask_cors import CORS
+from flask_cors import CORS  # type: ignore
 from pds_doi_service.api import encoder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger

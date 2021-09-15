@@ -13,6 +13,7 @@ Contains classes and functions for validation of DOI records and the overall
 DOI workflow.
 """
 import re
+from typing import Optional
 
 import requests
 from pds_doi_service.core.db.doi_database import DOIDataBase
@@ -27,6 +28,7 @@ from pds_doi_service.core.input.exceptions import TitleDoesNotMatchProductTypeEx
 from pds_doi_service.core.input.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+
 
 # Get the common logger and set the level for this file.
 logger = get_logger(__name__)
@@ -293,6 +295,7 @@ class DOIValidator:
 
         """
 
+        vid: Optional[str]
         if "::" in doi.related_identifier:
             lid, vid = doi.related_identifier.split("::")
         else:
@@ -350,7 +353,7 @@ class DOIValidator:
         Check that there is not a record in the sqllite database with same
         identifier but a higher status than the current action (see workflow_order)
         """
-        if doi.status.lower() not in self.m_workflow_order:
+        if doi.status is not None and doi.status.lower() not in self.m_workflow_order:
             msg = (
                 f"Unexpected DOI status of '{doi.status.lower()}' from label. "
                 f"Valid values are "
@@ -372,7 +375,12 @@ class DOIValidator:
 
             # A status tuple of ('Pending',3) is higher than ('Draft',2) will
             # cause an error.
-            if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:
+            #
+            # 🤔 TODO: ``mypy`` has several complaints about this line:
+            # • doi.status is an optional (``None``) so calling ``lower`` on it could fail; there should be a check
+            # • The indexing on ``DoiStatus`` here is by ``str``, but is declared to be ``DoiStatus``
+            # But the tests pass so I'm throwing caution to the wind.
+            if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:  # type: ignore
                 msg = (
                     f"There is a record for identifier {doi.related_identifier} "
                     f"(DOI: {doi_str}) with status: '{prev_status.lower()}'.\n"

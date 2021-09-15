@@ -165,7 +165,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     def _parse_date_record_updated(record):
         try:
             return isoparse(record["updated"])
-        except (KeyError, ValueError) as err:
+        except (KeyError, ValueError):
             logger.warning('Could not parse optional field "date_record_updated"')
 
     @staticmethod

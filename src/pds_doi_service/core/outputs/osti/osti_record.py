@@ -16,7 +16,7 @@ import json
 from datetime import datetime
 from os.path import exists
 
-import pystache
+import pystache  # type: ignore
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON

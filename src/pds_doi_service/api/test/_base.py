@@ -4,7 +4,7 @@ Planetary Data System's Digital Object Identifier service — API testing base c
 """
 import logging
 
-from flask_testing import TestCase
+from flask_testing import TestCase  # type: ignore
 from pds_doi_service.api.__main__ import init_app
 
 

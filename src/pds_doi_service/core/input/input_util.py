@@ -32,7 +32,7 @@ from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
-from xmlschema import XMLSchemaValidationError
+from xmlschema import XMLSchemaValidationError  # type: ignore
 
 # Get the common logger
 logger = get_logger(__name__)
