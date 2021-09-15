@@ -21,6 +21,19 @@ repos:
     hooks:
     -   id: mypy
         files: ^src/|tests/
+        # 😔 These `additional_dependencies` mirror those in the `dev` extra of `setup.cfg` and are needed
+        # to run `mypy` under `tox`. This violates "DRY" but we don't have a better way of doing this—yet.
+        additional_dependencies: [
+            lxml-stubs,
+            pandas-stubs,
+            types-flask,
+            types-jsonschema,
+            types-pkg_resources,
+            types-python-dateutil,
+            types-requests,
+            types-six,
+            types-waitress
+        ]
 
 -   repo: https://github.com/python/black
     rev: 21.7b0
