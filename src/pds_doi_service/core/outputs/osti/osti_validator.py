@@ -24,7 +24,9 @@ from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
 from pkg_resources import resource_filename
 
-# Note that ``lxml`` does have the ``isoschematron`` member, but the typing stub does not, so we ignore:
+# Note that in the ↑ list of imports, the ``lxml`` module does have the ``isoschematron``
+# member, but the typing stub does not so set just it to ``type: ignore``.
+
 
 logger = get_logger(__name__)
 
