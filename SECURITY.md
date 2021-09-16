@@ -5,7 +5,7 @@ This document describes the security policy of PDS DOI Service.
 
 ## 📀 Supported Versions
 
-The following table describes which versions of the PDS4 Validation Tool are supported and which are not.
+The following table describes which versions of the PDS DOI Service are supported and which are not.
 
 | Version | Supported  |
 |:--------|:----------:|
