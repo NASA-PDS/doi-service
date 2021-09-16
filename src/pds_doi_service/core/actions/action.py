@@ -1,10 +1,9 @@
 #
-#  Copyright 2020-21 by the California Institute of Technology. ALL RIGHTS
+#  Copyright 2020–21 by the California Institute of Technology. ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =========
 action.py
@@ -12,7 +11,6 @@ action.py
 
 Contains the parent class definition for actions of the Core PDS DOI Service.
 """
-
 import argparse
 
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
@@ -24,16 +22,17 @@ logger = get_logger(__name__)
 
 def create_parser():
     """Non-object function to be used by sphinx-argparse for documentation"""
-    logger.info('parser for sphinx-argparse')
+    logger.info("parser for sphinx-argparse")
     return DOICoreAction.create_cmd_parser()
 
 
 class DOICoreAction:
     m_doi_config_util = DOIConfigUtil()
 
-    _name = 'unknown'
-    _description = 'no description'
+    _name = "unknown"
+    _description = "no description"
     _order = 9999999  # used to sort actions in documentation
+    _run_arguments: tuple[str, ...]
     _run_arguments = ()
 
     def __init__(self, db_name=None):
@@ -55,18 +54,17 @@ class DOICoreAction:
 
         """
         parser = argparse.ArgumentParser(
-            description='PDS core command for DOI management. '
-                        'The available subcommands are:\n',
-            formatter_class=argparse.RawTextHelpFormatter
+            description="PDS core command for DOI management. " "The available subcommands are:\n",
+            formatter_class=argparse.RawTextHelpFormatter,
         )
 
-        subparsers = parser.add_subparsers(dest='subcommand')
+        subparsers = parser.add_subparsers(dest="subcommand")
 
         # create subparsers
         action_classes = sorted(DOICoreAction.__subclasses__(), key=lambda c: c._order)
 
         for cls in action_classes:
-            parser.description += f'{cls._name} ({cls._description}),\n'
+            parser.description += f"{cls._name} ({cls._description}),\n"
             add_to_subparser_method = getattr(cls, "add_to_subparser", None)
 
             if callable(add_to_subparser_method):
@@ -92,8 +90,7 @@ class DOICoreAction:
 
         """
         return NotImplementedError(
-            f'Subclasses of {cls.__class__.__name__} must provide an '
-            f'implementation for add_to_subparser()'
+            f"Subclasses of {cls.__class__.__name__} must provide an " f"implementation for add_to_subparser()"
         )
 
     def parse_arguments(self, kwargs):
@@ -110,7 +107,7 @@ class DOICoreAction:
         """
         for kwarg in self._run_arguments:
             if kwarg in kwargs:
-                setattr(self, f'_{kwarg}', kwargs[kwarg])
+                setattr(self, f"_{kwarg}", kwargs[kwarg])
 
             logger.debug(f"{kwarg} = {getattr(self,  f'_{kwarg}')}")
 
@@ -138,6 +135,5 @@ class DOICoreAction:
 
         """
         return NotImplementedError(
-            f'Subclasses of {self.__class__.__name__} must provide an '
-            f'implementation for run()'
+            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for run()"
         )

@@ -9,6 +9,7 @@ from behave_testrail_reporter import TestrailReporter
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 def download_file(url):
     local_filename = url.split('/')[-1]
     tmp_dir = 'tests'
@@ -35,8 +36,3 @@ def before_all(context):
     current_branch = Repository('.').head.shorthand
     testrail_reporter = TestrailReporter(current_branch)
     context.config.reporters.append(testrail_reporter)
-
-
-#def after_scenario(context):
-#    if hasattr(context, 'random_lid'):
-#        del context.random_lid

@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =================
 osti_validator.py
@@ -12,21 +11,22 @@ osti_validator.py
 
 Contains functions for validating the contents of OSTI XML labels.
 """
-
 import tempfile
+from distutils.util import strtobool
 from os.path import exists
 
-import xmlschema
-from distutils.util import strtobool
-from pkg_resources import resource_filename
-
+import xmlschema  # type: ignore
 from lxml import etree
-from lxml import isoschematron
-
+from lxml import isoschematron  # type: ignore
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
+from pkg_resources import resource_filename
+
+# Note that in the ↑ list of imports, the ``lxml`` module does have the ``isoschematron``
+# member, but the typing stub does not so set just it to ``type: ignore``.
+
 
 logger = get_logger(__name__)
 
@@ -40,23 +40,22 @@ class DOIOstiValidator(DOIServiceValidator):
     def __init__(self):
         super().__init__()
 
-        schematron_file = resource_filename(__name__, 'IAD3_schematron.sch')
+        schematron_file = resource_filename(__name__, "IAD3_schematron.sch")
 
         if not exists(schematron_file):
             raise RuntimeError(
-                'Could not find the schematron file needed by this module.\n'
-                f'Expected schematron file: {schematron_file}'
+                "Could not find the schematron file needed by this module.\n"
+                f"Expected schematron file: {schematron_file}"
             )
 
         sct_doc = etree.parse(schematron_file)
         self._schematron = isoschematron.Schematron(sct_doc, store_report=True)
 
-        xsd_filename = resource_filename(__name__, 'iad_schema.xsd')
+        xsd_filename = resource_filename(__name__, "iad_schema.xsd")
 
         if not exists(xsd_filename):
             raise RuntimeError(
-                'Could not find the schema file needed by this module.\n'
-                f'Expected schema file: {xsd_filename}'
+                "Could not find the schema file needed by this module.\n" f"Expected schema file: {xsd_filename}"
             )
 
         self._xsd_validator = etree.XMLSchema(file=xsd_filename)
@@ -103,7 +102,7 @@ class DOIOstiValidator(DOIServiceValidator):
         # error(s) occurred.
         if not is_valid:
             # Save doi_label to disk
-            with tempfile.NamedTemporaryFile(mode='w', suffix='temp_doi.xml') as temp_file:
+            with tempfile.NamedTemporaryFile(mode="w", suffix="temp_doi.xml") as temp_file:
                 temp_file.write(etree.tostring(osti_root).decode())
                 temp_file.flush()
 
@@ -145,25 +144,29 @@ class DOIOstiValidator(DOIServiceValidator):
 
         # Check 1. Extraneous tags in <records> element.
         if len(osti_root.keys()) > 0:
-            msg = (f"OSTI XML cannot contain extraneous attribute(s) "
-                   f"in main tag: {osti_root.keys()}")
+            msg = f"OSTI XML cannot contain extraneous attribute(s) " f"in main tag: {osti_root.keys()}"
             logger.error(msg)
             raise InputFormatException(msg)
 
         # Check 2. Bad tag(s) in <record> element, e.g. status='Release'.
         # It should only be in possible_status_list variable.
         possible_status_list = [
-            DoiStatus.Draft, DoiStatus.Reserved, DoiStatus.Reserved_not_submitted,
-            DoiStatus.Review, DoiStatus.Pending, DoiStatus.Registered
+            DoiStatus.Draft,
+            DoiStatus.Reserved,
+            DoiStatus.Reserved_not_submitted,
+            DoiStatus.Review,
+            DoiStatus.Pending,
+            DoiStatus.Registered,
         ]
         record_count = 1  # In the world of OSTI, record_count starts at 1.
 
-        for element in osti_root.findall('record'):
-            if ('status' in element.keys()
-                    and element.attrib['status'].lower() not in possible_status_list):
-                msg = (f"Invalid status provided for record {record_count}. "
-                       f"Status value must be one of {possible_status_list}. "
-                       f"Provided {element.attrib['status'].lower()}")
+        for element in osti_root.findall("record"):
+            if "status" in element.keys() and element.attrib["status"].lower() not in possible_status_list:
+                msg = (
+                    f"Invalid status provided for record {record_count}. "
+                    f"Status value must be one of {possible_status_list}. "
+                    f"Provided {element.attrib['status'].lower()}"
+                )
                 logger.error(msg)
                 raise InputFormatException(msg)
 
@@ -171,9 +174,7 @@ class DOIOstiValidator(DOIServiceValidator):
             record_count += 1
 
         # Determine if we need to validate against the schema as well
-        validate_against_schema = self._config.get(
-            'OSTI', 'validate_against_schema', fallback='False'
-        )
+        validate_against_schema = self._config.get("OSTI", "validate_against_schema", fallback="False")
 
         if strtobool(validate_against_schema):
             self._validate_against_xsd(osti_root)

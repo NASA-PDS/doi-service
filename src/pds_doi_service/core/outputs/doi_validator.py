@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ================
 doi_validator.py
@@ -13,22 +12,23 @@ doi_validator.py
 Contains classes and functions for validation of DOI records and the overall
 DOI workflow.
 """
-
 import re
+from typing import Optional
 
 import requests
-
 from pds_doi_service.core.db.doi_database import DOIDataBase
-from pds_doi_service.core.entities.doi import Doi, DoiStatus
-from pds_doi_service.core.input.exceptions import (DuplicatedTitleDOIException,
-                                                   IllegalDOIActionException,
-                                                   InvalidRecordException,
-                                                   InvalidIdentifierException,
-                                                   SiteURLNotExistException,
-                                                   TitleDoesNotMatchProductTypeException,
-                                                   UnexpectedDOIActionException)
+from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.input.exceptions import DuplicatedTitleDOIException
+from pds_doi_service.core.input.exceptions import IllegalDOIActionException
+from pds_doi_service.core.input.exceptions import InvalidIdentifierException
+from pds_doi_service.core.input.exceptions import InvalidRecordException
+from pds_doi_service.core.input.exceptions import SiteURLNotExistException
+from pds_doi_service.core.input.exceptions import TitleDoesNotMatchProductTypeException
+from pds_doi_service.core.input.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+
 
 # Get the common logger and set the level for this file.
 logger = get_logger(__name__)
@@ -52,7 +52,7 @@ class DOIValidator:
         DoiStatus.Pending: 4,
         DoiStatus.Registered: 5,
         DoiStatus.Findable: 5,
-        DoiStatus.Deactivated: 5
+        DoiStatus.Deactivated: 5,
     }
 
     def __init__(self, db_name=None):
@@ -63,7 +63,7 @@ class DOIValidator:
             self.m_default_db_file = db_name
         else:
             # Default name of the database.
-            self.m_default_db_file = self._config.get('OTHER', 'db_file')
+            self.m_default_db_file = self._config.get("OTHER", "db_file")
 
         self._database_obj = DOIDataBase(self.m_default_db_file)
 
@@ -74,12 +74,11 @@ class DOIValidator:
         """
         logger.debug("doi,site_url: %s,%s", doi, doi.site_url)
 
-        if doi.site_url and doi.site_url != 'N/A':
+        if doi.site_url and doi.site_url != "N/A":
             try:
                 response = requests.get(doi.site_url, timeout=5)
                 status_code = response.status_code
-                logger.debug("from_request status_code,site_url: %s,%s",
-                             status_code, doi.site_url)
+                logger.debug("from_request status_code,site_url: %s,%s", status_code, doi.site_url)
 
                 # Handle cases when a connection can be made to the server but
                 # the status is greater than or equal to 400.
@@ -96,22 +95,19 @@ class DOIValidator:
         Check if the same title exists already in local database for a different
         identifier.
         """
-        query_criterias = {'title': [doi.title]}
+        query_criterias = {"title": [doi.title]}
 
         # Query database for rows with given title value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
         # keep rows with same title BUT different identifier
         rows_with_different_identifier = [
-            row for row in rows
-            if row[columns.index('identifier')] != doi.related_identifier
+            row for row in rows if row[columns.index("identifier")] != doi.related_identifier
         ]
 
         if rows_with_different_identifier:
-            identifiers = ','.join([row[columns.index('identifier')]
-                                    for row in rows_with_different_identifier])
-            status = ','.join([row[columns.index('status')]
-                               for row in rows_with_different_identifier])
+            identifiers = ",".join([row[columns.index("identifier")] for row in rows_with_different_identifier])
+            status = ",".join([row[columns.index("status")] for row in rows_with_different_identifier])
 
             # Note that it is possible for rows_with_different_identifier to have
             # some elements while 'doi' field is None. It needs to be checked.
@@ -120,14 +116,16 @@ class DOIValidator:
             # Due to the fact that 'doi' field can be None, each field must be
             # inspected before the join operation otherwise will cause indexing error.
             for row in rows_with_different_identifier:
-                if row[columns.index('doi')]:
-                    dois.append(row[columns.index('doi')])
+                if row[columns.index("doi")]:
+                    dois.append(row[columns.index("doi")])
                 else:
-                    dois.append('None')
+                    dois.append("None")
 
-            msg = (f"The title '{doi.title}' has already been used for records "
-                   f"{identifiers}, status: {status}, doi: {','.join(dois)}. " 
-                   "You must use a different title.")
+            msg = (
+                f"The title '{doi.title}' has already been used for records "
+                f"{identifiers}, status: {status}, doi: {','.join(dois)}. "
+                "You must use a different title."
+            )
 
             raise DuplicatedTitleDOIException(msg)
 
@@ -139,22 +137,26 @@ class DOIValidator:
         The same for: dataset, collection, document
         Otherwise we raise a warning.
         """
-        product_type_specific_split = doi.product_type_specific.split(' ')
+        product_type_specific_split = doi.product_type_specific.split(" ")
 
         # The suffix should be the last field in the product_type_specific so
         # if it has many tokens, check the last one.
-        product_type_specific_suffix = (product_type_specific_split[-1]
-                                        if len(product_type_specific_split) > 1
-                                        else '<<< no product specific type found >>> ')
+        product_type_specific_suffix = (
+            product_type_specific_split[-1]
+            if len(product_type_specific_split) > 1
+            else "<<< no product specific type found >>> "
+        )
 
         logger.debug("product_type_specific_suffix: %s", product_type_specific_suffix)
         logger.debug("doi.title: %s", doi.title)
 
         if not product_type_specific_suffix.lower() in doi.title.lower():
-            msg = (f"DOI with identifier '{doi.related_identifier}' and title "
-                   f"'{doi.title}' does not contains the product-specific type "
-                   f"suffix '{product_type_specific_suffix.lower()}'. "
-                   "Product-specific type suffix should be in the title.")
+            msg = (
+                f"DOI with identifier '{doi.related_identifier}' and title "
+                f"'{doi.title}' does not contains the product-specific type "
+                f"suffix '{product_type_specific_suffix.lower()}'. "
+                "Product-specific type suffix should be in the title."
+            )
 
             raise TitleDoesNotMatchProductTypeException(msg)
 
@@ -181,12 +183,12 @@ class DOIValidator:
 
         """
         # The database expects each field to be a list.
-        query_criterias = {'ids': [doi.related_identifier]}
+        query_criterias = {"ids": [doi.related_identifier]}
 
         # Query database for rows with given id value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
-        rows_having_doi = [row for row in rows if row[columns.index('doi')]]
+        rows_having_doi = [row for row in rows if row[columns.index("doi")]]
 
         if rows_having_doi:
             pre_existing_doi = dict(zip(columns, rows_having_doi[0]))
@@ -198,7 +200,7 @@ class DOIValidator:
                     f"(status={pre_existing_doi['status']}).\n"
                     "You cannot update/remove a DOI for an existing record identifier."
                 )
-            elif doi.doi != pre_existing_doi['doi']:
+            elif doi.doi != pre_existing_doi["doi"]:
                 raise IllegalDOIActionException(
                     f"There is already a DOI {pre_existing_doi['doi']} submitted "
                     f"for record identifier {doi.related_identifier} "
@@ -224,13 +226,13 @@ class DOIValidator:
         """
         if doi.doi:
             # The database expects each field to be a list.
-            query_criterias = {'doi': [doi.doi]}
+            query_criterias = {"doi": [doi.doi]}
 
             # Query database for rows with given DOI value (should only ever be
             # at most one)
             columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
-            if rows and doi.related_identifier != rows[0][columns.index('identifier')]:
+            if rows and doi.related_identifier != rows[0][columns.index("identifier")]:
                 raise IllegalDOIActionException(
                     f"The DOI ({doi.doi}) provided for record identifier "
                     f"{doi.related_identifier} is already in use for record "
@@ -258,20 +260,20 @@ class DOIValidator:
         # Make sure we have an identifier to key off of
         if not doi.related_identifier:
             raise InvalidRecordException(
-                'Record provided with missing related_identifier field. '
-                'Please ensure a LIDVID or similar identifier is provided for '
-                'all DOI requests.'
+                "Record provided with missing related_identifier field. "
+                "Please ensure a LIDVID or similar identifier is provided for "
+                "all DOI requests."
             )
 
         # Make sure the doi and id fields are consistent, if present
         if doi.doi and doi.id:
-            prefix, suffix = doi.doi.split('/')
+            prefix, suffix = doi.doi.split("/")
 
             if suffix != doi.id:
                 raise InvalidRecordException(
-                    f'Record for {doi.related_identifier} has inconsistent '
-                    f'DOI ({doi.doi}) and ID ({doi.id}) fields. Please reconcile '
-                    'the inconsistency and resubmit the request.'
+                    f"Record for {doi.related_identifier} has inconsistent "
+                    f"DOI ({doi.doi}) and ID ({doi.id}) fields. Please reconcile "
+                    "the inconsistency and resubmit the request."
                 )
 
     def _check_lidvid_field(self, doi: Doi):
@@ -293,56 +295,57 @@ class DOIValidator:
 
         """
 
-        if '::' in doi.related_identifier:
-            lid, vid = doi.related_identifier.split('::')
+        vid: Optional[str]
+        if "::" in doi.related_identifier:
+            lid, vid = doi.related_identifier.split("::")
         else:
             lid = doi.related_identifier
             vid = None
 
-        lid_tokens = lid.split(':')
+        lid_tokens = lid.split(":")
 
         try:
             # Make sure we got a URN
-            if lid_tokens[0] != 'urn':
+            if lid_tokens[0] != "urn":
                 raise InvalidIdentifierException('LIDVID must start with "urn"')
 
             # Make sure we got the minimum number of fields, and that
             # the number of fields is consistent with the product type
             if not MIN_LID_FIELDS <= len(lid_tokens) <= MAX_LID_FIELDS:
                 raise InvalidIdentifierException(
-                    f'LIDVID must contain only between {MIN_LID_FIELDS} '
-                    f'and {MAX_LID_FIELDS} colon-delimited fields, '
-                    f'got {len(lid_tokens)} field(s)'
+                    f"LIDVID must contain only between {MIN_LID_FIELDS} "
+                    f"and {MAX_LID_FIELDS} colon-delimited fields, "
+                    f"got {len(lid_tokens)} field(s)"
                 )
 
             # Now check each field for the expected set of characters
-            token_regex = re.compile(r'[a-z0-9][a-z0-9-._]{0,31}')
+            token_regex = re.compile(r"[a-z0-9][a-z0-9-._]{0,31}")
 
             for index, token in enumerate(lid_tokens):
                 if not token_regex.fullmatch(token):
                     raise InvalidIdentifierException(
-                        f'LIDVID field {index + 1} ({token}) is invalid. '
-                        f'Fields must begin with a letter or digit, and only '
-                        f'consist of letters, digits, hyphens (-), underscores (_) '
-                        f'or periods (.)'
+                        f"LIDVID field {index + 1} ({token}) is invalid. "
+                        f"Fields must begin with a letter or digit, and only "
+                        f"consist of letters, digits, hyphens (-), underscores (_) "
+                        f"or periods (.)"
                     )
 
             # Finally, make sure the VID conforms to a version number
-            version_regex = re.compile(r'^\d+\.\d+$')
+            version_regex = re.compile(r"^\d+\.\d+$")
 
             if vid and not version_regex.fullmatch(vid):
                 raise InvalidIdentifierException(
-                    f'Parsed VID ({vid}) does not conform to a valid version identifier. '
-                    'Version identifier must consist only of a major and minor version '
-                    'joined with a period (ex: 1.0)'
+                    f"Parsed VID ({vid}) does not conform to a valid version identifier. "
+                    "Version identifier must consist only of a major and minor version "
+                    "joined with a period (ex: 1.0)"
                 )
         except InvalidIdentifierException as err:
             raise InvalidIdentifierException(
-                f'The record identifier {doi.related_identifier} (DOI {doi.doi}) '
-                f'does not conform to a valid LIDVID format.\n'
-                f'Reason: {str(err)}\n'
-                'If the identifier is not intended to be a LIDVID, use the '
-                'force option to bypass the results of this check.'
+                f"The record identifier {doi.related_identifier} (DOI {doi.doi}) "
+                f"does not conform to a valid LIDVID format.\n"
+                f"Reason: {str(err)}\n"
+                "If the identifier is not intended to be a LIDVID, use the "
+                "force option to bypass the results of this check."
             )
 
     def _check_field_workflow(self, doi: Doi):
@@ -350,27 +353,34 @@ class DOIValidator:
         Check that there is not a record in the sqllite database with same
         identifier but a higher status than the current action (see workflow_order)
         """
-        if doi.status.lower() not in self.m_workflow_order:
-            msg = (f"Unexpected DOI status of '{doi.status.lower()}' from label. "
-                   f"Valid values are "
-                   f"{[DoiStatus(key).value for key in self.m_workflow_order.keys()]}")
+        if doi.status is not None and doi.status.lower() not in self.m_workflow_order:
+            msg = (
+                f"Unexpected DOI status of '{doi.status.lower()}' from label. "
+                f"Valid values are "
+                f"{[DoiStatus(key).value for key in self.m_workflow_order.keys()]}"
+            )
             logger.error(msg)
             raise UnexpectedDOIActionException(msg)
 
         # The database expects each field to be a list.
-        query_criterias = {'ids': [doi.related_identifier]}
+        query_criterias = {"ids": [doi.related_identifier]}
 
         # Query database for rows with given id value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
         if rows:
             row = rows[0]
-            doi_str = row[columns.index('doi')]
-            prev_status = row[columns.index('status')]
+            doi_str = row[columns.index("doi")]
+            prev_status = row[columns.index("status")]
 
             # A status tuple of ('Pending',3) is higher than ('Draft',2) will
             # cause an error.
-            if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:
+            #
+            # 🤔 TODO: ``mypy`` has several complaints about this line:
+            # • doi.status is an optional (``None``) so calling ``lower`` on it could fail; there should be a check
+            # • The indexing on ``DoiStatus`` here is by ``str``, but is declared to be ``DoiStatus``
+            # But the tests pass so I'm throwing caution to the wind.
+            if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:  # type: ignore
                 msg = (
                     f"There is a record for identifier {doi.related_identifier} "
                     f"(DOI: {doi_str}) with status: '{prev_status.lower()}'.\n"

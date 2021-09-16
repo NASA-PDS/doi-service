@@ -1,10 +1,9 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ========
 draft.py
@@ -12,22 +11,22 @@ draft.py
 
 Contains the definition for the Draft action of the Core PDS DOI Service.
 """
-
 import glob
-from os.path import exists, join
+from os.path import exists
+from os.path import join
 
 from pds_doi_service.core.actions import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.input.exceptions import (DuplicatedTitleDOIException,
-                                                   UnexpectedDOIActionException,
-                                                   NoTransactionHistoryForIdentifierException,
-                                                   TitleDoesNotMatchProductTypeException,
-                                                   InputFormatException,
-                                                   CriticalDOIException,
-                                                   InvalidIdentifierException,
-                                                   collect_exception_classes_and_messages,
-                                                   raise_or_warn_exceptions)
+from pds_doi_service.core.input.exceptions import collect_exception_classes_and_messages
+from pds_doi_service.core.input.exceptions import CriticalDOIException
+from pds_doi_service.core.input.exceptions import DuplicatedTitleDOIException
+from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.input.exceptions import InvalidIdentifierException
+from pds_doi_service.core.input.exceptions import NoTransactionHistoryForIdentifierException
+from pds_doi_service.core.input.exceptions import raise_or_warn_exceptions
+from pds_doi_service.core.input.exceptions import TitleDoesNotMatchProductTypeException
+from pds_doi_service.core.input.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
@@ -39,12 +38,12 @@ logger = get_logger(__name__)
 
 
 class DOICoreActionDraft(DOICoreAction):
-    _name = 'draft'
-    _description = 'Prepare a draft DOI record created from PDS4 labels.'
+    _name = "draft"
+    _description = "Prepare a draft DOI record created from PDS4 labels."
     _order = 10
-    _run_arguments = ('input', 'node', 'submitter', 'lidvid', 'force', 'keywords')
+    _run_arguments = ("input", "node", "submitter", "lidvid", "force", "keywords")
 
-    DEFAULT_KEYWORDS = ['PDS', 'PDS4']
+    DEFAULT_KEYWORDS = ["PDS", "PDS4"]
     """Default keywords added to each new draft request."""
 
     def __init__(self, db_name=None):
@@ -62,52 +61,66 @@ class DOICoreActionDraft(DOICoreAction):
         self._lidvid = None
         self._force = False
         self._target = None
-        self._keywords = ''
+        self._keywords = ""
 
     @classmethod
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
-            cls._name,
-            description='Create a draft DOI record from existing PDS4 or DOI '
-                        'labels.'
+            cls._name, description="Create a draft DOI record from existing PDS4 or DOI " "labels."
         )
 
         node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument(
-            '-i', '--input', required=False,
-            metavar='input/bundle_in_with_contributors.xml',
-            help='An input PDS4/DOI label. May be a local path or an HTTP address '
-                 'resolving to a label file. Multiple inputs may be provided '
-                 'via comma-delimited list. Must be provided if --lidvid is not '
-                 'specified.'
+            "-i",
+            "--input",
+            required=False,
+            metavar="input/bundle_in_with_contributors.xml",
+            help="An input PDS4/DOI label. May be a local path or an HTTP address "
+            "resolving to a label file. Multiple inputs may be provided "
+            "via comma-delimited list. Must be provided if --lidvid is not "
+            "specified.",
         )
         action_parser.add_argument(
-            '-n', '--node', required=True,  metavar='"img"',
-            help='The PDS Discipline Node in charge of the DOI. Authorized '
-                 'values are: ' + ','.join(node_values)
+            "-n",
+            "--node",
+            required=True,
+            metavar='"img"',
+            help="The PDS Discipline Node in charge of the DOI. Authorized " "values are: " + ",".join(node_values),
         )
         action_parser.add_argument(
-            '-s', '--submitter', required=True, metavar='"my.email@node.gov"',
-            help='The email address to associate with the Draft record.'
+            "-s",
+            "--submitter",
+            required=True,
+            metavar='"my.email@node.gov"',
+            help="The email address to associate with the Draft record.",
         )
         action_parser.add_argument(
-            '-l', '--lidvid', required=False,
-            metavar='urn:nasa:pds:lab_shocked_feldspars::1.0',
-            help='A LIDVID for an existing DOI record to move back to draft '
-                 'status. Must be provided if --input is not specified.'
+            "-l",
+            "--lidvid",
+            required=False,
+            metavar="urn:nasa:pds:lab_shocked_feldspars::1.0",
+            help="A LIDVID for an existing DOI record to move back to draft "
+            "status. Must be provided if --input is not specified.",
         )
         action_parser.add_argument(
-            '-f', '--force', required=False, action='store_true',
-            help='If provided, forces the action to proceed even if warnings are '
-                 'encountered during submission of the draft record to the '
-                 'database. Without this flag, any warnings encountered are '
-                 'treated as fatal exceptions.',
+            "-f",
+            "--force",
+            required=False,
+            action="store_true",
+            help="If provided, forces the action to proceed even if warnings are "
+            "encountered during submission of the draft record to the "
+            "database. Without this flag, any warnings encountered are "
+            "treated as fatal exceptions.",
         )
         action_parser.add_argument(
-            '-k', '--keywords', required=False, metavar='"Image"', default='',
-            help='Extra keywords to associate with the Draft record. Multiple '
-                 'keywords must be separated by ",". Ignored when used with the '
-                 '--lidvid option.'
+            "-k",
+            "--keywords",
+            required=False,
+            metavar='"Image"',
+            default="",
+            help="Extra keywords to associate with the Draft record. Multiple "
+            'keywords must be separated by ",". Ignored when used with the '
+            "--lidvid option.",
         )
 
     def _add_extra_keywords(self, keywords, io_doi):
@@ -136,7 +149,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # The keywords are comma separated. The io_doi.keywords field is a set.
         if keywords:
-            keyword_tokens = set(map(str.strip, keywords.split(',')))
+            keyword_tokens = set(map(str.strip, keywords.split(",")))
 
             io_doi.keywords |= keyword_tokens
 
@@ -162,12 +175,12 @@ class DOICoreActionDraft(DOICoreAction):
             contains only a single DOI, a list of length 1 is returned.
 
         """
-        input_util = DOIInputUtil(valid_extensions=['.json', '.xml'])
+        input_util = DOIInputUtil(valid_extensions=[".json", ".xml"])
 
         o_dois = input_util.parse_dois_from_input_file(input_file)
 
         for o_doi in o_dois:
-            o_doi.publisher = self._config.get('OTHER', 'doi_publisher')
+            o_doi.publisher = self._config.get("OTHER", "doi_publisher")
             o_doi.contributor = NodeUtil().get_node_long_name(self._node)
 
             # Add 'status' field so the ranking in the workflow can be determined.
@@ -208,8 +221,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         """
         logger.info("Drafting input file %s", input_file)
-        logger.debug("node,submitter,force_flag,keywords: %s,%s,%s,%s",
-                     node, submitter, force_flag, keywords)
+        logger.debug("node,submitter,force_flag,keywords: %s,%s,%s,%s", node, submitter, force_flag, keywords)
 
         exception_classes = []
         exception_messages = []
@@ -223,12 +235,13 @@ class DOICoreActionDraft(DOICoreAction):
                 self._doi_validator.validate(doi)
             # Collect any exceptions/warnings for now and decide whether to
             # raise or log them later on
-            except (DuplicatedTitleDOIException,
-                    InvalidIdentifierException,
-                    UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException) as err:
-                (exception_classes,
-                 exception_messages) = collect_exception_classes_and_messages(
+            except (
+                DuplicatedTitleDOIException,
+                InvalidIdentifierException,
+                UnexpectedDOIActionException,
+                TitleDoesNotMatchProductTypeException,
+            ) as err:
+                (exception_classes, exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages
                 )
             # Propagate input format exceptions, force flag should not affect
@@ -244,15 +257,13 @@ class DOICoreActionDraft(DOICoreAction):
         # WarningDOIException or log a warning with all the messages,
         # depending on the the state of the force flag
         if len(exception_classes) > 0:
-            raise_or_warn_exceptions(exception_classes, exception_messages,
-                                     log=force_flag)
+            raise_or_warn_exceptions(exception_classes, exception_messages, log=force_flag)
 
         for doi in dois:
             # Use TransactionBuilder to prepare all things related to writing to
             # the local transaction database.
             transaction = self.m_transaction_builder.prepare_transaction(
-                node, submitter, doi, input_path=input_file,
-                output_content_type=CONTENT_TYPE_JSON
+                node, submitter, doi, input_path=input_file, output_content_type=CONTENT_TYPE_JSON
             )
 
             # Commit the transaction to the database
@@ -288,22 +299,15 @@ class DOICoreActionDraft(DOICoreAction):
         # The value of input can be a list of names, or a directory.
         # Split them up and let the input util library handle determination
         # of each type
-        list_of_inputs = inputs.split(',')
+        list_of_inputs = inputs.split(",")
 
         # Filter out any empty strings from trailing commas
-        list_of_inputs = list(
-            filter(lambda input_file: len(input_file), list_of_inputs)
-        )
+        list_of_inputs = list(filter(lambda input_file: len(input_file), list_of_inputs))
 
         # For each input file, transform the input into a list of in-memory
         # DOI objects, then concatenate to the master list of DOIs.
         for input_file in list_of_inputs:
-            dois.extend(
-                self._run_single_file(
-                    input_file, self._node, self._submitter, self._force,
-                    self._keywords
-                )
-            )
+            dois.extend(self._run_single_file(input_file, self._node, self._submitter, self._force, self._keywords))
 
         if dois:
             # Create a single label containing records for each draft DOI
@@ -312,9 +316,8 @@ class DOICoreActionDraft(DOICoreAction):
             # Make sure were returning a valid label
             self._validator_service.validate(o_doi_label)
         else:
-            logger.warning('No DOI objects could be parsed from the provided '
-                           'list of inputs: %s', list_of_inputs)
-            o_doi_label = ''
+            logger.warning("No DOI objects could be parsed from the provided " "list of inputs: %s", list_of_inputs)
+            o_doi_label = ""
 
         return o_doi_label
 
@@ -349,22 +352,21 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Make sure we can locate the output label associated with this
         # transaction
-        transaction_location = transaction_record['transaction_key']
-        label_files = glob.glob(join(transaction_location, 'output.*'))
+        transaction_location = transaction_record["transaction_key"]
+        label_files = glob.glob(join(transaction_location, "output.*"))
 
         if not label_files or not exists(label_files[0]):
             raise NoTransactionHistoryForIdentifierException(
-                f'Could not find a DOI label associated with LIDVID {lidvid}. '
-                'The database and transaction history location may be out of sync. '
-                'Please try resubmitting the record in reserve or draft.'
+                f"Could not find a DOI label associated with LIDVID {lidvid}. "
+                "The database and transaction history location may be out of sync. "
+                "Please try resubmitting the record in reserve or draft."
             )
 
         label_file = label_files[0]
 
         # Label could contain entries for multiple LIDVIDs, so extract
         # just the one we care about
-        (lidvid_record,
-         content_type) = self._web_parser.get_record_for_identifier(label_file, lidvid)
+        (lidvid_record, content_type) = self._web_parser.get_record_for_identifier(label_file, lidvid)
 
         # Format label into an in-memory DOI object
         dois, _ = self._web_parser.parse_dois_from_label(lidvid_record, content_type)
@@ -381,8 +383,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Re-commit transaction to official roll DOI back to draft status
         transaction = self.m_transaction_builder.prepare_transaction(
-            self._node, self._submitter, doi, input_path=label_file,
-            output_content_type=content_type
+            self._node, self._submitter, doi, input_path=label_file, output_content_type=content_type
         )
 
         # Commit the transaction to the database
@@ -413,8 +414,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Make sure we've been given something to work with
         if self._input is None and self._lidvid is None:
-            raise ValueError('A value must be provided for either --input or '
-                             '--lidvid when using the Draft action.')
+            raise ValueError("A value must be provided for either --input or " "--lidvid when using the Draft action.")
 
         if self._lidvid:
             return self._set_lidvid_to_draft(self._lidvid)

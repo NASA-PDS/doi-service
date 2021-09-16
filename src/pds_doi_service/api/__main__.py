@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 import logging
 from urllib.parse import urlparse
 
-import connexion
+import connexion  # type: ignore
 from flask import jsonify
-from flask_cors import CORS
-from waitress import serve
-
+from flask_cors import CORS  # type: ignore
 from pds_doi_service.api import encoder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+from waitress import serve
 
 logging.basicConfig(level=logging.INFO)
 
 # We create the connexion app here so we can access underlying Flask decorators
-app = connexion.App(__name__, specification_dir='swagger/')
+app = connexion.App(__name__, specification_dir="swagger/")
 # We also add an initialization flag to ensure that calls to init_app() only
 # add the swagger api once
 app.initialized = False
@@ -29,6 +27,7 @@ app.initialized = False
 
 class InvalidReferrer(Exception):
     """Raised when the referrer check fails."""
+
     status_code = 401
 
     def __init__(self, message, status_code=None):
@@ -39,7 +38,7 @@ class InvalidReferrer(Exception):
             self.status_code = status_code
 
     def to_dict(self):
-        rv = {'message': self.message, 'status_code': self.status_code}
+        rv = {"message": self.message, "status_code": self.status_code}
         return rv
 
 
@@ -76,27 +75,23 @@ def _check_referrer():
     referrer = connexion.request.referrer
     logger.debug("Referrer: %s", referrer)
 
-    valid_referrers = config.get('OTHER', 'api_valid_referrers', fallback=None)
+    valid_referrers = config.get("OTHER", "api_valid_referrers", fallback=None)
 
     # if no valid referrers are configured, just return None to allow
     # request to go forward
     if not valid_referrers:
         return None
 
-    valid_referrers = list(map(str.strip, valid_referrers.split(',')))
+    valid_referrers = list(map(str.strip, valid_referrers.split(",")))
     logger.debug("Valid referrers: %s", valid_referrers)
 
     if not referrer:
-        raise InvalidReferrer('No referrer specified from request')
+        raise InvalidReferrer("No referrer specified from request")
 
     parsed_referrer = urlparse(referrer)
 
-    if (parsed_referrer.hostname not in valid_referrers
-            and referrer not in valid_referrers):
-        raise InvalidReferrer(
-            'Request referrer is not allowed access to the API',
-            status_code=403
-        )
+    if parsed_referrer.hostname not in valid_referrers and referrer not in valid_referrers:
+        raise InvalidReferrer("Request referrer is not allowed access to the API", status_code=403)
 
 
 def init_app():
@@ -125,9 +120,7 @@ def init_app():
 
         # Feed the swagger definition to the connexion app, this informs the
         # app how to route URL's to endpoints in dois_controller.py
-        app.add_api('swagger.yaml',
-                    arguments={'title': 'Planetary Data System DOI Service API'},
-                    pythonic_params=True)
+        app.add_api("swagger.yaml", arguments={"title": "Planetary Data System DOI Service API"}, pythonic_params=True)
 
         app.initialized = True
 
@@ -143,30 +136,32 @@ def main():
     """
     logger = logging.getLogger(__name__)
 
-    logger.info('Starting PDS DOI Service API')
+    logger.info("Starting PDS DOI Service API")
 
     config = DOIConfigUtil().get_config()
 
     # Now that we've parsed config, we can fully set up logging
     logger = get_logger(__name__)
-    logging_level = config.get('OTHER', 'logging_level', fallback='info')
+    logging_level = config.get("OTHER", "logging_level", fallback="info")
 
-    logger.info(f'Logging system configured at level {logging_level}')
+    logger.info(f"Logging system configured at level {logging_level}")
 
     # Initialize the Connexion (Flask) application
     app = init_app()
 
     # Set the log level of waitress to match the configured level
-    get_logger('waitress')
-    logger.info(f'Waitress logging configured at level {logging_level}')
+    get_logger("waitress")
+    logger.info(f"Waitress logging configured at level {logging_level}")
 
     try:
-        serve(app,
-              host=config.get('OTHER', 'api_host', fallback='0.0.0.0'),
-              port=config.get('OTHER', 'api_port', fallback=8080))
+        serve(
+            app,
+            host=config.get("OTHER", "api_host", fallback="0.0.0.0"),
+            port=config.get("OTHER", "api_port", fallback=8080),
+        )
     except KeyboardInterrupt:
-        logger.info('Stopping PDS DOI Service API')
+        logger.info("Stopping PDS DOI Service API")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

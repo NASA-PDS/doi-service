@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =====================
 datacite_validator.py
@@ -12,17 +11,15 @@ datacite_validator.py
 
 Contains functions for validating the contents of DataCite JSON labels.
 """
-
 import json
+from distutils.util import strtobool
 from os.path import exists
 
 import jsonschema
-from distutils.util import strtobool
-from pkg_resources import resource_filename
-
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
+from pkg_resources import resource_filename
 
 logger = get_logger(__name__)
 
@@ -36,24 +33,20 @@ class DOIDataCiteValidator(DOIServiceValidator):
     def __init__(self):
         super().__init__()
 
-        schema_file = resource_filename(__name__, 'datacite_4.3_schema.json')
+        schema_file = resource_filename(__name__, "datacite_4.3_schema.json")
 
         if not exists(schema_file):
             raise RuntimeError(
-                'Could not find the schema file needed by this module.\n'
-                f'Expected schema file: {schema_file}'
+                "Could not find the schema file needed by this module.\n" f"Expected schema file: {schema_file}"
             )
 
-        with open(schema_file, 'r') as infile:
+        with open(schema_file, "r") as infile:
             schema = json.load(infile)
 
         try:
             jsonschema.Draft7Validator.check_schema(schema)
         except jsonschema.exceptions.SchemaError as err:
-            raise RuntimeError(
-                f'Schema file {schema_file} is not a valid JSON schema, '
-                f'reason: {err}'
-            )
+            raise RuntimeError(f"Schema file {schema_file} is not a valid JSON schema, " f"reason: {err}")
 
         self._schema_validator = jsonschema.Draft7Validator(schema)
 
@@ -73,17 +66,15 @@ class DOIDataCiteValidator(DOIServiceValidator):
             If the provided label text fails schema validation.
 
         """
-        validate_against_schema = self._config.get(
-            'DATACITE', 'validate_against_schema', fallback='False'
-        )
+        validate_against_schema = self._config.get("DATACITE", "validate_against_schema", fallback="False")
 
         # Check the label contents against the DataCite JSON schema
         if strtobool(validate_against_schema):
             json_contents = json.loads(label_contents)
 
-            if 'data' in json_contents:
+            if "data" in json_contents:
                 # Strip off the stuff that is not covered by the JSON schema
-                json_contents = json_contents['data']
+                json_contents = json_contents["data"]
 
             # DataCite labels can contain a single or multiple records,
             # wrap single records in a list for a common interface
@@ -93,19 +84,21 @@ class DOIDataCiteValidator(DOIServiceValidator):
             error_message = ""
 
             for index, record in enumerate(json_contents):
-                if 'attributes' not in record:
-                    error_message += (f'JSON record at index {index} does not appear '
-                                      'to be in DataCite format.\n'
-                                      'Please ensure the label is valid DataCite '
-                                      'JSON (as opposed to OSTI-format).')
-                elif not self._schema_validator.is_valid(record['attributes']):
-                    error_message += (f'JSON record at index {index} does not '
-                                      f'conform to the DataCite Schema, reason(s):\n')
+                if "attributes" not in record:
+                    error_message += (
+                        f"JSON record at index {index} does not appear "
+                        "to be in DataCite format.\n"
+                        "Please ensure the label is valid DataCite "
+                        "JSON (as opposed to OSTI-format)."
+                    )
+                elif not self._schema_validator.is_valid(record["attributes"]):
+                    error_message += (
+                        f"JSON record at index {index} does not " f"conform to the DataCite Schema, reason(s):\n"
+                    )
 
-                    for error in self._schema_validator.iter_errors(record['attributes']):
-                        error_message += '{path}: {message}\n'.format(
-                            path='/'.join(map(str, error.path)),
-                            message=error.message
+                    for error in self._schema_validator.iter_errors(record["attributes"]):
+                        error_message += "{path}: {message}\n".format(
+                            path="/".join(map(str, error.path)), message=error.message
                         )
 
             if error_message:

@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ==========
 pds4_util.py
@@ -12,12 +11,13 @@ pds4_util.py
 
 Contains functions and classes for parsing PDS4 XML labels.
 """
-
-import requests
 from datetime import datetime
 from enum import Enum
 
-from pds_doi_service.core.entities.doi import Doi, DoiStatus, ProductType
+import requests
+from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer
@@ -31,39 +31,24 @@ class BestParserMethod(Enum):
 
 
 class DOIPDS4LabelUtil:
-
     def __init__(self, landing_page_template):
         self._landing_page_template = landing_page_template
 
         self.xpath_dict = {
-            'lid':
-                '/*/pds4:Identification_Area/pds4:logical_identifier',
-            'vid':
-                '/*/pds4:Identification_Area/pds4:version_id',
-            'title':
-                '/*/pds4:Identification_Area/pds4:title',
-            'publication_year':
-                '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:publication_year',
-            'modification_date':
-                '/*/pds4:Identification_Area/pds4:Modification_History/pds4:Modification_Detail/pds4:modification_date',
-            'description':
-                '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:description',
-            'product_class':
-                '/*/pds4:Identification_Area/pds4:product_class',
-            'authors':
-                '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:author_list',
-            'editors':
-                '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:editor_list',
-            'investigation_area':
-                '/*/pds4:Context_Area/pds4:Investigation_Area/pds4:name',
-            'observing_system_component':
-                '/*/pds4:Context_Area/pds4:Observing_System/pds4:Observing_System_Component/pds4:name',
-            'target_identification':
-                '/*/pds4:Context_Area/pds4:Target_Identification/pds4:name',
-            'primary_result_summary':
-                '/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*',
-            'doi':
-                '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi'
+            "lid": "/*/pds4:Identification_Area/pds4:logical_identifier",
+            "vid": "/*/pds4:Identification_Area/pds4:version_id",
+            "title": "/*/pds4:Identification_Area/pds4:title",
+            "publication_year": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:publication_year",
+            "modification_date": "/*/pds4:Identification_Area/pds4:Modification_History/pds4:Modification_Detail/pds4:modification_date",
+            "description": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:description",
+            "product_class": "/*/pds4:Identification_Area/pds4:product_class",
+            "authors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:author_list",
+            "editors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:editor_list",
+            "investigation_area": "/*/pds4:Context_Area/pds4:Investigation_Area/pds4:name",
+            "observing_system_component": "/*/pds4:Context_Area/pds4:Observing_System/pds4:Observing_System_Component/pds4:name",
+            "target_identification": "/*/pds4:Context_Area/pds4:Target_Identification/pds4:name",
+            "primary_result_summary": "/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*",
+            "doi": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi",
         }
 
     def is_pds4_label(self, xml_tree):
@@ -102,15 +87,15 @@ class DOIPDS4LabelUtil:
         """
         pds4_field_value_dict = {}
 
-        pds4_namespace = {'pds4': 'http://pds.nasa.gov/pds4/pds/v1'}
+        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
 
         for key, xpath in self.xpath_dict.items():
             elements = xml_tree.xpath(xpath, namespaces=pds4_namespace)
 
             if elements:
-                pds4_field_value_dict[key] = ' '.join(
-                    [element.text.strip()
-                     for element in elements if element.text]).strip()
+                pds4_field_value_dict[key] = " ".join(
+                    [element.text.strip() for element in elements if element.text]
+                ).strip()
 
         return pds4_field_value_dict
 
@@ -126,11 +111,11 @@ class DOIPDS4LabelUtil:
         num_person_names = 0
 
         for one_name in names_list:
-            if '.' in one_name:
+            if "." in one_name:
                 num_dots_found += 1
                 # Now that the dot is found, look to see the name contains at
                 # least two tokens.
-                if len(one_name.strip().split('.')) >= 2:
+                if len(one_name.strip().split(".")) >= 2:
                     # 'R. Deen' split to ['R','Deen'], "J.Maki" split to ['J','Maki']
                     num_person_names += 1
             else:
@@ -147,10 +132,11 @@ class DOIPDS4LabelUtil:
         if num_dots_found == len(names_list) or num_person_names == len(names_list):
             o_list_contains_full_name_flag = True
 
-        logger.debug(f"num_dots_found,num_person_names,len(names_list),names_list "
-                     f"{num_dots_found,num_person_names,len(names_list),names_list}")
-        logger.debug(f"o_list_contains_full_name_flag "
-                     f"{o_list_contains_full_name_flag,names_list,len(names_list)}")
+        logger.debug(
+            f"num_dots_found,num_person_names,len(names_list),names_list "
+            f"{num_dots_found,num_person_names,len(names_list),names_list}"
+        )
+        logger.debug(f"o_list_contains_full_name_flag " f"{o_list_contains_full_name_flag,names_list,len(names_list)}")
 
         return o_list_contains_full_name_flag
 
@@ -185,8 +171,8 @@ class DOIPDS4LabelUtil:
         # The 'authors' field from data providers can be inconsistent.
         # Sometimes a comma ',' is used to separate the names, sometimes its
         # semi-colons ';'
-        authors_from_comma_split = pds4_fields_authors.split(',')
-        authors_from_semi_colon_split = pds4_fields_authors.split(';')
+        authors_from_comma_split = pds4_fields_authors.split(",")
+        authors_from_semi_colon_split = pds4_fields_authors.split(";")
 
         # Check from authors_from_comma_split to see if it possibly contains full name.
         # Mostly this case: "R. Deen, H. Abarca, P. Zamani, J.Maki"
@@ -194,8 +180,8 @@ class DOIPDS4LabelUtil:
         # "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
         comma_parsed_list_contains_full_name = self._check_for_possible_full_name(authors_from_comma_split)
 
-        number_commas = pds4_fields_authors.count(',')
-        number_semi_colons = pds4_fields_authors.count(';')
+        number_commas = pds4_fields_authors.count(",")
+        number_semi_colons = pds4_fields_authors.count(";")
 
         if number_semi_colons == 0:
             if number_commas >= 1:
@@ -212,83 +198,86 @@ class DOIPDS4LabelUtil:
             # Case 3
             o_best_method = BestParserMethod.BY_SEMI_COLON
 
-        logger.debug(f"o_best_method,pds4_fields_authors "
-                     f"{o_best_method,pds4_fields_authors} "
-                     f"number_commas,number_semi_colons "
-                     f"{number_commas,number_semi_colons}")
-        logger.debug(f"len(authors_from_comma_split),len(authors_from_semi_colon_split) "
-                     f"{len(authors_from_comma_split),len(authors_from_semi_colon_split)}")
+        logger.debug(
+            f"o_best_method,pds4_fields_authors "
+            f"{o_best_method,pds4_fields_authors} "
+            f"number_commas,number_semi_colons "
+            f"{number_commas,number_semi_colons}"
+        )
+        logger.debug(
+            f"len(authors_from_comma_split),len(authors_from_semi_colon_split) "
+            f"{len(authors_from_comma_split),len(authors_from_semi_colon_split)}"
+        )
 
         return o_best_method
 
     def process_pds4_fields(self, pds4_fields):
         try:
-            product_class = pds4_fields['product_class']
-            product_class_suffix = product_class.split('_')[1]
+            product_class = pds4_fields["product_class"]
+            product_class_suffix = product_class.split("_")[1]
 
-            if product_class == 'Product_Document':
-                product_specific_type = 'technical documentation'
+            if product_class == "Product_Document":
+                product_specific_type = "technical documentation"
                 product_type = ProductType.Text
             else:
-                product_specific_type = 'PDS4 Refereed Data ' + product_class_suffix
+                product_specific_type = "PDS4 Refereed Data " + product_class_suffix
                 product_type = ProductType.Dataset
 
             site_url = self._landing_page_template.format(
-                product_class_suffix, requests.utils.quote(pds4_fields['lid']),
-                requests.utils.quote(pds4_fields['vid'])
+                product_class_suffix, requests.utils.quote(pds4_fields["lid"]), requests.utils.quote(pds4_fields["vid"])
             )
 
-            editors = (self.get_editor_names(pds4_fields['editors'].split(';'))
-                       if 'editors' in pds4_fields else None)
+            editors = self.get_editor_names(pds4_fields["editors"].split(";")) if "editors" in pds4_fields else None
 
             # The 'authors' field is inconsistent on the use of separators.
             # Try to make a best guess on which method is better.
-            o_best_method = self._find_method_to_parse_authors(pds4_fields['authors'])
+            o_best_method = self._find_method_to_parse_authors(pds4_fields["authors"])
 
             if o_best_method == BestParserMethod.BY_COMMA:
-                authors_list = pds4_fields['authors'].split(',')
+                authors_list = pds4_fields["authors"].split(",")
             elif o_best_method == BestParserMethod.BY_SEMI_COLON:
-                authors_list = pds4_fields['authors'].split(';')
+                authors_list = pds4_fields["authors"].split(";")
             else:
-                logger.error(f"o_best_method,pds4_fields['authors'] "
-                             f"{o_best_method,pds4_fields['authors']}")
-                raise InputFormatException(
-                    "Cannot split the authors using comma or semi-colon."
-                )
+                logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method,pds4_fields['authors']}")
+                raise InputFormatException("Cannot split the authors using comma or semi-colon.")
 
             doi_suffix = None
 
-            if 'doi' in pds4_fields:
-                doi_prefix_suffix = pds4_fields['doi'].split('/')
+            if "doi" in pds4_fields:
+                doi_prefix_suffix = pds4_fields["doi"].split("/")
                 if len(doi_prefix_suffix) == 2:
                     doi_suffix = doi_prefix_suffix[1]
 
             timestamp = datetime.now()
 
-            identifier = pds4_fields['lid']
+            identifier = pds4_fields["lid"]
 
-            if pds4_fields['vid']:
-                identifier += '::' + pds4_fields['vid']
+            if pds4_fields["vid"]:
+                identifier += "::" + pds4_fields["vid"]
 
-            doi = Doi(status=DoiStatus.Unknown,
-                      title=pds4_fields['title'],
-                      description=pds4_fields['description'],
-                      publication_date=self.get_publication_date(pds4_fields),
-                      product_type=product_type,
-                      product_type_specific=product_specific_type,
-                      related_identifier=identifier,
-                      site_url=site_url,
-                      authors=self.get_author_names(authors_list),
-                      editors=editors,
-                      keywords=self.get_keywords(pds4_fields),
-                      date_record_added=timestamp,
-                      date_record_updated=timestamp,
-                      id=doi_suffix)
+            doi = Doi(
+                status=DoiStatus.Unknown,
+                title=pds4_fields["title"],
+                description=pds4_fields["description"],
+                publication_date=self.get_publication_date(pds4_fields),
+                product_type=product_type,
+                product_type_specific=product_specific_type,
+                related_identifier=identifier,
+                site_url=site_url,
+                authors=self.get_author_names(authors_list),
+                editors=editors,
+                keywords=self.get_keywords(pds4_fields),
+                date_record_added=timestamp,
+                date_record_updated=timestamp,
+                id=doi_suffix,
+            )
         except KeyError as key_err:
             missing_key = key_err.args[0]
-            msg = (f"Could not find a value for an expected PS4 label field: {key_err}.\n"
-                   f"Please ensure there is a value present in the label for the "
-                   f"following xpath: {self.xpath_dict[missing_key]}")
+            msg = (
+                f"Could not find a value for an expected PS4 label field: {key_err}.\n"
+                f"Please ensure there is a value present in the label for the "
+                f"following xpath: {self.xpath_dict[missing_key]}"
+            )
             logger.error(msg)
             raise InputFormatException(msg)
 
@@ -297,7 +286,7 @@ class DOIPDS4LabelUtil:
     def get_publication_date(self, pds4_fields):
         # The field 'modification_date' is favored first.
         # If it is present use it, otherwise use 'publication_year' field next.
-        if 'modification_date' in pds4_fields:
+        if "modification_date" in pds4_fields:
             logger.debug(
                 f"pds4_fields['modification_date'] "
                 f"{pds4_fields['modification_date'], type(pds4_fields['modification_date'])}"
@@ -305,21 +294,23 @@ class DOIPDS4LabelUtil:
 
             # Some PDS4 labels have more than one 'modification_date' field,
             # so sort in ascending and select the first date.
-            latest_mod_date = sorted(pds4_fields['modification_date'].split(), reverse=False)[0]
-            publication_date = datetime.strptime(latest_mod_date, '%Y-%m-%d')
-        elif 'publication_year' in pds4_fields:
-            publication_date = datetime.strptime(pds4_fields['publication_year'], '%Y')
+            latest_mod_date = sorted(pds4_fields["modification_date"].split(), reverse=False)[0]
+            publication_date = datetime.strptime(latest_mod_date, "%Y-%m-%d")
+        elif "publication_year" in pds4_fields:
+            publication_date = datetime.strptime(pds4_fields["publication_year"], "%Y")
         else:
             publication_date = datetime.now()
 
         return publication_date
 
     def get_keywords(self, pds4_fields):
-        keyword_fields = {'investigation_area',
-                          'observing_system_component',
-                          'target_identification',
-                          'primary_result_summary',
-                          'description'}
+        keyword_fields = {
+            "investigation_area",
+            "observing_system_component",
+            "target_identification",
+            "primary_result_summary",
+            "description",
+        }
 
         keyword_tokenizer = KeywordTokenizer()
 
@@ -331,17 +322,17 @@ class DOIPDS4LabelUtil:
 
     @staticmethod
     def _smart_first_last_name_detector(split_fullname, default_order=(0, -1)):
-        if len(split_fullname[0]) == 1 or split_fullname[0][-1] == '.':
+        if len(split_fullname[0]) == 1 or split_fullname[0][-1] == ".":
             return 0, -1
-        elif len(split_fullname[-1]) == 1 or split_fullname[-1][-1] == '.':
+        elif len(split_fullname[-1]) == 1 or split_fullname[-1][-1] == ".":
             return -1, 0
         else:
             return default_order
 
     @staticmethod
-    def _get_name_components(full_name, first_last_name_order,
-                             first_last_name_separators,
-                             use_smart_first_name_detector=True):
+    def _get_name_components(
+        full_name, first_last_name_order, first_last_name_separators, use_smart_first_name_detector=True
+    ):
         logger.debug(f"parse full_name {full_name}")
 
         full_name = full_name.strip()
@@ -361,37 +352,33 @@ class DOIPDS4LabelUtil:
                     first_i, last_i = tuple(first_last_name_order)
 
                 # re-add . if it has been removed as a separator
-                first_name_suffix = '.' if sep == '.' else ''
+                first_name_suffix = "." if sep == "." else ""
 
                 person = {
-                    'first_name': split_fullname[first_i] + first_name_suffix,
-                    'last_name': split_fullname[last_i]
+                    "first_name": split_fullname[first_i] + first_name_suffix,
+                    "last_name": split_fullname[last_i],
                 }
 
                 if len(split_fullname) >= 3:
-                    person['middle_name'] = split_fullname[1]
+                    person["middle_name"] = split_fullname[1]
 
                 break
 
         if not person:
-            person = {'full_name': full_name}
+            person = {"full_name": full_name}
 
-        logger.debug(f'parsed person {person}')
+        logger.debug(f"parsed person {person}")
 
         return person
 
-    def get_names(self, name_list, first_last_name_order=(0, -1),
-                  first_last_name_separator=(',', '.')):
+    def get_names(self, name_list, first_last_name_order=(0, -1), first_last_name_separator=(",", ".")):
         logger.debug(f"name_list {name_list}")
         logger.debug(f"first_last_name_order {first_last_name_order}")
 
         persons = []
 
         for full_name in name_list:
-            persons.append(
-                self._get_name_components(full_name, first_last_name_order,
-                                          first_last_name_separator)
-            )
+            persons.append(self._get_name_components(full_name, first_last_name_order, first_last_name_separator))
 
         return persons
 
@@ -399,4 +386,4 @@ class DOIPDS4LabelUtil:
         return self.get_names(name_list, first_last_name_order=(-1, 0))
 
     def get_editor_names(self, name_list):
-        return self.get_names(name_list, first_last_name_separator=(',',))
+        return self.get_names(name_list, first_last_name_separator=(",",))

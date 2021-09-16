@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ======
 doi.py
@@ -12,20 +11,23 @@ doi.py
 
 Contains the dataclass and enumeration definitions for Doi objects.
 """
-
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from datetime import datetime
-from enum import Enum, unique
+from enum import Enum
+from enum import unique
+from typing import Optional
 
 
 @unique
 class ProductType(str, Enum):
     """Enumerates the types of products that can be assigned a DOI."""
-    Collection = 'Collection'
-    Bundle = 'Bundle'
-    Text = 'Text'
-    Dataset = 'Dataset'
-    Other = 'Other'
+
+    Collection = "Collection"
+    Bundle = "Bundle"
+    Text = "Text"
+    Dataset = "Dataset"
+    Other = "Other"
 
 
 @unique
@@ -63,16 +65,17 @@ class DoiStatus(str, Enum):
             The submitted DOI has been deactivated (deleted).
 
     """
-    Error = 'error'
-    Unknown = 'unknown'
-    Reserved_not_submitted = 'reserved_not_submitted'
-    Reserved = 'reserved'
-    Draft = 'draft'
-    Review = 'review'
-    Pending = 'pending'
-    Registered = 'registered'
-    Findable = 'findable'
-    Deactivated = 'deactivated'
+
+    Error = "error"
+    Unknown = "unknown"
+    Reserved_not_submitted = "reserved_not_submitted"
+    Reserved = "reserved"
+    Draft = "draft"
+    Review = "review"
+    Pending = "pending"
+    Registered = "registered"
+    Findable = "findable"
+    Deactivated = "deactivated"
 
 
 @unique
@@ -90,32 +93,34 @@ class DoiEvent(str, Enum):
             Moves a DOI from findable back to registered
 
     """
-    Publish = 'publish'
-    Register = 'register'
-    Hide = 'hide'
+
+    Publish = "publish"
+    Register = "register"
+    Hide = "hide"
 
 
 @dataclass
 class Doi:
     """The dataclass definition for a Doi object."""
+
     title: str
     publication_date: datetime
     product_type: ProductType
     product_type_specific: str
     related_identifier: str
-    identifiers: list = field(default_factory=list)
-    authors: list = None
-    keywords: set = field(default_factory=set)
-    editors: list = None
-    description: str = None
-    id: str = None
-    doi: str = None
-    site_url: str = None
-    publisher: str = None
-    contributor: str = None
-    status: DoiStatus = None
-    previous_status: DoiStatus = None
-    message: str = None
-    date_record_added: datetime = None
-    date_record_updated: datetime = None
-    event: DoiEvent = None
+    identifiers: list[str] = field(default_factory=list)
+    authors: Optional[list[str]] = None
+    keywords: set[str] = field(default_factory=set)
+    editors: Optional[list[str]] = None
+    description: Optional[str] = None
+    id: Optional[str] = None
+    doi: Optional[str] = None
+    site_url: Optional[str] = None
+    publisher: Optional[str] = None
+    contributor: Optional[str] = None
+    status: Optional[DoiStatus] = None
+    previous_status: Optional[DoiStatus] = None
+    message: Optional[str] = None
+    date_record_added: Optional[datetime] = None
+    date_record_updated: Optional[datetime] = None
+    event: Optional[DoiEvent] = None

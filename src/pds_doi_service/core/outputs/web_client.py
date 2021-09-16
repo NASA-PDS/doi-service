@@ -1,10 +1,9 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =============
 web_client.py
@@ -13,34 +12,36 @@ web_client.py
 Contains the abstract base class for interfacing with a DOI submission service
 endpoint.
 """
-
-import pprint
 import json
-import requests
-from requests.auth import HTTPBasicAuth
+import pprint
+from typing import Optional
 
+import requests
 from pds_doi_service.core.input.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
+from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from requests.auth import HTTPBasicAuth
 
-WEB_METHOD_GET = 'GET'
-WEB_METHOD_POST = 'POST'
-WEB_METHOD_PUT = 'PUT'
-WEB_METHOD_DELETE = 'DELETE'
-VALID_WEB_METHODS = [WEB_METHOD_GET, WEB_METHOD_POST,
-                     WEB_METHOD_PUT, WEB_METHOD_DELETE]
+WEB_METHOD_GET = "GET"
+WEB_METHOD_POST = "POST"
+WEB_METHOD_PUT = "PUT"
+WEB_METHOD_DELETE = "DELETE"
+VALID_WEB_METHODS = [WEB_METHOD_GET, WEB_METHOD_POST, WEB_METHOD_PUT, WEB_METHOD_DELETE]
 """Constants for HTTP method types"""
 
 
 class DOIWebClient:
     """Abstract base class for clients of an HTTP DOI service endpoint"""
-    _config_util = DOIConfigUtil()
-    _service_name = None
-    _web_parser = None
-    _content_type_map = {}
 
-    def _submit_content(self, payload, url, username, password,
-                        method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
+    _config_util = DOIConfigUtil()
+    _service_name: Optional[str]
+    _service_name = None
+    _web_parser: Optional[DOIWebParser]
+    _web_parser = None
+    _content_type_map: dict[str, str] = {}
+
+    def _submit_content(self, payload, url, username, password, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
         """
         Submits a payload to a DOI service endpoint via the POST action.
 
@@ -72,43 +73,35 @@ class DOIWebClient:
 
         """
         if method not in VALID_WEB_METHODS:
-            raise ValueError('Invalid method requested, must be one of '
-                             f'{",".join(VALID_WEB_METHODS)}')
+            raise ValueError("Invalid method requested, must be one of " f'{",".join(VALID_WEB_METHODS)}')
 
         if content_type not in self._content_type_map:
-            raise ValueError('Invalid content type requested, must be one of '
-                             f'{",".join(list(self._content_type_map.keys()))}')
+            raise ValueError(
+                "Invalid content type requested, must be one of " f'{",".join(list(self._content_type_map.keys()))}'
+            )
 
         auth = HTTPBasicAuth(username, password)
 
-        headers = {
-            'Accept': self._content_type_map[content_type],
-            'Content-Type': self._content_type_map[content_type]
-        }
+        headers = {"Accept": self._content_type_map[content_type], "Content-Type": self._content_type_map[content_type]}
 
-        response = requests.request(
-            method, url, auth=auth, data=payload, headers=headers
-        )
+        response = requests.request(method, url, auth=auth, data=payload, headers=headers)
 
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
             # Detail text is not always present, which can cause json parsing
             # issues
-            details = (
-                f'Details: {pprint.pformat(json.loads(response.text))}'
-                if response.text else ''
-            )
+            details = f"Details: {pprint.pformat(json.loads(response.text))}" if response.text else ""
 
             raise WebRequestException(
-                f'DOI submission request to {self._service_name} service failed, '
-                f'reason: {str(http_err)}\n{details}'
+                f"DOI submission request to {self._service_name} service failed, " f"reason: {str(http_err)}\n{details}"
             )
 
         return response.text
 
-    def submit_content(self, payload, url=None, username=None, password=None,
-                       method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
+    def submit_content(
+        self, payload, url=None, username=None, password=None, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML
+    ):
         """
         Submits the provided payload to a DOI service endpoint via the POST
         action.
@@ -150,12 +143,10 @@ class DOIWebClient:
 
         """
         raise NotImplementedError(
-            f'Subclasses of {self.__class__.__name__} must provide an '
-            f'implementation for submit_content()'
+            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for submit_content()"
         )
 
-    def query_doi(self, query, url=None, username=None, password=None,
-                  content_type=CONTENT_TYPE_XML):
+    def query_doi(self, query, url=None, username=None, password=None, content_type=CONTENT_TYPE_XML):
         """
         Queries the DOI endpoint for the status of a DOI submission.
         The query utilizes the GET HTTP method of the URL endpoint.
@@ -190,6 +181,5 @@ class DOIWebClient:
 
         """
         raise NotImplementedError(
-            f'Subclasses of {self.__class__.__name__} must provide an '
-            f'implementation for query_doi()'
+            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for query_doi()"
         )

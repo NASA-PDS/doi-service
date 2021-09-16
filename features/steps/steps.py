@@ -266,8 +266,3 @@ def step_lidvid_already_submitted_exception_is_raised(context):
     logger.info(f'expected message {excepted_exception_msg}')
     logger.info(f'found msg is {context.exception_msg}')
     assert context.exception_msg == excepted_exception_msg
-
-
-
-
-

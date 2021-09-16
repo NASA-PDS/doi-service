@@ -1,10 +1,9 @@
 #
-#  Copyright 2020-21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 =============
 web_parser.py
@@ -13,7 +12,6 @@ web_parser.py
 Contains the abstract base class for parsing DOI objects from label returned or
 provided to DOI service endpoints (OSTI, Datacite, etc...).
 """
-
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 
 
@@ -22,10 +20,11 @@ class DOIWebParser:
     Abstract base class for parsers of DOI labels returned (or submitted)
     to a DOI service endpoint.
     """
-    _optional_fields = []
+
+    _optional_fields: list[str] = []
     """The optional Doi field names parsed from labels."""
 
-    _mandatory_fields = []
+    _mandatory_fields: list[str] = []
     """The mandatory Doi field names parsed from labels."""
 
     @staticmethod
@@ -53,7 +52,7 @@ class DOIWebParser:
             vid_value = lid_vid_tokens[1]
 
             # Finally combine the lid and vid together.
-            lid_vid_value = lid_value + '::' + vid_value
+            lid_vid_value = lid_value + "::" + vid_value
 
         return lid_vid_value
 
@@ -79,8 +78,7 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            f'Subclasses of {DOIWebParser.__name__} must provide an '
-            f'implementation for parse_dois_from_label()'
+            f"Subclasses of {DOIWebParser.__name__} must provide an " f"implementation for parse_dois_from_label()"
         )
 
     @staticmethod
@@ -107,6 +105,5 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            f'Subclasses of {DOIWebParser.__name__} must provide an '
-            f'implementation for get_record_for_identifier()'
+            f"Subclasses of {DOIWebParser.__name__} must provide an " f"implementation for get_record_for_identifier()"
         )

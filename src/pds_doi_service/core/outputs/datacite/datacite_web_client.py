@@ -4,7 +4,6 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-
 """
 ======================
 datacite_web_client.py
@@ -12,20 +11,18 @@ datacite_web_client.py
 
 Contains classes used to submit labels to the DataCite DOI service endpoint.
 """
-
 import json
 import pprint
 
 import requests
-from requests.auth import HTTPBasicAuth
-
 from pds_doi_service.core.input.exceptions import WebRequestException
-from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
-from pds_doi_service.core.outputs.web_client import (DOIWebClient,
-                                                     WEB_METHOD_GET,
-                                                     WEB_METHOD_POST)
 from pds_doi_service.core.outputs.datacite.datacite_web_parser import DOIDataCiteWebParser
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.outputs.web_client import DOIWebClient
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_GET
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import get_logger
+from requests.auth import HTTPBasicAuth
 
 logger = get_logger(__name__)
 
@@ -34,14 +31,14 @@ class DOIDataCiteWebClient(DOIWebClient):
     """
     Class used to submit HTTP requests to the DataCite DOI service.
     """
-    _service_name = 'DataCite'
-    _web_parser = DOIDataCiteWebParser()
-    _content_type_map = {
-        CONTENT_TYPE_JSON: 'application/vnd.api+json'
-    }
 
-    def submit_content(self, payload, url=None, username=None, password=None,
-                       method=WEB_METHOD_POST, content_type=CONTENT_TYPE_JSON):
+    _service_name = "DataCite"
+    _web_parser = DOIDataCiteWebParser()
+    _content_type_map = {CONTENT_TYPE_JSON: "application/vnd.api+json"}
+
+    def submit_content(
+        self, payload, url=None, username=None, password=None, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_JSON
+    ):
         """
         Submits a payload to the DataCite DOI service via the POST action.
 
@@ -82,19 +79,18 @@ class DOIDataCiteWebClient(DOIWebClient):
 
         response_text = super()._submit_content(
             payload,
-            url=url or config.get('DATACITE', 'url'),
-            username=username or config.get('DATACITE', 'user'),
-            password=password or config.get('DATACITE', 'password'),
+            url=url or config.get("DATACITE", "url"),
+            username=username or config.get("DATACITE", "user"),
+            password=password or config.get("DATACITE", "password"),
             method=method,
-            content_type=content_type
+            content_type=content_type,
         )
 
         dois, _ = self._web_parser.parse_dois_from_label(response_text)
 
         return dois[0], response_text
 
-    def query_doi(self, query, url=None, username=None, password=None,
-                  content_type=CONTENT_TYPE_JSON):
+    def query_doi(self, query, url=None, username=None, password=None, content_type=CONTENT_TYPE_JSON):
         """
         Queries the DataCite DOI endpoint for the status of DOI submissions.
 
@@ -133,31 +129,26 @@ class DOIDataCiteWebClient(DOIWebClient):
         config = self._config_util.get_config()
 
         if content_type not in self._content_type_map:
-            raise ValueError('Invalid content type requested, must be one of '
-                             f'{",".join(list(self._content_type_map.keys()))}')
+            raise ValueError(
+                "Invalid content type requested, must be one of " f'{",".join(list(self._content_type_map.keys()))}'
+            )
 
-        auth = HTTPBasicAuth(
-            username or config.get('DATACITE', 'user'),
-            password or config.get('DATACITE', 'password')
-        )
+        auth = HTTPBasicAuth(username or config.get("DATACITE", "user"), password or config.get("DATACITE", "password"))
 
-        headers = {
-            'Accept': self._content_type_map[content_type]
-        }
+        headers = {"Accept": self._content_type_map[content_type]}
 
         if isinstance(query, dict):
-            query_string = ' '.join([f'{k}:{v}' for k, v in query.items()])
+            query_string = " ".join([f"{k}:{v}" for k, v in query.items()])
         else:
             query_string = str(query)
 
-        url = url or config.get('DATACITE', 'url')
+        url = url or config.get("DATACITE", "url")
 
-        logger.debug('query_string: %s', query_string)
-        logger.debug('url: %s', url)
+        logger.debug("query_string: %s", query_string)
+        logger.debug("url: %s", url)
 
         datacite_response = requests.request(
-            WEB_METHOD_GET, url=url, auth=auth, headers=headers,
-            params={"query": query_string}
+            WEB_METHOD_GET, url=url, auth=auth, headers=headers, params={"query": query_string}
         )
 
         try:
@@ -165,14 +156,10 @@ class DOIDataCiteWebClient(DOIWebClient):
         except requests.exceptions.HTTPError as http_err:
             # Detail text is not always present, which can cause json parsing
             # issues
-            details = (
-                f'Details: {pprint.pformat(json.loads(datacite_response.text))}'
-                if datacite_response.text else ''
-            )
+            details = f"Details: {pprint.pformat(json.loads(datacite_response.text))}" if datacite_response.text else ""
 
             raise WebRequestException(
-                'DOI submission request to OSTI service failed, '
-                f'reason: {str(http_err)}\n{details}'
+                "DOI submission request to OSTI service failed, " f"reason: {str(http_err)}\n{details}"
             )
 
         return datacite_response.text
