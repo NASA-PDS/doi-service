@@ -14,7 +14,6 @@ endpoint.
 """
 import json
 import pprint
-from typing import Any
 from typing import Optional
 
 import requests
@@ -40,7 +39,7 @@ class DOIWebClient:
     _service_name = None
     _web_parser: Optional[DOIWebParser]
     _web_parser = None
-    _content_type_map: dict[Any, Any] = {}  # 🤔 TODO: replace Any with what we expect
+    _content_type_map: dict[str, str] = {}
 
     def _submit_content(self, payload, url, username, password, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML):
         """

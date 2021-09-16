@@ -16,7 +16,6 @@ from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from enum import unique
-from typing import Any
 from typing import Optional
 
 
@@ -104,16 +103,15 @@ class DoiEvent(str, Enum):
 class Doi:
     """The dataclass definition for a Doi object."""
 
-    # 🤔 TODO: replace the ``Any`` with what should be in aggregate types:
     title: str
     publication_date: datetime
     product_type: ProductType
     product_type_specific: str
     related_identifier: str
-    identifiers: list[Any] = field(default_factory=list)
-    authors: Optional[list[Any]] = None
-    keywords: set[Any] = field(default_factory=set)
-    editors: Optional[list[Any]] = None
+    identifiers: list[str] = field(default_factory=list)
+    authors: Optional[list[str]] = None
+    keywords: set[str] = field(default_factory=set)
+    editors: Optional[list[str]] = None
     description: Optional[str] = None
     id: Optional[str] = None
     doi: Optional[str] = None

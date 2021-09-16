@@ -10,12 +10,12 @@ T = typing.TypeVar("T")
 class Model(object):
     # swaggerTypes: The key is attribute name and the value is attribute type.
     # 🤔 TODO: figure out the actual types that should go here
-    swagger_types: dict[typing.Any, typing.Any]
+    swagger_types: dict[str, str]
     swagger_types = {}
 
     # attributeMap: The key is attribute name and the value is json key in definition.
     # 🤔 TODO: figure out the actual types that should go here
-    attribute_map: dict[typing.Any, typing.Any]
+    attribute_map: dict[str, str]
     attribute_map = {}
 
     @classmethod
