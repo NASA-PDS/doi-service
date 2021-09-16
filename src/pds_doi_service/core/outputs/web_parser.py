@@ -12,9 +12,6 @@ web_parser.py
 Contains the abstract base class for parsing DOI objects from label returned or
 provided to DOI service endpoints (OSTI, Datacite, etc...).
 """
-from typing import Any
-from typing import List
-
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 
 
@@ -24,10 +21,10 @@ class DOIWebParser:
     to a DOI service endpoint.
     """
 
-    _optional_fields: List[Any] = []  # 🤔 TODO: should be ``List[str]``?
+    _optional_fields: list[str] = []
     """The optional Doi field names parsed from labels."""
 
-    _mandatory_fields: List[Any] = []  # 🤔 TODO: should be ``List[str]``?
+    _mandatory_fields: list[str] = []
     """The mandatory Doi field names parsed from labels."""
 
     @staticmethod
