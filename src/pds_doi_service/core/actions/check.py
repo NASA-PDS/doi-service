@@ -20,7 +20,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from os.path import exists
 
-import pystache  # type: ignore
+import jinja2
 from pds_doi_service.core.actions import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -55,7 +55,7 @@ class DOICoreActionCheck(DOICoreAction):
         self._email = True
         self._attachment = True
 
-        self.email_header_template_file = resource_filename(__name__, "email_template_header.mustache")
+        self.email_header_template_file = resource_filename(__name__, "email_template_header.txt")
 
         self.email_body_template_file = resource_filename(__name__, "email_template_body.txt")
 
@@ -69,6 +69,9 @@ class DOICoreActionCheck(DOICoreAction):
 
         with open(self.email_body_template_file, "r") as infile:
             self.email_body_template = infile.read().strip()
+
+        with open(self.email_header_template_file, "r") as infile:
+            self.email_header_template = jinja2.Template(infile.read())
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -257,12 +260,11 @@ class DOICoreActionCheck(DOICoreAction):
             The body text of the outgoing email.
 
         """
-        renderer = pystache.Renderer()
         today = date.today()
 
         # Build the email header containing date and number of records
         header_dict = {"my_date": today.strftime("%m/%d/%Y"), "my_records_count": len(i_dicts_per_submitter)}
-        email_header = renderer.render_path(self.email_header_template_file, header_dict)
+        email_header = self.email_header_template.render(header_dict)
 
         # Build the email body containing the table of DOIs with status
         body_header = self.email_body_template.format(

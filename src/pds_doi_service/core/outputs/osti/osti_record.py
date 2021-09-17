@@ -12,11 +12,10 @@ osti_record.py
 Contains classes used to create OSTI-compatible labels from Doi objects in memory.
 """
 import html
-import json
 from datetime import datetime
 from os.path import exists
 
-import pystache  # type: ignore
+import jinja2
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
@@ -24,6 +23,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.outputs.doi_record import VALID_CONTENT_TYPES
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import sanitize_json_string
 from pkg_resources import resource_filename
 
 logger = get_logger(__name__)
@@ -39,9 +39,9 @@ class DOIOstiRecord(DOIRecord):
 
     def __init__(self):
         """Creates a new DOIOstiRecord instance"""
-        # Need to find the mustache DOI templates
-        self._xml_template_path = resource_filename(__name__, "DOI_IAD2_template_20200205-mustache.xml")
-        self._json_template_path = resource_filename(__name__, "DOI_IAD2_template_20210216-mustache.json")
+        # Need to find the m̵u̵s̵t̵a̵c̵h̵e̵ Jinja2 DOI templates
+        self._xml_template_path = resource_filename(__name__, "DOI_IAD2_template_20210914-jinja2.xml")
+        self._json_template_path = resource_filename(__name__, "DOI_IAD2_template_20210914-jinja2.json")
 
         if not exists(self._xml_template_path) or not exists(self._json_template_path):
             raise RuntimeError(
@@ -50,7 +50,13 @@ class DOIOstiRecord(DOIRecord):
                 f"Expected JSON template: {self._json_template_path}"
             )
 
-        self._template_map = {CONTENT_TYPE_XML: self._xml_template_path, CONTENT_TYPE_JSON: self._json_template_path}
+        with open(self._xml_template_path, "r") as infile:
+            xml_template = jinja2.Template(infile.read(), lstrip_blocks=True, trim_blocks=True)
+
+        with open(self._json_template_path, "r") as infile:
+            json_template = jinja2.Template(infile.read(), lstrip_blocks=True, trim_blocks=True)
+
+        self._template_map = {CONTENT_TYPE_XML: xml_template, CONTENT_TYPE_JSON: json_template}
 
     def create_doi_record(self, dois, content_type=CONTENT_TYPE_XML):
         """
@@ -79,28 +85,26 @@ class DOIOstiRecord(DOIRecord):
         if isinstance(dois, Doi):
             dois = [dois]
 
-        doi_fields_list = []
+        rendered_dois = []
 
         for index, doi in enumerate(dois):
             # Filter out any keys with None as the value, so the string literal
             # "None" is not written out as an XML tag's text body
             doi_fields = dict(filter(lambda elem: elem[1] is not None, doi.__dict__.items()))
 
-            # Escape any necessary HTML characters from the site-url,
-            # we perform this step rather than pystache to avoid
-            # unintentional recursive escapes
+            # Escape any necessary HTML characters from the site-url, which is necessary for XML format labels
             if doi.site_url:
                 doi_fields["site_url"] = html.escape(doi.site_url)
 
+            # The OSTI IAD schema does not support 'Bundle' as a product type, so convert to collection here
+            if doi.product_type == ProductType.Bundle:
+                doi_fields["product_type"] = ProductType.Collection
+
             # Convert set of keywords back to a semi-colon delimited string
             if doi.keywords:
-                doi_fields["keywords"] = ";".join(sorted(doi.keywords))
+                doi_fields["keywords"] = ";".join(sorted(map(sanitize_json_string, doi.keywords)))
             else:
                 doi_fields.pop("keywords")
-
-            # Remove any extraneous whitespace from a provided description
-            if doi.description:
-                doi_fields["description"] = str.strip(doi.description)
 
             # publication_date is assigned to a Doi object as a datetime,
             # need to convert to a string for the OSTI label. Note that
@@ -116,29 +120,16 @@ class DOIOstiRecord(DOIRecord):
             if doi.date_record_updated and isinstance(doi.date_record_updated, datetime):
                 doi_fields["date_record_updated"] = doi.date_record_updated.strftime("%Y-%m-%d")
 
-            # Pre-convert author map into a JSON string to make it play nice
-            # with pystache rendering
-            if doi.authors and content_type == CONTENT_TYPE_JSON:
-                doi_fields["authors"] = json.dumps(doi.authors)
+            # Remove any extraneous whitespace from title and description
+            if doi.title:
+                doi_fields["title"] = sanitize_json_string(doi.title)
 
-            # The OSTI IAD schema does not support 'Bundle' as a product type,
-            # so convert to collection here
-            if doi.product_type == ProductType.Bundle:
-                doi_fields["product_type"] = ProductType.Collection
+            if doi.description:
+                doi_fields["description"] = sanitize_json_string(doi.description)
 
-            # Lastly, we need a kludge to inform the mustache template whether
-            # to include a comma between consecutive entries (JSON only)
-            if content_type == CONTENT_TYPE_JSON and index < len(dois) - 1:
-                doi_fields["comma"] = True
+            rendered_dois.append(doi_fields)
 
-            doi_fields_list.append(doi_fields)
-
-        renderer = pystache.Renderer()
-
-        rendered_template = renderer.render_path(self._template_map[content_type], {"dois": doi_fields_list})
-
-        # Reindent the output JSON to account for the kludging of the authors field
-        if content_type == CONTENT_TYPE_JSON:
-            rendered_template = json.dumps(json.loads(rendered_template), indent=4)
+        template_vars = {"dois": rendered_dois}
+        rendered_template = self._template_map[content_type].render(template_vars)
 
         return rendered_template

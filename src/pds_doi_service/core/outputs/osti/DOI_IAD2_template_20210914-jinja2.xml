@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+    {% for doi in dois %}
+    <record status="{{ doi.status.value }}">
+        {% if doi.id %}
+        <id>{{ doi.id }}</id>
+        {% else %}
+        <id/>
+        {% endif %}
+        <title>{{ doi.title }}</title>
+        {% if doi.doi %}
+        <doi>{{ doi.doi }}</doi>
+        {% endif %}
+        <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
+        <accession_number>{{ doi.related_identifier }}</accession_number>
+        <publisher>{{ doi.publisher }}</publisher>
+        <availability>NASA Planetary Data System</availability>
+        <publication_date>{{ doi.publication_date }}</publication_date>
+        <country>US</country>
+        {% if doi.description %}
+        <description>{{ doi.description }}</description>
+        {% endif %}
+        {% if doi.site_url %}
+        <site_url>{{ doi.site_url }}</site_url>
+        {% else %}
+        <site_url>N/A</site_url>
+        {% endif %}
+        <product_type>{{ doi.product_type.value }}</product_type>
+        <product_type_specific>{{ doi.product_type_specific }}</product_type_specific>
+        {% if doi.date_record_added %}
+        <date_record_added>{{ doi.date_record_added }}</date_record_added>
+        {% endif %}
+        {% if doi.date_record_updated %}
+        <date_record_updated>{{ doi.date_record_updated }}</date_record_updated>
+        {% endif %}
+        {% if doi.keywords %}
+        <keywords>{{ doi.keywords }}</keywords>
+        {% else %}
+        <keywords/>
+        {% endif %}
+        <authors>
+            {% for author in doi.authors %}
+             <author>
+                {% if author.last_name %}
+                <last_name>{{ author.last_name }}</last_name>
+                {% endif %}
+                {% if author.first_name %}
+                <first_name>{{ author.first_name }}</first_name>
+                {% endif %}
+                {% if author.middle_name %}
+                <middle_name>{{ author.middle_name }}</middle_name>
+                {% endif %}
+                {% if author.full_name %}
+                <full_name>{{ author.full_name }}</full_name>
+                {% endif %}
+            </author>
+            {% endfor %}
+            {% if doi.authors|length == 0 %}
+            <author/>
+            {% endif %}
+        </authors>
+        <contributors>
+            {% for editor in doi.editors %}
+            <contributor>
+                <email/>
+                {% if editor.last_name %}
+                <last_name>{{ editor.last_name }}</last_name>
+                {% endif %}
+                {% if editor.first_name %}
+                <first_name>{{ editor.first_name }}</first_name>
+                {% endif %}
+                {% if editor.middle_name %}
+                <middle_name>{{ editor.middle_name }}</middle_name>
+                {% endif %}
+                {% if editor.full_name %}
+                <full_name>{{ editor.full_name }}</full_name>
+                {% endif %}
+                <contributor_type>Editor</contributor_type>
+                <affiliations/>
+            </contributor>
+            {% endfor %}
+            <contributor>
+                <full_name>Planetary Data System: {{ doi.contributor }} Node</full_name>
+                <contributor_type>DataCurator</contributor_type>
+            </contributor>
+        </contributors>
+        <contact_name>PDS Operator</contact_name>
+        <contact_org>PDS</contact_org>
+        <contact_email>pds-operator@jpl.nasa.gov</contact_email>
+        <contact_phone>818.393.7165</contact_phone>
+    </record>
+    {% endfor %}
+</records>
