@@ -12,7 +12,6 @@ web_client.py
 Contains the abstract base class for interfacing with a DOI submission service
 endpoint.
 """
-import json
 import pprint
 from typing import Optional
 
@@ -91,7 +90,7 @@ class DOIWebClient:
         except requests.exceptions.HTTPError as http_err:
             # Detail text is not always present, which can cause json parsing
             # issues
-            details = f"Details: {pprint.pformat(json.loads(response.text))}" if response.text else ""
+            details = f"Details: {pprint.pformat(response.text)}" if response.text else ""
 
             raise WebRequestException(
                 f"DOI submission request to {self._service_name} service failed, " f"reason: {str(http_err)}\n{details}"
