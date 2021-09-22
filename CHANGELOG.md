@@ -1,16 +1,22 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-08-31)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-09-22)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...«unknown»)
 
 **Improvements:**
 
+- Port from pystache to jinja2 [\#242](https://github.com/NASA-PDS/pds-doi-service/issues/242)
 - As a user, I want to see the PDS3 ids as they originally are [\#229](https://github.com/NASA-PDS/pds-doi-service/issues/229)
 - review the full doi workflow and make it smooth for eng operators/users [\#145](https://github.com/NASA-PDS/pds-doi-service/issues/145)
 
+**Defects:**
+
+- Fix test failure with flask\_testing module [\#247](https://github.com/NASA-PDS/pds-doi-service/issues/247) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+
 **Other closed issues:**
 
+- As an operator, I want to sync our local database with DataCite metadata [\#239](https://github.com/NASA-PDS/pds-doi-service/issues/239)
 - As an Administrator, I want to toggle the DOI service provider via the INI config [\#237](https://github.com/NASA-PDS/pds-doi-service/issues/237)
 - Create Validator class for DataCite JSON Labels [\#236](https://github.com/NASA-PDS/pds-doi-service/issues/236)
 - Deploy point build of DOI service and UI [\#90](https://github.com/NASA-PDS/pds-doi-service/issues/90)
