@@ -6,7 +6,7 @@ The Planetary Data System (PDS) Digital Object Identifier (DOI) Service provides
 ## Prerequisites
 
 - Python 3.9 or above
-- a login to OSTI server
+- A login to the DOI Service Provider endpoint server (currently DataCite)
 
 
 ## User Documentation
@@ -34,11 +34,27 @@ Update your local configuration to access the OSTI test server.
 
 Create a file in the base directory of the project named `pds_doi_service.ini`; the following may be used as a template
 
-    [OSTI]
+    [SERVICE]
+    # Should be set to DataCite (case-insensitive)
+    provider = datacite
+
+    [DATACITE]
+    # Select the appropriate URL endpoint for either a test or production deployment
+    url = https://api.test.datacite.org/dois
+    #url = https://api.datacite.org/dois
     user = <ask pds-operator@jpl.nasa.gov>
     password = <ask pds-operator@jpl.nasa.gov>
-    release_input_schematron = config/IAD3_scheematron.sch
-    input_xsd = config/iad_schema.xsd
+    doi_prefix = 10.17189
+    validate_against_schema = True
+
+    [OSTI]
+    # This section is kept for posterity, but should be ignored as OSTI is no longer a supported endpoint
+    url = https://www.osti.gov/iad2test/api/records
+    #url = https://www.osti.gov/iad2/api/records
+    user = <ask pds-operator@jpl.nasa.gov>
+    password = <ask pds-operator@jpl.nasa.gov>
+    doi_prefix = 10.17189
+    validate_against_schema = True
 
     [PDS4_DICTIONARY]
     url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
@@ -52,6 +68,7 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     url = https://pds.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}
 
     [OTHER]
+    logging_level = INFO
     doi_publisher = NASA Planetary Data System
     global_keyword_values = PDS; PDS4;
     pds_uri = http://pds.nasa.gov/pds4/pds/v1
@@ -60,15 +77,11 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     db_table = doi
     api_host = 0.0.0.0
     api_port = 8080
+    api_valid_referrers =
     emailer_local_host = localhost
     emailer_port       = 25
     emailer_sender     = pdsen-doi-test@jpl.nasa.gov
     emailer_receivers  = pdsen-doi-test@jpl.nasa.gov
-    draft_validate_against_xsd_flag = True
-    release_validate_against_xsd_flag = True
-    reserve_validate_against_xsd_flag = True
-    pds_registration_doi_token = 10.17189
-    logging_level=DEBUG
 
 
 ## Launch API server
@@ -80,7 +93,8 @@ $ pip install pds-doi-service
 $ pds-doi-api
 ```
 
-The started service documentation is available on http://localhost:8080/PDS_APIs/pds_doi_api/0.1/ui/
+The started service documentation is available on http://localhost:8080/PDS_APIs/pds_doi_api/0.2/ui/
+👉 **Note:** When the `api_valid_referrers` option is set in `pds_doi_service.ini`, this service documentation UI will be unavailable.
 
 
 ## Running with Docker
@@ -164,7 +178,7 @@ See the results in https://cae-testrail.jpl.nasa.gov/testrail/index.php?/project
 
 ## Documentation Management
 
-Documentation about the documenation is described in this section.
+Documentation about the documentation is described in this section.
 
 
 ### Design
