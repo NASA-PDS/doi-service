@@ -30,7 +30,7 @@ Install the package and its dependencies for development into the virtual enviro
 
     pip install --editable '.[dev]'
 
-Update your local configuration to access the OSTI test server.
+Update your local configuration to access the DOI service provider's test server.
 
 Create a file in the base directory of the project named `pds_doi_service.ini`; the following may be used as a template
 
