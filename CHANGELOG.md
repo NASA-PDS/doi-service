@@ -1,8 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-09-23)
+## [v2.0.0](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.0) (2021-09-27)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...v2.0.0)
+
+**Requirements:**
+
+- As the PDS, I want to mint DOIs through DataCite [\#103](https://github.com/NASA-PDS/pds-doi-service/issues/103)
 
 **Improvements:**
 
@@ -20,15 +24,21 @@
 - As an Administrator, I want to toggle the DOI service provider via the INI config [\#237](https://github.com/NASA-PDS/pds-doi-service/issues/237)
 - Create Validator class for DataCite JSON Labels [\#236](https://github.com/NASA-PDS/pds-doi-service/issues/236)
 - Deploy point build of DOI service and UI [\#90](https://github.com/NASA-PDS/pds-doi-service/issues/90)
+- Dev beta testing with API [\#87](https://github.com/NASA-PDS/pds-doi-service/issues/87)
 
 ## [v0.3.1](https://github.com/NASA-PDS/pds-doi-service/tree/v0.3.1) (2021-08-04)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.0...v0.3.1)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...v0.3.1)
 
 **Requirements:**
 
 - As an admistrator of the application,  I want to restrict access to API by specific referrer [\#228](https://github.com/NASA-PDS/pds-doi-service/issues/228)
+- As a user, I want to use the API with ids containing a slash \(/\) [\#198](https://github.com/NASA-PDS/pds-doi-service/issues/198)
 - As a SA, I want the operational deployment of the service to be secure [\#187](https://github.com/NASA-PDS/pds-doi-service/issues/187)
+- As an operator, I want to update DOI metadata through DataCite [\#175](https://github.com/NASA-PDS/pds-doi-service/issues/175)
+- As an operator, I want to release a DOI through DataCite [\#174](https://github.com/NASA-PDS/pds-doi-service/issues/174)
+- As an operator, I want query for one or more minted DOIs from DataCite [\#172](https://github.com/NASA-PDS/pds-doi-service/issues/172)
+- As an operator, I want to reserve a DOI through DataCite [\#171](https://github.com/NASA-PDS/pds-doi-service/issues/171)
 
 **Improvements:**
 
@@ -37,21 +47,6 @@
 **Defects:**
 
 - CI does not work on main branch for dev release [\#220](https://github.com/NASA-PDS/pds-doi-service/issues/220)
-
-## [v21.2.0](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.0) (2021-07-21)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v1.1.1...v21.2.0)
-
-**Requirements:**
-
-- As a user, I want to use the API with ids containing a slash \(/\) [\#198](https://github.com/NASA-PDS/pds-doi-service/issues/198)
-- As an operator, I want to update DOI metadata through DataCite [\#175](https://github.com/NASA-PDS/pds-doi-service/issues/175)
-- As an operator, I want to release a DOI through DataCite [\#174](https://github.com/NASA-PDS/pds-doi-service/issues/174)
-- As an operator, I want query for one or more minted DOIs from DataCite [\#172](https://github.com/NASA-PDS/pds-doi-service/issues/172)
-- As an operator, I want to reserve a DOI through DataCite [\#171](https://github.com/NASA-PDS/pds-doi-service/issues/171)
-
-**Defects:**
-
 - pytest does not work [\#219](https://github.com/NASA-PDS/pds-doi-service/issues/219) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - Release OSTI command line does not work in one case [\#218](https://github.com/NASA-PDS/pds-doi-service/issues/218) [[s.high](https://github.com/NASA-PDS/pds-doi-service/labels/s.high)]
 - The issue \#140 does not work as expected [\#208](https://github.com/NASA-PDS/pds-doi-service/issues/208) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
