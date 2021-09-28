@@ -1,5 +1,17 @@
 # Changelog
 
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-09-28)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.3.2-SNAPSHOT...«unknown»)
+
+**Defects:**
+
+- Remove test and other transaction log data from public pypi distro [\#214](https://github.com/NASA-PDS/pds-doi-service/issues/214) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+
+## [v2.3.2-SNAPSHOT](https://github.com/NASA-PDS/pds-doi-service/tree/v2.3.2-SNAPSHOT) (2021-09-27)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.0...v2.3.2-SNAPSHOT)
+
 ## [v2.0.0](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.0) (2021-09-27)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.3.1...v2.0.0)
