@@ -7,33 +7,47 @@
 Overview
 --------
 
-A DOI (Digital Object Identifier) is a URI which is used to permanently identify a digital object: dataset or document.
+A DOI (Digital Object Identifier) is a URI which is used to permanently identify
+a digital object, typically a dataset or document.
 The DOI is then used to cite the digital object, especially in scientific papers.
 
-In the context of PDS, the DOIs follows this workflow:
-- reserve: before a dataset is published in PDS, a DOI can be reserved so that the researchers working with the digital resource at early stage can cite it in their papers. This step is optional.
-- draft: the metadata associated to the DOI is elaborated and validated.
-- release: the offcial DOI is registered at `OSTI`_ and `dataCite`_.
-- deactivate (To Be Done): although it is not supposed to happen, due to error in the release one might deactivate a  DOI.
+In the context of PDS, publishing a new DOI follows this workflow:
 
-The reserve, draft and release steps can be repeated multiple time to update a DOI metadata.
+    - `Reserve`: Before a dataset is published in PDS, a DOI is reserved so the
+      researchers working with the digital resource can cite it at early stage.
+    - `Draft`: The metadata associated to an existing DOI is elaborated and validated.
+    - `Review`: Once all metadata has been properly associated to the DOI, the
+      requester submits the DOI record for review to the PDS Engineering node.
+    - `Release`: After the PDS Engineering node determines that the DOI record is
+      filled out properly, the DOI and its metadata is officially registered at
+      `DataCite`_ and made available for public discovery. If there any issues with
+      the reviewed record, PDS Engineering node may move the record back to `Draft`
+      status for correction by the original submitter.
 
-The inputs to the DOI creation are either PDS4 labels or ad hoc spreadsheets (for the reserve step).
+The Draft and Release steps may be repeated multiple times to update the metadata
+associated to the DOI.
 
-The metadata managed with DOIs is meant to be preserved and traceable as it is used to permanently cite a digital resource.
-For this reason all the transactions, creations, updates with the PDS DOI management system are registered in a database.
+Inputs to DOI creation (the Reserve step) are either PDS4 labels or ad-hoc
+spreadsheets.
 
-Currently the tool provided is activated with a command line and used by a PDS Engineering Node operator interacting with the Discipline Nodes.
-A later version will provide a web API, a web UI and a cmd API client to enable Discipline Nodes to directly manage their DOIs.
+The metadata managed with DOIs is meant to be preserved and traceable, as it is
+used to permanently cite a digital resource. For this reason, all transactions,
+creations, and updates with the PDS DOI Service are registered in a local database.
+This database is used to track submissions-in-progress and help ensure the proper
+workflow (`Reserve` -> `Draft` -> `Review` -> `Release`) is enforced.
 
-Usage Information
------------------
+Currently, the service provides a command line tool for use by a PDS Engineering
+Node operator interacting with the Discipline Nodes, as well as a web API and UI
+to enable Discipline Nodes to directly manage their DOIs.
+
+Command Line Usage Information
+------------------------------
 
 .. argparse::
-   :module: pds_doi_service.core.actions
+   :module: pds_doi_service.core.actions.action
    :func: create_parser
    :prog: pds-doi-cmd
 
 
 .. _OSTI: https://www.osti.gov/data-services
-.. _dataCite: https://datacite.org
+.. _DataCite: https://datacite.org
