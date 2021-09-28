@@ -2,15 +2,14 @@ PDS DOI Service
 ===============
 
 The Planetary Data System (PDS_) Digital Object Identifier (DOI_) Service
-enable management of DOIs for PDS with the following operations: reserve,
-draft, release, deactivate.
+enables management of DOIs for PDS with the following operations: list, reserve,
+draft, review, and release.
 
-The PDS DOIs are registered through the `OSTI`_ infrastructure. OSTI registers
-PDS DOI on `DataCite`_ infrastructure.
+The PDS DOIs are registered through the `DataCite`_ infrastructure.
 
-Currently, this service can be deployed as a python package
+Currently, this service is deployed as a Python package
 ``pds-doi-service`` and is executed locally through a command line
-``pds-doi-cmd`` or remotely through a web API server.
+``pds-doi-cmd`` or remotely through the web API server ``pds-doi-api``.
 
 
 .. toctree::
@@ -23,7 +22,6 @@ Currently, this service can be deployed as a python package
    support/index
 
 
-.. _OSTI: https://www.osti.gov/data-services
 .. _dataCite: https://datacite.org
 .. _DOI: https://doi.org/
 .. _PDS: https://pds.nasa.gov/
