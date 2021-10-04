@@ -58,6 +58,35 @@ def requests_valid_request_patch(method, url, **kwargs):
     return response
 
 
+def requests_valid_request_paginated_patch(method, url, **kwargs):
+    response = Response()
+    response.status_code = 200
+
+    if url == 'url_for_page_1':
+        next_link = 'url_for_page_2'
+        data = ['data_entry_2']
+    elif url == 'url_for_page_2':
+        next_link = 'N/A'
+        data = ['data_entry_3', 'data_entry_4']
+    else:
+        next_link = 'url_for_page_1'
+        data = ['data_entry_0', 'data_entry_1']
+
+    response_content = {
+        'data': data,
+        'links': {
+            'next': next_link
+        },
+        'meta': {
+            'totalPages': 3
+        }
+    }
+
+    response._content = json.dumps(response_content).encode()
+
+    return response
+
+
 class DOIDataCiteWebClientTestCase(unittest.TestCase):
     """Unit tests for the datacite_web_client.py module"""
 
@@ -114,6 +143,20 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
 
             # Should get the same record back for both queries
             self.assertEqual(response_doi.doi, "10.13143/yzw2-vz66")
+
+    @patch.object(requests, "request", requests_valid_request_paginated_patch)
+    def test_query_doi_with_pagination(self):
+        """Test the datacite_web_client.query_doi method's ability to handle a paginated request"""
+        response_text = DOIDataCiteWebClient().query_doi({"id": "10.13143/yzw2-vz66"})
+
+        response_json = json.loads(response_text)
+
+        expected_data = ['data_entry_0', 'data_entry_1', 'data_entry_2', 'data_entry_3', 'data_entry_4']
+
+        self.assertIn('data', response_json)
+        self.assertIsInstance(response_json['data'], list)
+        self.assertEqual(len(response_json['data']), 5)
+        self.assertListEqual(response_json['data'], expected_data)
 
 
 class DOIDataCiteWebParserTestCase(unittest.TestCase):
