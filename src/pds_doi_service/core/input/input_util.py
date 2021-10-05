@@ -155,6 +155,121 @@ class DOIInputUtil:
 
         return dois
 
+    def _validate_spreadsheet(self, pd_sheet):
+        """
+        Validates a spreadsheet (XLS or CSV) parsed to a pandas DataFrame to
+        ensure the columns are defined as expected.
+
+        Parameters
+        ----------
+        pd_sheet : pandas.DataFrame
+            The spreadsheet to validate.
+
+        Returns
+        -------
+        pd_sheet : pandas.DataFrame
+            The validated spreadsheet with column names standardized as expected
+            by the parser.
+
+        Raises
+        ------
+        InputFormatException
+            If the provided spreadsheet's columns are invalid in some way
+            (missing columns, incorrect column names, etc.).
+
+        """
+        # Save the column names before we modify them, for error reporting
+        orig_columns = list(pd_sheet.columns)
+
+        # Trim leading/trailing whitespace from column names
+        pd_sheet = pd_sheet.rename(columns=lambda column: column.strip())
+
+        # Standardize column names on lowercase
+        pd_sheet = pd_sheet.rename(columns=lambda column: column.lower())
+
+        # Rename columns in a simpler way
+        pd_sheet = pd_sheet.rename(
+            columns={
+                "publication_date (yyyy-mm-dd)": "publication_date",
+                "product_type_specific\n(pds4 bundle | pds4 collection | pds4 document)": "product_type_specific",
+                "related_resource\nlidvid": "related_resource",
+            }
+        )
+
+        num_cols = len(pd_sheet.columns)
+        num_rows = len(pd_sheet.index)
+
+        logger.debug("num_cols: %d", num_cols)
+        logger.debug("num_rows: %d", num_rows)
+        logger.debug("data columns: %s", str(list(pd_sheet.columns)))
+
+        if num_cols < self.EXPECTED_NUM_COLUMNS:
+            msg = (
+                f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
+                f"provided spreadsheet file, but only found {num_cols} column(s).\n"
+                f"Please ensure the all of the following columns are defined before "
+                f"resubmitting: {self.MANDATORY_COLUMNS}."
+            )
+
+            logger.error(msg)
+            raise InputFormatException(msg)
+
+        if not all(column_name in pd_sheet.columns for column_name in self.MANDATORY_COLUMNS):
+            msg = (
+                f"Expected the following columns to be defined in the provided "
+                f"spreadsheet: {self.MANDATORY_COLUMNS}\n"
+                f"Received the following columns: {orig_columns}\n"
+                f"Please assign the correct column names before resubmitting."
+            )
+            logger.error(msg)
+            raise InputFormatException(msg)
+
+        return pd_sheet
+
+    def _validate_spreadsheet_row(self, row):
+        """
+        Validates a single spreadsheet row to ensure there is a valid value
+        provided for each column.
+
+        Parameters
+        ----------
+        row : pandas.Series
+            The spreadsheet row to validate.
+
+        Returns
+        -------
+        row : pandas.Series
+            The validated row.
+
+        Raises
+        ------
+        InputFormatException
+            If the row is invalid in any way (missing/improper values, etc.).
+
+        """
+        logger.debug(f"Validating row {list(row.values)}")
+
+        # Make sure theres a value defined for each expected column
+        for column_name in self.MANDATORY_COLUMNS:
+            if not row[column_name]:
+                raise InputFormatException(f'No value provided for {column_name} column')
+
+        # Make sure the status conforms to our enumeration
+        if not row['status'].lower() in DoiStatus.__members__.values():
+            raise InputFormatException(
+                f'Status value {row.status} is invalid.\nValue must be one of: '
+                f'{list(enum.value for enum in DoiStatus)} (case-insensitive).'
+            )
+
+        # Make sure we got a valid publication date
+        if not isinstance(row['publication_date'], (datetime, pd.Timestamp)):
+            try:
+                row['publication_date'] = datetime.strptime(row['publication_date'], '%Y-%m-%d')
+            except (TypeError, ValueError):
+                raise InputFormatException("Incorrect publication_date format, should be YYYY-MM-DD")
+
+        return row
+
     def parse_xls_file(self, xls_path):
         """
         Parses DOIs from an Excel file with an .xls or .xlsx extension.
@@ -183,66 +298,50 @@ class DOIInputUtil:
 
         # We only want the first sheet.
         actual_sheet_name = xl_wb.sheet_names[0]
+
         xl_sheet = pd.read_excel(
             xls_path,
             actual_sheet_name,
-            # Parse 3rd column (1-indexed) as a pd.Timestamp, can't use
-            # name of column since it hasn't been standardized yet
-            parse_dates=[3],
             # Remove automatic replacement of empty columns with NaN
             na_filter=False,
         )
 
-        num_cols = len(xl_sheet.columns)
-        num_rows = len(xl_sheet.index)
-
-        logger.debug("num_cols: %d", num_cols)
-        logger.debug("num_rows: %d", num_rows)
-        logger.debug("data columns: %s", str(list(xl_sheet.columns)))
-
-        # rename columns in a simpler way
-        xl_sheet = xl_sheet.rename(
-            columns={
-                "publication_date (yyyy-mm-dd)": "publication_date",
-                "product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)": "product_type_specific",
-                "related_resource\nLIDVID": "related_resource",
-            }
-        )
-
-        if num_cols < self.EXPECTED_NUM_COLUMNS:
-            msg = (
-                f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
-                f"provided XLS file, but only found {num_cols} column(s)."
-            )
-
-            logger.error(msg)
-            raise InputFormatException(msg)
+        xl_sheet = self._validate_spreadsheet(xl_sheet)
 
         dois = self._parse_rows_to_dois(xl_sheet)
 
         return dois
 
-    def _parse_rows_to_dois(self, xl_sheet):
+    def _parse_rows_to_dois(self, pd_sheet):
         """
-        Given an in-memory Excel spreadsheet, parse each row and return a list
+        Given an in-memory spreadsheet, parse each row and return a list
         of DOI objects.
 
         Parameters
         ----------
-        xl_sheet : pandas.DataFrame
+        pd_sheet : pandas.DataFrame
             The in-memory spreadsheet to parse.
 
         Returns
         -------
         dois : list of Doi
-            The DOI objects parsed from the Excel spreadsheet.
+            The DOI objects parsed from the spreadsheet.
 
         """
         dois = []
+        errors = []
         timestamp = datetime.now()
 
-        for index, row in xl_sheet.iterrows():
-            logger.debug(f"row {row}")
+        for index, row in pd_sheet.iterrows():
+            try:
+                row = self._validate_spreadsheet_row(row)
+            except InputFormatException as err:
+                errors.append(
+                    f'Failed to parse row {index + 1} of the provided spreadsheet.\n'
+                    f'Reason: {str(err)}\n'
+                    f'Row: {list(row.values)}\n'
+                )
+                continue
 
             doi = Doi(
                 status=DoiStatus(row["status"].lower()),
@@ -258,6 +357,9 @@ class DOIInputUtil:
 
             logger.debug("Parsed Doi: %r", doi.__dict__)
             dois.append(doi)
+
+        if errors:
+            raise InputFormatException("\n" + "\n".join(errors))
 
         return dois
 
@@ -318,28 +420,11 @@ class DOIInputUtil:
         # Read the CSV file into memory
         csv_sheet = pd.read_csv(
             csv_path,
-            # Have pandas auto-parse publication_date column as a datetime
-            parse_dates=["publication_date"],
             # Remove automatic replacement of empty columns with NaN
             na_filter=False,
         )
 
-        num_cols = len(csv_sheet.columns)
-        num_rows = len(csv_sheet.index)
-
-        logger.debug("csv_sheet.head(): %s", str(csv_sheet.head()))
-        logger.debug("num_cols: %d", num_cols)
-        logger.debug("num_rows: %d", num_rows)
-        logger.debug("data columns: %s", str(list(csv_sheet.columns)))
-
-        if num_cols < self.EXPECTED_NUM_COLUMNS:
-            msg = (
-                f"Expecting {self.EXPECTED_NUM_COLUMNS} columns in the provided "
-                f"CSV file, but only found {num_cols} column(s)."
-            )
-
-            logger.error(msg)
-            raise InputFormatException(msg)
+        csv_sheet = self._validate_spreadsheet(csv_sheet)
 
         dois = self._parse_rows_to_dois(csv_sheet)
 
