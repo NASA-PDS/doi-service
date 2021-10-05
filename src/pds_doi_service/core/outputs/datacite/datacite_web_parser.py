@@ -69,14 +69,14 @@ class DOIDataCiteWebParser(DOIWebParser):
                 # Parse the ID from the DOI field, it it's available
                 return record.get("doi").split("/")[-1]
         except (AttributeError, KeyError):
-            logger.warning('Could not parse optional field "id"')
+            raise UserWarning('Could not parse optional field "id"')
 
     @staticmethod
     def _parse_doi(record):
         try:
             return record["doi"]
         except KeyError:
-            logger.warning('Could not parse optional field "doi"')
+            raise UserWarning('Could not parse optional field "doi"')
 
     @staticmethod
     def _parse_identifiers(record):
@@ -84,21 +84,21 @@ class DOIDataCiteWebParser(DOIWebParser):
             identifiers = filter(lambda identifier: identifier["identifierType"] != "DOI", record["identifiers"])
             return list(identifiers)
         except KeyError:
-            logger.warning('Could not parse optional field "identifiers"')
+            raise UserWarning('Could not parse optional field "identifiers"')
 
     @staticmethod
     def _parse_description(record):
         try:
             return record["descriptions"][0]["description"]
         except (IndexError, KeyError):
-            logger.warning('Could not parse optional field "description"')
+            raise UserWarning('Could not parse optional field "description"')
 
     @staticmethod
     def _parse_keywords(record):
         try:
             return set(sorted(subject["subject"] for subject in record["subjects"]))
         except KeyError:
-            logger.warning('Could not parse optional field "keywords"')
+            raise UserWarning('Could not parse optional field "keywords"')
 
     @staticmethod
     def _parse_authors(record):
@@ -121,14 +121,14 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             return authors
         except KeyError:
-            logger.warning('Could not parse optional field "authors"')
+            raise UserWarning('Could not parse optional field "authors"')
 
     @staticmethod
     def _parse_site_url(record):
         try:
             return html.unescape(record["url"])
         except (KeyError, TypeError):
-            logger.warning('Could not parse optional field "site_url"')
+            raise UserWarning('Could not parse optional field "site_url"')
 
     @staticmethod
     def _parse_editors(record):
@@ -145,28 +145,28 @@ class DOIDataCiteWebParser(DOIWebParser):
                     editors.append({"name": name, "name_identifiers": contributor.get("nameIdentifiers", [])})
             return editors
         except KeyError:
-            logger.warning('Could not parse optional field "editors"')
+            raise UserWarning('Could not parse optional field "editors"')
 
     @staticmethod
     def _parse_status(record):
         try:
             return DoiStatus(record["state"])
         except (KeyError, ValueError):
-            logger.warning('Could not parse optional field "status"')
+            raise UserWarning('Could not parse optional field "status"')
 
     @staticmethod
     def _parse_date_record_added(record):
         try:
             return isoparse(record["created"])
         except (KeyError, ValueError):
-            logger.warning('Could not parse optional field "date_record_added"')
+            raise UserWarning('Could not parse optional field "date_record_added"')
 
     @staticmethod
     def _parse_date_record_updated(record):
         try:
             return isoparse(record["updated"])
         except (KeyError, ValueError):
-            logger.warning('Could not parse optional field "date_record_updated"')
+            raise UserWarning('Could not parse optional field "date_record_updated"')
 
     @staticmethod
     def _parse_contributor(record):
@@ -179,7 +179,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             return contributor
         except (KeyError, StopIteration, ValueError):
-            logger.warning('Could not parse optional field "contributor"')
+            raise UserWarning('Could not parse optional field "contributor"')
 
     @staticmethod
     def _parse_related_identifier(record):
@@ -193,7 +193,8 @@ class DOIDataCiteWebParser(DOIWebParser):
                     if identifier_record["identifier"].startswith("urn:"):
                         identifier = identifier_record["identifier"]
                         break
-            elif "url" in record:
+
+            if not identifier and "url" in record:
                 logger.info("Parsing related identifier from URL")
                 identifier = DOIWebParser._get_identifier_from_site_url(record["url"])
 
@@ -259,7 +260,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         """
         if content_type != CONTENT_TYPE_JSON:
             raise InputFormatException(
-                "Unexpected content type provided. Value must be one of the " f"following: [{CONTENT_TYPE_JSON}]"
+                f"Unexpected content type provided. Value must be one of the following: [{CONTENT_TYPE_JSON}]"
             )
 
         dois = []
@@ -277,8 +278,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                 logger.info("Parsing record index %d", index)
                 doi_fields = {}
 
-                # Everything we care about in a DataCite response is under
-                # attributes
+                # Everything we care about in a DataCite response is under attributes
                 datacite_record = datacite_record["attributes"]
 
                 for mandatory_field in DOIDataCiteWebParser._mandatory_fields:
@@ -288,18 +288,22 @@ class DOIDataCiteWebParser(DOIWebParser):
                     logger.debug("Parsed value %s for mandatory field %s", doi_fields[mandatory_field], mandatory_field)
 
                 for optional_field in DOIDataCiteWebParser._optional_fields:
-                    parsed_value = getattr(DOIDataCiteWebParser, f"_parse_{optional_field}")(datacite_record)
+                    try:
+                        parser = getattr(DOIDataCiteWebParser, f"_parse_{optional_field}")
+                        parsed_value = parser(datacite_record)
 
-                    if parsed_value is not None:
-                        doi_fields[optional_field] = parsed_value
-                        logger.debug("Parsed value %s for optional field %s", parsed_value, optional_field)
+                        if parsed_value is not None:
+                            doi_fields[optional_field] = parsed_value
+                            logger.debug("Parsed value %s for optional field %s", parsed_value, optional_field)
+                    except UserWarning as warning:
+                        logger.warning("Record %d: %s", index, str(warning))
 
                 doi = Doi(**doi_fields)
 
                 dois.append(doi)
             except InputFormatException as err:
                 logger.warning(
-                    "Failed to parse a DOI object from record index %d " "of the provided label, reason: %s",
+                    "Failed to parse a DOI object from record index %d of the provided label, reason: %s",
                     index,
                     str(err),
                 )
@@ -356,5 +360,5 @@ class DOIDataCiteWebParser(DOIWebParser):
                 return json.dumps({"data": record}, indent=4), CONTENT_TYPE_JSON
         else:
             raise UnknownIdentifierException(
-                f'Could not find entry for identifier "{identifier}" in ' f"DataCite label file {label_file}."
+                f'Could not find entry for identifier "{identifier}" in DataCite label file {label_file}.'
             )

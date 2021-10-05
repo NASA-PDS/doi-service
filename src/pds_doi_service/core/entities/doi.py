@@ -109,7 +109,7 @@ class Doi:
     product_type_specific: str
     related_identifier: str
     identifiers: list[str] = field(default_factory=list)
-    authors: Optional[list[str]] = None
+    authors: Optional[list[dict]] = None
     keywords: set[str] = field(default_factory=set)
     editors: Optional[list[str]] = None
     description: Optional[str] = None

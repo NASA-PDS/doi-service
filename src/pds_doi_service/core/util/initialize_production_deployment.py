@@ -315,7 +315,7 @@ def get_dois_from_provider(service, prefix, output_file=None):
     return dois, server_url
 
 
-def _get_node_id_from_contributors(doi_fields):
+def _get_node_id(contributor_name):
     """
     Given a doi object, attempt to extract the node_id from contributors field.
     If unable to, return 'eng' as default.
@@ -333,41 +333,36 @@ def _get_node_id_from_contributors(doi_fields):
         field.
 
     """
-    node_id = "eng"
+    node_id = None
 
-    if doi_fields.get("contributor"):
-        full_name_orig = doi_fields["contributor"]
-        full_name = full_name_orig.lower()
+    if contributor_name:
+        contributor_name = contributor_name.lower()
 
-        if "atmospheres" in full_name:
+        if "atmospheres" in contributor_name:
             node_id = "atm"
-        elif "engineering" in full_name:
+        elif "engineering" in contributor_name:
             node_id = "eng"
-        elif "geosciences" in full_name:
+        elif "geosciences" in contributor_name:
             node_id = "geo"
-        elif "imaging" in full_name:
+        elif "imaging" in contributor_name:
             node_id = "img"
-        elif "cartography" in full_name:
+        elif "cartography" in contributor_name:
             node_id = "img"
         # Some uses title: Navigation and Ancillary Information Facility Node
         # Some uses title: Navigational and Ancillary Information Facility
         # So check for both
-        elif "navigation" in full_name and "ancillary" in full_name:
+        elif "navigation" in contributor_name and "ancillary" in contributor_name:
             node_id = "naif"
-        elif "navigational" in full_name and "ancillary" in full_name:
+        elif "navigational" in contributor_name and "ancillary" in contributor_name:
             node_id = "naif"
-        elif "plasma" in full_name:
+        elif "plasma" in contributor_name:
             node_id = "ppi"
-        elif "ring" in full_name and "moon" in full_name:
+        elif "radio" in contributor_name:
+            node_id = "rs"
+        elif "ring" in contributor_name and "moon" in contributor_name:
             node_id = "rms"
-        elif "small" in full_name or "bodies" in full_name:
+        elif "small" in contributor_name or "bodies" in contributor_name:
             node_id = "sbn"
-
-        logger.debug("Derived node ID %s from Contributor field %s", node_id, full_name_orig)
-    else:
-        logger.warning(
-            "No Contributor field available for DOI %s, " "defaulting to node ID %s", doi_fields["doi"], node_id
-        )
 
     return node_id
 
@@ -453,8 +448,20 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
 
         doi_fields = doi.__dict__  # Convert the Doi object to a dictionary.
 
-        # Get the node_id from 'contributors' field if can be found.
-        node_id = _get_node_id_from_contributors(doi_fields)
+        # Get the node_id from either the 'contributors' or 'publisher' field, if possible
+        node_id = _get_node_id(doi_fields.get("contributor"))
+
+        if not node_id:
+            node_id = _get_node_id(doi_fields.get("publisher"))
+
+        if node_id:
+            logger.debug("Derived node ID %s for record %d", node_id, item_index)
+        else:
+            node_id = "eng"
+            logger.warning(
+                "No node ID could be determined for record %d, defaulting to node ID %s",
+                item_index, node_id
+            )
 
         logger.debug("------------------------------------")
         logger.debug("Processed DOI at index %d", item_index)

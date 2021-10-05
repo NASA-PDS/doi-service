@@ -93,6 +93,8 @@ class DOIDataCiteWebClient(DOIWebClient):
     def query_doi(self, query, url=None, username=None, password=None, content_type=CONTENT_TYPE_JSON):
         """
         Queries the DataCite DOI endpoint for the status of DOI submissions.
+        Pagination of the results from DataCite is handled automatically by
+        this method.
 
         Notes
         -----
@@ -123,17 +125,19 @@ class DOIDataCiteWebClient(DOIWebClient):
         Returns
         -------
         response_text : str
-            Body of the response text from the DataCite endpoint.
+            The results of the query, combined across all pages, in JSON format.
 
         """
+        data = []
         config = self._config_util.get_config()
 
         if content_type not in self._content_type_map:
             raise ValueError(
-                "Invalid content type requested, must be one of " f'{",".join(list(self._content_type_map.keys()))}'
+                f'Invalid content type requested, must be one of {",".join(list(self._content_type_map.keys()))}'
             )
 
-        auth = HTTPBasicAuth(username or config.get("DATACITE", "user"), password or config.get("DATACITE", "password"))
+        auth = HTTPBasicAuth(username or config.get("DATACITE", "user"),
+                             password or config.get("DATACITE", "password"))
 
         headers = {"Accept": self._content_type_map[content_type]}
 
@@ -147,19 +151,52 @@ class DOIDataCiteWebClient(DOIWebClient):
         logger.debug("query_string: %s", query_string)
         logger.debug("url: %s", url)
 
-        datacite_response = requests.request(
-            WEB_METHOD_GET, url=url, auth=auth, headers=headers, params={"query": query_string}
-        )
+        pages_returned = 0
 
         try:
+            # Submit the request, specifying that we would like up to 1000
+            # results returned for each page
+            datacite_response = requests.request(
+                WEB_METHOD_GET, url=url, auth=auth, headers=headers,
+                params={"query": query_string, "page[cursor]": 1, "page[size]": 1000}
+            )
+
             datacite_response.raise_for_status()
+
+            pages_returned += 1
+
+            # Parse the immediate result to see if we have any more pages to fetch
+            result = json.loads(datacite_response.text)
+
+            # Append current results to full set returned
+            data.extend(result['data'])
+
+            total_pages = result['meta']['totalPages']
+
+            # If necessary, request next page using the URL provided by DataCite
+            while pages_returned < total_pages:
+                url = result['links']['next']
+
+                datacite_response = requests.request(
+                    WEB_METHOD_GET, url=url, auth=auth, headers=headers
+                )
+
+                datacite_response.raise_for_status()
+
+                pages_returned += 1
+
+                # Append current results to full set returned
+                result = json.loads(datacite_response.text)
+                data.extend(result['data'])
         except requests.exceptions.HTTPError as http_err:
             # Detail text is not always present, which can cause json parsing
             # issues
             details = f"Details: {pprint.pformat(json.loads(datacite_response.text))}" if datacite_response.text else ""
 
             raise WebRequestException(
-                "DOI submission request to OSTI service failed, " f"reason: {str(http_err)}\n{details}"
+                f"DOI submission request to OSTI service failed, reason: {str(http_err)}\n{details}"
             )
 
-        return datacite_response.text
+        # Re-add the data key to the result returned so it meets the format
+        # expected by the DataCite parser
+        return json.dumps({'data': data})
