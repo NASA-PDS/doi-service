@@ -1,0 +1,21 @@
+﻿status,title,publication_date (yyyy-mm-dd),"product_type_specific
+(PDS4 Bundle | PDS4 Collection | PDS4 Document)",author_last_name
+,Apollo 15 and 17 Heat Flow Experiment Concatenated Data Sets Bundle,2020-02-27,PDS4 Bundle,St. Clair
+,Apollo 12 ALSEP ARCSAV SIDE/CCIG Raw Cleaned ASCII Data Bundle,2019-10-15,PDS4 Bundle,Nakamura
+,Apollo 15 ALSEP ARCSAV SIDE/CCIG Raw Cleaned ASCII Data Bundle,2019-10-15,PDS4 Bundle,Nakamura
+,Apollo 12 ALSEP ARCSAV Solar Wind Spectrometer Raw Cleaned ASCII Data Bundle,2019-10-15,PDS4 Bundle,Nakamura
+,Apollo 15 Orbital Mass Spectrometer Data Output Scans Bundle,2019-09-20,PDS4 Bundle,Williams
+,Apollo 16 Orbital Mass Spectrometer Data Output Scans Bundle,2019-09-20,PDS4 Bundle,Williams
+,Apollo 17 ALSEP ARCSAV Lunar Surface Gravimeter Raw Cleaned ASCII Data Bundle,2019-07-18,PDS4 Bundle,Nakamura
+,Apollo 17 ALSEP ARCSAV Heat Flow Experiment Raw Cleaned ASCII Data Bundle,2019-07-12,PDS4 Bundle,Nakamura
+,Apollo 17 ALSEP ARCSAV Heat Flow Experiment Calibrated Gradient Bridge Temperatures Bundle,2019-07-12,PDS4 Bundle,Nakamura
+,Apollo 15 ALSEP ARCSAV Heat Flow Experiment Raw Cleaned ASCII Data Bundle,2019-07-12,PDS4 Bundle,Nakamura
+,Apollo 15 ALSEP ARCSAV Heat Flow Experiment Calibrated Gradient Bridge Temperatures Bundle,2019-07-12,PDS4 Bundle,Nakamura
+,Apollo 16 ALSEP ARCSAV Lunar Surface Magnetometer Raw Cleaned ASCII Data Bundle,2019-07-12,PDS4 Bundle,Nakamura
+,Apollo Documents Bundle,2019-01-25,PDS4 Bundle,McLaughlin
+,Apollo 15 Photographic Ephemeris Support Data Bundle,2019-01-25,PDS4 Bundle,McLaughlin
+,Apollo 16 Photographic Ephemeris Support Data Bundle,2019-01-25,PDS4 Bundle,McLaughlin
+,Apollo 17 Far-Ultraviolet Spectrometer (FUVS) Data Graphs Bundle,2018-11-02,PDS4 Bundle,Williams
+,Pioneer 8 and 9 Cosmic Dust Detector Calibration Notebook Bundle,2018-07-03,PDS4 Bundle,Berg
+,Pioneer Documents Bundle,2018-07-03,PDS4 Bundle,McLaughlin
+,Apollo 17 Photographic Ephemeris Support Data Bundle,2017-06-13,PDS4 Bundle,McLaughlin

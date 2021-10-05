@@ -8,6 +8,7 @@ from os.path import join
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
+from pds_doi_service.core.input.exceptions import CriticalDOIException
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -64,7 +65,7 @@ class InputUtilTestCase(unittest.TestCase):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
     def test_read_xls(self):
-        """Test the DOIInputUtil.parse_sxls_file() method"""
+        """Test the DOIInputUtil.parse_xls_file() method"""
         doi_input_util = DOIInputUtil()
 
         # Test single entry spreadsheet
@@ -99,6 +100,48 @@ class InputUtilTestCase(unittest.TestCase):
         )
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime) for doi in dois]))
 
+        # Test with an invalid spreadsheet (insufficient columns)
+        i_filepath = join(self.input_dir, 'DOI-reserve-broken.xlsx')
+
+        try:
+            doi_input_util.parse_xls_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn(f"only found 5 column(s)", str(err))
+
+        # Test with an invalid spreadsheet (wrong column names)
+        i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318_invalid_column_names.xlsx')
+
+        try:
+            doi_input_util.parse_xls_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Please assign the correct column names", str(err))
+
+        # Test with a valid spreadsheet with malformed column names (that parser should correct)
+        i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318_malformed_column_names.xlsx')
+
+        dois = doi_input_util.parse_xls_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        # Test with an invalid spreadsheet (multiple rows with errors)
+        i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318_with_invalid_rows.xlsx')
+
+        try:
+            doi_input_util.parse_xls_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Failed to parse row 1", str(err))
+            self.assertIn("Reason: Status value Alright is invalid", str(err))
+            self.assertIn("Failed to parse row 2", str(err))
+            self.assertIn("Reason: No value provided for title column", str(err))
+            self.assertIn("Failed to parse row 3", str(err))
+            self.assertIn("Incorrect publication_date format", str(err))
+
     def test_read_csv(self):
         """Test the DOIInputUtil.parse_csv_file() method"""
         doi_input_util = DOIInputUtil()
@@ -124,6 +167,48 @@ class InputUtilTestCase(unittest.TestCase):
 
         # Make sure the PDS3 identifier was saved off as expected
         self.assertEqual(doi.related_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
+
+        # Test with an invalid spreadsheet (insufficient columns)
+        i_filepath = join(self.input_dir, 'DOI-reserve-broken.csv')
+
+        try:
+            doi_input_util.parse_csv_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn(f"only found 5 column(s)", str(err))
+
+        # Test with an invalid spreadsheet (wrong column names)
+        i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318_invalid_column_names.csv')
+
+        try:
+            doi_input_util.parse_csv_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Please assign the correct column names", str(err))
+
+        # Test with a valid spreadsheet with malformed column names (that parser should correct)
+        i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318_malformed_column_names.csv')
+
+        dois = doi_input_util.parse_csv_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        # Test with an invalid spreadsheet (multiple rows with errors)
+        i_filepath = join(self.input_dir, 'DOI_Reserved_GEO_200318_with_invalid_rows.csv')
+
+        try:
+            doi_input_util.parse_csv_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Failed to parse row 1", str(err))
+            self.assertIn("Reason: Status value Alright is invalid", str(err))
+            self.assertIn("Failed to parse row 2", str(err))
+            self.assertIn("Reason: No value provided for title column", str(err))
+            self.assertIn("Failed to parse row 3", str(err))
+            self.assertIn("Incorrect publication_date format", str(err))
 
     def test_read_xml(self):
         """Test the DOIInputUtil.parse_xml_file() method"""
