@@ -8,10 +8,10 @@ from os.path import join
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
-from pds_doi_service.core.input.exceptions import CriticalDOIException
 from pds_doi_service.core.input.exceptions import InputFormatException
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_OSTI
 from pkg_resources import resource_filename
 
@@ -247,6 +247,24 @@ class InputUtilTestCase(unittest.TestCase):
         # Make sure the PDS3 identifier was saved off as expected
         self.assertEqual(doi.related_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
 
+        # Test with a PDS4 label that contains a UTF-8 byte order marker
+        i_filepath = join(self.input_dir, "bundle_in_with_contributors_utf-8-bom.xml")
+
+        # Run a quick sanity check to ensure the input file starts with the BOM
+        with open(i_filepath, 'r') as infile:
+            file_contents = infile.read()
+            file_contents_bytes = file_contents.encode()
+            self.assertTrue(file_contents_bytes.startswith(b'\xef\xbb\xbf'))
+
+        # Parse the label and ensure we still get a Doi back
+        dois = doi_input_util.parse_xml_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertIsInstance(doi, Doi)
+
     def test_read_json(self):
         """Test the DOIInputUtil.parse_json_file() method"""
         doi_input_util = DOIInputUtil()
@@ -257,6 +275,27 @@ class InputUtilTestCase(unittest.TestCase):
         else:
             i_filepath = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
 
+        dois = doi_input_util.parse_json_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertIsInstance(doi, Doi)
+
+        # Test with a JSON label that contains a UTF-8 byte order marker
+        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
+            i_filepath = join(self.input_dir, "DOI_Release_20210216_from_reserve_utf-8-bom.json")
+        else:
+            i_filepath = join(self.input_dir, "tc-4_reserve_RADARGRAM_v2.0_utf-8-bom.json")
+
+        # Run a quick sanity check to ensure the input file starts with the BOM
+        with open(i_filepath, 'r') as infile:
+            file_contents = infile.read()
+            file_contents_bytes = file_contents.encode()
+            self.assertTrue(file_contents_bytes.startswith(b'\xef\xbb\xbf'))
+
+        # Parse the label and ensure we still get a Doi back
         dois = doi_input_util.parse_json_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
