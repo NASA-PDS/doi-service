@@ -1,8 +1,16 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-09-28)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-05)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.3.2-SNAPSHOT...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.4-SNAPSHOT...«unknown»)
+
+**Defects:**
+
+- Query to DataCite does not properly support pagination [\#261](https://github.com/NASA-PDS/pds-doi-service/issues/261)
+
+## [v21.2.4-SNAPSHOT](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.4-SNAPSHOT) (2021-09-28)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.3.2-SNAPSHOT...v21.2.4-SNAPSHOT)
 
 **Defects:**
 
