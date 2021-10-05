@@ -96,7 +96,7 @@ class DOIInputUtil:
         }
 
         if not all([extension in self._parser_map for extension in self._valid_extensions]):
-            raise ValueError("One or more the provided extensions are not " "supported by the DOIInputUtil class.")
+            raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
 
     def parse_xml_file(self, xml_path):
         """
@@ -124,7 +124,11 @@ class DOIInputUtil:
 
         # First read the contents of the file
         with open(xml_path, "r") as infile:
-            xml_contents = infile.read()
+            # It's been observed that input files transferred from Windows-based
+            # machines can append a UTF-8-BOM hex sequence, which can break
+            # parsing later on. So we perform an encode-decode here to
+            # ensure this sequence is stripped before continuing.
+            xml_contents = infile.read().encode().decode('utf-8-sig')
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
@@ -135,7 +139,7 @@ class DOIInputUtil:
             try:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
             except Exception as err:
-                raise InputFormatException("Could not parse the provided xml file as a PDS4 label.\n" f"Reason: {err}")
+                raise InputFormatException(f"Could not parse the provided xml file as a PDS4 label.\nReason: {err}")
         # Otherwise, assume OSTI format
         else:
             logger.info("Parsing xml file %s as an OSTI label", basename(xml_path))
@@ -146,7 +150,7 @@ class DOIInputUtil:
                 dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(xml_contents)
             except XMLSchemaValidationError as err:
                 raise InputFormatException(
-                    "Could not parse the provided xml file as an OSTI label.\n" f"Reason: {err.reason}"
+                    f"Could not parse the provided xml file as an OSTI label.\nReason: {err.reason}"
                 )
 
         return dois
@@ -282,7 +286,8 @@ class DOIInputUtil:
             logger.debug("Parsed %s from %s", product_type, product_type_specific)
         except ValueError:
             product_type = ProductType.Collection
-            logger.debug("Could not parsed product type from %s, defaulting to %s", product_type_specific, product_type)
+            logger.debug("Could not parse product type from %s, defaulting to %s",
+                         product_type_specific, product_type)
 
         return product_type
 
@@ -364,7 +369,11 @@ class DOIInputUtil:
 
         # First read the contents of the file
         with open(json_path, "r") as infile:
-            json_contents = infile.read()
+            # It's been observed that input files transferred from Windows-based
+            # machines can append a UTF-8-BOM hex sequence, which breaks
+            # JSON parsing later on. So we perform an encode-decode here to
+            # ensure this sequence is stripped before continuing.
+            json_contents = infile.read().encode().decode('utf-8-sig')
 
         # Validate and parse the provide JSON label based on the service provider
         # configured within the INI. If there's a mismatch, the validation step
@@ -376,7 +385,8 @@ class DOIInputUtil:
             dois, _ = web_parser.parse_dois_from_label(json_contents, content_type=CONTENT_TYPE_JSON)
         except InputFormatException as err:
             logger.warning(
-                "Unable to parse DOI objects from provided " 'json file "%s"\nReason: %s', json_path, str(err)
+                'Unable to parse DOI objects from provided json file "%s"\nReason: %s',
+                json_path, str(err)
             )
 
         return dois
@@ -508,7 +518,7 @@ class DOIInputUtil:
             dois = self._read_from_path(input_file)
         else:
             raise InputFormatException(
-                f"Error reading file {input_file}, path does not correspond to " f"a remote URL or a local file path."
+                f"Error reading file {input_file}, path does not correspond to a remote URL or a local file path."
             )
 
         # Make sure we got back at least one Doi
