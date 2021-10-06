@@ -128,7 +128,7 @@ class DOIInputUtil:
             # machines can append a UTF-8-BOM hex sequence, which can break
             # parsing later on. So we perform an encode-decode here to
             # ensure this sequence is stripped before continuing.
-            xml_contents = infile.read().encode().decode('utf-8-sig')
+            xml_contents = infile.read().encode().decode("utf-8-sig")
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
@@ -252,19 +252,19 @@ class DOIInputUtil:
         # Make sure theres a value defined for each expected column
         for column_name in self.MANDATORY_COLUMNS:
             if not row[column_name]:
-                raise InputFormatException(f'No value provided for {column_name} column')
+                raise InputFormatException(f"No value provided for {column_name} column")
 
         # Make sure the status conforms to our enumeration
-        if not row['status'].lower() in DoiStatus.__members__.values():
+        if not row["status"].lower() in DoiStatus.__members__.values():
             raise InputFormatException(
-                f'Status value {row.status} is invalid.\nValue must be one of: '
-                f'{list(enum.value for enum in DoiStatus)} (case-insensitive).'
+                f"Status value {row.status} is invalid.\nValue must be one of: "
+                f"{list(enum.value for enum in DoiStatus)} (case-insensitive)."
             )
 
         # Make sure we got a valid publication date
-        if not isinstance(row['publication_date'], (datetime, pd.Timestamp)):
+        if not isinstance(row["publication_date"], (datetime, pd.Timestamp)):
             try:
-                row['publication_date'] = datetime.strptime(row['publication_date'], '%Y-%m-%d')
+                row["publication_date"] = datetime.strptime(row["publication_date"], "%Y-%m-%d")
             except (TypeError, ValueError):
                 raise InputFormatException("Incorrect publication_date format, should be YYYY-MM-DD")
 
@@ -337,9 +337,9 @@ class DOIInputUtil:
                 row = self._validate_spreadsheet_row(row)
             except InputFormatException as err:
                 errors.append(
-                    f'Failed to parse row {index + 1} of the provided spreadsheet.\n'
-                    f'Reason: {str(err)}\n'
-                    f'Row: {list(row.values)}\n'
+                    f"Failed to parse row {index + 1} of the provided spreadsheet.\n"
+                    f"Reason: {str(err)}\n"
+                    f"Row: {list(row.values)}\n"
                 )
                 continue
 
@@ -388,8 +388,7 @@ class DOIInputUtil:
             logger.debug("Parsed %s from %s", product_type, product_type_specific)
         except ValueError:
             product_type = ProductType.Collection
-            logger.debug("Could not parse product type from %s, defaulting to %s",
-                         product_type_specific, product_type)
+            logger.debug("Could not parse product type from %s, defaulting to %s", product_type_specific, product_type)
 
         return product_type
 
@@ -458,7 +457,7 @@ class DOIInputUtil:
             # machines can append a UTF-8-BOM hex sequence, which breaks
             # JSON parsing later on. So we perform an encode-decode here to
             # ensure this sequence is stripped before continuing.
-            json_contents = infile.read().encode().decode('utf-8-sig')
+            json_contents = infile.read().encode().decode("utf-8-sig")
 
         # Validate and parse the provide JSON label based on the service provider
         # configured within the INI. If there's a mismatch, the validation step
@@ -469,10 +468,7 @@ class DOIInputUtil:
 
             dois, _ = web_parser.parse_dois_from_label(json_contents, content_type=CONTENT_TYPE_JSON)
         except InputFormatException as err:
-            logger.warning(
-                'Unable to parse DOI objects from provided json file "%s"\nReason: %s',
-                json_path, str(err)
-            )
+            logger.warning('Unable to parse DOI objects from provided json file "%s"\nReason: %s', json_path, str(err))
 
         return dois
 

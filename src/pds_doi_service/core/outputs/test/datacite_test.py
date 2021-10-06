@@ -62,25 +62,17 @@ def requests_valid_request_paginated_patch(method, url, **kwargs):
     response = Response()
     response.status_code = 200
 
-    if url == 'url_for_page_1':
-        next_link = 'url_for_page_2'
-        data = ['data_entry_2']
-    elif url == 'url_for_page_2':
-        next_link = 'N/A'
-        data = ['data_entry_3', 'data_entry_4']
+    if url == "url_for_page_1":
+        next_link = "url_for_page_2"
+        data = ["data_entry_2"]
+    elif url == "url_for_page_2":
+        next_link = "N/A"
+        data = ["data_entry_3", "data_entry_4"]
     else:
-        next_link = 'url_for_page_1'
-        data = ['data_entry_0', 'data_entry_1']
+        next_link = "url_for_page_1"
+        data = ["data_entry_0", "data_entry_1"]
 
-    response_content = {
-        'data': data,
-        'links': {
-            'next': next_link
-        },
-        'meta': {
-            'totalPages': 3
-        }
-    }
+    response_content = {"data": data, "links": {"next": next_link}, "meta": {"totalPages": 3}}
 
     response._content = json.dumps(response_content).encode()
 
@@ -151,12 +143,12 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
 
         response_json = json.loads(response_text)
 
-        expected_data = ['data_entry_0', 'data_entry_1', 'data_entry_2', 'data_entry_3', 'data_entry_4']
+        expected_data = ["data_entry_0", "data_entry_1", "data_entry_2", "data_entry_3", "data_entry_4"]
 
-        self.assertIn('data', response_json)
-        self.assertIsInstance(response_json['data'], list)
-        self.assertEqual(len(response_json['data']), 5)
-        self.assertListEqual(response_json['data'], expected_data)
+        self.assertIn("data", response_json)
+        self.assertIsInstance(response_json["data"], list)
+        self.assertEqual(len(response_json["data"]), 5)
+        self.assertListEqual(response_json["data"], expected_data)
 
 
 class DOIDataCiteWebParserTestCase(unittest.TestCase):
