@@ -1,24 +1,27 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-05)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-06)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.4-SNAPSHOT...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v21.2.4-dev...«unknown»)
+
+**Improvements:**
+
+- Improve spreadsheet parser error handling [\#260](https://github.com/NASA-PDS/pds-doi-service/issues/260)
+
+**Defects:**
+
+- DOI Service does not properly handle input files with UTF-8 BOM [\#267](https://github.com/NASA-PDS/pds-doi-service/issues/267)
+- Spreadsheet parser does not validate/sanitize format of expected header row [\#259](https://github.com/NASA-PDS/pds-doi-service/issues/259) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+- Spreadsheet parser does not validate parsed contents of rows [\#258](https://github.com/NASA-PDS/pds-doi-service/issues/258) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+
+## [v21.2.4-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.4-dev) (2021-10-05)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.0...v21.2.4-dev)
 
 **Defects:**
 
 - Query to DataCite does not properly support pagination [\#261](https://github.com/NASA-PDS/pds-doi-service/issues/261)
-
-## [v21.2.4-SNAPSHOT](https://github.com/NASA-PDS/pds-doi-service/tree/v21.2.4-SNAPSHOT) (2021-09-28)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.3.2-SNAPSHOT...v21.2.4-SNAPSHOT)
-
-**Defects:**
-
 - Remove test and other transaction log data from public pypi distro [\#214](https://github.com/NASA-PDS/pds-doi-service/issues/214) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
-
-## [v2.3.2-SNAPSHOT](https://github.com/NASA-PDS/pds-doi-service/tree/v2.3.2-SNAPSHOT) (2021-09-27)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.0...v2.3.2-SNAPSHOT)
 
 ## [v2.0.0](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.0) (2021-09-27)
 
