@@ -1,0 +1,59 @@
+﻿{
+    "data":
+        {
+            "id": "10.13143/p3de-0n02",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.13143/p3de-0n02",
+                "suffix": "p3de-0n02",
+                "identifiers": [
+                    {
+                        "identifier": "10.13143/p3de-0n02",
+                        "identifierType": "DOI"
+                    }
+                ],
+                "creators": [
+                    {
+                        "nameType": "Personal",
+                        "name": "Mitchell Gordon",
+                        "nameIdentifiers": [
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "MRO MARS SHARAD 5 RADARGRAM V2.0",
+                        "lang": "en"
+                    }
+                ],
+                "publisher": "NASA Planetary Data System",
+                "publicationYear": "2006",
+                "subjects": [
+                ],
+                "contributors": [
+                    {
+                        "nameType": "Organizational",
+                        "name": "Planetary Data System: Engineering Node",
+                        "contributorType": "DataCurator"
+                    }
+                ],
+                "types": {
+                    "resourceTypeGeneral": "Collection",
+                    "resourceType": "PDS3 Refereed Data Set"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relatedIdentifier": "MRO-M-SHARAD-5-RADARGRAM-V2.0",
+                        "relatedIdentifierType": "Handle",
+                        "relationType": "IsIdenticalTo"
+                    }
+                ],
+                "url": "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid=MRO-M-SHARAD-5-RADARGRAM-V2.0",
+                "created": "2021-10-05T16:01:04.000000Z",
+                "updated": "2021-10-05T16:01:04.000000Z",
+                "state": "draft",
+                "language": "en",
+                "schemaVersion": "http://datacite.org/schema/kernel-4"
+            }
+        }
+}

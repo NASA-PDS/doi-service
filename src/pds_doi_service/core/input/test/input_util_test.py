@@ -64,7 +64,7 @@ class InputUtilTestCase(unittest.TestCase):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
     def test_read_xls(self):
-        """Test the DOIInputUtil.parse_sxls_file() method"""
+        """Test the DOIInputUtil.parse_xls_file() method"""
         doi_input_util = DOIInputUtil()
 
         # Test single entry spreadsheet
@@ -99,6 +99,48 @@ class InputUtilTestCase(unittest.TestCase):
         )
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime) for doi in dois]))
 
+        # Test with an invalid spreadsheet (insufficient columns)
+        i_filepath = join(self.input_dir, "DOI-reserve-broken.xlsx")
+
+        try:
+            doi_input_util.parse_xls_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("only found 5 column(s)", str(err))
+
+        # Test with an invalid spreadsheet (wrong column names)
+        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_invalid_column_names.xlsx")
+
+        try:
+            doi_input_util.parse_xls_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Please assign the correct column names", str(err))
+
+        # Test with a valid spreadsheet with malformed column names (that parser should correct)
+        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_malformed_column_names.xlsx")
+
+        dois = doi_input_util.parse_xls_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        # Test with an invalid spreadsheet (multiple rows with errors)
+        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_with_invalid_rows.xlsx")
+
+        try:
+            doi_input_util.parse_xls_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Failed to parse row 1", str(err))
+            self.assertIn("Reason: Status value Alright is invalid", str(err))
+            self.assertIn("Failed to parse row 2", str(err))
+            self.assertIn("Reason: No value provided for title column", str(err))
+            self.assertIn("Failed to parse row 3", str(err))
+            self.assertIn("Incorrect publication_date format", str(err))
+
     def test_read_csv(self):
         """Test the DOIInputUtil.parse_csv_file() method"""
         doi_input_util = DOIInputUtil()
@@ -124,6 +166,48 @@ class InputUtilTestCase(unittest.TestCase):
 
         # Make sure the PDS3 identifier was saved off as expected
         self.assertEqual(doi.related_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
+
+        # Test with an invalid spreadsheet (insufficient columns)
+        i_filepath = join(self.input_dir, "DOI-reserve-broken.csv")
+
+        try:
+            doi_input_util.parse_csv_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("only found 5 column(s)", str(err))
+
+        # Test with an invalid spreadsheet (wrong column names)
+        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_invalid_column_names.csv")
+
+        try:
+            doi_input_util.parse_csv_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Please assign the correct column names", str(err))
+
+        # Test with a valid spreadsheet with malformed column names (that parser should correct)
+        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_malformed_column_names.csv")
+
+        dois = doi_input_util.parse_csv_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        # Test with an invalid spreadsheet (multiple rows with errors)
+        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_with_invalid_rows.csv")
+
+        try:
+            doi_input_util.parse_csv_file(i_filepath)
+            self.fail()  # should never get here
+        except Exception as err:
+            self.assertIsInstance(err, InputFormatException)
+            self.assertIn("Failed to parse row 1", str(err))
+            self.assertIn("Reason: Status value Alright is invalid", str(err))
+            self.assertIn("Failed to parse row 2", str(err))
+            self.assertIn("Reason: No value provided for title column", str(err))
+            self.assertIn("Failed to parse row 3", str(err))
+            self.assertIn("Incorrect publication_date format", str(err))
 
     def test_read_xml(self):
         """Test the DOIInputUtil.parse_xml_file() method"""
@@ -162,6 +246,24 @@ class InputUtilTestCase(unittest.TestCase):
         # Make sure the PDS3 identifier was saved off as expected
         self.assertEqual(doi.related_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
 
+        # Test with a PDS4 label that contains a UTF-8 byte order marker
+        i_filepath = join(self.input_dir, "bundle_in_with_contributors_utf-8-bom.xml")
+
+        # Run a quick sanity check to ensure the input file starts with the BOM
+        with open(i_filepath, "r") as infile:
+            file_contents = infile.read()
+            file_contents_bytes = file_contents.encode()
+            self.assertTrue(file_contents_bytes.startswith(b"\xef\xbb\xbf"))
+
+        # Parse the label and ensure we still get a Doi back
+        dois = doi_input_util.parse_xml_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertIsInstance(doi, Doi)
+
     def test_read_json(self):
         """Test the DOIInputUtil.parse_json_file() method"""
         doi_input_util = DOIInputUtil()
@@ -172,6 +274,27 @@ class InputUtilTestCase(unittest.TestCase):
         else:
             i_filepath = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
 
+        dois = doi_input_util.parse_json_file(i_filepath)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertIsInstance(doi, Doi)
+
+        # Test with a JSON label that contains a UTF-8 byte order marker
+        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
+            i_filepath = join(self.input_dir, "DOI_Release_20210216_from_reserve_utf-8-bom.json")
+        else:
+            i_filepath = join(self.input_dir, "tc-4_reserve_RADARGRAM_v2.0_utf-8-bom.json")
+
+        # Run a quick sanity check to ensure the input file starts with the BOM
+        with open(i_filepath, "r") as infile:
+            file_contents = infile.read()
+            file_contents_bytes = file_contents.encode()
+            self.assertTrue(file_contents_bytes.startswith(b"\xef\xbb\xbf"))
+
+        # Parse the label and ensure we still get a Doi back
         dois = doi_input_util.parse_json_file(i_filepath)
 
         self.assertEqual(len(dois), 1)

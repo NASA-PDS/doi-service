@@ -459,8 +459,7 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         else:
             node_id = "eng"
             logger.warning(
-                "No node ID could be determined for record %d, defaulting to node ID %s",
-                item_index, node_id
+                "No node ID could be determined for record %d, defaulting to node ID %s", item_index, node_id
             )
 
         logger.debug("------------------------------------")

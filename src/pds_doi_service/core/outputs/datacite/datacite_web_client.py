@@ -136,8 +136,7 @@ class DOIDataCiteWebClient(DOIWebClient):
                 f'Invalid content type requested, must be one of {",".join(list(self._content_type_map.keys()))}'
             )
 
-        auth = HTTPBasicAuth(username or config.get("DATACITE", "user"),
-                             password or config.get("DATACITE", "password"))
+        auth = HTTPBasicAuth(username or config.get("DATACITE", "user"), password or config.get("DATACITE", "password"))
 
         headers = {"Accept": self._content_type_map[content_type]}
 
@@ -157,8 +156,11 @@ class DOIDataCiteWebClient(DOIWebClient):
             # Submit the request, specifying that we would like up to 1000
             # results returned for each page
             datacite_response = requests.request(
-                WEB_METHOD_GET, url=url, auth=auth, headers=headers,
-                params={"query": query_string, "page[cursor]": 1, "page[size]": 1000}
+                WEB_METHOD_GET,
+                url=url,
+                auth=auth,
+                headers=headers,
+                params={"query": query_string, "page[cursor]": 1, "page[size]": 1000},
             )
 
             datacite_response.raise_for_status()
@@ -169,17 +171,15 @@ class DOIDataCiteWebClient(DOIWebClient):
             result = json.loads(datacite_response.text)
 
             # Append current results to full set returned
-            data.extend(result['data'])
+            data.extend(result["data"])
 
-            total_pages = result['meta']['totalPages']
+            total_pages = result["meta"]["totalPages"]
 
             # If necessary, request next page using the URL provided by DataCite
             while pages_returned < total_pages:
-                url = result['links']['next']
+                url = result["links"]["next"]
 
-                datacite_response = requests.request(
-                    WEB_METHOD_GET, url=url, auth=auth, headers=headers
-                )
+                datacite_response = requests.request(WEB_METHOD_GET, url=url, auth=auth, headers=headers)
 
                 datacite_response.raise_for_status()
 
@@ -187,7 +187,7 @@ class DOIDataCiteWebClient(DOIWebClient):
 
                 # Append current results to full set returned
                 result = json.loads(datacite_response.text)
-                data.extend(result['data'])
+                data.extend(result["data"])
         except requests.exceptions.HTTPError as http_err:
             # Detail text is not always present, which can cause json parsing
             # issues
@@ -199,4 +199,4 @@ class DOIDataCiteWebClient(DOIWebClient):
 
         # Re-add the data key to the result returned so it meets the format
         # expected by the DataCite parser
-        return json.dumps({'data': data})
+        return json.dumps({"data": data})

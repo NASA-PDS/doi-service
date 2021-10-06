@@ -96,7 +96,7 @@ class DOIInputUtil:
         }
 
         if not all([extension in self._parser_map for extension in self._valid_extensions]):
-            raise ValueError("One or more the provided extensions are not " "supported by the DOIInputUtil class.")
+            raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
 
     def parse_xml_file(self, xml_path):
         """
@@ -124,7 +124,11 @@ class DOIInputUtil:
 
         # First read the contents of the file
         with open(xml_path, "r") as infile:
-            xml_contents = infile.read()
+            # It's been observed that input files transferred from Windows-based
+            # machines can append a UTF-8-BOM hex sequence, which can break
+            # parsing later on. So we perform an encode-decode here to
+            # ensure this sequence is stripped before continuing.
+            xml_contents = infile.read().encode().decode("utf-8-sig")
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
@@ -135,7 +139,7 @@ class DOIInputUtil:
             try:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
             except Exception as err:
-                raise InputFormatException("Could not parse the provided xml file as a PDS4 label.\n" f"Reason: {err}")
+                raise InputFormatException(f"Could not parse the provided xml file as a PDS4 label.\nReason: {err}")
         # Otherwise, assume OSTI format
         else:
             logger.info("Parsing xml file %s as an OSTI label", basename(xml_path))
@@ -146,10 +150,125 @@ class DOIInputUtil:
                 dois, _ = DOIOstiXmlWebParser.parse_dois_from_label(xml_contents)
             except XMLSchemaValidationError as err:
                 raise InputFormatException(
-                    "Could not parse the provided xml file as an OSTI label.\n" f"Reason: {err.reason}"
+                    f"Could not parse the provided xml file as an OSTI label.\nReason: {err.reason}"
                 )
 
         return dois
+
+    def _validate_spreadsheet(self, pd_sheet):
+        """
+        Validates a spreadsheet (XLS or CSV) parsed to a pandas DataFrame to
+        ensure the columns are defined as expected.
+
+        Parameters
+        ----------
+        pd_sheet : pandas.DataFrame
+            The spreadsheet to validate.
+
+        Returns
+        -------
+        pd_sheet : pandas.DataFrame
+            The validated spreadsheet with column names standardized as expected
+            by the parser.
+
+        Raises
+        ------
+        InputFormatException
+            If the provided spreadsheet's columns are invalid in some way
+            (missing columns, incorrect column names, etc.).
+
+        """
+        # Save the column names before we modify them, for error reporting
+        orig_columns = list(pd_sheet.columns)
+
+        # Trim leading/trailing whitespace from column names
+        pd_sheet = pd_sheet.rename(columns=lambda column: column.strip())
+
+        # Standardize column names on lowercase
+        pd_sheet = pd_sheet.rename(columns=lambda column: column.lower())
+
+        # Rename columns in a simpler way
+        pd_sheet = pd_sheet.rename(
+            columns={
+                "publication_date (yyyy-mm-dd)": "publication_date",
+                "product_type_specific\n(pds4 bundle | pds4 collection | pds4 document)": "product_type_specific",
+                "related_resource\nlidvid": "related_resource",
+            }
+        )
+
+        num_cols = len(pd_sheet.columns)
+        num_rows = len(pd_sheet.index)
+
+        logger.debug("num_cols: %d", num_cols)
+        logger.debug("num_rows: %d", num_rows)
+        logger.debug("data columns: %s", str(list(pd_sheet.columns)))
+
+        if num_cols < self.EXPECTED_NUM_COLUMNS:
+            msg = (
+                f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
+                f"provided spreadsheet file, but only found {num_cols} column(s).\n"
+                f"Please ensure the all of the following columns are defined before "
+                f"resubmitting: {self.MANDATORY_COLUMNS}."
+            )
+
+            logger.error(msg)
+            raise InputFormatException(msg)
+
+        if not all(column_name in pd_sheet.columns for column_name in self.MANDATORY_COLUMNS):
+            msg = (
+                f"Expected the following columns to be defined in the provided "
+                f"spreadsheet: {self.MANDATORY_COLUMNS}\n"
+                f"Received the following columns: {orig_columns}\n"
+                f"Please assign the correct column names before resubmitting."
+            )
+            logger.error(msg)
+            raise InputFormatException(msg)
+
+        return pd_sheet
+
+    def _validate_spreadsheet_row(self, row):
+        """
+        Validates a single spreadsheet row to ensure there is a valid value
+        provided for each column.
+
+        Parameters
+        ----------
+        row : pandas.Series
+            The spreadsheet row to validate.
+
+        Returns
+        -------
+        row : pandas.Series
+            The validated row.
+
+        Raises
+        ------
+        InputFormatException
+            If the row is invalid in any way (missing/improper values, etc.).
+
+        """
+        logger.debug(f"Validating row {list(row.values)}")
+
+        # Make sure theres a value defined for each expected column
+        for column_name in self.MANDATORY_COLUMNS:
+            if not row[column_name]:
+                raise InputFormatException(f"No value provided for {column_name} column")
+
+        # Make sure the status conforms to our enumeration
+        if not row["status"].lower() in DoiStatus.__members__.values():
+            raise InputFormatException(
+                f"Status value {row.status} is invalid.\nValue must be one of: "
+                f"{list(enum.value for enum in DoiStatus)} (case-insensitive)."
+            )
+
+        # Make sure we got a valid publication date
+        if not isinstance(row["publication_date"], (datetime, pd.Timestamp)):
+            try:
+                row["publication_date"] = datetime.strptime(row["publication_date"], "%Y-%m-%d")
+            except (TypeError, ValueError):
+                raise InputFormatException("Incorrect publication_date format, should be YYYY-MM-DD")
+
+        return row
 
     def parse_xls_file(self, xls_path):
         """
@@ -179,66 +298,50 @@ class DOIInputUtil:
 
         # We only want the first sheet.
         actual_sheet_name = xl_wb.sheet_names[0]
+
         xl_sheet = pd.read_excel(
             xls_path,
             actual_sheet_name,
-            # Parse 3rd column (1-indexed) as a pd.Timestamp, can't use
-            # name of column since it hasn't been standardized yet
-            parse_dates=[3],
             # Remove automatic replacement of empty columns with NaN
             na_filter=False,
         )
 
-        num_cols = len(xl_sheet.columns)
-        num_rows = len(xl_sheet.index)
-
-        logger.debug("num_cols: %d", num_cols)
-        logger.debug("num_rows: %d", num_rows)
-        logger.debug("data columns: %s", str(list(xl_sheet.columns)))
-
-        # rename columns in a simpler way
-        xl_sheet = xl_sheet.rename(
-            columns={
-                "publication_date (yyyy-mm-dd)": "publication_date",
-                "product_type_specific\n(PDS4 Bundle | PDS4 Collection | PDS4 Document)": "product_type_specific",
-                "related_resource\nLIDVID": "related_resource",
-            }
-        )
-
-        if num_cols < self.EXPECTED_NUM_COLUMNS:
-            msg = (
-                f"Expected {self.EXPECTED_NUM_COLUMNS} columns in the "
-                f"provided XLS file, but only found {num_cols} column(s)."
-            )
-
-            logger.error(msg)
-            raise InputFormatException(msg)
+        xl_sheet = self._validate_spreadsheet(xl_sheet)
 
         dois = self._parse_rows_to_dois(xl_sheet)
 
         return dois
 
-    def _parse_rows_to_dois(self, xl_sheet):
+    def _parse_rows_to_dois(self, pd_sheet):
         """
-        Given an in-memory Excel spreadsheet, parse each row and return a list
+        Given an in-memory spreadsheet, parse each row and return a list
         of DOI objects.
 
         Parameters
         ----------
-        xl_sheet : pandas.DataFrame
+        pd_sheet : pandas.DataFrame
             The in-memory spreadsheet to parse.
 
         Returns
         -------
         dois : list of Doi
-            The DOI objects parsed from the Excel spreadsheet.
+            The DOI objects parsed from the spreadsheet.
 
         """
         dois = []
+        errors = []
         timestamp = datetime.now()
 
-        for index, row in xl_sheet.iterrows():
-            logger.debug(f"row {row}")
+        for index, row in pd_sheet.iterrows():
+            try:
+                row = self._validate_spreadsheet_row(row)
+            except InputFormatException as err:
+                errors.append(
+                    f"Failed to parse row {index + 1} of the provided spreadsheet.\n"
+                    f"Reason: {str(err)}\n"
+                    f"Row: {list(row.values)}\n"
+                )
+                continue
 
             doi = Doi(
                 status=DoiStatus(row["status"].lower()),
@@ -254,6 +357,9 @@ class DOIInputUtil:
 
             logger.debug("Parsed Doi: %r", doi.__dict__)
             dois.append(doi)
+
+        if errors:
+            raise InputFormatException("\n" + "\n".join(errors))
 
         return dois
 
@@ -282,7 +388,7 @@ class DOIInputUtil:
             logger.debug("Parsed %s from %s", product_type, product_type_specific)
         except ValueError:
             product_type = ProductType.Collection
-            logger.debug("Could not parsed product type from %s, defaulting to %s", product_type_specific, product_type)
+            logger.debug("Could not parse product type from %s, defaulting to %s", product_type_specific, product_type)
 
         return product_type
 
@@ -313,28 +419,11 @@ class DOIInputUtil:
         # Read the CSV file into memory
         csv_sheet = pd.read_csv(
             csv_path,
-            # Have pandas auto-parse publication_date column as a datetime
-            parse_dates=["publication_date"],
             # Remove automatic replacement of empty columns with NaN
             na_filter=False,
         )
 
-        num_cols = len(csv_sheet.columns)
-        num_rows = len(csv_sheet.index)
-
-        logger.debug("csv_sheet.head(): %s", str(csv_sheet.head()))
-        logger.debug("num_cols: %d", num_cols)
-        logger.debug("num_rows: %d", num_rows)
-        logger.debug("data columns: %s", str(list(csv_sheet.columns)))
-
-        if num_cols < self.EXPECTED_NUM_COLUMNS:
-            msg = (
-                f"Expecting {self.EXPECTED_NUM_COLUMNS} columns in the provided "
-                f"CSV file, but only found {num_cols} column(s)."
-            )
-
-            logger.error(msg)
-            raise InputFormatException(msg)
+        csv_sheet = self._validate_spreadsheet(csv_sheet)
 
         dois = self._parse_rows_to_dois(csv_sheet)
 
@@ -364,7 +453,11 @@ class DOIInputUtil:
 
         # First read the contents of the file
         with open(json_path, "r") as infile:
-            json_contents = infile.read()
+            # It's been observed that input files transferred from Windows-based
+            # machines can append a UTF-8-BOM hex sequence, which breaks
+            # JSON parsing later on. So we perform an encode-decode here to
+            # ensure this sequence is stripped before continuing.
+            json_contents = infile.read().encode().decode("utf-8-sig")
 
         # Validate and parse the provide JSON label based on the service provider
         # configured within the INI. If there's a mismatch, the validation step
@@ -375,9 +468,7 @@ class DOIInputUtil:
 
             dois, _ = web_parser.parse_dois_from_label(json_contents, content_type=CONTENT_TYPE_JSON)
         except InputFormatException as err:
-            logger.warning(
-                "Unable to parse DOI objects from provided " 'json file "%s"\nReason: %s', json_path, str(err)
-            )
+            logger.warning('Unable to parse DOI objects from provided json file "%s"\nReason: %s', json_path, str(err))
 
         return dois
 
@@ -508,7 +599,7 @@ class DOIInputUtil:
             dois = self._read_from_path(input_file)
         else:
             raise InputFormatException(
-                f"Error reading file {input_file}, path does not correspond to " f"a remote URL or a local file path."
+                f"Error reading file {input_file}, path does not correspond to a remote URL or a local file path."
             )
 
         # Make sure we got back at least one Doi

@@ -1,0 +1,46 @@
+﻿[
+    {
+        "status": "reserved",
+        "id": "29569",
+        "title": "InSight Cameras Bundle",
+        "doi": "10.17189/29569",
+        "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
+        "accession_number": "urn:nasa:pds:insight_cameras::1.0",
+        "publisher": "NASA Planetary Data System",
+        "availability": "NASA Planetary Data System",
+        "publication_date": "2019-01-01",
+        "country": "US",
+        "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+        "site_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0",
+        "product_type": "Dataset",
+        "product_type_specific": "PDS4 Refereed Data Bundle",
+        "date_record_added": "2021-04-01",
+        "keywords": "PDS;PDS4;camera;context;data;deployment;edr;engineering;experiment;insight;lander;mars;product;raw;rdr;record;reduced;science",
+        "authors": [],
+        "contributors": [
+            {
+                "last_name": "Beebe",
+                "first_name": "R. F.",
+                "contributor_type": "Editor"
+            },
+            {
+                "last_name": "Lemmon",
+                "first_name": "M.",
+                "contributor_type": "Editor"
+            },
+            {
+                "last_name": "Smith",
+                "first_name": "P. H.",
+                "contributor_type": "Editor"
+            },
+            {
+                "full_name": "Planetary Data System: Engineering Node",
+                "contributor_type": "DataCurator"
+            }
+        ],
+        "contact_name": "PDS Operator",
+        "contact_org": "PDS",
+        "contact_email": "pds-operator@jpl.nasa.gov",
+        "contact_phone": "818.393.7165"
+    }
+]
