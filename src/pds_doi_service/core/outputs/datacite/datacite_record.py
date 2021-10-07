@@ -16,7 +16,6 @@ from os.path import exists
 
 import jinja2
 from pds_doi_service.core.entities.doi import Doi
-from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.util.config_parser import DOIConfigUtil

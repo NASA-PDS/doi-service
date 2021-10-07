@@ -19,7 +19,6 @@ from urllib.parse import quote
 from urllib.parse import unquote
 from urllib.parse import urlparse
 
-from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 PDS3_URL_TEMPLATE = "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid={identifier}"

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import unittest
 
 from pds_doi_service.core.entities.doi import ProductType
@@ -10,6 +9,7 @@ from pds_doi_service.core.util.general_util import parse_identifier_from_site_ur
 
 class GeneralUtilTest(unittest.TestCase):
     """Unit tests for functions defined in the util/general_util.py module"""
+
     def test_parse_identifier_from_site_url(self):
         """Tests for general_util.parse_identifier_from_site_url()"""
         # Test with PDS4-style URL with both LID and VID
@@ -74,7 +74,8 @@ class GeneralUtilTest(unittest.TestCase):
         site_url = create_landing_page_url(identifier, product_type)
 
         self.assertEqual(
-            site_url, "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0"
+            site_url,
+            "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0",
         )
 
         # Test PDS4 style LID only
@@ -85,7 +86,7 @@ class GeneralUtilTest(unittest.TestCase):
 
         self.assertEqual(
             site_url,
-            "https://pds.nasa.gov/ds-view/pds/viewCollection.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras"
+            "https://pds.nasa.gov/ds-view/pds/viewCollection.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras",
         )
 
         # Test PDS3 style ID
@@ -95,8 +96,7 @@ class GeneralUtilTest(unittest.TestCase):
         site_url = create_landing_page_url(identifier, product_type)
 
         self.assertEqual(
-            site_url,
-            "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid=LRO-L-MRFLRO-2/3/5-BISTATIC-V1.0"
+            site_url, "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid=LRO-L-MRFLRO-2/3/5-BISTATIC-V1.0"
         )
 
 

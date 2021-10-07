@@ -409,9 +409,11 @@ class DOICoreActionCheck(DOICoreAction):
         All parameters are optional and may be useful for tests.
 
         """
-        logger.warning("This action has been deprecated with the transition "
-                       "from OSTI to DataCite as the DOI service provider.\nThis action "
-                       "may be removed or significantly modified in a future release.")
+        logger.warning(
+            "This action has been deprecated with the transition "
+            "from OSTI to DataCite as the DOI service provider.\nThis action "
+            "may be removed or significantly modified in a future release."
+        )
 
         self.parse_arguments(kwargs)
 

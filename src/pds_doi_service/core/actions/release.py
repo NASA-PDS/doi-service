@@ -84,9 +84,9 @@ class DOICoreActionRelease(DOICoreAction):
             "--input",
             required=True,
             help="Path to a file containing the record to release. The format may be "
-                 "either a PDS4 label, or a DataCite JSON label. "
-                 "DataCite JSON labels are produced by the Reserve and "
-                 "Draft actions, and can be retrieved for a DOI with the List action.",
+            "either a PDS4 label, or a DataCite JSON label. "
+            "DataCite JSON labels are produced by the Reserve and "
+            "Draft actions, and can be retrieved for a DOI with the List action.",
         )
         action_parser.add_argument(
             "-s",
