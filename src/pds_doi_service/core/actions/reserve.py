@@ -28,9 +28,6 @@ from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -254,21 +251,9 @@ class DOICoreActionReserve(DOICoreAction):
                 io_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
                 # Submit the Reserve request if this isn't a dry run
-                # Note that for both OSTI and DataCite, reserve requests should
-                # utilize the POST method
                 if not self._dry_run:
-                    service_type = DOIServiceFactory.get_service_type()
-
-                    # If a DOI has already been assigned by DataCite,
-                    # we need to use a PUT request on the URL associated to the DOI
-                    if service_type == SERVICE_TYPE_DATACITE and doi.doi:
-                        method = WEB_METHOD_PUT
-                        url = "{url}/{doi}".format(url=self._config.get("DATACITE", "url"), doi=doi.doi)
-                    # Otherwise, for both DataCite and OSTI, just a POST request
-                    # on the default endpoint is sufficient
-                    else:
-                        method = WEB_METHOD_POST
-                        url = self._config.get(service_type.upper(), "url")
+                    # Determine the correct HTTP verb and URL for submission of this DOI
+                    method, url = self._web_client.endpoint_for_doi(doi)
 
                     doi, o_doi_label = self._web_client.submit_content(
                         method=method, url=url, payload=io_doi_label, content_type=CONTENT_TYPE_JSON

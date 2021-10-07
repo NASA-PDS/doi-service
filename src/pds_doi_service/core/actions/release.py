@@ -28,9 +28,6 @@ from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -255,19 +252,8 @@ class DOICoreActionRelease(DOICoreAction):
                 # If the next step is to release, submit to the service provider and
                 # use the response label for the local transaction database entry
                 if self._no_review:
-                    service_type = DOIServiceFactory.get_service_type()
-
-                    # For OSTI, all submissions use the POST method
-                    # for DataCite, releasing a reserved DOI requires the PUT method
-                    method = WEB_METHOD_PUT if service_type == SERVICE_TYPE_DATACITE else WEB_METHOD_POST
-
-                    # For DataCite, need to append the assigned DOI to the url
-                    # for the PUT request. For OSTI, can just default to the
-                    # url within the INI.
-                    if service_type == SERVICE_TYPE_DATACITE:
-                        url = "{url}/{doi}".format(url=self._config.get("DATACITE", "url"), doi=doi.doi)
-                    else:
-                        url = self._config.get("OSTI", "url")
+                    # Determine the correct HTTP verb and URL for submission of this DOI
+                    method, url = self._web_client.endpoint_for_doi(doi)
 
                     doi, o_doi_label = self._web_client.submit_content(
                         url=url, method=method, payload=io_doi_label, content_type=CONTENT_TYPE_JSON

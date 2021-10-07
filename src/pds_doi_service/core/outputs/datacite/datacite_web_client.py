@@ -21,6 +21,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import DOIWebClient
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_GET
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.general_util import get_logger
 from requests.auth import HTTPBasicAuth
 
@@ -200,3 +201,36 @@ class DOIDataCiteWebClient(DOIWebClient):
         # Re-add the data key to the result returned so it meets the format
         # expected by the DataCite parser
         return json.dumps({"data": data})
+
+    def endpoint_for_doi(self, doi):
+        """
+        Returns the proper HTTP verb and URL that form a request endpoint for
+        the provided DOI object.
+
+        Parameters
+        ----------
+        doi : Doi
+            The DOI object to determine the endpoint for.
+
+        Returns
+        -------
+        method : str
+            The HTTP verb to use for the request.
+        url: str
+            The URL to use for the request.
+
+        """
+        config = self._config_util.get_config()
+
+        # If a DOI has been assigned already, we need to use the PUT verb and
+        # include the DOI in the URL to signify an update request
+        if doi.doi:
+            method = WEB_METHOD_PUT
+            url = "{url}/{doi}".format(url=config.get("DATACITE", "url"), doi=doi.doi)
+        # Otherwise, we're requesting a new DOI, so the POST verb is used with
+        # the default DataCite API url
+        else:
+            method = WEB_METHOD_POST
+            url = config.get("DATACITE", "url")
+
+        return method, url

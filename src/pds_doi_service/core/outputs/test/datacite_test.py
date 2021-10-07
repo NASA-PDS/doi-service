@@ -16,6 +16,9 @@ from pds_doi_service.core.outputs.datacite import DOIDataCiteRecord
 from pds_doi_service.core.outputs.datacite import DOIDataCiteValidator
 from pds_doi_service.core.outputs.datacite import DOIDataCiteWebClient
 from pds_doi_service.core.outputs.datacite import DOIDataCiteWebParser
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pkg_resources import resource_filename
 from requests.models import Response
 
@@ -149,6 +152,36 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
         self.assertIsInstance(response_json["data"], list)
         self.assertEqual(len(response_json["data"]), 5)
         self.assertListEqual(response_json["data"], expected_data)
+
+    def test_endpoint_for_doi(self):
+        """Test the datacite_web_client.endpoint_for_doi method"""
+        config = DOIConfigUtil.get_config()
+
+        expected_url = config.get("DATACITE", "url")
+        expected_prefix = config.get("DATACITE", "doi_prefix")
+        expected_suffix = '123abc'
+
+        # Correct endpoint method and url are dependent on whether an outgoing
+        # request has a DOI associated or not, so test with both cases
+        test_doi = Doi(title='doi_title',
+                       publication_date=datetime.now(),
+                       product_type=ProductType.Collection,
+                       product_type_specific="Test collection",
+                       related_identifier='urn:nasa:pds:test-collection::1.0')
+
+        # Test with no DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi)
+
+        self.assertEqual(method, WEB_METHOD_POST)
+        self.assertEqual(url, expected_url)
+
+        # Test with DOI assigned
+        test_doi.doi = f'{expected_prefix}/{expected_suffix}'
+
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi)
+
+        self.assertEqual(method, WEB_METHOD_PUT)
+        self.assertEqual(url, f'{expected_url}/{expected_prefix}/{expected_suffix}')
 
 
 class DOIDataCiteWebParserTestCase(unittest.TestCase):
