@@ -40,7 +40,7 @@ class DOICoreActionReserve(DOICoreAction):
     _name = "reserve"
     _description = (
         "Submit a request to reserve a DOI prior to public release. "
-        "Reserved DOI's may be released after via the release action."
+        "Reserved DOI's may be released after via the release action"
     )
     _order = 0
     _run_arguments = ("input", "node", "submitter", "dry_run", "force")
@@ -63,15 +63,16 @@ class DOICoreActionReserve(DOICoreAction):
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
             cls._name,
-            description="Create a DOI for one or more unpublished datasets. "
-            "The input is a spreadsheet or CSV file "
-            "containing records to reserve DOIs for.",
+            description="Reserve DOI's for one or more unpublished datasets. "
+            "DOI's will be assigned by the provider, but will not be "
+            "publicly findable. To create findable records, utilize "
+            "the Release action with the labels returned by this action.",
         )
         action_parser.add_argument(
             "-n",
             "--node",
             required=True,
-            metavar='"img"',
+            metavar="NODE_ID",
             help="The PDS Discipline Node in charge of the submission of the DOI. "
             "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
         )
@@ -81,7 +82,7 @@ class DOICoreActionReserve(DOICoreAction):
             required=False,
             action="store_true",
             help="If provided, forces the reserve action to proceed even if "
-            "warnings are encountered during submission of the reserve "
+            "warnings are encountered during submission of the Reserve "
             "request. Without this flag, any warnings encountered are "
             "treated as fatal exceptions.",
         )
@@ -89,15 +90,14 @@ class DOICoreActionReserve(DOICoreAction):
             "-i",
             "--input",
             required=True,
-            metavar="input/DOI_Reserved_GEO_200318.csv",
-            help="A PDS4 XML label, OSTI XML/JSON label or XLS/CSV "
+            help="Path to a PDS4 XML label, DataCite JSON label or XLS/CSV "
             "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
             required=True,
-            metavar='"my.email@node.gov"',
+            metavar="EMAIL",
             help="The email address to associate with the Reserve request.",
         )
         action_parser.add_argument(

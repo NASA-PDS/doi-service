@@ -39,7 +39,10 @@ logger = get_logger(__name__)
 
 class DOICoreActionDraft(DOICoreAction):
     _name = "draft"
-    _description = "Prepare a draft DOI record created from PDS4 labels."
+    _description = (
+        "Update a record without submission to the service provider. Metadata "
+        "updates are pulled from the provided PDS4/DOI label."
+    )
     _order = 10
     _run_arguments = ("input", "node", "submitter", "lidvid", "force", "keywords")
 
@@ -66,7 +69,7 @@ class DOICoreActionDraft(DOICoreAction):
     @classmethod
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
-            cls._name, description="Create a draft DOI record from existing PDS4 or DOI " "labels."
+            cls._name, description="Create a draft DOI record from existing PDS4 or DOI labels."
         )
 
         node_values = NodeUtil.get_permissible_values()
@@ -74,8 +77,8 @@ class DOICoreActionDraft(DOICoreAction):
             "-i",
             "--input",
             required=False,
-            metavar="input/bundle_in_with_contributors.xml",
-            help="An input PDS4/DOI label. May be a local path or an HTTP address "
+            metavar="INPUT[,INPUT]...",
+            help="Path to an input PDS4/DOI label. May be a local path or an HTTP address "
             "resolving to a label file. Multiple inputs may be provided "
             "via comma-delimited list. Must be provided if --lidvid is not "
             "specified.",
@@ -84,21 +87,20 @@ class DOICoreActionDraft(DOICoreAction):
             "-n",
             "--node",
             required=True,
-            metavar='"img"',
-            help="The PDS Discipline Node in charge of the DOI. Authorized " "values are: " + ",".join(node_values),
+            metavar="NODE_ID",
+            help="The PDS Discipline Node in charge of the DOI. Authorized values are: " + ",".join(node_values),
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
             required=True,
-            metavar='"my.email@node.gov"',
+            metavar="EMAIL",
             help="The email address to associate with the Draft record.",
         )
         action_parser.add_argument(
             "-l",
             "--lidvid",
             required=False,
-            metavar="urn:nasa:pds:lab_shocked_feldspars::1.0",
             help="A LIDVID for an existing DOI record to move back to draft "
             "status. Must be provided if --input is not specified.",
         )
@@ -116,7 +118,7 @@ class DOICoreActionDraft(DOICoreAction):
             "-k",
             "--keywords",
             required=False,
-            metavar='"Image"',
+            metavar="KEYWORD[,KEYWORD]...",
             default="",
             help="Extra keywords to associate with the Draft record. Multiple "
             'keywords must be separated by ",". Ignored when used with the '
@@ -316,7 +318,7 @@ class DOICoreActionDraft(DOICoreAction):
             # Make sure were returning a valid label
             self._validator_service.validate(o_doi_label)
         else:
-            logger.warning("No DOI objects could be parsed from the provided " "list of inputs: %s", list_of_inputs)
+            logger.warning("No DOI objects could be parsed from the provided list of inputs: %s", list_of_inputs)
             o_doi_label = ""
 
         return o_doi_label
@@ -414,7 +416,7 @@ class DOICoreActionDraft(DOICoreAction):
 
         # Make sure we've been given something to work with
         if self._input is None and self._lidvid is None:
-            raise ValueError("A value must be provided for either --input or " "--lidvid when using the Draft action.")
+            raise ValueError("A value must be provided for either --input or --lidvid when using the Draft action.")
 
         if self._lidvid:
             return self._set_lidvid_to_draft(self._lidvid)

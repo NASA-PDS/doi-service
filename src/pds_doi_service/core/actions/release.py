@@ -38,7 +38,7 @@ logger = get_logger(__name__)
 
 class DOICoreActionRelease(DOICoreAction):
     _name = "release"
-    _description = "Move a reserved DOI to review, or submit a DOI for " "release to the service provider."
+    _description = "Move a reserved DOI to review, or submit a DOI for release to the service provider"
     _order = 20
     _run_arguments = ("input", "node", "submitter", "force", "no_review")
 
@@ -61,14 +61,13 @@ class DOICoreActionRelease(DOICoreAction):
         action_parser = subparsers.add_parser(
             cls._name,
             description="Release a DOI, in draft or reserve status, for review. "
-            "A DOI may also be released to the DOI service provider "
-            "directly.",
+            "A DOI may also be released to the DOI service provider directly.",
         )
         action_parser.add_argument(
             "-n",
             "--node",
             required=True,
-            metavar='"img"',
+            metavar="NODE_ID",
             help="The PDS Discipline Node in charge of the released DOI. "
             "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
         )
@@ -86,17 +85,16 @@ class DOICoreActionRelease(DOICoreAction):
             "-i",
             "--input",
             required=True,
-            metavar="input/DOI_Update_GEO_200318.xml",
-            help="A file containing a list of DOI metadata to update/release "
-            "in OSTI JSON/XML format (see https://www.osti.gov/iad2/docs#record-model)."
-            "The input is produced by the Reserve and Draft actions, and "
-            "can be retrieved for a DOI with the List action.",
+            help="Path to a file containing the record to release. The format may be "
+                 "either a PDS4 label, or a DataCite JSON label. "
+                 "DataCite JSON labels are produced by the Reserve and "
+                 "Draft actions, and can be retrieved for a DOI with the List action.",
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
             required=True,
-            metavar='"my.email@node.gov"',
+            metavar="EMAIL",
             help="The email address to associate with the Release request.",
         )
         action_parser.add_argument(
