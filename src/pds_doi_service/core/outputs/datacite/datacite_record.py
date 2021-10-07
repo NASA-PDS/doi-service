@@ -89,11 +89,6 @@ class DOIDataCiteRecord(DOIRecord):
             if not doi.doi:
                 doi_fields["prefix"] = self._config.get("DATACITE", "doi_prefix")
 
-            # 'Bundle' is not supported as a product type in DataCite, so
-            # promote to 'Collection'
-            if doi.product_type == ProductType.Bundle:
-                doi_fields["product_type"] = ProductType.Collection
-
             # Sort keywords so we can output them in the same order each time
             doi_fields["keywords"] = sorted(map(sanitize_json_string, doi.keywords))
 

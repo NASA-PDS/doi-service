@@ -220,8 +220,11 @@ class DOIPDS4LabelUtil:
             product_class_suffix = product_class.split("_")[1]
 
             if product_class == "Product_Document":
-                product_specific_type = "technical documentation"
-                product_type = ProductType.Text
+                product_specific_type = "Technical Documentation"
+                product_type = ProductType.Document
+            elif product_class == "Product_Bundle":
+                product_specific_type = "PDS4 Refereed Data Bundle"
+                product_type = ProductType.Bundle
             else:
                 product_specific_type = "PDS4 Refereed Data " + product_class_suffix
                 product_type = ProductType.Dataset

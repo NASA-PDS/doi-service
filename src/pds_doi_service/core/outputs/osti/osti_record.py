@@ -96,10 +96,6 @@ class DOIOstiRecord(DOIRecord):
             if doi.site_url:
                 doi_fields["site_url"] = html.escape(doi.site_url)
 
-            # The OSTI IAD schema does not support 'Bundle' as a product type, so convert to collection here
-            if doi.product_type == ProductType.Bundle:
-                doi_fields["product_type"] = ProductType.Collection
-
             # Convert set of keywords back to a semi-colon delimited string
             if doi.keywords:
                 doi_fields["keywords"] = ";".join(sorted(map(sanitize_json_string, doi.keywords)))
