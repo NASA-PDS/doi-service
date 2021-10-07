@@ -28,6 +28,7 @@ from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -148,6 +149,11 @@ class DOICoreActionReserve(DOICoreAction):
 
             # Add 'status' field so the ranking in the workflow can be determined
             doi.status = DoiStatus.Reserved_not_submitted if self._dry_run else DoiStatus.Reserved
+
+            # If a site url was not created for the DOI at parse time, try
+            # to create one now
+            if not doi.site_url:
+                doi.site_url = create_landing_page_url(doi.related_identifier, doi.product_type)
 
             if not self._dry_run:
                 # Add the event field to instruct DataCite to make this entry

@@ -13,12 +13,20 @@ General utility functions for things like logging.
 """
 import logging
 import re
+from html import escape
 from html import unescape
 from urllib.parse import quote
 from urllib.parse import unquote
 from urllib.parse import urlparse
 
+from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+
+PDS3_URL_TEMPLATE = "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid={identifier}"
+"""The landing page URL template for PDS3 datasets"""
+
+PDS4_URL_TEMPLATE = "https://pds.nasa.gov/ds-view/pds/view{product_type}.jsp?{identifier_query}{amp}{version_query}"
+"""The landing page URL template for PDS4 datasets"""
 
 
 def get_logger(module_name=None):
@@ -125,6 +133,79 @@ def parse_identifier_from_site_url(site_url):
             )
 
     return identifier
+
+
+def is_psd4_identifier(identifier):
+    """
+    Determines if the provided identifier corresponds to the PDS4 LIDVID format
+    or not.
+
+    Parameters
+    ----------
+    identifier : str
+        The identifier to check.
+
+    Returns
+    -------
+    True if the identifier is a valid PDS4 identifier, False otherwise.
+
+    """
+    # TODO: could this be more sophisticated? for example, checking for urn:nasa:pds?
+    if identifier.startswith("urn:"):
+        return True
+
+    return False
+
+
+def create_landing_page_url(identifier, product_type):
+    """
+    Creates the appropriate landing page URL for the provided identifier and
+    product type.
+
+    Parameters
+    ----------
+    identifier : str
+        The identifier to create the URL for. Both PDS3 and PDS4 identifiers are
+        supported.
+    product_type : ProductType
+        The product type to create the URL for.
+
+    Returns
+    -------
+    site_url : str
+        The landing page URL.
+
+    """
+    if is_psd4_identifier(identifier):
+        logger.debug('Creating URL for PDS4 identifier "%s"', identifier)
+
+        template = PDS4_URL_TEMPLATE
+
+        lidvid_tokens = identifier.split("::")
+        lid = lidvid_tokens[0]
+
+        if len(lidvid_tokens) > 1:
+            vid = lidvid_tokens[-1]
+            site_url = template.format(
+                product_type=product_type.value,
+                identifier_query=f"identifier={quote(lid)}",
+                amp="&",
+                version_query=f"version={quote(vid)}",
+            )
+        else:
+            site_url = template.format(
+                product_type=product_type.value, identifier_query=f"identifier={quote(lid)}", amp="", version_query=""
+            )
+    else:
+        logger.debug('Creating URL for PDS3 identifier "%s"', identifier)
+
+        template = PDS3_URL_TEMPLATE
+        site_url = template.format(identifier=quote(identifier))
+
+    site_url = escape(site_url)
+    logger.debug('Created URL "%s"', site_url)
+
+    return site_url
 
 
 def sanitize_json_string(string):

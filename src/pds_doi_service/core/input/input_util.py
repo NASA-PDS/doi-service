@@ -31,6 +31,7 @@ from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParse
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 from xmlschema import XMLSchemaValidationError  # type: ignore
 
@@ -79,7 +80,7 @@ class DOIInputUtil:
 
         """
         self._config = DOIConfigUtil().get_config()
-        self._label_util = DOIPDS4LabelUtil(landing_page_template=self._config.get("LANDING_PAGES", "url"))
+        self._label_util = DOIPDS4LabelUtil()
         self._valid_extensions = valid_extensions or self.DEFAULT_VALID_EXTENSIONS
 
         if not isinstance(self._valid_extensions, (list, tuple, set)):
@@ -343,14 +344,20 @@ class DOIInputUtil:
                 )
                 continue
 
+            product_type = self._parse_product_type(row["product_type_specific"])
+            identifier = row["related_resource"]
+
+            site_url = create_landing_page_url(identifier, product_type)
+
             doi = Doi(
                 status=DoiStatus(row["status"].lower()),
                 title=row["title"],
                 publication_date=row["publication_date"],
-                product_type=self._parse_product_type(row["product_type_specific"]),
+                product_type=product_type,
                 product_type_specific=row["product_type_specific"],
-                related_identifier=row["related_resource"],
+                related_identifier=identifier,
                 authors=[{"first_name": row["author_first_name"], "last_name": row["author_last_name"]}],
+                site_url=site_url,
                 date_record_added=timestamp,
                 date_record_updated=timestamp,
             )

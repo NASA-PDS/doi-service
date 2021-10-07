@@ -22,13 +22,6 @@ validate_against_schema = True
 url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
 pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
 
-[LANDING_PAGES]
-# template url, arguments are
-# 1) product_class suffix, after _
-# 2) lid
-# 3) vid
-url = https://pds.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}
-
 [OTHER]
 logging_level = DEBUG
 doi_publisher = NASA Planetary Data System
@@ -39,7 +32,7 @@ db_file = doi.db
 db_table = doi
 api_host = 0.0.0.0
 api_port = 8080
-api_valid_referrers = localhost, 0.0.0.0
+api_valid_referrers =
 emailer_local_host = localhost
 emailer_port       = 25
 emailer_sender     = pdsen-doi-test@jpl.nasa.gov
