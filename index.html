@@ -8,12 +8,13 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PDS DOI Service &mdash; pds-doi-service  documentation</title>
+  <title>PDS DOI Service &mdash; PDS DOI Service  documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
 
   
   
@@ -27,10 +28,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -51,7 +52,7 @@
           
 
           
-            <a href="#" class="icon icon-home" alt="Documentation Home"> pds-doi-service
+            <a href="#" class="icon icon-home" alt="Documentation Home"> PDS DOI Service
           
 
           
@@ -85,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">📦 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage/index.html">🏃‍♀️ Usage</a></li>
@@ -106,7 +107,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">pds-doi-service</a>
+          <a href="#">PDS DOI Service</a>
         
       </nav>
 
@@ -158,27 +159,35 @@
             
   <section id="pds-doi-service">
 <h1>PDS DOI Service<a class="headerlink" href="#pds-doi-service" title="Permalink to this headline">¶</a></h1>
-<p>The PDS DOI Service enable management of DOI for PDS with the following operations: reserve, draft, release, deactivate.</p>
-<p>The PDS DOIs are registered through the <a class="reference external" href="https://www.osti.gov/data-services">OSTI</a> infrastructure. OSTI registers PDS DOI on <a class="reference external" href="https://datacite.org">DataCite</a> infrastructure</p>
-<p>Currently, this service can be deployed as a python package ‘pds-doi-service’ and is executed locally through a command line <cite>pds-doi-cmd</cite> or remotely through a web API server.</p>
+<p>The Planetary Data System (<a class="reference external" href="https://pds.nasa.gov/">PDS</a>) Digital Object Identifier (<a class="reference external" href="https://doi.org/">DOI</a>) Service
+enables management of DOIs for PDS with the following operations: list, reserve,
+draft, review, and release.</p>
+<p>The PDS DOIs are registered through the <a class="reference external" href="https://datacite.org">DataCite</a> infrastructure.</p>
+<p>Currently, this service is deployed as a Python package
+<code class="docutils literal notranslate"><span class="pre">pds-doi-service</span></code> and is executed locally through a command line
+<code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span></code> or remotely through the web API server <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code>.</p>
 <div class="toctree-wrapper compound">
-<p><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">📦 Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation/index.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/index.html#doing-the-installation">Doing the Installation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="installation/index.html#install">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/index.html#configure">Configure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/index.html#start-using-the-command-line-tool">Start using the command line tool</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation/index.html#start-the-api-server">Start the API server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/index.html#installation-instructions">Installation Instructions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation/index.html#id1">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/index.html#configuration">Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/index.html#running-the-service-via-command-line-tool">Running the service via command line tool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation/index.html#running-the-service-via-web-api">Running the service via Web API</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="installation/index.html#upgrade-software">Upgrade Software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/index.html#upgrading-the-service">Upgrading the Service</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="usage/index.html">🏃‍♀️ Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="usage/index.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage/index.html#usage-information">Usage Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage/index.html#command-line-usage-information">Command Line Usage Information</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usage/index.html#Positional Arguments">Positional Arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usage/index.html#Sub-commands:">Sub-commands:</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="development/index.html">👩‍💻 Development</a><ul>
@@ -215,7 +224,7 @@
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright 2020, pds engineering node
+        &copy; Copyright 2020–2021 California Institute of Technology
 
     </p>
   </div>
