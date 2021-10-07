@@ -26,6 +26,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import parse_identifier_from_site_url
 
 logger = get_logger(__name__)
 
@@ -234,7 +235,7 @@ class DOIOstiXmlWebParser(DOIOstiWebParser):
         elif record.xpath("site_url"):
             # For some records, the identifier can be parsed from the 'site_url'
             # field as last resort.
-            identifier = DOIWebParser._get_identifier_from_site_url(record.xpath("site_url")[0].text)
+            identifier = parse_identifier_from_site_url(record.xpath("site_url")[0].text)
         else:
             # For now, do not consider it an error if cannot get an identifier.
             logger.warning(
@@ -488,7 +489,7 @@ class DOIOstiJsonWebParser(DOIOstiWebParser):
         elif "report_numbers" in record:
             identifier = record["report_numbers"]
         elif "site_url" in record:
-            identifier = DOIWebParser._get_identifier_from_site_url(record["site_url"])
+            identifier = parse_identifier_from_site_url(record["site_url"])
         else:
             # For now, do not consider it an error if we cannot get an identifier.
             logger.warning(
