@@ -89,17 +89,21 @@ class DOICoreActionList(DOICoreAction):
             "-start",
             "--start-update",
             required=False,
-            metavar="YYYY-MM-DD[THH:mm:ss.ssssss]",
+            metavar="YYYY-MM-DD[THH:mm:ss.ssssss[Z]]",
             help="The start time of the record update to use as a filter with the "
-            "database query. Should conform to a valid isoformat date string.",
+            "database query. Should conform to a valid isoformat date string. By "
+            "default, the local time zone is assumed. To provide a time in UTC, "
+            "append a 'Z' to the time portion of the provided date-time.",
         )
         action_parser.add_argument(
             "-end",
             "--end-update",
             required=False,
-            metavar="YYYY-MM-DD[THH:mm:ss.ssssss]",
+            metavar="YYYY-MM-DD[THH:mm:ss.ssssss[Z]]",
             help="The end time for record update time to use as a filter with the "
-            "database query. Should conform to a valid isoformat date string.",
+            "database query. Should conform to a valid isoformat date string. By "
+            "default, the local time zone is assumed. To provide a time in UTC, "
+            "append a 'Z' to the time portion of the provided date-time.",
         )
         action_parser.add_argument(
             "-s",
