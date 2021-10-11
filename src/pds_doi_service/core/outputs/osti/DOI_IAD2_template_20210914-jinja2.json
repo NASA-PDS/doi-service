@@ -23,7 +23,13 @@
         {% else %}
         "site_url": "N/A",
         {% endif %}
+        {% if doi.product_type.value == "Bundle" %}
+        "product_type": "Collection",
+        {% elif doi.product_type.value == "Document" %}
+        "product_type": "Text",
+        {% else %}
         "product_type": "{{ doi.product_type.value }}",
+        {% endif %}
         "product_type_specific": "{{ doi.product_type_specific }}",
         {% if doi.date_record_added %}
         "date_record_added": "{{ doi.date_record_added }}",

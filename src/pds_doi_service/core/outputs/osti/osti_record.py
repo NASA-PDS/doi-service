@@ -17,7 +17,6 @@ from os.path import exists
 
 import jinja2
 from pds_doi_service.core.entities.doi import Doi
-from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.doi_record import DOIRecord
@@ -95,10 +94,6 @@ class DOIOstiRecord(DOIRecord):
             # Escape any necessary HTML characters from the site-url, which is necessary for XML format labels
             if doi.site_url:
                 doi_fields["site_url"] = html.escape(doi.site_url)
-
-            # The OSTI IAD schema does not support 'Bundle' as a product type, so convert to collection here
-            if doi.product_type == ProductType.Bundle:
-                doi_fields["product_type"] = ProductType.Collection
 
             # Convert set of keywords back to a semi-colon delimited string
             if doi.keywords:

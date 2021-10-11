@@ -103,7 +103,13 @@
                     }
                 ],
                 "types": {
+                    {% if doi.product_type.value == "Bundle" %}
+                    "resourceTypeGeneral": "Collection",
+                    {% elif doi.product_type.value == "Document" %}
+                    "resourceTypeGeneral": "Text",
+                    {% else %}
                     "resourceTypeGeneral": "{{ doi.product_type.value }}",
+                    {% endif %}
                     "resourceType": "{{ doi.product_type_specific }}"
                 },
                 "relatedIdentifiers": [

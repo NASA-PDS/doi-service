@@ -119,6 +119,26 @@ class DOIOstiWebClient(DOIWebClient):
 
         return dois[0], response_text
 
+    def _validate_field_names(self, query_dict):
+        """
+        Validates the provided fields by the user to make sure they match the
+        expected fields by OSTI:
+
+            https://www.osti.gov/iad2test/docs#endpoints-recordlist
+
+        """
+        o_validated_dict = {}
+
+        for key in query_dict:
+            # If the key is valid, save the field and value to return.
+            if key in self.ACCEPTABLE_FIELD_NAMES_LIST:
+                o_validated_dict[key] = query_dict[key]
+            else:
+                logger.error(f"Unexpected field name '{key}' in query_dict")
+                exit(1)
+
+        return o_validated_dict
+
     def query_doi(self, query, url=None, username=None, password=None, content_type=CONTENT_TYPE_XML):
         """
         Queries the status of a DOI from the OSTI server and returns the
@@ -192,22 +212,25 @@ class DOIOstiWebClient(DOIWebClient):
 
         return osti_response.text
 
-    def _validate_field_names(self, query_dict):
+    def endpoint_for_doi(self, doi):
         """
-        Validates the provided fields by the user to make sure they match the
-        expected fields by OSTI:
+        Returns the proper HTTP verb and URL that form a request endpoint for
+        the provided DOI object.
 
-            https://www.osti.gov/iad2test/docs#endpoints-recordlist
+        Parameters
+        ----------
+        doi : Doi
+            The DOI object to determine the endpoint for.
+
+        Returns
+        -------
+        method : str
+            The HTTP verb to use for the request.
+        url: str
+            The URL to use for the request.
 
         """
-        o_validated_dict = {}
+        config = self._config_util.get_config()
 
-        for key in query_dict:
-            # If the key is valid, save the field and value to return.
-            if key in self.ACCEPTABLE_FIELD_NAMES_LIST:
-                o_validated_dict[key] = query_dict[key]
-            else:
-                logger.error(f"Unexpected field name '{key}' in query_dict")
-                exit(1)
-
-        return o_validated_dict
+        # For OSTI, all requests use POST, and no tailoring of the URL is required.
+        return WEB_METHOD_POST, config.get("OSTI", "url")

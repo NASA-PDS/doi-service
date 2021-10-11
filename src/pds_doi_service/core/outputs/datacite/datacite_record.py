@@ -16,7 +16,6 @@ from os.path import exists
 
 import jinja2
 from pds_doi_service.core.entities.doi import Doi
-from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -88,11 +87,6 @@ class DOIDataCiteRecord(DOIRecord):
             # DataCite wants to know our assigned prefix instead
             if not doi.doi:
                 doi_fields["prefix"] = self._config.get("DATACITE", "doi_prefix")
-
-            # 'Bundle' is not supported as a product type in DataCite, so
-            # promote to 'Collection'
-            if doi.product_type == ProductType.Bundle:
-                doi_fields["product_type"] = ProductType.Collection
 
             # Sort keywords so we can output them in the same order each time
             doi_fields["keywords"] = sorted(map(sanitize_json_string, doi.keywords))

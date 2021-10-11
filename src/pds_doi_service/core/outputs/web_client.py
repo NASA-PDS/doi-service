@@ -72,11 +72,11 @@ class DOIWebClient:
 
         """
         if method not in VALID_WEB_METHODS:
-            raise ValueError("Invalid method requested, must be one of " f'{",".join(VALID_WEB_METHODS)}')
+            raise ValueError(f"Invalid method requested, must be one of {','.join(VALID_WEB_METHODS)}")
 
         if content_type not in self._content_type_map:
             raise ValueError(
-                "Invalid content type requested, must be one of " f'{",".join(list(self._content_type_map.keys()))}'
+                f"Invalid content type requested, must be one of {','.join(list(self._content_type_map.keys()))}"
             )
 
         auth = HTTPBasicAuth(username, password)
@@ -93,7 +93,7 @@ class DOIWebClient:
             details = f"Details: {pprint.pformat(response.text)}" if response.text else ""
 
             raise WebRequestException(
-                f"DOI submission request to {self._service_name} service failed, " f"reason: {str(http_err)}\n{details}"
+                f"DOI submission request to {self._service_name} service failed, reason: {str(http_err)}\n{details}"
             )
 
         return response.text
@@ -142,7 +142,7 @@ class DOIWebClient:
 
         """
         raise NotImplementedError(
-            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for submit_content()"
+            f"Subclasses of {self.__class__.__name__} must provide an implementation for submit_content()"
         )
 
     def query_doi(self, query, url=None, username=None, password=None, content_type=CONTENT_TYPE_XML):
@@ -180,5 +180,27 @@ class DOIWebClient:
 
         """
         raise NotImplementedError(
-            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for query_doi()"
+            f"Subclasses of {self.__class__.__name__} must provide an implementation for query_doi()"
+        )
+
+    def endpoint_for_doi(self, doi):
+        """
+        Returns the proper HTTP verb and URL that form a request endpoint for
+        the provided DOI object.
+
+        Parameters
+        ----------
+        doi : Doi
+            The DOI object to determine the endpoint for.
+
+        Returns
+        -------
+        method : str
+            The HTTP verb to use for the request.
+        url: str
+            The URL to use for the request.
+
+        """
+        raise NotImplementedError(
+            f"Subclasses of {self.__class__.__name__} must provide an implementation for endpoint_for_doi()"
         )

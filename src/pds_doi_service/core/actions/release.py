@@ -28,9 +28,7 @@ from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
-from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
+from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -38,7 +36,7 @@ logger = get_logger(__name__)
 
 class DOICoreActionRelease(DOICoreAction):
     _name = "release"
-    _description = "Move a reserved DOI to review, or submit a DOI for " "release to the service provider."
+    _description = "Move a reserved DOI to review, or submit a DOI for release to the service provider"
     _order = 20
     _run_arguments = ("input", "node", "submitter", "force", "no_review")
 
@@ -61,14 +59,13 @@ class DOICoreActionRelease(DOICoreAction):
         action_parser = subparsers.add_parser(
             cls._name,
             description="Release a DOI, in draft or reserve status, for review. "
-            "A DOI may also be released to the DOI service provider "
-            "directly.",
+            "A DOI may also be released to the DOI service provider directly.",
         )
         action_parser.add_argument(
             "-n",
             "--node",
             required=True,
-            metavar='"img"',
+            metavar="NODE_ID",
             help="The PDS Discipline Node in charge of the released DOI. "
             "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
         )
@@ -86,17 +83,16 @@ class DOICoreActionRelease(DOICoreAction):
             "-i",
             "--input",
             required=True,
-            metavar="input/DOI_Update_GEO_200318.xml",
-            help="A file containing a list of DOI metadata to update/release "
-            "in OSTI JSON/XML format (see https://www.osti.gov/iad2/docs#record-model)."
-            "The input is produced by the Reserve and Draft actions, and "
-            "can be retrieved for a DOI with the List action.",
+            help="Path to a file containing the record to release. The format may be "
+            "either a PDS4 label, or a DataCite JSON label. "
+            "DataCite JSON labels are produced by the Reserve and "
+            "Draft actions, and can be retrieved for a DOI with the List action.",
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
             required=True,
-            metavar='"my.email@node.gov"',
+            metavar="EMAIL",
             help="The email address to associate with the Release request.",
         )
         action_parser.add_argument(
@@ -148,6 +144,11 @@ class DOICoreActionRelease(DOICoreAction):
 
             # Add 'status' field so the ranking in the workflow can be determined.
             doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
+
+            # If a site url was not created for the DOI at parse time, try
+            # to create one now
+            if not doi.site_url:
+                doi.site_url = create_landing_page_url(doi.related_identifier, doi.product_type)
 
             if self._no_review:
                 # Add the event field to instruct DataCite to publish DOI to
@@ -257,19 +258,8 @@ class DOICoreActionRelease(DOICoreAction):
                 # If the next step is to release, submit to the service provider and
                 # use the response label for the local transaction database entry
                 if self._no_review:
-                    service_type = DOIServiceFactory.get_service_type()
-
-                    # For OSTI, all submissions use the POST method
-                    # for DataCite, releasing a reserved DOI requires the PUT method
-                    method = WEB_METHOD_PUT if service_type == SERVICE_TYPE_DATACITE else WEB_METHOD_POST
-
-                    # For DataCite, need to append the assigned DOI to the url
-                    # for the PUT request. For OSTI, can just default to the
-                    # url within the INI.
-                    if service_type == SERVICE_TYPE_DATACITE:
-                        url = "{url}/{doi}".format(url=self._config.get("DATACITE", "url"), doi=doi.doi)
-                    else:
-                        url = self._config.get("OSTI", "url")
+                    # Determine the correct HTTP verb and URL for submission of this DOI
+                    method, url = self._web_client.endpoint_for_doi(doi)
 
                     doi, o_doi_label = self._web_client.submit_content(
                         url=url, method=method, payload=io_doi_label, content_type=CONTENT_TYPE_JSON

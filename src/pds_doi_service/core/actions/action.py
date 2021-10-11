@@ -54,7 +54,7 @@ class DOICoreAction:
 
         """
         parser = argparse.ArgumentParser(
-            description="PDS core command for DOI management. " "The available subcommands are:\n",
+            description="PDS core command for DOI management. The available subcommands are:\n",
             formatter_class=argparse.RawTextHelpFormatter,
         )
 
@@ -90,7 +90,7 @@ class DOICoreAction:
 
         """
         return NotImplementedError(
-            f"Subclasses of {cls.__class__.__name__} must provide an " f"implementation for add_to_subparser()"
+            f"Subclasses of {cls.__class__.__name__} must provide an implementation for add_to_subparser()"
         )
 
     def parse_arguments(self, kwargs):
@@ -134,6 +134,4 @@ class DOICoreAction:
             representation).
 
         """
-        return NotImplementedError(
-            f"Subclasses of {self.__class__.__name__} must provide an " f"implementation for run()"
-        )
+        return NotImplementedError(f"Subclasses of {self.__class__.__name__} must provide an implementation for run()")

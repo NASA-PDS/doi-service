@@ -24,6 +24,7 @@ from pds_doi_service.core.input.exceptions import UnknownIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import parse_identifier_from_site_url
 
 logger = get_logger(__name__)
 
@@ -196,7 +197,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             if not identifier and "url" in record:
                 logger.info("Parsing related identifier from URL")
-                identifier = DOIWebParser._get_identifier_from_site_url(record["url"])
+                identifier = parse_identifier_from_site_url(record["url"])
 
         if identifier is None:
             raise InputFormatException('Failed to parse mandatory field "related_identifier"')

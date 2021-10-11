@@ -32,15 +32,11 @@ class ConfigParserTest(unittest.TestCase):
         # Ensure we get values from the default INI to begin with
         self.assertEqual(parser["OSTI"]["user"], "username")
         self.assertEqual(parser["PDS4_DICTIONARY"]["pds_node_identifier"], "0001_NASA_PDS_1.pds.Node.pds.name")
-        self.assertEqual(
-            parser["LANDING_PAGES"]["url"], "https://pds.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}"
-        )
         self.assertEqual(parser["OTHER"]["db_file"], "doi.db")
 
         # Now provide some environment variables to override with
         os.environ["OSTI_USER"] = "actual_username"
         os.environ["PDS4_DICTIONARY_PDS_NODE_IDENTIFIER"] = "123ABC"
-        os.environ["LANDING_PAGES_URL"] = "https://zombo.com"
         os.environ["OTHER_DB_FILE"] = "/path/to/other/doi.db"
 
         # Our config parser should prioritize the environment variables
@@ -49,12 +45,10 @@ class ConfigParserTest(unittest.TestCase):
             self.assertEqual(
                 parser["PDS4_DICTIONARY"]["pds_node_identifier"], os.environ["PDS4_DICTIONARY_PDS_NODE_IDENTIFIER"]
             )
-            self.assertEqual(parser["LANDING_PAGES"]["url"], os.environ["LANDING_PAGES_URL"])
             self.assertEqual(parser["OTHER"]["db_file"], os.environ["OTHER_DB_FILE"])
         finally:
             os.environ.pop("OSTI_USER")
             os.environ.pop("PDS4_DICTIONARY_PDS_NODE_IDENTIFIER")
-            os.environ.pop("LANDING_PAGES_URL")
             os.environ.pop("OTHER_DB_FILE")
 
 

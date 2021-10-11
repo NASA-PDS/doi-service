@@ -26,7 +26,7 @@ logger = get_logger(__name__)
 
 class DOICoreActionList(DOICoreAction):
     _name = "list"
-    _description = "List DOI entries within the transaction database that match " "the provided search criteria"
+    _description = "List DOI entries within the transaction database that match the provided search criteria"
     _order = 40
     _run_arguments = ("doi", "ids", "node", "status", "start_update", "end_update", "submitter")
 
@@ -46,10 +46,8 @@ class DOICoreActionList(DOICoreAction):
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(
             cls._name,
-            description="Extracts the submitted DOI from the local "
-            "transaction database using the following "
-            "selection criteria. Output is returned in "
-            "JSON format.",
+            description="Extracts the submitted DOI from the local transaction database using "
+            "the following selection criteria. Output is returned in JSON format.",
         )
 
         node_values = NodeUtil.get_permissible_values()
@@ -59,7 +57,7 @@ class DOICoreActionList(DOICoreAction):
             "-n",
             "--node",
             required=False,
-            metavar='"img,eng"',
+            metavar="NODE_ID[,NODE_ID]...",
             help="A list of comma-separated node names to filter the available "
             "DOI entries by. Valid values are: " + ",".join(node_values),
         )
@@ -67,23 +65,22 @@ class DOICoreActionList(DOICoreAction):
             "-status",
             "--status",
             required=False,
-            metavar="draft,review",
+            metavar="STATUS[,STATUS]...",
             help="A list of comma-separated submission status values to filter "
-            "the database query results by. Valid status values are: "
-            "{}".format(", ".join(status_values)),
+            "the database query results by. Valid status values are: {}".format(", ".join(status_values)),
         )
         action_parser.add_argument(
             "-doi",
             "--doi",
             required=False,
-            metavar="10.17189/21734",
-            help="A list of comma-delimited DOI values to use as filters with the " "database query.",
+            metavar="DOI[,DOI]...",
+            help="A list of comma-delimited DOI values to use as filters with the database query.",
         )
         action_parser.add_argument(
             "-i",
             "--ids",
             required=False,
-            metavar="urn:nasa:pds:lab_shocked_feldspars",
+            metavar="ID[,ID]...",
             help="A list of comma-delimited PDS identifiers to use as filters with "
             "the database query. Each ID may contain one or more wildcards "
             "(*) to pattern match against.",
@@ -92,23 +89,27 @@ class DOICoreActionList(DOICoreAction):
             "-start",
             "--start-update",
             required=False,
-            metavar="2020-01-01T19:02:15.000000",
+            metavar="YYYY-MM-DD[THH:mm:ss.ssssss[Z]]",
             help="The start time of the record update to use as a filter with the "
-            "database query. Should conform to a valid isoformat date string.",
+            "database query. Should conform to a valid isoformat date string. By "
+            "default, the local time zone is assumed. To provide a time in UTC, "
+            "append a 'Z' to the time portion of the provided date-time.",
         )
         action_parser.add_argument(
             "-end",
             "--end-update",
             required=False,
-            metavar="2020-12-311T23:59:00.000000",
+            metavar="YYYY-MM-DD[THH:mm:ss.ssssss[Z]]",
             help="The end time for record update time to use as a filter with the "
-            "database query. Should conform to a valid isoformat date string.",
+            "database query. Should conform to a valid isoformat date string. By "
+            "default, the local time zone is assumed. To provide a time in UTC, "
+            "append a 'Z' to the time portion of the provided date-time.",
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
             required=False,
-            metavar='"my.email@node.gov"',
+            metavar="EMAIL",
             help="A list of comma-separated email addresses to use as a filter "
             "with the database query. Only entries containing the one of "
             "the provided addresses as the submitter will be returned.",

@@ -28,35 +28,6 @@ class DOIWebParser:
     """The mandatory Doi field names parsed from labels."""
 
     @staticmethod
-    def _get_identifier_from_site_url(site_url):
-        """
-        For some records, the PDS identifier can be parsed from site_url as a
-        last resort.
-
-        Ex:
-        PDS4: https://...?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&amp;version=1.0
-        PDS3: https://...?dsid=LRO-L-MRFLRO-2%2F3%2F5-BISTATIC-V1.0
-
-        """
-        # TODO: rewrite to utilize urlparse and support PDS3 labels
-        lid_vid_value = None
-
-        site_tokens = site_url.split("identifier=")
-
-        identifier_tokens = site_tokens[1].split(";")
-
-        lid_vid_tokens = identifier_tokens[0].split("&version=")
-
-        if len(lid_vid_tokens) >= 2:
-            lid_value = lid_vid_tokens[0].replace("%3A", ":")
-            vid_value = lid_vid_tokens[1]
-
-            # Finally combine the lid and vid together.
-            lid_vid_value = lid_value + "::" + vid_value
-
-        return lid_vid_value
-
-    @staticmethod
     def parse_dois_from_label(label_text, content_type=CONTENT_TYPE_XML):
         """
         Parses one or more Doi objects from the provided label.

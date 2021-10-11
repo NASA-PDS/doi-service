@@ -57,7 +57,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -81,7 +81,7 @@ class DraftActionTestCase(unittest.TestCase):
             self.assertEqual(len(doi.authors), 4)
             self.assertEqual(len(doi.keywords), 18)
             self.assertEqual(doi.status, DoiStatus.Draft)
-            self.assertEqual(doi.product_type, ProductType.Dataset)
+            self.assertEqual(doi.product_type, ProductType.Collection)
             self.assertIsInstance(doi.publication_date, datetime)
             self.assertIsInstance(doi.date_record_added, datetime)
             self.assertTrue(doi.related_identifier.startswith("urn:nasa:pds:insight_cameras::1"))
@@ -118,7 +118,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -144,7 +144,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 

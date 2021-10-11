@@ -14,11 +14,11 @@ Contains functions and classes for parsing PDS4 XML labels.
 from datetime import datetime
 from enum import Enum
 
-import requests
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer
 
@@ -31,9 +31,12 @@ class BestParserMethod(Enum):
 
 
 class DOIPDS4LabelUtil:
-    def __init__(self, landing_page_template):
-        self._landing_page_template = landing_page_template
+    """
+    Class used for parsing DOI metadata fields from a PDS4 XML label.
 
+    """
+
+    def __init__(self):
         self.xpath_dict = {
             "lid": "/*/pds4:Identification_Area/pds4:logical_identifier",
             "vid": "/*/pds4:Identification_Area/pds4:version_id",
@@ -217,15 +220,14 @@ class DOIPDS4LabelUtil:
             product_class_suffix = product_class.split("_")[1]
 
             if product_class == "Product_Document":
-                product_specific_type = "technical documentation"
-                product_type = ProductType.Text
+                product_specific_type = "Technical Documentation"
+                product_type = ProductType.Document
+            elif product_class == "Product_Bundle":
+                product_specific_type = "PDS4 Refereed Data Bundle"
+                product_type = ProductType.Bundle
             else:
                 product_specific_type = "PDS4 Refereed Data " + product_class_suffix
                 product_type = ProductType.Dataset
-
-            site_url = self._landing_page_template.format(
-                product_class_suffix, requests.utils.quote(pds4_fields["lid"]), requests.utils.quote(pds4_fields["vid"])
-            )
 
             editors = self.get_editor_names(pds4_fields["editors"].split(";")) if "editors" in pds4_fields else None
 
@@ -254,6 +256,8 @@ class DOIPDS4LabelUtil:
 
             if pds4_fields["vid"]:
                 identifier += "::" + pds4_fields["vid"]
+
+            site_url = create_landing_page_url(identifier, product_type)
 
             doi = Doi(
                 status=DoiStatus.Unknown,

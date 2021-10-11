@@ -36,9 +36,8 @@ logger = get_logger(__name__)
 class DOICoreActionCheck(DOICoreAction):
     _name = "check"
     _description = (
-        "Check pending DOI statuses from the service provider and "
-        "update the local database. May be run regularly, for "
-        "example in a crontab."
+        "Check for pending DOI submissions from the service provider and "
+        "update the local database with any changes in status"
     )
     _order = 30
     _run_arguments = ("submitter", "email", "attachment")
@@ -82,7 +81,7 @@ class DOICoreActionCheck(DOICoreAction):
             "--email",
             required=False,
             action="store_true",
-            help="If provided, the check action sends results to the default " "recipients and pending DOI submitters.",
+            help="If provided, the check action sends results to the default recipients and pending DOI submitters.",
         )
         action_parser.add_argument(
             "-a",
@@ -96,8 +95,8 @@ class DOICoreActionCheck(DOICoreAction):
             "-s",
             "--submitter",
             required=False,
-            metavar='"my.email@node.gov"',
-            help="The email address of the user to register as author of the " "check action.",
+            metavar="EMAIL",
+            help="The email address of the user to register as author of the check action.",
         )
 
     def _update_transaction_db(self, pending_record):
@@ -169,7 +168,7 @@ class DOICoreActionCheck(DOICoreAction):
             pending_record.pop("is_latest", None)
         else:
             message = (
-                f"No record for DOI {pending_record['doi']} " f"(Identifier {identifier}) found at the service provider"
+                f"No record for DOI {pending_record['doi']} (Identifier {identifier}) found at the service provider"
             )
             pending_record["message"] = message
             logger.error(message)
@@ -410,6 +409,12 @@ class DOICoreActionCheck(DOICoreAction):
         All parameters are optional and may be useful for tests.
 
         """
+        logger.warning(
+            "This action has been deprecated with the transition "
+            "from OSTI to DataCite as the DOI service provider.\nThis action "
+            "may be removed or significantly modified in a future release."
+        )
+
         self.parse_arguments(kwargs)
 
         # Get the list of latest rows in database with status = 'Pending'.
