@@ -154,6 +154,31 @@ your virtual environment::
 
   pip install --upgrade pds-doi-service
 
+Upgrades to the PDS DOI Service should typically not affect any existing transaction
+database, transaction history, or INI configuration settings. If an instance of
+the PDS DOI API is running, for example in a ``screen`` session, it is recommended that
+it be terminated before performing an upgrade.
+
+.. note::
+
+    An update to an existing virtualenv installation of the PDS DOI Service may fail
+    if the underlying minimum required Python version has changed. If so, a new
+    virtual environment should be created using the required version of Python, after
+    which the latest version of the Service may be installed into it. Consult the
+    installation instructions above on how to create a new virtual environment.
+
+..  note::
+
+    In rare circumstances, an upgrade may invalidate an existing transaction
+    database if the update includes a change to the underlying schema. Any such changes
+    will be clearly identified in the release notes for the version of the service.
+    The ``pds-doi-init`` script may be used in these circumstances to rebuild a fresh
+    transaction database and transaction history based on what is available on DataCite.
+    For this reason, it is recommended that any outstanding draft or review DOI
+    requests are finalized and released before performing an upgrade which invalidates
+    the transaction database. Consult the `usage`_ documentation for more details
+    on running ``pds-doi-init``.
+
 
 .. References:
 .. _usage: ../usage/index.html

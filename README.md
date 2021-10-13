@@ -60,17 +60,10 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
     pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
 
-    [LANDING_PAGES]
-    # template url, arguments are
-    # 1) product_class suffix, after _
-    # 2) lid
-    # 3) vid
-    url = https://pds.nasa.gov/ds-view/pds/view{}.jsp?identifier={}&version={}
-
     [OTHER]
     logging_level = INFO
     doi_publisher = NASA Planetary Data System
-    global_keyword_values = PDS; PDS4;
+    global_keyword_values = PDS,PDS4
     pds_uri = http://pds.nasa.gov/pds4/pds/v1
     transaction_dir = ./transaction_history
     db_file = doi.db
