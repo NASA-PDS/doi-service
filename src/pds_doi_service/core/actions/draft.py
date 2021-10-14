@@ -41,7 +41,7 @@ class DOICoreActionDraft(DOICoreAction):
     _name = "draft"
     _description = (
         "Update a record without submission to the service provider. Metadata "
-        "updates are pulled from the provided PDS4/DOI label."
+        "updates are pulled from the provided PDS4/DOI label"
     )
     _order = 10
     _run_arguments = ("input", "node", "submitter", "lidvid", "force", "keywords")
