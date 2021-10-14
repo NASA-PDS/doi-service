@@ -78,7 +78,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + "1.1",
+            pds_identifier=self.lid + "::" + "1.1",
             status=self.status,
         )
 
@@ -96,7 +96,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
             status=self.status,
@@ -116,7 +116,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             status=self.status,
         )
 
@@ -134,7 +134,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
             status=self.status,
@@ -154,7 +154,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
             status=self.status.lower(),
@@ -174,7 +174,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi + "_new_doi",
             status=self.status,
@@ -194,7 +194,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + "2.0",
+            pds_identifier=self.lid + "::" + "2.0",
             id=self.id,
             doi=self.doi,
             status=self.status,
@@ -215,7 +215,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
             status=DoiStatus.Reserved,
@@ -235,7 +235,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
             status=DoiStatus.Registered,
@@ -243,18 +243,18 @@ class DoiValidatorTest(unittest.TestCase):
 
         self._doi_validator.validate(doi_obj)
 
-    def test_identifier_validation_missing_related_identifier(self):
+    def test_identifier_validation_missing_pds_identifier(self):
         """
-        Test validation of Doi object with missing related identifier.
+        Test validation of Doi object with missing PDS identifier.
         Expecting InvalidRecordException: Doi objects must always specify
-        a related identifier to be valid.
+        a PDS identifier to be valid.
         """
         doi_obj = Doi(
             title=self.title + " different",
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier="",
+            pds_identifier="",
             id=self.id + "123",
             doi=self.doi + "123",
             status=DoiStatus.Reserved_not_submitted,
@@ -272,36 +272,36 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier="",
+            pds_identifier="",
             status=DoiStatus.Reserved_not_submitted,
         )
 
         # Test invalid starting token (must be urn)
-        doi_obj.related_identifier = "url:nasa:pds:lab_shocked_feldspars::1.0"
+        doi_obj.pds_identifier = "url:nasa:pds:lab_shocked_feldspars::1.0"
 
         self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
 
         # Test invalid number of tokens (too few)
-        doi_obj.related_identifier = "url:nasa:pds::1.0"
+        doi_obj.pds_identifier = "url:nasa:pds::1.0"
 
         self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
 
         # Test invalid number of tokens (too many)
-        doi_obj.related_identifier = "url:nasa:pds:lab_shocked_feldspars:collection_1:product_1:dataset_1::1.0"
+        doi_obj.pds_identifier = "url:nasa:pds:lab_shocked_feldspars:collection_1:product_1:dataset_1::1.0"
 
         self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
 
         # Test invalid field tokens (invalid characters)
-        doi_obj.related_identifier = "urn:nasa:_pds:lab_shocked_feldspars"
+        doi_obj.pds_identifier = "urn:nasa:_pds:lab_shocked_feldspars"
 
         self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
 
-        doi_obj.related_identifier = "urn:nasa:pds:lab_$hocked_feldspars"
+        doi_obj.pds_identifier = "urn:nasa:pds:lab_$hocked_feldspars"
 
         self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
 
         # Test invalid VID
-        doi_obj.related_identifier = "urn:nasa:pds:lab_shocked_feldspars::v1.0"
+        doi_obj.pds_identifier = "urn:nasa:pds:lab_shocked_feldspars::v1.0"
 
         self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
 
@@ -316,7 +316,7 @@ class DoiValidatorTest(unittest.TestCase):
             publication_date=self.transaction_date,
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
-            related_identifier=self.lid + "::" + self.vid,
+            pds_identifier=self.lid + "::" + self.vid,
             id="1234",
             doi=self.doi,
             status=DoiStatus.Reserved_not_submitted,

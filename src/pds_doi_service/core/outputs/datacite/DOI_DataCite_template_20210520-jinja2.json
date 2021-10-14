@@ -114,8 +114,8 @@
                 },
                 "relatedIdentifiers": [
                     {
-                        "relatedIdentifier": "{{ doi.related_identifier }}",
-                        "relatedIdentifierType": {% if doi.related_identifier.lower().startswith("urn") %}"URN"{% else %}"Handle"{% endif %},
+                        "relatedIdentifier": "{{ doi.pds_identifier }}",
+                        "relatedIdentifierType": {% if doi.pds_identifier.lower().startswith("urn") %}"URN"{% else %}"Handle"{% endif %},
                         "relationType": "IsIdenticalTo"
                     }
                 ],

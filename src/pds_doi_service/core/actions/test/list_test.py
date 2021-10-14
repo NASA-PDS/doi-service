@@ -56,7 +56,7 @@ class ListActionTestCase(unittest.TestCase):
         self.assertEqual(list_result["status"], doi.status)
         self.assertEqual(list_result["title"], doi.title)
         self.assertEqual(list_result["subtype"], doi.product_type_specific)
-        self.assertEqual(list_result["identifier"], doi.related_identifier)
+        self.assertEqual(list_result["identifier"], doi.pds_identifier)
 
         # Now move the draft to review, use JSON as the format to ensure
         # this test works for both DataCite and OSTI
@@ -91,7 +91,7 @@ class ListActionTestCase(unittest.TestCase):
         self.assertEqual(list_result["status"], doi.status)
         self.assertEqual(list_result["title"], doi.title)
         self.assertEqual(list_result["subtype"], doi.product_type_specific)
-        self.assertEqual(list_result["identifier"], doi.related_identifier)
+        self.assertEqual(list_result["identifier"], doi.pds_identifier)
 
         # Finally, query for draft status again, should get no results back
         list_kwargs = {"status": DoiStatus.Draft}

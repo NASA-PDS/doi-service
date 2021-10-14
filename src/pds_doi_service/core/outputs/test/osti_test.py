@@ -142,7 +142,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.product_type_specific, "PDS4 Refereed Data Bundle")
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertEqual(doi.publisher, "NASA Planetary Data System")
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         # Check that site url HTML was un-escaped as expected
         self.assertIn("&", doi.site_url)
         self.assertNotIn("&amp;", doi.site_url)

@@ -100,7 +100,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
             publication_date=datetime(2019, 1, 1, 0, 0),
             product_type=ProductType.Dataset,
             product_type_specific="PDS4 Refereed Data Bundle",
-            related_identifier="urn:nasa:pds:insight_cameras::1.0",
+            pds_identifier="urn:nasa:pds:insight_cameras::1.0",
             id="yzw2-vz66",
             doi="10.13143/yzw2-vz66",
             publisher="NASA Planetary Data System",
@@ -118,7 +118,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
 
         # Ensure the DOI returned corresponds to the one we provided
         self.assertEqual(test_doi.title, response_doi.title)
-        self.assertEqual(test_doi.related_identifier, response_doi.related_identifier)
+        self.assertEqual(test_doi.pds_identifier, response_doi.pds_identifier)
         self.assertEqual(test_doi.doi, response_doi.doi)
 
         # Check that the status has been updated by the submission request
@@ -168,7 +168,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
             publication_date=datetime.now(),
             product_type=ProductType.Collection,
             product_type_specific="Test collection",
-            related_identifier="urn:nasa:pds:test-collection::1.0",
+            pds_identifier="urn:nasa:pds:test-collection::1.0",
         )
 
         # Test with no DOI assigned
@@ -247,7 +247,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.product_type_specific, "PDS4 Refereed Data Bundle")
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertEqual(doi.publisher, "NASA Planetary Data System")
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         # Check that site url HTML was un-escaped as expected
         self.assertIn("&", doi.site_url)
         self.assertNotIn("&amp;", doi.site_url)

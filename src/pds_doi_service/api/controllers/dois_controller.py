@@ -117,13 +117,13 @@ def _records_from_dois(dois, node=None, submitter=None, doi_label=None):
     for doi in dois:
         # Pull info from transaction database so we can get the most accurate
         # info for the DOI
-        list_kwargs = {"ids": doi.related_identifier}
+        list_kwargs = {"ids": doi.pds_identifier}
         list_result = json.loads(list_action.run(**list_kwargs))[0]
 
         records.append(
             DoiRecord(
                 doi=doi.doi or list_result["doi"],
-                identifier=doi.related_identifier,
+                identifier=doi.pds_identifier,
                 title=doi.title,
                 node=node,
                 submitter=submitter,

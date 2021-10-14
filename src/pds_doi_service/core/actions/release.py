@@ -148,7 +148,7 @@ class DOICoreActionRelease(DOICoreAction):
             # If a site url was not created for the DOI at parse time, try
             # to create one now
             if not doi.site_url:
-                doi.site_url = create_landing_page_url(doi.related_identifier, doi.product_type)
+                doi.site_url = create_landing_page_url(doi.pds_identifier, doi.product_type)
 
             if self._no_review:
                 # Add the event field to instruct DataCite to publish DOI to

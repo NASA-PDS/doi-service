@@ -58,7 +58,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         "publication_date",
         "product_type",
         "product_type_specific",
-        "related_identifier",
+        "pds_identifier",
     ]
 
     @staticmethod
@@ -183,7 +183,7 @@ class DOIDataCiteWebParser(DOIWebParser):
             raise UserWarning('Could not parse optional field "contributor"')
 
     @staticmethod
-    def _parse_related_identifier(record):
+    def _parse_pds_identifier(record):
         identifier = None
 
         try:
@@ -196,11 +196,11 @@ class DOIDataCiteWebParser(DOIWebParser):
                         break
 
             if not identifier and "url" in record:
-                logger.info("Parsing related identifier from URL")
+                logger.info("Parsing PDS identifier from URL")
                 identifier = parse_identifier_from_site_url(record["url"])
 
         if identifier is None:
-            raise InputFormatException('Failed to parse mandatory field "related_identifier"')
+            raise InputFormatException('Failed to parse mandatory field "pds_identifier"')
 
         return identifier.strip()
 
@@ -354,7 +354,7 @@ class DOIDataCiteWebParser(DOIWebParser):
             records = [records]
 
         for record in records:
-            record_id = DOIDataCiteWebParser._parse_related_identifier(record["attributes"])
+            record_id = DOIDataCiteWebParser._parse_pds_identifier(record["attributes"])
 
             if record_id == identifier:
                 # Re-add the data key we stripped off earlier

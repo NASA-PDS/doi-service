@@ -55,7 +55,7 @@ class TransactionBuilder:
             raise ValueError("Invalid content type requested, must be one of " f'{",".join(VALID_CONTENT_TYPES)}')
 
         # Get the latest available entry in the DB for this lidvid, if it exists
-        query_criteria = {"ids": [doi.related_identifier]}
+        query_criteria = {"ids": [doi.pds_identifier]}
         columns, rows = self.m_doi_database.select_latest_rows(query_criteria)
 
         # Get the latest transaction record for this LIDVID so we can carry

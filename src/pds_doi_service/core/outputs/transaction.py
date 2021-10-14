@@ -59,7 +59,7 @@ class Transaction:
         doi_fields = self._doi.__dict__
 
         self._transaction_db.write_doi_info_to_database(
-            identifier=doi_fields["related_identifier"],
+            identifier=doi_fields["pds_identifier"],
             transaction_key=transaction_io_dir,
             doi=doi_fields["doi"],
             date_added=doi_fields.get("date_record_added", self._transaction_time),

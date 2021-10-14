@@ -438,10 +438,10 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
 
     # Write each Doi object as a row into the database.
     for item_index, doi in enumerate(dois):
-        # If the field 'related_identifier' is None, we cannot proceed since
+        # If the field 'pds_identifier' is None, we cannot proceed since
         # it serves as the primary key for our transaction database.
-        if not doi.related_identifier:
-            logger.warning("Skipping DOI with missing related identifier %s, " "index %d", doi.doi, item_index)
+        if not doi.pds_identifier:
+            logger.warning("Skipping DOI with missing PDS identifier %s, " "index %d", doi.doi, item_index)
 
             o_records_dois_skipped += 1
             continue
@@ -466,7 +466,7 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         logger.debug("Processed DOI at index %d", item_index)
         logger.debug("Title: %s", doi_fields.get("title"))
         logger.debug("DOI: %s", doi_fields.get("doi"))
-        logger.debug("Related Identifier: %s", doi_fields.get("related_identifier"))
+        logger.debug("PDS Identifier: %s", doi_fields.get("pds_identifier"))
         logger.debug("Node ID: %s", node_id)
         logger.debug("Status: %s", str(doi_fields.get("status", "unknown")))
 
