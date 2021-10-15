@@ -374,6 +374,8 @@ class DraftActionTestCase(unittest.TestCase):
 
         # Slightly modify the lidvid so we trigger the "duplicate title" warning
         doi.pds_identifier += ".1"
+        doi.identifiers.clear()
+        doi.related_identifiers.clear()
 
         modified_draft_label = self._record_service.create_doi_record(doi, content_type="json")
 

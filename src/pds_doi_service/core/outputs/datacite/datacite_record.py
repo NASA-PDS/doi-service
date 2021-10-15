@@ -20,6 +20,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import is_psd4_identifier
 from pds_doi_service.core.util.general_util import sanitize_json_string
 from pkg_resources import resource_filename
 
@@ -108,6 +109,42 @@ class DOIDataCiteRecord(DOIRecord):
 
             # Publication year is a must-have
             doi_fields["publication_year"] = doi.publication_date.strftime("%Y")
+
+            # Make sure DOI (if assigned) is included as a "identifier"
+            if doi.doi:
+                for identifier in doi.identifiers:
+                    if identifier["identifier"] == doi.doi:
+                        break
+                else:
+                    # If here, need to add the DOI
+                    doi_fields["identifiers"].append({"identifier": doi.doi, "identifierType": "DOI"})
+
+            # Make sure the PDS identifier is included as a "identifier"
+            for identifier in doi.identifiers:
+                if identifier["identifier"] == doi.pds_identifier:
+                    break
+            else:
+                # If here, we need to add the PDS ID
+                doi_fields["identifiers"].append(
+                    {
+                        "identifier": doi.pds_identifier,
+                        "identifierType": "URN" if is_psd4_identifier(doi.pds_identifier) else "Handle",
+                    }
+                )
+
+            # Make sure the PDS identifier is included as a "relatedIdentifier"
+            for related_identifier in doi.related_identifiers:
+                if related_identifier["relatedIdentifier"] == doi.pds_identifier:
+                    break
+            else:
+                # If here, we need to add the PDS ID
+                doi_fields["related_identifiers"].append(
+                    {
+                        "relatedIdentifier": doi.pds_identifier,
+                        "relatedIdentifierType": "URN" if is_psd4_identifier(doi.pds_identifier) else "Handle",
+                        "relationType": "IsIdenticalTo",
+                    }
+                )
 
             rendered_dois.append(doi_fields)
 

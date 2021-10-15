@@ -26,16 +26,8 @@
                     {
                         "identifier": "{{ identifier.identifier.strip() }}",
                         "identifierType": "{{ identifier.identifierType }}"
-                    },
+                    }{% if not loop.last %},{% endif +%}
                     {% endfor %}
-                    {
-                        {% if doi.doi %}
-                        "identifier": "{{ doi.doi }}",
-                        {% else %}
-                        "identifier": "TBD",
-                        {% endif %}
-                        "identifierType": "DOI"
-                    }
                 ],
                 "creators": [
                     {% for author in doi.authors %}
@@ -127,11 +119,13 @@
                     "resourceType": "{{ doi.product_type_specific }}"
                 },
                 "relatedIdentifiers": [
+                    {% for related_identifier in doi.related_identifiers %}
                     {
-                        "relatedIdentifier": "{{ doi.pds_identifier }}",
-                        "relatedIdentifierType": {% if doi.pds_identifier.lower().startswith("urn") %}"URN"{% else %}"Handle"{% endif %},
-                        "relationType": "IsIdenticalTo"
-                    }
+                        "relatedIdentifier": "{{ related_identifier.relatedIdentifier.strip() }}",
+                        "relatedIdentifierType": "{{ related_identifier.relatedIdentifierType }}",
+                        "relationType": "{{ related_identifier.relationType }}"
+                    }{% if not loop.last %},{% endif +%}
+                    {% endfor %}
                 ],
                 {% if doi.description %}
                 "descriptions": [

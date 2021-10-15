@@ -50,6 +50,30 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
 
         self.assertDictEqual(input_doi_fields, output_doi_fields)
 
+        # Remove the identifier an relatedIdentifier fields from the Doi object
+        # to make sure they're re-added by the label creator
+        input_doi = input_dois[0]
+        input_doi.identifiers.clear()
+        input_doi.related_identifiers.clear()
+
+        output_json = DOIDataCiteRecord().create_doi_record(input_doi)
+        output_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(output_json)
+
+        output_doi = output_dois[0]
+
+        # Should have identifier entries for the DOI and the PDS ID
+        identifiers = list(map(lambda identifier: identifier["identifier"], output_doi.identifiers))
+        self.assertEqual(len(identifiers), 2)
+        self.assertIn(input_doi.doi, identifiers)
+        self.assertIn(input_doi.pds_identifier, identifiers)
+
+        # Should have a relatedIdentifier entry for the PDS ID
+        related_identifiers = list(
+            map(lambda related_identifier: related_identifier["relatedIdentifier"], output_doi.related_identifiers)
+        )
+        self.assertEqual(len(related_identifiers), 1)
+        self.assertIn(input_doi.pds_identifier, related_identifiers)
+
 
 def requests_valid_request_patch(method, url, **kwargs):
     response = Response()

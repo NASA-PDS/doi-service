@@ -110,6 +110,7 @@ class Doi:
     product_type_specific: str
     pds_identifier: str
     identifiers: list[dict] = field(default_factory=list)
+    related_identifiers: list[dict] = field(default_factory=list)
     authors: Optional[list[dict]] = None
     keywords: set[str] = field(default_factory=set)
     editors: Optional[list[dict]] = None

@@ -101,9 +101,7 @@ class DOIValidator:
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
         # keep rows with same title BUT different identifier
-        rows_with_different_identifier = [
-            row for row in rows if row[columns.index("identifier")] != doi.pds_identifier
-        ]
+        rows_with_different_identifier = [row for row in rows if row[columns.index("identifier")] != doi.pds_identifier]
 
         if rows_with_different_identifier:
             identifiers = ",".join([row[columns.index("identifier")] for row in rows_with_different_identifier])
