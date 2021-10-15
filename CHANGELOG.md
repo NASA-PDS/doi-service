@@ -1,16 +1,20 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-14)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-15)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v4.10.0-dev...«unknown»)
 
 **Other closed issues:**
 
-- Test out and document how to upgrade the service [\#255](https://github.com/NASA-PDS/pds-doi-service/issues/255)
+- Remove Versioneer [\#250](https://github.com/NASA-PDS/pds-doi-service/issues/250)
 
-## [v4.10.0-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v4.10.0-dev) (2021-10-11)
+## [v4.10.0-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v4.10.0-dev) (2021-10-14)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v4.10.0-dev)
+
+**Other closed issues:**
+
+- Test out and document how to upgrade the service [\#255](https://github.com/NASA-PDS/pds-doi-service/issues/255)
 
 ## [v2.0.1](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.1) (2021-10-11)
 
