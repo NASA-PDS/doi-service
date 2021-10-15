@@ -117,6 +117,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                         "name": name,
                         "name_type": creator["nameType"],
                         "name_identifiers": creator.get("nameIdentifiers", []),
+                        "affiliation": creator.get("affiliation", [])
                     }
                 )
 
@@ -143,7 +144,13 @@ class DOIDataCiteWebParser(DOIWebParser):
                     else:
                         name = contributor["name"]
 
-                    editors.append({"name": name, "name_identifiers": contributor.get("nameIdentifiers", [])})
+                    editors.append(
+                        {
+                            "name": name,
+                            "name_identifiers": contributor.get("nameIdentifiers", []),
+                            "affiliation": contributor.get("affiliation", [])
+                        }
+                    )
             return editors
         except KeyError:
             raise UserWarning('Could not parse optional field "editors"')

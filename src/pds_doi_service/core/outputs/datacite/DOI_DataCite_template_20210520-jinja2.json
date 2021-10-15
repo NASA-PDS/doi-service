@@ -50,6 +50,13 @@
                         {% else %}
                         "name": "{{ author.name }}",
                         {% endif %}
+                        {% if author.affiliation and author.affiliation|length > 0 %}
+                        "affiliation": [
+                        {% for affiliation in author.affiliation %}
+                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
+                        {% endfor %}
+                        ],
+                        {% endif %}
                         "nameIdentifiers": [
                         {% for name_identifier in author.name_identifiers %}
                             {
@@ -83,6 +90,13 @@
                         "name": "{{ editor.first_name }} {{ editor.last_name }}",
                         {% else %}
                         "name": "{{ editor.name }}",
+                        {% endif %}
+                        {% if editor.affiliation and editor.affiliation|length > 0 %}
+                        "affiliation": [
+                        {% for affiliation in editor.affiliation %}
+                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
+                        {% endfor %}
+                        ],
                         {% endif %}
                         "nameIdentifiers": [
                         {% for name_identifier in editor.name_identifiers %}

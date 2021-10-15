@@ -195,15 +195,15 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
 
         cls.expected_authors = [
-            {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal"},
-            {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal"},
-            {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal"},
-            {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal"},
+            {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
         ]
         cls.expected_editors = [
-            {"name": "P. H. Smith", "name_identifiers": []},
-            {"name": "M. Lemmon", "name_identifiers": []},
-            {"name": "R. F. Beebe", "name_identifiers": []},
+            {"name": "P. H. Smith", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+            {"name": "M. Lemmon", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+            {"name": "R. F. Beebe", "name_identifiers": [], "affiliation": ["NASA PDS"]},
         ]
         cls.expected_keywords = {
             "data",
@@ -254,8 +254,8 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.title, "InSight Cameras Bundle")
 
-    def test_parse_osti_response_json(self):
-        """Test parsing of an OSTI label in JSON format"""
+    def test_parse_datacite_response_json(self):
+        """Test parsing of an DataCite label in JSON format"""
         # Test with a nominal file containing most of the optional fields
         input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
 
