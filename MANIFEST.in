@@ -3,6 +3,7 @@
 
 graft src/pds_doi_service
 graft docs
+prune docs/build
 graft features
 graft inputs
 graft tests
