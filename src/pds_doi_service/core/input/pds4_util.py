@@ -266,7 +266,7 @@ class DOIPDS4LabelUtil:
                 publication_date=self.get_publication_date(pds4_fields),
                 product_type=product_type,
                 product_type_specific=product_specific_type,
-                related_identifier=identifier,
+                pds_identifier=identifier,
                 site_url=site_url,
                 authors=self.get_author_names(authors_list),
                 editors=editors,

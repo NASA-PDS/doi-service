@@ -19,7 +19,7 @@
                     "name": "Deen, R.",
                     "givenName": "R.",
                     "familyName": "Deen",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 },
                 {
@@ -27,7 +27,7 @@
                     "name": "Abarca, H.",
                     "givenName": "H.",
                     "familyName": "Abarca",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 },
                 {
@@ -35,7 +35,7 @@
                     "name": "Zamani, P.",
                     "givenName": "P.",
                     "familyName": "Zamani",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 },
                 {
@@ -43,7 +43,7 @@
                     "name": "Maki, J.",
                     "givenName": "J.",
                     "familyName": "Maki",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 }
             ],
@@ -118,7 +118,7 @@
                     "givenName": "P. H.",
                     "familyName": "Smith",
                     "contributorType": "Editor",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 },
                 {
@@ -127,7 +127,7 @@
                     "givenName": "M.",
                     "familyName": "Lemmon",
                     "contributorType": "Editor",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 },
                 {
@@ -136,14 +136,14 @@
                     "givenName": "R. F.",
                     "familyName": "Beebe",
                     "contributorType": "Editor",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 },
                 {
                     "nameType": "Organizational",
                     "name": "Planetary Data System: Engineering Node",
                     "contributorType": "DataCurator",
-                    "affiliation": [],
+                    "affiliation": ["NASA PDS"],
                     "nameIdentifiers": []
                 }
             ],
@@ -161,8 +161,7 @@
                 {
                     "relatedIdentifier": "urn:nasa:pds:insight_cameras::1.0",
                     "relatedIdentifierType": "URN",
-                    "relationType": "HasMetadata",
-                    "resourceTypeGeneral": "Text"
+                    "relationType": "HasMetadata"
                 }
             ],
             "sizes": [],

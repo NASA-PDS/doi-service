@@ -108,11 +108,12 @@ class Doi:
     publication_date: datetime
     product_type: ProductType
     product_type_specific: str
-    related_identifier: str
-    identifiers: list[str] = field(default_factory=list)
+    pds_identifier: str
+    identifiers: list[dict] = field(default_factory=list)
+    related_identifiers: list[dict] = field(default_factory=list)
     authors: Optional[list[dict]] = None
     keywords: set[str] = field(default_factory=set)
-    editors: Optional[list[str]] = None
+    editors: Optional[list[dict]] = None
     description: Optional[str] = None
     id: Optional[str] = None
     doi: Optional[str] = None

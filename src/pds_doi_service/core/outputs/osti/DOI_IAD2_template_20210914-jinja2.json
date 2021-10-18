@@ -10,7 +10,7 @@
         "doi": "{{ doi.doi }}",
         {% endif %}
         "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
-        "accession_number": "{{ doi.related_identifier }}",
+        "accession_number": "{{ doi.pds_identifier }}",
         "publisher": "{{ doi.publisher }}",
         "availability": "NASA Planetary Data System",
         "publication_date": "{{ doi.publication_date }}",

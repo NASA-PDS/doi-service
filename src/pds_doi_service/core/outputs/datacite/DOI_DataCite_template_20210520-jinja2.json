@@ -26,16 +26,8 @@
                     {
                         "identifier": "{{ identifier.identifier.strip() }}",
                         "identifierType": "{{ identifier.identifierType }}"
-                    },
+                    }{% if not loop.last %},{% endif +%}
                     {% endfor %}
-                    {
-                        {% if doi.doi %}
-                        "identifier": "{{ doi.doi }}",
-                        {% else %}
-                        "identifier": "TBD",
-                        {% endif %}
-                        "identifierType": "DOI"
-                    }
                 ],
                 "creators": [
                     {% for author in doi.authors %}
@@ -49,6 +41,13 @@
                         "name": "{{ author.first_name }} {{ author.last_name }}",
                         {% else %}
                         "name": "{{ author.name }}",
+                        {% endif %}
+                        {% if author.affiliation and author.affiliation|length > 0 %}
+                        "affiliation": [
+                        {% for affiliation in author.affiliation %}
+                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
+                        {% endfor %}
+                        ],
                         {% endif %}
                         "nameIdentifiers": [
                         {% for name_identifier in author.name_identifiers %}
@@ -84,6 +83,13 @@
                         {% else %}
                         "name": "{{ editor.name }}",
                         {% endif %}
+                        {% if editor.affiliation and editor.affiliation|length > 0 %}
+                        "affiliation": [
+                        {% for affiliation in editor.affiliation %}
+                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
+                        {% endfor %}
+                        ],
+                        {% endif %}
                         "nameIdentifiers": [
                         {% for name_identifier in editor.name_identifiers %}
                             {
@@ -113,11 +119,13 @@
                     "resourceType": "{{ doi.product_type_specific }}"
                 },
                 "relatedIdentifiers": [
+                    {% for related_identifier in doi.related_identifiers %}
                     {
-                        "relatedIdentifier": "{{ doi.related_identifier }}",
-                        "relatedIdentifierType": {% if doi.related_identifier.lower().startswith("urn") %}"URN"{% else %}"Handle"{% endif %},
-                        "relationType": "IsIdenticalTo"
-                    }
+                        "relatedIdentifier": "{{ related_identifier.relatedIdentifier.strip() }}",
+                        "relatedIdentifierType": "{{ related_identifier.relatedIdentifierType }}",
+                        "relationType": "{{ related_identifier.relationType }}"
+                    }{% if not loop.last %},{% endif +%}
+                    {% endfor %}
                 ],
                 {% if doi.description %}
                 "descriptions": [

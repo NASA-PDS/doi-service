@@ -55,7 +55,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.editors), 3)
         self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -84,12 +84,12 @@ class DraftActionTestCase(unittest.TestCase):
             self.assertEqual(doi.product_type, ProductType.Collection)
             self.assertIsInstance(doi.publication_date, datetime)
             self.assertIsInstance(doi.date_record_added, datetime)
-            self.assertTrue(doi.related_identifier.startswith("urn:nasa:pds:insight_cameras::1"))
+            self.assertTrue(doi.pds_identifier.startswith("urn:nasa:pds:insight_cameras::1"))
             self.assertTrue(doi.title.startswith("InSight Cameras Bundle 1."))
 
             # Make sure for the "bundle_in_with_contributors.xml" file, we
             # parsed the editors
-            if doi.related_identifier == "urn:nasa:pds:insight_cameras::1.0":
+            if doi.pds_identifier == "urn:nasa:pds:insight_cameras::1.0":
                 self.assertEqual(len(doi.editors), 3)
             # For "bundle_in.xml", there should be no editors
             else:
@@ -116,7 +116,7 @@ class DraftActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.editors), 3)
         self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -142,7 +142,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -210,7 +210,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras:data::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:data::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -236,7 +236,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras:browse::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:browse::1.0")
         self.assertEqual(doi.description, "Collection of BROWSE products.")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
@@ -263,7 +263,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 14)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras:calibration::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:calibration::1.0")
         self.assertEqual(doi.description, "Collection of CALIBRATION files/products to include in the archive.")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
@@ -290,7 +290,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras:document::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:document::1.0")
         self.assertEqual(doi.description, "Collection of DOCUMENT products.")
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.product_type, ProductType.Dataset)
@@ -336,7 +336,7 @@ class DraftActionTestCase(unittest.TestCase):
 
         # Finally, move the review record back to draft with the lidvid option
         draft_kwargs = {
-            "lidvid": doi.related_identifier,
+            "lidvid": doi.pds_identifier,
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -373,7 +373,9 @@ class DraftActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         # Slightly modify the lidvid so we trigger the "duplicate title" warning
-        doi.related_identifier += ".1"
+        doi.pds_identifier += ".1"
+        doi.identifiers.clear()
+        doi.related_identifiers.clear()
 
         modified_draft_label = self._record_service.create_doi_record(doi, content_type="json")
 

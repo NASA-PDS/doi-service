@@ -101,9 +101,7 @@ class DOIValidator:
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
         # keep rows with same title BUT different identifier
-        rows_with_different_identifier = [
-            row for row in rows if row[columns.index("identifier")] != doi.related_identifier
-        ]
+        rows_with_different_identifier = [row for row in rows if row[columns.index("identifier")] != doi.pds_identifier]
 
         if rows_with_different_identifier:
             identifiers = ",".join([row[columns.index("identifier")] for row in rows_with_different_identifier])
@@ -152,7 +150,7 @@ class DOIValidator:
 
         if not product_type_specific_suffix.lower() in doi.title.lower():
             msg = (
-                f"DOI with identifier '{doi.related_identifier}' and title "
+                f"DOI with identifier '{doi.pds_identifier}' and title "
                 f"'{doi.title}' does not contains the product-specific type "
                 f"suffix '{product_type_specific_suffix.lower()}'. "
                 "Product-specific type suffix should be in the title."
@@ -183,7 +181,7 @@ class DOIValidator:
 
         """
         # The database expects each field to be a list.
-        query_criterias = {"ids": [doi.related_identifier]}
+        query_criterias = {"ids": [doi.pds_identifier]}
 
         # Query database for rows with given id value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
@@ -196,14 +194,14 @@ class DOIValidator:
             if doi.doi is None:
                 raise IllegalDOIActionException(
                     f"There is already a DOI {pre_existing_doi['doi']} submitted "
-                    f"for record identifier {doi.related_identifier} "
+                    f"for record identifier {doi.pds_identifier} "
                     f"(status={pre_existing_doi['status']}).\n"
                     "You cannot update/remove a DOI for an existing record identifier."
                 )
             elif doi.doi != pre_existing_doi["doi"]:
                 raise IllegalDOIActionException(
                     f"There is already a DOI {pre_existing_doi['doi']} submitted "
-                    f"for record identifier {doi.related_identifier} "
+                    f"for record identifier {doi.pds_identifier} "
                     f"(status={pre_existing_doi['status']}).\n"
                     f"You cannot update DOI {doi.doi} for an existing record identifier."
                 )
@@ -232,10 +230,10 @@ class DOIValidator:
             # at most one)
             columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
-            if rows and doi.related_identifier != rows[0][columns.index("identifier")]:
+            if rows and doi.pds_identifier != rows[0][columns.index("identifier")]:
                 raise IllegalDOIActionException(
                     f"The DOI ({doi.doi}) provided for record identifier "
-                    f"{doi.related_identifier} is already in use for record "
+                    f"{doi.pds_identifier} is already in use for record "
                     f"{rows[0][columns.index('identifier')]}.\n"
                     f"The DOI may not be reused with a different "
                     f"record identifier."
@@ -258,9 +256,9 @@ class DOIValidator:
 
         """
         # Make sure we have an identifier to key off of
-        if not doi.related_identifier:
+        if not doi.pds_identifier:
             raise InvalidRecordException(
-                "Record provided with missing related_identifier field. "
+                "Record provided with missing pds_identifier field. "
                 "Please ensure a LIDVID or similar identifier is provided for "
                 "all DOI requests."
             )
@@ -271,14 +269,14 @@ class DOIValidator:
 
             if suffix != doi.id:
                 raise InvalidRecordException(
-                    f"Record for {doi.related_identifier} has inconsistent "
+                    f"Record for {doi.pds_identifier} has inconsistent "
                     f"DOI ({doi.doi}) and ID ({doi.id}) fields. Please reconcile "
                     "the inconsistency and resubmit the request."
                 )
 
     def _check_lidvid_field(self, doi: Doi):
         """
-        Checks the related_identifier field of a Doi to ensure it conforms
+        Checks the pds_identifier field of a Doi to ensure it conforms
         to the LIDVID format.
 
         Parameters
@@ -289,17 +287,17 @@ class DOIValidator:
         Raises
         ------
         InvalidIdentifierException
-            If the related identifier field of the DOI does not conform to
+            If the PDS identifier field of the DOI does not conform to
             the LIDVID format. These exceptions should be able to be bypassed
             when the --force flag is provided.
 
         """
 
         vid: Optional[str]
-        if "::" in doi.related_identifier:
-            lid, vid = doi.related_identifier.split("::")
+        if "::" in doi.pds_identifier:
+            lid, vid = doi.pds_identifier.split("::")
         else:
-            lid = doi.related_identifier
+            lid = doi.pds_identifier
             vid = None
 
         lid_tokens = lid.split(":")
@@ -341,7 +339,7 @@ class DOIValidator:
                 )
         except InvalidIdentifierException as err:
             raise InvalidIdentifierException(
-                f"The record identifier {doi.related_identifier} (DOI {doi.doi}) "
+                f"The record identifier {doi.pds_identifier} (DOI {doi.doi}) "
                 f"does not conform to a valid LIDVID format.\n"
                 f"Reason: {str(err)}\n"
                 "If the identifier is not intended to be a LIDVID, use the "
@@ -363,7 +361,7 @@ class DOIValidator:
             raise UnexpectedDOIActionException(msg)
 
         # The database expects each field to be a list.
-        query_criterias = {"ids": [doi.related_identifier]}
+        query_criterias = {"ids": [doi.pds_identifier]}
 
         # Query database for rows with given id value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
@@ -382,7 +380,7 @@ class DOIValidator:
             # But the tests pass so I'm throwing caution to the wind.
             if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:  # type: ignore
                 msg = (
-                    f"There is a record for identifier {doi.related_identifier} "
+                    f"There is a record for identifier {doi.pds_identifier} "
                     f"(DOI: {doi_str}) with status: '{prev_status.lower()}'.\n"
                     f"Are you sure you want to restart the workflow from step "
                     f"'{doi.status}'?"

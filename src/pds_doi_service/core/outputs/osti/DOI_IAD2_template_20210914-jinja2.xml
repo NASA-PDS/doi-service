@@ -12,7 +12,7 @@
         <doi>{{ doi.doi }}</doi>
         {% endif %}
         <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
-        <accession_number>{{ doi.related_identifier }}</accession_number>
+        <accession_number>{{ doi.pds_identifier }}</accession_number>
         <publisher>{{ doi.publisher }}</publisher>
         <availability>NASA Planetary Data System</availability>
         <publication_date>{{ doi.publication_date }}</publication_date>

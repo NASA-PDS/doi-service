@@ -41,6 +41,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         "id",
         "doi",
         "identifiers",
+        "related_identifiers",
         "description",
         "keywords",
         "authors",
@@ -58,7 +59,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         "publication_date",
         "product_type",
         "product_type_specific",
-        "related_identifier",
+        "pds_identifier",
     ]
 
     @staticmethod
@@ -82,10 +83,26 @@ class DOIDataCiteWebParser(DOIWebParser):
     @staticmethod
     def _parse_identifiers(record):
         try:
-            identifiers = filter(lambda identifier: identifier["identifierType"] != "DOI", record["identifiers"])
-            return list(identifiers)
+            identifiers = record["identifiers"]
+
+            for identifier in identifiers:
+                identifier["identifier"] = identifier["identifier"].strip()
+
+            return identifiers
         except KeyError:
             raise UserWarning('Could not parse optional field "identifiers"')
+
+    @staticmethod
+    def _parse_related_identifiers(record):
+        try:
+            related_identifiers = record["relatedIdentifiers"]
+
+            for related_identifier in related_identifiers:
+                related_identifier["relatedIdentifier"] = related_identifier["relatedIdentifier"].strip()
+
+            return related_identifiers
+        except KeyError:
+            raise UserWarning('Could not parse optional field "related_identifiers"')
 
     @staticmethod
     def _parse_description(record):
@@ -117,6 +134,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                         "name": name,
                         "name_type": creator["nameType"],
                         "name_identifiers": creator.get("nameIdentifiers", []),
+                        "affiliation": creator.get("affiliation", []),
                     }
                 )
 
@@ -143,7 +161,13 @@ class DOIDataCiteWebParser(DOIWebParser):
                     else:
                         name = contributor["name"]
 
-                    editors.append({"name": name, "name_identifiers": contributor.get("nameIdentifiers", [])})
+                    editors.append(
+                        {
+                            "name": name,
+                            "name_identifiers": contributor.get("nameIdentifiers", []),
+                            "affiliation": contributor.get("affiliation", []),
+                        }
+                    )
             return editors
         except KeyError:
             raise UserWarning('Could not parse optional field "editors"')
@@ -183,24 +207,30 @@ class DOIDataCiteWebParser(DOIWebParser):
             raise UserWarning('Could not parse optional field "contributor"')
 
     @staticmethod
-    def _parse_related_identifier(record):
+    def _parse_pds_identifier(record):
         identifier = None
 
-        try:
-            identifier = record["relatedIdentifiers"][0]["relatedIdentifier"]
-        except (IndexError, KeyError):
-            if "identifiers" in record:
-                for identifier_record in record["identifiers"]:
-                    if identifier_record["identifier"].startswith("urn:"):
-                        identifier = identifier_record["identifier"]
-                        break
+        # First, check identifiers for a URN
+        if "identifiers" in record:
+            for identifier_record in record["identifiers"]:
+                if identifier_record["identifier"].startswith("urn:"):
+                    identifier = identifier_record["identifier"]
+                    break
 
-            if not identifier and "url" in record:
-                logger.info("Parsing related identifier from URL")
-                identifier = parse_identifier_from_site_url(record["url"])
+        # Next, try looking for a URN in relatedIdentifiers
+        if not identifier and "relatedIdentifiers" in record:
+            for related_identifier_record in record["relatedIdentifiers"]:
+                if related_identifier_record["relatedIdentifier"].startswith("urn:"):
+                    identifier = related_identifier_record["relatedIdentifier"]
+                    break
+
+        # Lastly, try to parse an ID from the site URL
+        if not identifier and "url" in record:
+            logger.info("Parsing PDS identifier from URL")
+            identifier = parse_identifier_from_site_url(record["url"])
 
         if identifier is None:
-            raise InputFormatException('Failed to parse mandatory field "related_identifier"')
+            raise InputFormatException('Failed to parse mandatory field "pds_identifier"')
 
         return identifier.strip()
 
@@ -354,7 +384,7 @@ class DOIDataCiteWebParser(DOIWebParser):
             records = [records]
 
         for record in records:
-            record_id = DOIDataCiteWebParser._parse_related_identifier(record["attributes"])
+            record_id = DOIDataCiteWebParser._parse_pds_identifier(record["attributes"])
 
             if record_id == identifier:
                 # Re-add the data key we stripped off earlier

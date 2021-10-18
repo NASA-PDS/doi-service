@@ -355,7 +355,7 @@ class DOIInputUtil:
                 publication_date=row["publication_date"],
                 product_type=product_type,
                 product_type_specific=row["product_type_specific"],
-                related_identifier=identifier,
+                pds_identifier=identifier,
                 authors=[{"first_name": row["author_first_name"], "last_name": row["author_last_name"]}],
                 site_url=site_url,
                 date_record_added=timestamp,

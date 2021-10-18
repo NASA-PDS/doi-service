@@ -50,6 +50,30 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
 
         self.assertDictEqual(input_doi_fields, output_doi_fields)
 
+        # Remove the identifier an relatedIdentifier fields from the Doi object
+        # to make sure they're re-added by the label creator
+        input_doi = input_dois[0]
+        input_doi.identifiers.clear()
+        input_doi.related_identifiers.clear()
+
+        output_json = DOIDataCiteRecord().create_doi_record(input_doi)
+        output_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(output_json)
+
+        output_doi = output_dois[0]
+
+        # Should have identifier entries for the DOI and the PDS ID
+        identifiers = list(map(lambda identifier: identifier["identifier"], output_doi.identifiers))
+        self.assertEqual(len(identifiers), 2)
+        self.assertIn(input_doi.doi, identifiers)
+        self.assertIn(input_doi.pds_identifier, identifiers)
+
+        # Should have a relatedIdentifier entry for the PDS ID
+        related_identifiers = list(
+            map(lambda related_identifier: related_identifier["relatedIdentifier"], output_doi.related_identifiers)
+        )
+        self.assertEqual(len(related_identifiers), 1)
+        self.assertIn(input_doi.pds_identifier, related_identifiers)
+
 
 def requests_valid_request_patch(method, url, **kwargs):
     response = Response()
@@ -100,7 +124,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
             publication_date=datetime(2019, 1, 1, 0, 0),
             product_type=ProductType.Dataset,
             product_type_specific="PDS4 Refereed Data Bundle",
-            related_identifier="urn:nasa:pds:insight_cameras::1.0",
+            pds_identifier="urn:nasa:pds:insight_cameras::1.0",
             id="yzw2-vz66",
             doi="10.13143/yzw2-vz66",
             publisher="NASA Planetary Data System",
@@ -118,7 +142,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
 
         # Ensure the DOI returned corresponds to the one we provided
         self.assertEqual(test_doi.title, response_doi.title)
-        self.assertEqual(test_doi.related_identifier, response_doi.related_identifier)
+        self.assertEqual(test_doi.pds_identifier, response_doi.pds_identifier)
         self.assertEqual(test_doi.doi, response_doi.doi)
 
         # Check that the status has been updated by the submission request
@@ -168,7 +192,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
             publication_date=datetime.now(),
             product_type=ProductType.Collection,
             product_type_specific="Test collection",
-            related_identifier="urn:nasa:pds:test-collection::1.0",
+            pds_identifier="urn:nasa:pds:test-collection::1.0",
         )
 
         # Test with no DOI assigned
@@ -195,15 +219,15 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
 
         cls.expected_authors = [
-            {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal"},
-            {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal"},
-            {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal"},
-            {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal"},
+            {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
         ]
         cls.expected_editors = [
-            {"name": "P. H. Smith", "name_identifiers": []},
-            {"name": "M. Lemmon", "name_identifiers": []},
-            {"name": "R. F. Beebe", "name_identifiers": []},
+            {"name": "P. H. Smith", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+            {"name": "M. Lemmon", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+            {"name": "R. F. Beebe", "name_identifiers": [], "affiliation": ["NASA PDS"]},
         ]
         cls.expected_keywords = {
             "data",
@@ -247,15 +271,15 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.product_type_specific, "PDS4 Refereed Data Bundle")
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertEqual(doi.publisher, "NASA Planetary Data System")
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:insight_cameras::1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         # Check that site url HTML was un-escaped as expected
         self.assertIn("&", doi.site_url)
         self.assertNotIn("&amp;", doi.site_url)
         self.assertEqual(doi.status, DoiStatus.Draft)
         self.assertEqual(doi.title, "InSight Cameras Bundle")
 
-    def test_parse_osti_response_json(self):
-        """Test parsing of an OSTI label in JSON format"""
+    def test_parse_datacite_response_json(self):
+        """Test parsing of an DataCite label in JSON format"""
         # Test with a nominal file containing most of the optional fields
         input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
 

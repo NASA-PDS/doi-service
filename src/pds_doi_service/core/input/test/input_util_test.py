@@ -78,7 +78,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertIsInstance(doi, Doi)
         self.assertEqual(doi.title, "Laboratory Shocked Feldspars Bundle")
         self.assertEqual(doi.status, DoiStatus.Reserved)
-        self.assertEqual(doi.related_identifier, "urn:nasa:pds:lab_shocked_feldspars")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:lab_shocked_feldspars")
         self.assertEqual(len(doi.authors), 1)
         self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertEqual(doi.product_type_specific, "PDS4 Collection")
@@ -92,7 +92,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertEqual(len(dois), 3)
         self.assertTrue(all([doi.title.startswith("Laboratory Shocked Feldspars") for doi in dois]))
         self.assertTrue(all([doi.status == DoiStatus.Reserved for doi in dois]))
-        self.assertTrue(all([doi.related_identifier.startswith("urn:nasa:pds:lab_shocked_feldspars") for doi in dois]))
+        self.assertTrue(all([doi.pds_identifier.startswith("urn:nasa:pds:lab_shocked_feldspars") for doi in dois]))
         self.assertTrue(all([len(doi.authors) == 1 for doi in dois]))
         self.assertTrue(
             all([doi.product_type == doi_input_util._parse_product_type(doi.product_type_specific) for doi in dois])
@@ -151,7 +151,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertEqual(len(dois), 3)
         self.assertTrue(all([doi.title.startswith("Laboratory Shocked Feldspars") for doi in dois]))
         self.assertTrue(all([doi.status == DoiStatus.Reserved for doi in dois]))
-        self.assertTrue(all([doi.related_identifier.startswith("urn:nasa:pds:lab_shocked_feldspars") for doi in dois]))
+        self.assertTrue(all([doi.pds_identifier.startswith("urn:nasa:pds:lab_shocked_feldspars") for doi in dois]))
         self.assertTrue(all([len(doi.authors) == 1 for doi in dois]))
         self.assertTrue(all([doi.product_type == ProductType.Collection for doi in dois]))
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime) for doi in dois]))
@@ -165,7 +165,7 @@ class InputUtilTestCase(unittest.TestCase):
         doi = dois[0]
 
         # Make sure the PDS3 identifier was saved off as expected
-        self.assertEqual(doi.related_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
+        self.assertEqual(doi.pds_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
 
         # Test with an invalid spreadsheet (insufficient columns)
         i_filepath = join(self.input_dir, "DOI-reserve-broken.csv")
@@ -244,7 +244,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertIsInstance(doi, Doi)
 
         # Make sure the PDS3 identifier was saved off as expected
-        self.assertEqual(doi.related_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
+        self.assertEqual(doi.pds_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
 
         # Test with a PDS4 label that contains a UTF-8 byte order marker
         i_filepath = join(self.input_dir, "bundle_in_with_contributors_utf-8-bom.xml")
