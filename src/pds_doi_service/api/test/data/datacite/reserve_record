@@ -103,7 +103,7 @@
                 "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0",
                 "created": "2021-08-30T10:37:44.736133Z",
                 "updated": "2021-08-30T10:37:44.736133Z",
-                "state": "reserved_not_submitted",
+                "state": "draft",
                 "language": "en"
             }
         }

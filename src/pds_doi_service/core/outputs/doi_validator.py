@@ -45,7 +45,6 @@ class DOIValidator:
     m_workflow_order = {
         DoiStatus.Error: 0,
         DoiStatus.Unknown: 0,
-        DoiStatus.Reserved_not_submitted: 0,
         DoiStatus.Reserved: 1,
         DoiStatus.Draft: 2,
         DoiStatus.Review: 3,

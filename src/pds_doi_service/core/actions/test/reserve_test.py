@@ -91,21 +91,6 @@ class ReserveActionTestCase(unittest.TestCase):
         for doi in dois:
             self.assertEqual(doi.status, expected_status)
 
-    def test_reserve_xlsx_dry_run(self):
-        """
-        Test Reserve action with a local excel spreadsheet, using the
-        dry run flag to avoid submission.
-        """
-        reserve_args = {
-            "input": join(self.input_dir, "DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx"),
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "dry_run": True,
-            "force": True,
-        }
-
-        self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved_not_submitted)
-
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
     )
@@ -129,20 +114,6 @@ class ReserveActionTestCase(unittest.TestCase):
 
         self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved)
 
-    def test_reserve_csv_dry_run(self):
-        """
-        Test Reserve action with a local CSV file, using the dry run flag
-        to avoid submission to the service provider.
-        """
-        reserve_args = {
-            "input": join(self.input_dir, "DOI_Reserved_GEO_200318.csv"),
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "dry_run": True,
-            "force": True,
-        }
-
-        self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved_not_submitted)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
@@ -166,28 +137,6 @@ class ReserveActionTestCase(unittest.TestCase):
         }
 
         self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved)
-
-    def test_reserve_json_dry_run(self):
-        """
-        Test Reserve action with a local JSON file, using the dry run flag
-        to avoid submission.
-        """
-        # Select the appropriate JSON format based on the currently configured
-        # service
-        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
-            input_file = join(self.input_dir, "DOI_Release_20210216_from_reserve.json")
-        else:
-            input_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
-
-        reserve_args = {
-            "input": input_file,
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "dry_run": True,
-            "force": True,
-        }
-
-        self.run_reserve_test(reserve_args, expected_dois=1, expected_status=DoiStatus.Reserved_not_submitted)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch

@@ -69,7 +69,6 @@ class DoiStatus(str, Enum):
 
     Error = "error"
     Unknown = "unknown"
-    Reserved_not_submitted = "reserved_not_submitted"
     Reserved = "reserved"
     Draft = "draft"
     Review = "review"

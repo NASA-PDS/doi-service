@@ -247,7 +247,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.title, "InSight Cameras Bundle 1.0")
         self.assertEqual(summary.submitter, "img-submitter@jpl.nasa.gov")
         self.assertEqual(summary.identifier, "urn:nasa:pds:insight_cameras::1.0")
-        self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
+        self.assertEqual(summary.status, DoiStatus.Draft)
 
         # Test fetching of a record that only has an LID (no VID) associated to it
         query_string = [("node", "img"), ("ids", "urn:nasa:pds:lab_shocked_feldspars"), ("db_name", test_db)]
@@ -272,10 +272,10 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.title, "Laboratory Shocked Feldspars Bundle")
         self.assertEqual(summary.submitter, "img-submitter@jpl.nasa.gov")
         self.assertEqual(summary.identifier, "urn:nasa:pds:lab_shocked_feldspars")
-        self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
+        self.assertEqual(summary.status, DoiStatus.Draft)
 
         # Now try filtering by workflow status
-        query_string = [("status", DoiStatus.Reserved_not_submitted.value), ("db_name", test_db)]
+        query_string = [("status", DoiStatus.Draft.value), ("db_name", test_db)]
 
         response = self.client.open(
             "/PDS_APIs/pds_doi_api/0.2/dois",
@@ -393,7 +393,7 @@ class TestDoisController(BaseTestCase):
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionReserve, "run", reserve_action_run_patch)
     def test_post_dois_reserve(self):
         """Test dry-run reserve POST"""
-        # Submit a new bundle in reserve (not submitted) status
+        # Submit a new bundle in reserve status
         body = LabelsPayload(
             [
                 LabelPayload(
@@ -434,7 +434,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(reserve_record.title, "InSight Cameras Bundle")
         self.assertEqual(reserve_record.submitter, "img-submitter@jpl.nasa.gov")
         self.assertEqual(reserve_record.identifier, "urn:nasa:pds:insight_cameras::2.0")
-        self.assertEqual(reserve_record.status, DoiStatus.Reserved_not_submitted)
+        self.assertEqual(reserve_record.status, DoiStatus.Draft)
 
     def test_post_dois_invalid_requests(self):
         """Test invalid POST requests"""
