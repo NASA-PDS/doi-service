@@ -49,9 +49,9 @@ class DOIDatabaseTest(unittest.TestCase):
 
         # Insert a row in the 'doi' table
         self._doi_database.write_doi_info_to_database(
-            identifier,
-            transaction_key,
             doi,
+            transaction_key,
+            identifier,
             date_added,
             date_updated,
             status,
@@ -96,9 +96,9 @@ class DOIDatabaseTest(unittest.TestCase):
         discipline_node = "eng"
 
         self._doi_database.write_doi_info_to_database(
-            identifier,
-            transaction_key,
             doi,
+            transaction_key,
+            identifier,
             date_added,
             date_updated,
             status,
@@ -142,9 +142,9 @@ class DOIDatabaseTest(unittest.TestCase):
 
         # Insert a row in the 'doi' table
         self._doi_database.write_doi_info_to_database(
-            identifier,
-            transaction_key,
             doi,
+            transaction_key,
+            identifier,
             date_added,
             date_updated,
             status,
@@ -189,9 +189,9 @@ class DOIDatabaseTest(unittest.TestCase):
         discipline_node = "img"
 
         self._doi_database.write_doi_info_to_database(
-            identifier,
-            transaction_key,
             doi,
+            transaction_key,
+            identifier,
             date_added,
             date_updated,
             status,
@@ -242,9 +242,9 @@ class DOIDatabaseTest(unittest.TestCase):
             discipline_node = "img"
 
             self._doi_database.write_doi_info_to_database(
-                identifier,
-                transaction_key,
                 doi,
+                transaction_key,
+                identifier,
                 date_added,
                 date_updated,
                 status,

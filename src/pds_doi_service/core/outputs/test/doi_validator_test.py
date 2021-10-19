@@ -49,9 +49,9 @@ class DoiValidatorTest(unittest.TestCase):
         # Write a record into database
         # All fields are valid.
         self._database_obj.write_doi_info_to_database(
-            self.identifier,
-            self.transaction_key,
             self.doi,
+            self.transaction_key,
+            self.identifier,
             self.release_date,
             self.transaction_date,
             self.status,

@@ -59,9 +59,9 @@ class Transaction:
         doi_fields = self._doi.__dict__
 
         self._transaction_db.write_doi_info_to_database(
-            identifier=doi_fields["pds_identifier"],
-            transaction_key=transaction_io_dir,
             doi=doi_fields["doi"],
+            transaction_key=transaction_io_dir,
+            identifier=doi_fields["pds_identifier"],
             date_added=doi_fields.get("date_record_added", self._transaction_time),
             date_updated=doi_fields.get("date_record_updated", self._transaction_time),
             status=doi_fields["status"],
