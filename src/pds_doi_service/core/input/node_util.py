@@ -4,7 +4,7 @@
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
-from pds_doi_service.core.input.exceptions import UnknownNodeException
+from pds_doi_service.core.entities.exceptions import UnknownNodeException
 from pds_doi_service.core.util.general_util import get_logger
 
 # Get the common logger and set the level for this file.

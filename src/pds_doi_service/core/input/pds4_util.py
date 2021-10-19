@@ -17,7 +17,7 @@ from enum import Enum
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
-from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer

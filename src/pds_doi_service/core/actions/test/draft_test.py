@@ -10,8 +10,8 @@ from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
-from pds_doi_service.core.input.exceptions import InputFormatException
-from pds_doi_service.core.input.exceptions import WarningDOIException
+from pds_doi_service.core.entities.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import WarningDOIException
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pkg_resources import resource_filename
 

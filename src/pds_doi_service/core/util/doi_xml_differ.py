@@ -9,7 +9,7 @@
 import datetime
 
 from lxml import etree
-from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.util.general_util import get_logger
 

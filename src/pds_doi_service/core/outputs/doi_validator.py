@@ -19,13 +19,13 @@ import requests
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.input.exceptions import DuplicatedTitleDOIException
-from pds_doi_service.core.input.exceptions import IllegalDOIActionException
-from pds_doi_service.core.input.exceptions import InvalidIdentifierException
-from pds_doi_service.core.input.exceptions import InvalidRecordException
-from pds_doi_service.core.input.exceptions import SiteURLNotExistException
-from pds_doi_service.core.input.exceptions import TitleDoesNotMatchProductTypeException
-from pds_doi_service.core.input.exceptions import UnexpectedDOIActionException
+from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
+from pds_doi_service.core.entities.exceptions import IllegalDOIActionException
+from pds_doi_service.core.entities.exceptions import InvalidIdentifierException
+from pds_doi_service.core.entities.exceptions import InvalidRecordException
+from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
+from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
+from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
