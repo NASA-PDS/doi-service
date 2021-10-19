@@ -17,9 +17,9 @@ import shutil
 from distutils.dir_util import copy_tree
 
 import requests
-from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.node_util import NodeUtil
 
 logger = get_logger("pds_doi_service.core.outputs.transaction_logger")
 

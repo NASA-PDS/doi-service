@@ -18,8 +18,8 @@ from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
-from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.node_util import NodeUtil
 
 logger = get_logger(__name__)
 

@@ -28,11 +28,11 @@ from pds_doi_service.core.entities.exceptions import raise_or_warn_exceptions
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.input.input_util import DOIInputUtil
-from pds_doi_service.core.input.node_util import NodeUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.node_util import NodeUtil
 
 logger = get_logger(__name__)
 
