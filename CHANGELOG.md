@@ -1,19 +1,16 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-18)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-20)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v0.7.0-dev...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...«unknown»)
+
+**Improvements:**
+
+- Add new alternateIdentifier to match SBN schema [\#102](https://github.com/NASA-PDS/pds-doi-service/issues/102)
 
 **Other closed issues:**
 
 - Improved parsing support for DataCite JSON format [\#274](https://github.com/NASA-PDS/pds-doi-service/issues/274)
-
-## [v0.7.0-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v0.7.0-dev) (2021-10-15)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v0.7.0-dev)
-
-**Other closed issues:**
-
 - Test out and document how to upgrade the service [\#255](https://github.com/NASA-PDS/pds-doi-service/issues/255)
 - Remove Versioneer [\#250](https://github.com/NASA-PDS/pds-doi-service/issues/250)
 
