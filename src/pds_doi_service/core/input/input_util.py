@@ -23,7 +23,7 @@ from lxml import etree
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
-from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_validator import DOIOstiValidator

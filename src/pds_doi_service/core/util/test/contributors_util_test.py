@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 import unittest
 
-from pds_doi_service.core.references.contributors import DOIContributorUtil
+from pds_doi_service.core.util.contributors_util import DOIContributorUtil
 
 
-class MyTestCase(unittest.TestCase):
+class ContributorsUtilTestCase(unittest.TestCase):
     _doi_contributor_util = DOIContributorUtil(
         "https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON", "0001_NASA_PDS_1.pds.Node.pds.name"
     )

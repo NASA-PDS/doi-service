@@ -19,7 +19,7 @@ import xmlschema  # type: ignore
 from lxml import etree
 from lxml import isoschematron  # type: ignore
 from pds_doi_service.core.entities.doi import DoiStatus
-from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
 from pkg_resources import resource_filename

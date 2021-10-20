@@ -16,7 +16,7 @@ from distutils.util import strtobool
 from os.path import exists
 
 import jsonschema
-from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
 from pkg_resources import resource_filename

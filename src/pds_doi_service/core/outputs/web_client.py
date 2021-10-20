@@ -16,7 +16,7 @@ import pprint
 from typing import Optional
 
 import requests
-from pds_doi_service.core.input.exceptions import WebRequestException
+from pds_doi_service.core.entities.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.config_parser import DOIConfigUtil

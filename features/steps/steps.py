@@ -8,7 +8,7 @@ import uuid
 
 import logging
 
-from pds_doi_service.core.input.exceptions import InputFormatException, CriticalDOIException
+from pds_doi_service.core.entities.exceptions import InputFormatException, CriticalDOIException
 from pds_doi_service.core.util.doi_xml_differ import DOIDiffer
 from pds_doi_service.core.actions.draft import DOICoreActionDraft
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve

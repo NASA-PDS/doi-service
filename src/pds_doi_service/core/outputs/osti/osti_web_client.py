@@ -15,7 +15,7 @@ import json
 import pprint
 
 import requests
-from pds_doi_service.core.input.exceptions import WebRequestException
+from pds_doi_service.core.entities.exceptions import WebRequestException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiWebParser

@@ -63,8 +63,8 @@ import logging
 import os
 from datetime import datetime
 
-from pds_doi_service.core.input.exceptions import CriticalDOIException
-from pds_doi_service.core.input.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import CriticalDOIException
+from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.service import DOIServiceFactory
