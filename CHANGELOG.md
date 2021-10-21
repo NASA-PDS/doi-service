@@ -1,8 +1,8 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-20)
+## [v2.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.2-dev) (2021-10-20)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v2.0.2-dev)
 
 **Improvements:**
 
