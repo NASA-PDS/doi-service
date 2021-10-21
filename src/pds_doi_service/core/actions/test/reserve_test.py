@@ -12,7 +12,6 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.service import SERVICE_TYPE_OSTI
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pkg_resources import resource_filename
 
@@ -50,13 +49,13 @@ class ReserveActionTestCase(unittest.TestCase):
         Allows a non dry-run reserve to occur without actually submitting
         anything to the service provider's test server.
         """
-        # Parse the DOI's from the input label, update status to 'reserved',
+        # Parse the DOI's from the input label, add a dummy DOI value,
         # and create the output label
         dois, _ = ReserveActionTestCase._web_parser.parse_dois_from_label(payload, content_type=CONTENT_TYPE_JSON)
 
         doi = dois[0]
 
-        doi.status = DoiStatus.Reserved
+        doi.doi = "10.17189/abc123"
 
         o_doi_label = ReserveActionTestCase._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
@@ -87,8 +86,9 @@ class ReserveActionTestCase(unittest.TestCase):
         # Shouldn't be any errors returned
         self.assertEqual(len(errors), 0)
 
-        # Each DOI should have the expected status set
+        # Each DOI should have a DOI assigned and the expected status set
         for doi in dois:
+            self.assertIsNotNone(doi.doi)
             self.assertEqual(doi.status, expected_status)
 
     @patch.object(
@@ -108,11 +108,10 @@ class ReserveActionTestCase(unittest.TestCase):
             "input": join(self.input_dir, "DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
-            "dry_run": False,
             "force": True,
         }
 
-        self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved)
+        self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Draft)
 
 
     @patch.object(
@@ -132,11 +131,10 @@ class ReserveActionTestCase(unittest.TestCase):
             "input": join(self.input_dir, "DOI_Reserved_GEO_200318.csv"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
-            "dry_run": False,
             "force": True,
         }
 
-        self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Reserved)
+        self.run_reserve_test(reserve_args, expected_dois=3, expected_status=DoiStatus.Draft)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
@@ -146,27 +144,21 @@ class ReserveActionTestCase(unittest.TestCase):
         "submit_content",
         webclient_submit_patch,
     )
-    def test_reserve_json_and_submit(self):
+    def test_reserve_pds4_label_and_submit(self):
         """
-        Test Reserve action with a local JSON file, submitting the result to
+        Test Reserve action with a local PDS4 XML file, submitting the result to
         the service provider.
         """
-        # Select the appropriate JSON format based on the currently configured
-        # service
-        if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
-            input_file = join(self.input_dir, "DOI_Release_20210216_from_reserve.json")
-        else:
-            input_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+        input_file = join(self.input_dir, "bundle_in_with_contributors.xml")
 
         reserve_args = {
             "input": input_file,
             "node": "img",
             "submitter": "my_user@my_node.gov",
-            "dry_run": False,
             "force": True,
         }
 
-        self.run_reserve_test(reserve_args, expected_dois=1, expected_status=DoiStatus.Reserved)
+        self.run_reserve_test(reserve_args, expected_dois=1, expected_status=DoiStatus.Draft)
 
 
 if __name__ == "__main__":
