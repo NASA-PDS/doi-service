@@ -19,6 +19,7 @@ from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.entities.exceptions import InvalidIdentifierException
+from pds_doi_service.core.entities.exceptions import InvalidRecordException
 from pds_doi_service.core.entities.exceptions import raise_or_warn_exceptions
 from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
@@ -188,6 +189,14 @@ class DOICoreActionRelease(DOICoreAction):
 
         for doi in dois:
             try:
+                # If user is attempting to move a record with no DOI to review,
+                # raise an exception
+                if not doi.doi and self._review:
+                    raise InvalidRecordException(
+                        f"Record provided with identifier {doi.pds_identifier} does not have a DOI assigned.\n"
+                        f"A DOI must be reserved for the record before it can be moved to Review."
+                    )
+
                 single_doi_label = self._record_service.create_doi_record(doi)
 
                 # Validate the label representation of the DOI
