@@ -9,6 +9,7 @@ import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -19,12 +20,12 @@ from pkg_resources import resource_filename
 class ReleaseActionTestCase(unittest.TestCase):
     _record_service = None
     _web_parser = None
+    db_name = "doi_temp.db"
 
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
         cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
-        cls.db_name = "doi_temp.db"
 
         # Remove db_name if exist to have a fresh start otherwise exception will be
         # raised about using existing lidvid.
@@ -40,6 +41,19 @@ class ReleaseActionTestCase(unittest.TestCase):
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
 
+    def setUp(self) -> None:
+        """
+        Remove previous transaction DB and reinitialize the release action so
+        we don't have to worry about conflicts from reusing PDS ID's/DOI's between
+        tests.
+        """
+        if os.path.isfile(self.db_name):
+            os.remove(self.db_name)
+
+        self._release_action = DOICoreActionRelease(db_name=self.db_name)
+
+    _doi_counter = 1
+
     def webclient_submit_patch(
         self, payload, url=None, username=None, password=None, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML
     ):
@@ -49,13 +63,17 @@ class ReleaseActionTestCase(unittest.TestCase):
         Allows a no-review release to occur without actually submitting
         anything to the service provider's test server.
         """
-        # Parse the DOI's from the input label, update status to 'pending',
-        # and create the output label
+        # Parse the DOI's from the input label, assign a dummy DOI (if necessary)
+        # and update the DOI status to create the output label
         dois, _ = ReleaseActionTestCase._web_parser.parse_dois_from_label(payload, content_type=CONTENT_TYPE_JSON)
 
         doi = dois[0]
 
-        doi.status = DoiStatus.Pending
+        if not doi.doi:
+            doi.doi = f"10.17189/{ReleaseActionTestCase._doi_counter}"
+            ReleaseActionTestCase._doi_counter += 1
+
+        doi.status = DoiStatus.Findable
 
         o_doi_label = ReleaseActionTestCase._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
@@ -90,6 +108,9 @@ class ReleaseActionTestCase(unittest.TestCase):
         for doi in dois:
             self.assertEqual(doi.status, expected_status)
 
+            # There should always be a DOI assigned, for both review and full-release
+            self.assertIsNotNone(doi.doi)
+
     def test_reserve_release_to_review(self):
         """Test release to review status with a reserved DOI entry"""
 
@@ -98,7 +119,7 @@ class ReleaseActionTestCase(unittest.TestCase):
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
-            "no_review": False,
+            "review": True,
         }
 
         self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
@@ -119,23 +140,27 @@ class ReleaseActionTestCase(unittest.TestCase):
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
-            "no_review": True,
+            "review": False,
         }
 
-        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Pending)
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Findable)
 
-    def test_draft_release_to_review(self):
-        """Test release to review status with a draft DOI entry"""
+    def test_unreserved_release_to_review(self):
+        """Test release to review status using a record that has not been reserved (no DOI assigned)"""
 
         release_args = {
-            "input": join(self.input_dir, "DOI_Release_20200727_from_draft.xml"),
+            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
-            "no_review": False,
+            "review": True,
         }
 
-        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
+        # Submitting a record w/ no DOI assigned for Review should result in an
+        # exception since we have no way to store the transaction without a DOI
+        # of some kind
+        with self.assertRaises(CriticalDOIException):
+            self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
 
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
@@ -145,18 +170,21 @@ class ReleaseActionTestCase(unittest.TestCase):
         "submit_content",
         webclient_submit_patch,
     )
-    def test_draft_release_to_provider(self):
-        """Test release directly to the service provider with a draft DOI entry"""
+    def test_unreserved_release_to_provider(self):
+        """Test release directly to the service provider using a record that has not been reserved (no DOI assigned)"""
 
         release_args = {
-            "input": join(self.input_dir, "DOI_Release_20200727_from_draft.xml"),
+            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
-            "no_review": True,
+            "review": False,
         }
 
-        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Pending)
+        # Releasing a record with no DOI directly to the service provider should
+        # be OK, since we'll have a DOI assigned to use with the transaction database
+        # once the request goes through
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Findable)
 
     def test_review_release_to_review(self):
         """
@@ -170,7 +198,7 @@ class ReleaseActionTestCase(unittest.TestCase):
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
-            "no_review": False,
+            "review": True,
         }
 
         self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Review)
@@ -191,10 +219,10 @@ class ReleaseActionTestCase(unittest.TestCase):
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
-            "no_review": True,
+            "review": False,
         }
 
-        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Pending)
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Findable)
 
 
 if __name__ == "__main__":

@@ -34,71 +34,10 @@ class DraftActionTestCase(unittest.TestCase):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
 
-    def test_local_dir_one_file(self):
-        """Test draft request with local dir containing one file"""
-        kwargs = {
-            "input": join(self.input_dir, "draft_dir_one_file"),
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(len(errors), 0)
-
-        doi = dois[0]
-
-        self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.editors), 3)
-        self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
-        self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Collection)
-        self.assertIsInstance(doi.publication_date, datetime)
-        self.assertIsInstance(doi.date_record_added, datetime)
-
-    def test_local_dir_two_files(self):
-        """Test draft request with local dir containing two files"""
-        kwargs = {
-            "input": join(self.input_dir, "draft_dir_two_files"),
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 2)
-        self.assertEqual(len(errors), 0)
-
-        for doi in dois:
-            self.assertEqual(len(doi.authors), 4)
-            self.assertEqual(len(doi.keywords), 18)
-            self.assertEqual(doi.status, DoiStatus.Draft)
-            self.assertEqual(doi.product_type, ProductType.Collection)
-            self.assertIsInstance(doi.publication_date, datetime)
-            self.assertIsInstance(doi.date_record_added, datetime)
-            self.assertTrue(doi.pds_identifier.startswith("urn:nasa:pds:insight_cameras::1"))
-            self.assertTrue(doi.title.startswith("InSight Cameras Bundle 1."))
-
-            # Make sure for the "bundle_in_with_contributors.xml" file, we
-            # parsed the editors
-            if doi.pds_identifier == "urn:nasa:pds:insight_cameras::1.0":
-                self.assertEqual(len(doi.editors), 3)
-            # For "bundle_in.xml", there should be no editors
-            else:
-                self.assertEqual(len(doi.editors), 0)
-
     def test_local_pds4_bundle(self):
         """Test draft request with a local bundle path"""
         kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "bundle_in_with_doi_and_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -115,32 +54,6 @@ class DraftActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.editors), 3)
-        self.assertEqual(len(doi.keywords), 18)
-        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
-        self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Collection)
-        self.assertIsInstance(doi.publication_date, datetime)
-        self.assertIsInstance(doi.date_record_added, datetime)
-
-    def test_remote_pds4_bundle(self):
-        """Test draft request with a remote bundle URL"""
-        kwargs = {
-            "input": "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml",
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(len(errors), 0)
-
-        doi = dois[0]
-
-        self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 18)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.status, DoiStatus.Draft)
@@ -190,118 +103,11 @@ class DraftActionTestCase(unittest.TestCase):
         with self.assertRaises(InputFormatException):
             self._draft_action.run(**kwargs)
 
-    def test_remote_collection(self):
-        """Test draft request with a remote collection URL"""
-        kwargs = {
-            "input": "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml",
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(len(errors), 0)
-
-        doi = dois[0]
-
-        self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:data::1.0")
-        self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
-        self.assertIsInstance(doi.publication_date, datetime)
-        self.assertIsInstance(doi.date_record_added, datetime)
-
-    def test_remote_browse_collection(self):
-        """Test draft request with a remote browse collection URL"""
-        kwargs = {
-            "input": "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml",
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(len(errors), 0)
-
-        doi = dois[0]
-
-        self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:browse::1.0")
-        self.assertEqual(doi.description, "Collection of BROWSE products.")
-        self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
-        self.assertIsInstance(doi.publication_date, datetime)
-        self.assertIsInstance(doi.date_record_added, datetime)
-
-    def test_remote_calibration_collection(self):
-        """Test draft request with remote calibration collection URL"""
-        kwargs = {
-            "input": "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml",
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(len(errors), 0)
-
-        doi = dois[0]
-
-        self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 14)
-        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:calibration::1.0")
-        self.assertEqual(doi.description, "Collection of CALIBRATION files/products to include in the archive.")
-        self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
-        self.assertIsInstance(doi.publication_date, datetime)
-        self.assertIsInstance(doi.date_record_added, datetime)
-
-    def test_remote_document_collection(self):
-        """Test draft request with remote document collection URL"""
-        kwargs = {
-            "input": "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml",
-            "node": "img",
-            "submitter": "my_user@my_node.gov",
-            "force": True,
-        }
-
-        doi_label = self._draft_action.run(**kwargs)
-
-        dois, errors = self._web_parser.parse_dois_from_label(doi_label)
-
-        self.assertEqual(len(dois), 1)
-        self.assertEqual(len(errors), 0)
-
-        doi = dois[0]
-
-        self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 12)
-        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:document::1.0")
-        self.assertEqual(doi.description, "Collection of DOCUMENT products.")
-        self.assertEqual(doi.status, DoiStatus.Draft)
-        self.assertEqual(doi.product_type, ProductType.Dataset)
-        self.assertIsInstance(doi.publication_date, datetime)
-        self.assertIsInstance(doi.date_record_added, datetime)
-
     def test_move_lidvid_to_draft(self):
         """Test moving a review record back to draft via its lidvid"""
         # Start by drafting a PDS label
         draft_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "bundle_in_with_doi_and_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -356,7 +162,7 @@ class DraftActionTestCase(unittest.TestCase):
         submitting a draft.
         """
         draft_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "bundle_in_with_doi_and_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -372,7 +178,9 @@ class DraftActionTestCase(unittest.TestCase):
 
         doi = dois[0]
 
-        # Slightly modify the lidvid so we trigger the "duplicate title" warning
+        # Assign a new DOI and slightly modify the lidvid so we trigger the "duplicate title" warning
+        doi.doi = "10.17189/abcdef"
+        doi.id = "abcdef"
         doi.pds_identifier += ".1"
         doi.identifiers.clear()
         doi.related_identifiers.clear()

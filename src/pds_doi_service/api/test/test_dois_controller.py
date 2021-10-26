@@ -286,9 +286,9 @@ class TestDoisController(BaseTestCase):
 
         self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
-        # Should only get two of the records back
+        # Should get all of the records back
         records = response.json
-        self.assertEqual(len(records), 2)
+        self.assertEqual(len(records), 3)
 
         # Finally, test with a malformed start/end date and ensure we
         # get "invalid argument" code back
@@ -520,7 +520,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(submit_record.submitter, "eng-submitter@jpl.nasa.gov")
         self.assertEqual(submit_record.identifier, "urn:nasa:pds:insight_cameras::1.1")
         self.assertEqual(submit_record.status, DoiStatus.Review)
-        self.assertEqual(submit_record.doi, "10.17189/28957")
+        self.assertEqual(submit_record.doi, "10.17189/28607")
 
     def test_disabled_release_endpoint(self):
         """
@@ -715,7 +715,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.title, "InSight Cameras Bundle 1.1")
         self.assertEqual(record.submitter, "eng-submitter@jpl.nasa.gov")
         self.assertEqual(record.identifier, "urn:nasa:pds:insight_cameras::1.1")
-        self.assertEqual(record.status, DoiStatus.Pending)
+        self.assertEqual(record.status, DoiStatus.Findable)
 
         # Make sure we only got one record back
         dois, _ = DOIServiceFactory.get_web_parser_service().parse_dois_from_label(record.record)
@@ -740,7 +740,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.title, "InSight Cameras Bundle")
         self.assertEqual(record.submitter, "eng-submitter@jpl.nasa.gov")
         self.assertEqual(record.identifier, "urn:nasa:pds:insight_cameras")
-        self.assertEqual(record.status, DoiStatus.Pending)
+        self.assertEqual(record.status, DoiStatus.Findable)
 
         # Make sure we only got one record back
         dois, _ = DOIServiceFactory.get_web_parser_service().parse_dois_from_label(record.record)
@@ -836,7 +836,6 @@ class TestDoisController(BaseTestCase):
     @patch.object(pds_doi_service.core.outputs.transaction.Transaction, "log", transaction_log_patch)
     def test_get_check_dois(self):
         """Test case for get_check_dois"""
-        # TODO need datacite version
         test_db = join(self.test_data_dir, "pending_dois.db")
 
         query_string = [
