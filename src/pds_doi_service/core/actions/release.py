@@ -38,7 +38,7 @@ class DOICoreActionRelease(DOICoreAction):
     _name = "release"
     _description = "Move a reserved DOI to review, or submit a DOI for release to the service provider"
     _order = 20
-    _run_arguments = ("input", "node", "submitter", "force", "no_review")
+    _run_arguments = ("input", "node", "submitter", "force", "review")
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
@@ -52,7 +52,7 @@ class DOICoreActionRelease(DOICoreAction):
         self._node = None
         self._submitter = None
         self._force = False
-        self._no_review = False
+        self._review = True
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -98,10 +98,11 @@ class DOICoreActionRelease(DOICoreAction):
         action_parser.add_argument(
             "--no-review",
             required=False,
-            action="store_true",
+            dest="review",
+            action="store_false",
             help="If provided, the requested DOI will be released directly to "
             "the DOI service provider for registration. Use to override the "
-            'default behavior of releasing a DOI to "review" status.',
+            'default behavior of releasing a DOI to "Review" status.',
         )
 
     def _parse_input(self, input_file):
@@ -143,14 +144,15 @@ class DOICoreActionRelease(DOICoreAction):
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
             # Add 'status' field so the ranking in the workflow can be determined.
-            doi.status = DoiStatus.Pending if self._no_review else DoiStatus.Review
+            if self._review:
+                doi.status = DoiStatus.Review
 
             # If a site url was not created for the DOI at parse time, try
             # to create one now
             if not doi.site_url:
                 doi.site_url = create_landing_page_url(doi.pds_identifier, doi.product_type)
 
-            if self._no_review:
+            if not self._review:
                 # Add the event field to instruct DataCite to publish DOI to
                 # findable state (should have no effect for other providers)
                 doi.event = DoiEvent.Publish
@@ -257,7 +259,7 @@ class DOICoreActionRelease(DOICoreAction):
 
                 # If the next step is to release, submit to the service provider and
                 # use the response label for the local transaction database entry
-                if self._no_review:
+                if not self._review:
                     # Determine the correct HTTP verb and URL for submission of this DOI
                     method, url = self._web_client.endpoint_for_doi(doi)
 

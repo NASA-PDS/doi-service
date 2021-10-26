@@ -380,8 +380,8 @@ def post_submit_doi(identifier, force=None):
     logger.info("POST /dois/submit request received for identifier %s", identifier)
 
     # A submit action is the same as invoking the release endpoint with
-    # --no-review set to False
-    kwargs = {"identifier": identifier, "force": force, "no_review": False}
+    # review set to True
+    kwargs = {"identifier": identifier, "force": force, "review": True}
 
     return post_release_doi(**kwargs)
 
@@ -448,7 +448,7 @@ def post_release_doi(identifier, force=False, **kwargs):
                 "force": force,
                 # Default for this endpoint should be to skip review and release
                 # directly to the DOI service provider
-                "no_review": kwargs.get("no_review", True),
+                "review": kwargs.get("review", False),
             }
 
             release_label = release_action.run(**release_kwargs)
@@ -474,7 +474,7 @@ def post_release_doi(identifier, force=False, **kwargs):
         dois, node=list_record["node_id"], submitter=list_record["submitter"], doi_label=release_label
     )
 
-    logger.info('Posted %d record(s) to status "%s"', len(records), "release" if kwargs.get("no_review") else "review")
+    logger.info('Posted %d record(s) to status "%s"', len(records), "review" if kwargs.get("review") else "release")
 
     return records, 200
 
