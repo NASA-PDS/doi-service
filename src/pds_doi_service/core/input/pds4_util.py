@@ -260,6 +260,7 @@ class DOIPDS4LabelUtil:
             site_url = create_landing_page_url(identifier, product_type)
 
             doi = Doi(
+                doi=pds4_fields.get("doi"),
                 status=DoiStatus.Unknown,
                 title=pds4_fields["title"],
                 description=pds4_fields["description"],
