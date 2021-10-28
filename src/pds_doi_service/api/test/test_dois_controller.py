@@ -247,7 +247,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.title, "InSight Cameras Bundle 1.0")
         self.assertEqual(summary.submitter, "img-submitter@jpl.nasa.gov")
         self.assertEqual(summary.identifier, "urn:nasa:pds:insight_cameras::1.0")
-        self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
+        self.assertEqual(summary.status, DoiStatus.Draft)
 
         # Test fetching of a record that only has an LID (no VID) associated to it
         query_string = [("node", "img"), ("ids", "urn:nasa:pds:lab_shocked_feldspars"), ("db_name", test_db)]
@@ -272,10 +272,10 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(summary.title, "Laboratory Shocked Feldspars Bundle")
         self.assertEqual(summary.submitter, "img-submitter@jpl.nasa.gov")
         self.assertEqual(summary.identifier, "urn:nasa:pds:lab_shocked_feldspars")
-        self.assertEqual(summary.status, DoiStatus.Reserved_not_submitted)
+        self.assertEqual(summary.status, DoiStatus.Draft)
 
         # Now try filtering by workflow status
-        query_string = [("status", DoiStatus.Reserved_not_submitted.value), ("db_name", test_db)]
+        query_string = [("status", DoiStatus.Draft.value), ("db_name", test_db)]
 
         response = self.client.open(
             "/PDS_APIs/pds_doi_api/0.2/dois",
@@ -286,9 +286,9 @@ class TestDoisController(BaseTestCase):
 
         self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
-        # Should only get two of the records back
+        # Should get all of the records back
         records = response.json
-        self.assertEqual(len(records), 2)
+        self.assertEqual(len(records), 3)
 
         # Finally, test with a malformed start/end date and ensure we
         # get "invalid argument" code back
@@ -393,7 +393,7 @@ class TestDoisController(BaseTestCase):
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionReserve, "run", reserve_action_run_patch)
     def test_post_dois_reserve(self):
         """Test dry-run reserve POST"""
-        # Submit a new bundle in reserve (not submitted) status
+        # Submit a new bundle in reserve status
         body = LabelsPayload(
             [
                 LabelPayload(
@@ -434,7 +434,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(reserve_record.title, "InSight Cameras Bundle")
         self.assertEqual(reserve_record.submitter, "img-submitter@jpl.nasa.gov")
         self.assertEqual(reserve_record.identifier, "urn:nasa:pds:insight_cameras::2.0")
-        self.assertEqual(reserve_record.status, DoiStatus.Reserved_not_submitted)
+        self.assertEqual(reserve_record.status, DoiStatus.Draft)
 
     def test_post_dois_invalid_requests(self):
         """Test invalid POST requests"""
@@ -520,7 +520,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(submit_record.submitter, "eng-submitter@jpl.nasa.gov")
         self.assertEqual(submit_record.identifier, "urn:nasa:pds:insight_cameras::1.1")
         self.assertEqual(submit_record.status, DoiStatus.Review)
-        self.assertEqual(submit_record.doi, "10.17189/28957")
+        self.assertEqual(submit_record.doi, "10.17189/28607")
 
     def test_disabled_release_endpoint(self):
         """
@@ -715,7 +715,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.title, "InSight Cameras Bundle 1.1")
         self.assertEqual(record.submitter, "eng-submitter@jpl.nasa.gov")
         self.assertEqual(record.identifier, "urn:nasa:pds:insight_cameras::1.1")
-        self.assertEqual(record.status, DoiStatus.Pending)
+        self.assertEqual(record.status, DoiStatus.Findable)
 
         # Make sure we only got one record back
         dois, _ = DOIServiceFactory.get_web_parser_service().parse_dois_from_label(record.record)
@@ -740,7 +740,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(record.title, "InSight Cameras Bundle")
         self.assertEqual(record.submitter, "eng-submitter@jpl.nasa.gov")
         self.assertEqual(record.identifier, "urn:nasa:pds:insight_cameras")
-        self.assertEqual(record.status, DoiStatus.Pending)
+        self.assertEqual(record.status, DoiStatus.Findable)
 
         # Make sure we only got one record back
         dois, _ = DOIServiceFactory.get_web_parser_service().parse_dois_from_label(record.record)
@@ -836,7 +836,6 @@ class TestDoisController(BaseTestCase):
     @patch.object(pds_doi_service.core.outputs.transaction.Transaction, "log", transaction_log_patch)
     def test_get_check_dois(self):
         """Test case for get_check_dois"""
-        # TODO need datacite version
         test_db = join(self.test_data_dir, "pending_dois.db")
 
         query_string = [

@@ -475,7 +475,9 @@ class DOIInputUtil:
 
             dois, _ = web_parser.parse_dois_from_label(json_contents, content_type=CONTENT_TYPE_JSON)
         except InputFormatException as err:
-            logger.warning('Unable to parse DOI objects from provided json file "%s"\nReason: %s', json_path, str(err))
+            msg = f'Unable to parse DOI objects from provided json file "{json_path}"\nReason: {str(err)}'
+            logger.warning(msg)
+            raise InputFormatException(msg)
 
         return dois
 

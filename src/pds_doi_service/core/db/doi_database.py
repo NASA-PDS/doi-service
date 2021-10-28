@@ -36,8 +36,8 @@ class DOIDataBase:
 
     DOI_DB_SCHEMA = OrderedDict(
         {
-            "identifier": "TEXT NOT NULL",  # PDS identifier (any version)
-            "doi": "TEXT",  # DOI (may be null for pending or draft)
+            "doi": "TEXT NOT NULL",  # DOI (must be provided for all records)
+            "identifier": "TEXT",  # PDS identifier (any version)
             "status": "TEXT NOT NULL",  # current status
             "title": "TEXT",  # title used for the DOI
             "submitter": "TEXT",  # email of the submitter of the DOI
@@ -79,12 +79,12 @@ class DOIDataBase:
             # Set m_my_conn to None to signify that there is no connection.
             self.m_my_conn = None
         else:
-            logger.warn("Database connection to %s has not been started or is " "already closed", self.m_database_name)
+            logger.warn("Database connection to %s has not been started or is already closed", self.m_database_name)
 
     def create_connection(self):
         """Create and return a connection to the SQLite database."""
         if self.m_my_conn is not None:
-            logger.warning("There is already an open database connection, " "closing existing connection.")
+            logger.warning("There is already an open database connection, closing existing connection.")
             self.close_database()
 
         logger.info("Connecting to SQLite3 (ver %s) database %s", sqlite3.version, self.m_database_name)
@@ -130,7 +130,7 @@ class DOIDataBase:
         table_pointer = self.m_my_conn.cursor()
 
         # Get the count of tables with the given name.
-        query_string = "SELECT count(name) FROM sqlite_master WHERE type='table' AND " f"name='{table_name}'"
+        query_string = f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}'"
 
         logger.info("Executing query: %s", query_string)
         table_pointer.execute(query_string)
@@ -257,9 +257,9 @@ class DOIDataBase:
 
     def write_doi_info_to_database(
         self,
-        identifier,
+        doi,
         transaction_key,
-        doi=None,
+        identifier=None,
         date_added=datetime.now(),
         date_updated=datetime.now(),
         status=DoiStatus.Unknown,
@@ -275,13 +275,13 @@ class DOIDataBase:
 
         Parameters
         ----------
-        identifier : str
-            The PDS identifier to associate as the primary key for the new row.
+        doi : str
+            The DOI value to associate as the primary key for the new row.
         transaction_key : str
             Path to the local transaction history location associated with the
             new row.
-        doi : str, optional
-            The DOI value to associate with the new row. Defaults to None.
+        identifier : str, optional
+            The PDS identifier to associate to the new row. Defaults to None.
         date_added : datetime, optional
             Time that the row was initially added to the database. Defaults
             to the current time.
@@ -336,14 +336,12 @@ class DOIDataBase:
         try:
             # Create and execute the query to unset the is_latest field for all
             # records with the same identifier field.
-            query_string = self.query_string_for_is_latest_update(
-                self.m_default_table_name, primary_key_column="identifier"
-            )
+            query_string = self.query_string_for_is_latest_update(self.m_default_table_name, primary_key_column="doi")
 
-            self.m_my_conn.execute(query_string, (identifier,))
+            self.m_my_conn.execute(query_string, (doi,))
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = f"Failed to update is_latest field for identifier {identifier}, " f"reason: {err}"
+            msg = f"Failed to update is_latest field for DOI {doi}, reason: {err}"
             logger.error(msg)
             raise RuntimeError(msg)
 
@@ -358,7 +356,7 @@ class DOIDataBase:
             self.m_my_conn.execute(query_string, data_tuple)
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = f"Failed to commit transaction for identifier {identifier}, " f"reason: {err}"
+            msg = f"Failed to commit transaction for DOI {doi}, " f"reason: {err}"
             logger.error(msg)
             raise RuntimeError(msg)
 
@@ -423,7 +421,7 @@ class DOIDataBase:
 
         criterias_str, criteria_dict = DOIDataBase.parse_criteria(query_criterias)
 
-        query_string = f"SELECT * from {table_name} " f"WHERE is_latest=1 {criterias_str} ORDER BY date_updated"
+        query_string = f"SELECT * from {table_name} WHERE is_latest=1 {criterias_str} ORDER BY date_updated"
 
         logger.debug("SELECT query_string: %s", query_string)
 
@@ -578,52 +576,54 @@ class DOIDataBase:
         return where_subclause, named_parameter_values
 
     @staticmethod
-    def _get_simple_in_criteria(v, column):
-        named_parameters = ",".join([":" + column + "_" + str(i) for i in range(len(v))])
-        named_parameter_values = {column + "_" + str(i): v[i].lower() for i in range(len(v))}
-        return f" AND lower({column}) IN ({named_parameters})", named_parameter_values
+    def _get_simple_in_criteria(column_name, value):
+        named_parameters = ",".join([":" + column_name + "_" + str(i) for i in range(len(value))])
+        named_parameter_values = {column_name + "_" + str(i): value[i].lower() for i in range(len(value))}
+        return f" AND lower({column_name}) IN ({named_parameters})", named_parameter_values
 
     @staticmethod
-    def _get_query_criteria_title(v):
-        return DOIDataBase._get_simple_in_criteria(v, "title")
+    def _get_query_criteria_title(title_value):
+        return DOIDataBase._form_query_with_wildcards("title", title_value)
 
     @staticmethod
-    def _get_query_criteria_doi(v):
-        return DOIDataBase._get_simple_in_criteria(v, "doi")
+    def _get_query_criteria_doi(doi_value):
+        return DOIDataBase._form_query_with_wildcards("doi", doi_value)
 
     @staticmethod
-    def _get_query_criteria_ids(v):
-        return DOIDataBase._form_query_with_wildcards("identifier", v)
+    def _get_query_criteria_ids(id_value):
+        return DOIDataBase._form_query_with_wildcards("identifier", id_value)
 
     @staticmethod
-    def _get_query_criteria_submitter(v):
-        return DOIDataBase._get_simple_in_criteria(v, "submitter")
+    def _get_query_criteria_submitter(submitter_value):
+        return DOIDataBase._get_simple_in_criteria("submitter", submitter_value)
 
     @staticmethod
-    def _get_query_criteria_node(v):
-        return DOIDataBase._get_simple_in_criteria(v, "node_id")
+    def _get_query_criteria_node(node_value):
+        return DOIDataBase._get_simple_in_criteria("node_id", node_value)
 
     @staticmethod
-    def _get_query_criteria_status(v):
-        return DOIDataBase._get_simple_in_criteria(v, "status")
+    def _get_query_criteria_status(status_value):
+        return DOIDataBase._get_simple_in_criteria("status", status_value)
 
     @staticmethod
-    def _get_query_criteria_start_update(v):
-        return (" AND date_updated >= :start_update", {"start_update": v.replace(tzinfo=timezone.utc).timestamp()})
+    def _get_query_criteria_start_update(start_value):
+        return " AND date_updated >= :start_update", {
+            "start_update": start_value.replace(tzinfo=timezone.utc).timestamp()
+        }
 
     @staticmethod
-    def _get_query_criteria_end_update(v):
-        return (" AND date_updated <= :end_update", {"end_update": v.replace(tzinfo=timezone.utc).timestamp()})
+    def _get_query_criteria_end_update(end_value):
+        return " AND date_updated <= :end_update", {"end_update": end_value.replace(tzinfo=timezone.utc).timestamp()}
 
     @staticmethod
     def parse_criteria(query_criterias):
         criterias_str = ""
         criteria_dict = {}
 
-        for k, v in query_criterias.items():
-            logger.debug("Calling get_query_criteria_%s with value %s", k, v)
+        for key, value in query_criterias.items():
+            logger.debug("Calling get_query_criteria_%s with value %s", key, value)
 
-            criteria_str, dict_entry = getattr(DOIDataBase, "_get_query_criteria_" + k)(v)
+            criteria_str, dict_entry = getattr(DOIDataBase, "_get_query_criteria_" + key)(value)
 
             logger.debug("criteria_str: %s", criteria_str)
             logger.debug("dict_entry: %s", dict_entry)

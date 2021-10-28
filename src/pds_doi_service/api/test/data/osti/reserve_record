@@ -1,6 +1,6 @@
 [
     {
-        "status": "reserved_not_submitted",
+        "status": "draft",
         "title": "InSight Cameras Bundle",
         "sponsoring_organization": "National Aeronautics and Space Administration (NASA)",
         "accession_number": "urn:nasa:pds:insight_cameras::2.0",

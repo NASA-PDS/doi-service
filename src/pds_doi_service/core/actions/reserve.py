@@ -27,7 +27,6 @@ from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
 
@@ -41,12 +40,12 @@ class DOICoreActionReserve(DOICoreAction):
         "Reserved DOI's may be released after via the release action"
     )
     _order = 0
-    _run_arguments = ("input", "node", "submitter", "dry_run", "force")
+    _run_arguments = ("input", "node", "submitter", "force")
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._input_util = DOIInputUtil()
+        self._input_util = DOIInputUtil(valid_extensions=[".xml", ".csv", ".xlsx", ".xls"])
         self._record_service = DOIServiceFactory.get_doi_record_service()
         self._validator_service = DOIServiceFactory.get_validator_service()
         self._web_client = DOIServiceFactory.get_web_client_service()
@@ -55,7 +54,6 @@ class DOICoreActionReserve(DOICoreAction):
         self._node = None
         self._submitter = None
         self._force = False
-        self._dry_run = True
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -88,7 +86,7 @@ class DOICoreActionReserve(DOICoreAction):
             "-i",
             "--input",
             required=True,
-            help="Path to a PDS4 XML label, DataCite JSON label or XLS/CSV "
+            help="Path to a PDS4 XML label or XLS/CSV "
             "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
         )
         action_parser.add_argument(
@@ -97,15 +95,6 @@ class DOICoreActionReserve(DOICoreAction):
             required=True,
             metavar="EMAIL",
             help="The email address to associate with the Reserve request.",
-        )
-        action_parser.add_argument(
-            "-dry-run",
-            "--dry-run",
-            required=False,
-            action="store_true",
-            help="Performs the Reserve request without submitting the record. "
-            "The record is logged to the local database with a status "
-            "of 'reserved_not_submitted'.",
         )
 
     def _parse_input(self, input_file):
@@ -148,18 +137,12 @@ class DOICoreActionReserve(DOICoreAction):
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
             # Add 'status' field so the ranking in the workflow can be determined
-            doi.status = DoiStatus.Reserved_not_submitted if self._dry_run else DoiStatus.Reserved
+            doi.status = DoiStatus.Draft
 
-            # If a site url was not created for the DOI at parse time, try
-            # to create one now
-            if not doi.site_url:
-                doi.site_url = create_landing_page_url(doi.pds_identifier, doi.product_type)
-
-            if not self._dry_run:
-                # Add the event field to instruct DataCite to make this entry
-                # hidden so it can be modified (should have no effect for other
-                # providers)
-                doi.event = DoiEvent.Hide
+            # Add the event field to instruct DataCite to make this entry
+            # hidden so it can be modified (should have no effect for other
+            # providers)
+            doi.event = DoiEvent.Hide
 
         return dois
 
@@ -256,14 +239,13 @@ class DOICoreActionReserve(DOICoreAction):
                 # Create the JSON request label to send
                 io_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
-                # Submit the Reserve request if this isn't a dry run
-                if not self._dry_run:
-                    # Determine the correct HTTP verb and URL for submission of this DOI
-                    method, url = self._web_client.endpoint_for_doi(doi)
+                # Submit the Reserve request
+                # Determine the correct HTTP verb and URL for submission of this DOI
+                method, url = self._web_client.endpoint_for_doi(doi)
 
-                    doi, o_doi_label = self._web_client.submit_content(
-                        method=method, url=url, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
-                    )
+                doi, o_doi_label = self._web_client.submit_content(
+                    method=method, url=url, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
+                )
 
                 # Log the inputs and outputs of this transaction
                 transaction = self.m_transaction_builder.prepare_transaction(

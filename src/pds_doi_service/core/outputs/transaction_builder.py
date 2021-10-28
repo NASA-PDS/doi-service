@@ -52,13 +52,13 @@ class TransactionBuilder:
 
         """
         if output_content_type not in VALID_CONTENT_TYPES:
-            raise ValueError("Invalid content type requested, must be one of " f'{",".join(VALID_CONTENT_TYPES)}')
+            raise ValueError(f"Invalid content type requested, must be one of {','.join(VALID_CONTENT_TYPES)}")
 
-        # Get the latest available entry in the DB for this lidvid, if it exists
-        query_criteria = {"ids": [doi.pds_identifier]}
+        # Get the latest available entry in the DB for this DOI, if it exists
+        query_criteria = {"doi": [doi.doi]}
         columns, rows = self.m_doi_database.select_latest_rows(query_criteria)
 
-        # Get the latest transaction record for this LIDVID so we can carry
+        # Get the latest transaction record for this DOI so we can carry
         # forward certain fields to the next transaction
         if rows:
             latest_row = dict(zip(columns, rows[0]))
@@ -66,10 +66,9 @@ class TransactionBuilder:
             # Carry original release date forward
             doi.date_record_added = latest_row["date_added"]
 
-            # We might have a DOI already in the database from a previous reserve
-            if not doi.doi and latest_row["doi"]:
-                doi.doi = latest_row["doi"]
-                doi.id = doi.doi.split("/")[-1]
+            # We might have a PDS ID already in the database from a previous reserve
+            if not doi.pds_identifier and latest_row["identifier"]:
+                doi.pds_identifier = latest_row["identifier"]
 
         # Create the output label that's written to the local transaction
         # history on disk. This label should represent the most up-to-date

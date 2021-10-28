@@ -153,7 +153,6 @@ class DOIOstiValidator(DOIServiceValidator):
         possible_status_list = [
             DoiStatus.Draft,
             DoiStatus.Reserved,
-            DoiStatus.Reserved_not_submitted,
             DoiStatus.Review,
             DoiStatus.Pending,
             DoiStatus.Registered,

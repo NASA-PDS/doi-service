@@ -56,8 +56,7 @@ paths:
       - name: status
         in: query
         description: List of DOI workflow status values to filter results by. Status
-          must be one of the following - "unknown", "reserved_not_submitted",  "reserved",
-          "draft", "review", "pending", or "registered".
+          must be one of the following - "unknown", "draft", "review", or "findable".
         required: false
         style: form
         explode: true

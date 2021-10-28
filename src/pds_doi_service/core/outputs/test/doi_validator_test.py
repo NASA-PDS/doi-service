@@ -49,9 +49,9 @@ class DoiValidatorTest(unittest.TestCase):
         # Write a record into database
         # All fields are valid.
         self._database_obj.write_doi_info_to_database(
-            self.identifier,
-            self.transaction_key,
             self.doi,
+            self.transaction_key,
+            self.identifier,
             self.release_date,
             self.transaction_date,
             self.status,
@@ -257,7 +257,7 @@ class DoiValidatorTest(unittest.TestCase):
             pds_identifier="",
             id=self.id + "123",
             doi=self.doi + "123",
-            status=DoiStatus.Reserved_not_submitted,
+            status=DoiStatus.Draft,
         )
 
         self.assertRaises(InvalidRecordException, self._doi_validator.validate, doi_obj)
@@ -273,7 +273,7 @@ class DoiValidatorTest(unittest.TestCase):
             product_type=self.product_type,
             product_type_specific=self.product_type_specific,
             pds_identifier="",
-            status=DoiStatus.Reserved_not_submitted,
+            status=DoiStatus.Draft,
         )
 
         # Test invalid starting token (must be urn)
@@ -319,7 +319,7 @@ class DoiValidatorTest(unittest.TestCase):
             pds_identifier=self.lid + "::" + self.vid,
             id="1234",
             doi=self.doi,
-            status=DoiStatus.Reserved_not_submitted,
+            status=DoiStatus.Draft,
         )
 
         self.assertRaises(InvalidRecordException, self._doi_validator.validate, doi_obj)

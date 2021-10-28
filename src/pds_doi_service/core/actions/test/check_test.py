@@ -52,9 +52,9 @@ class CheckActionTestCase(unittest.TestCase):
         submitter = "img-submitter@jpl.nasa.gov"
 
         cls._database_obj.write_doi_info_to_database(
-            identifier,
-            transaction_key,
             doi,
+            transaction_key,
+            identifier,
             date_added,
             date_updated,
             status,
