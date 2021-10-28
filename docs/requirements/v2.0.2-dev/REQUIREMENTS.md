@@ -206,3 +206,7 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a user, I want a simplified DOI lifecycle workflow ([#286](https://github.com/NASA-PDS/pds-doi-service/issues/286)) 
+
+
+This requirement is not impacted by the current version
