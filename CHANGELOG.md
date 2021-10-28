@@ -1,6 +1,18 @@
 # Changelog
 
-## [v2.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.2-dev) (2021-10-20)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-28)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.2-dev...«unknown»)
+
+**Requirements:**
+
+- As a user, I want a simplified DOI lifecycle workflow [\#286](https://github.com/NASA-PDS/pds-doi-service/issues/286)
+
+**Defects:**
+
+- doi-service does not connect to dataCite [\#264](https://github.com/NASA-PDS/pds-doi-service/issues/264) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
+
+## [v2.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.2-dev) (2021-10-21)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v2.0.2-dev)
 
