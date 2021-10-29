@@ -49,7 +49,7 @@ class DOIWebParser:
 
         """
         raise NotImplementedError(
-            f"Subclasses of {DOIWebParser.__name__} must provide an " f"implementation for parse_dois_from_label()"
+            f"Subclasses of {DOIWebParser.__name__} must provide an implementation for parse_dois_from_label()"
         )
 
     @staticmethod
@@ -69,12 +69,38 @@ class DOIWebParser:
         Returns
         -------
         record : str
-            The single found record embedded in a <records> tag. This string is
-            suitable to be written to disk as a new label.
+            The single found record. This string is suitable to be written to
+            disk as a new label.
         content_type : str
             The determined content type of the provided label.
 
         """
         raise NotImplementedError(
-            f"Subclasses of {DOIWebParser.__name__} must provide an " f"implementation for get_record_for_identifier()"
+            f"Subclasses of {DOIWebParser.__name__} must provide an implementation for get_record_for_identifier()"
+        )
+
+    @staticmethod
+    def get_record_for_doi(label_file, doi):
+        """
+        Returns a new label from the provided one containing only the entry
+        corresponding to the specified DOI.
+
+        Parameters
+        ----------
+        label_file : str
+            Path to the label file to pull a record from.
+        doi : str
+            The DOI to search for within the provided label file.
+
+        Returns
+        -------
+        record : str
+            The single found record. This string is suitable to be written to
+            disk as a new label.
+        content_type : str
+            The determined content type of the provided label.
+
+        """
+        raise NotImplementedError(
+            f"Subclasses of {DOIWebParser.__name__} must provide an implementation for get_record_for_doi()"
         )

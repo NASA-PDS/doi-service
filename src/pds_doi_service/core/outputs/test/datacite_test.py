@@ -12,10 +12,13 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import UnknownDoiException
+from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.outputs.datacite import DOIDataCiteRecord
 from pds_doi_service.core.outputs.datacite import DOIDataCiteValidator
 from pds_doi_service.core.outputs.datacite import DOIDataCiteWebClient
 from pds_doi_service.core.outputs.datacite import DOIDataCiteWebParser
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -261,7 +264,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertIsInstance(doi.date_record_updated, datetime)
         self.assertEqual(
             doi.description,
-            "InSight Cameras Experiment Data Record (EDR) " "and Reduced Data Record (RDR) Data Products",
+            "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
         )
         self.assertEqual(doi.doi, "10.13143/yzw2-vz66")
         self.assertListEqual(doi.editors, self.expected_editors)
@@ -294,8 +297,55 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
         self._compare_doi_to_expected(doi)
 
+    def test_get_record_for_identifier(self):
+        """Test isolation of specific record based on PDS identifier"""
+        input_json_file = join(self.input_dir, "DOI_Reserved_multi_entry.json")
 
-class DOIDataCiteValidatorTestCast(unittest.TestCase):
+        # Test extraction of a single record from a multi-entry label, parse the
+        # DOI from the result, and ensure we get the record back we expected
+        record, content_type = DOIDataCiteWebParser.get_record_for_identifier(input_json_file, "urn:nasa:pds:ladee_nms:data_raw::1.0")
+
+        self.assertEqual(content_type, CONTENT_TYPE_JSON)
+
+        dois, _ = DOIDataCiteWebParser.parse_dois_from_label(record)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:ladee_nms:data_raw::1.0")
+        self.assertEqual(doi.doi, "10.17189/1408893")
+
+        # Make sure we get an exception back for an identifier that is not present
+        # in the file
+        with self.assertRaises(UnknownIdentifierException):
+            DOIDataCiteWebParser.get_record_for_identifier(input_json_file, "urn:nasa:pds:ladee_nms:data_raw::2.0")
+
+    def test_get_record_for_doi(self):
+        """Test isolation of a specific record based on DOI"""
+        input_json_file = join(self.input_dir, "DOI_Reserved_multi_entry.json")
+
+        # Test extraction of a single record from a multi-entry label, parse the DOI
+        # from the result, and ensure we got the record back we expected
+        record, content_type = DOIDataCiteWebParser.get_record_for_doi(input_json_file, "10.17189/1408892")
+
+        self.assertEqual(content_type, CONTENT_TYPE_JSON)
+
+        dois, _ = DOIDataCiteWebParser.parse_dois_from_label(record)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:ladee_nms:data_calibrated::1.0")
+        self.assertEqual(doi.doi, "10.17189/1408892")
+
+        # Make sure we get an exception for a DOI that is not present in the file
+        with self.assertRaises(UnknownDoiException):
+            DOIDataCiteWebParser.get_record_for_doi(input_json_file, "10.17189/1408890")
+
+
+class DOIDataCiteValidatorTestCase(unittest.TestCase):
     """Unit tests for the datacite_validator.py module"""
 
     @classmethod
