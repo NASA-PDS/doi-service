@@ -39,10 +39,10 @@ MAX_LID_FIELDS = 6
 
 
 class DOIValidator:
-    m_doi_config_util = DOIConfigUtil()
+    doi_config_util = DOIConfigUtil()
 
     # The workflow_order dictionary contains the progression of the status of a DOI:
-    m_workflow_order = {
+    workflow_order = {
         DoiStatus.Error: 0,
         DoiStatus.Unknown: 0,
         DoiStatus.Reserved: 1,
@@ -55,27 +55,35 @@ class DOIValidator:
     }
 
     def __init__(self, db_name=None):
-        self._config = self.m_doi_config_util.get_config()
+        self._config = self.doi_config_util.get_config()
 
-        if db_name:
-            # If database name is specified from user, use it.
-            self.m_default_db_file = db_name
-        else:
-            # Default name of the database.
-            self.m_default_db_file = self._config.get("OTHER", "db_file")
+        # If database name is specified from user, use it.
+        default_db_file = db_name if db_name else self._config.get("OTHER", "db_file")
 
-        self._database_obj = DOIDataBase(self.m_default_db_file)
+        self._database_obj = DOIDataBase(default_db_file)
 
     def _check_field_site_url(self, doi: Doi):
         """
-        If the site_url field exists in the doi object, check to see if it is
-        online. If the site is not online, an exception will be thrown.
-        """
-        logger.debug("doi,site_url: %s,%s", doi, doi.site_url)
+        If the site_url field is defined for the provided Doi object, check to
+        see if it is online. This check is typically only made for release
+        requests, which require a URL field to be set.
 
-        if doi.site_url and doi.site_url != "N/A":
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to check.
+
+        Raises
+        ------
+        SiteURLNotExistException
+            If the site URL is defined for the Doi object and is not reachable.
+
+        """
+        logger.debug("doi,site_url: %s,%s", doi.doi, doi.site_url)
+
+        if doi.site_url:
             try:
-                response = requests.get(doi.site_url, timeout=5)
+                response = requests.get(doi.site_url, timeout=10)
                 status_code = response.status_code
                 logger.debug("from_request status_code,site_url: %s,%s", status_code, doi.site_url)
 
@@ -85,14 +93,30 @@ class DOIValidator:
                     # Need to check its an 404, 503, 500, 403 etc.
                     raise requests.HTTPError(f"status_code,site_url {status_code,doi.site_url}")
                 else:
-                    logger.debug("site_url %s indeed exists", doi.site_url)
+                    logger.info("Landing page URL %s is reachable", doi.site_url)
             except (requests.exceptions.ConnectionError, Exception):
-                raise SiteURLNotExistException(f"site_url {doi.site_url} not reachable")
+                raise SiteURLNotExistException(
+                    f"Landing page URL {doi.site_url} is not reachable. Request "
+                    f"should have a valid URL assigned prior to release.\n"
+                    f"To bypass this check, rerun the command with the --force "
+                    f"flag provided."
+                )
 
     def _check_field_title_duplicate(self, doi: Doi):
         """
-        Check if the same title exists already in local database for a different
-        identifier.
+        Check the provided Doi object's title to see if the same title has
+        already been used with a different DOI record.
+
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to check.
+
+        Raises
+        ------
+        DuplicatedTitleDOIException
+            If the title for the provided Doi object is in use for another record.
+
         """
         query_criterias = {"title": [doi.title]}
 
@@ -105,44 +129,39 @@ class DOIValidator:
         if rows_with_different_identifier:
             identifiers = ",".join([row[columns.index("identifier")] for row in rows_with_different_identifier])
             status = ",".join([row[columns.index("status")] for row in rows_with_different_identifier])
-
-            # Note that it is possible for rows_with_different_identifier to have
-            # some elements while 'doi' field is None. It needs to be checked.
-            dois = []
-
-            # Due to the fact that 'doi' field can be None, each field must be
-            # inspected before the join operation otherwise will cause indexing error.
-            for row in rows_with_different_identifier:
-                if row[columns.index("doi")]:
-                    dois.append(row[columns.index("doi")])
-                else:
-                    dois.append("None")
+            dois = ",".join([row[columns.index("doi")] for row in rows_with_different_identifier])
 
             msg = (
                 f"The title '{doi.title}' has already been used for records "
-                f"{identifiers}, status: {status}, doi: {','.join(dois)}. "
-                "You must use a different title."
+                f"{identifiers}, status: {status}, doi: {dois}. "
+                "A different title should be used.\nIf you want to bypass this "
+                "check, rerun the command with the --force flag provided."
             )
 
             raise DuplicatedTitleDOIException(msg)
 
     def _check_field_title_content(self, doi: Doi):
         """
-        Check if the pds4 label is a bundle then the title should contain bundle
-        (ignoring case).
+        Check that the title of the provided Doi object contains the type of
+        PDS product (bundle, collection, document, etc...).
 
-        The same for: dataset, collection, document
-        Otherwise we raise a warning.
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to check.
+
+        Raises
+        ------
+        TitleDoesNotMatchProductTypeException
+            If the title for the provided Doi object does not contain the
+            type of PDS product.
+
         """
         product_type_specific_split = doi.product_type_specific.split(" ")
 
-        # The suffix should be the last field in the product_type_specific so
+        # The suffix should be the last field in product_type_specific so
         # if it has many tokens, check the last one.
-        product_type_specific_suffix = (
-            product_type_specific_split[-1]
-            if len(product_type_specific_split) > 1
-            else "<<< no product specific type found >>> "
-        )
+        product_type_specific_suffix = product_type_specific_split[-1]
 
         logger.debug("product_type_specific_suffix: %s", product_type_specific_suffix)
         logger.debug("doi.title: %s", doi.title)
@@ -152,63 +171,17 @@ class DOIValidator:
                 f"DOI with identifier '{doi.pds_identifier}' and title "
                 f"'{doi.title}' does not contains the product-specific type "
                 f"suffix '{product_type_specific_suffix.lower()}'. "
-                "Product-specific type suffix should be in the title."
+                "Product-specific type suffix should be in the title.\n"
+                "If you want to bypass this check, rerun the command with the "
+                "--force flag provided."
             )
 
             raise TitleDoesNotMatchProductTypeException(msg)
 
-    def _check_doi_for_existing_identifier(self, doi: Doi):
+    def _check_for_preexisting_identifier(self, doi: Doi):
         """
-        For the identifier assigned to the provided Doi object, check the following:
-
-        * If the provided Doi object does not have a doi field assigned, check
-          if there is a pre-existing transaction for the identifier that does have
-          a doi field already assigned.
-
-        * If the provided Doi object has a doi field assigned, check that
-          the latest transaction for the same identifier has a matching doi.
-
-        Parameters
-        ----------
-        doi : Doi
-            The Doi object to validate.
-
-        Raises
-        ------
-        IllegalDOIActionException
-            If either check fails.
-
-        """
-        # The database expects each field to be a list.
-        query_criterias = {"ids": [doi.pds_identifier]}
-
-        # Query database for rows with given id value.
-        columns, rows = self._database_obj.select_latest_rows(query_criterias)
-
-        rows_having_doi = [row for row in rows if row[columns.index("doi")]]
-
-        if rows_having_doi:
-            pre_existing_doi = dict(zip(columns, rows_having_doi[0]))
-
-            if doi.doi is None:
-                raise IllegalDOIActionException(
-                    f"There is already a DOI {pre_existing_doi['doi']} submitted "
-                    f"for record identifier {doi.pds_identifier} "
-                    f"(status={pre_existing_doi['status']}).\n"
-                    "You cannot update/remove a DOI for an existing record identifier."
-                )
-            elif doi.doi != pre_existing_doi["doi"]:
-                raise IllegalDOIActionException(
-                    f"There is already a DOI {pre_existing_doi['doi']} submitted "
-                    f"for record identifier {doi.pds_identifier} "
-                    f"(status={pre_existing_doi['status']}).\n"
-                    f"You cannot update DOI {doi.doi} for an existing record identifier."
-                )
-
-    def _check_identifier_for_existing_doi(self, doi: Doi):
-        """
-        For Doi objects with DOI already assigned, ensure the DOI value is
-        not already in use for a different PDS identifier.
+        For the identifier assigned to the provided Doi object, check that
+        the latest transaction for the same identifier has a matching DOI value.
 
         Parameters
         ----------
@@ -221,21 +194,62 @@ class DOIValidator:
             If the check fails.
 
         """
-        if doi.doi:
-            # The database expects each field to be a list.
-            query_criterias = {"doi": [doi.doi]}
+        # The database expects each field to be a list.
+        query_criterias = {"ids": [doi.pds_identifier]}
 
-            # Query database for rows with given DOI value (should only ever be
-            # at most one)
-            columns, rows = self._database_obj.select_latest_rows(query_criterias)
+        # Query database for rows with given id value.
+        columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
-            if rows and doi.pds_identifier != rows[0][columns.index("identifier")]:
+        for row in rows:
+            existing_record = dict(zip(columns, row))
+
+            if doi.doi != existing_record["doi"]:
                 raise IllegalDOIActionException(
+                    f"There is already a DOI {existing_record['doi']} associated "
+                    f"with PDS identifier {doi.pds_identifier} "
+                    f"(status={existing_record['status']}).\n"
+                    f"You cannot modify a DOI for an existing PDS identifier."
+                )
+
+    def _check_for_preexisting_doi(self, doi: Doi):
+        """
+        For Doi objects with DOI already assigned, this check ensures the DOI
+        value is not already in use for a different PDS identifier.
+
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to validate.
+
+        Raises
+        ------
+        ValueError
+            If the provided Doi object does not have a DOI value assigned to check.
+        UnexpectedDOIActionException
+            If the check fails.
+
+        """
+        if not doi.doi:
+            raise ValueError(f"Provided DOI object (id {doi.pds_identifier}) "
+                             f"does not have a DOI value assigned.")
+
+        # The database expects each field to be a list.
+        query_criterias = {"doi": [doi.doi]}
+
+        # Query database for rows with given DOI value (should only ever be
+        # at most one)
+        columns, rows = self._database_obj.select_latest_rows(query_criterias)
+
+        for row in rows:
+            existing_record = dict(zip(columns, row))
+
+            if doi.pds_identifier != existing_record["identifier"]:
+                raise UnexpectedDOIActionException(
                     f"The DOI ({doi.doi}) provided for record identifier "
                     f"{doi.pds_identifier} is already in use for record "
                     f"{rows[0][columns.index('identifier')]}.\n"
-                    f"The DOI may not be reused with a different "
-                    f"record identifier."
+                    f"Are you sure you want to assign the new identifier {doi.pds_identifier}?\n"
+                    f"If so, use the --force flag to bypass this check."
                 )
 
     def _check_identifier_fields(self, doi: Doi):
@@ -257,7 +271,7 @@ class DOIValidator:
         # Make sure we have an identifier to key off of
         if not doi.pds_identifier:
             raise InvalidRecordException(
-                "Record provided with missing pds_identifier field. "
+                "Record provided with missing PDS identifier field. "
                 "Please ensure a LIDVID or similar identifier is provided for "
                 "all DOI requests."
             )
@@ -342,61 +356,126 @@ class DOIValidator:
                 f"does not conform to a valid LIDVID format.\n"
                 f"Reason: {str(err)}\n"
                 "If the identifier is not intended to be a LIDVID, use the "
-                "force option to bypass the results of this check."
+                "--force option to bypass the results of this check."
             )
 
     def _check_field_workflow(self, doi: Doi):
         """
-        Check that there is not a record in the sqllite database with same
+        Check that there is not a record in the Sqlite database with same
         identifier but a higher status than the current action (see workflow_order)
+
+        Parameters
+        ----------
+        doi : Doi
+            The parsed Doi object to check the status of.
+
+        Raises
+        ------
+        UnexpectedDOIActionException
+            If the provided Doi object has an unrecognized status assigned, or if
+            the previous status for the Doi is higher in the workflow ordering than
+            the current status.
+
         """
-        if doi.status is not None and doi.status.lower() not in self.m_workflow_order:
+        if doi.status is not None and doi.status not in self.workflow_order:
             msg = (
-                f"Unexpected DOI status of '{doi.status.lower()}' from label. "
+                f"Unexpected DOI status of '{doi.status.value}' from label. "
                 f"Valid values are "
-                f"{[DoiStatus(key).value for key in self.m_workflow_order.keys()]}"
+                f"{[DoiStatus(key).value for key in self.workflow_order.keys()]}"
             )
             logger.error(msg)
             raise UnexpectedDOIActionException(msg)
 
         # The database expects each field to be a list.
-        query_criterias = {"ids": [doi.pds_identifier]}
+        query_criterias = {"doi": [doi.doi]}
 
-        # Query database for rows with given id value.
+        # Query database for rows with given doi value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
 
-        if rows:
-            row = rows[0]
-            doi_str = row[columns.index("doi")]
-            prev_status = row[columns.index("status")]
+        for row in rows:
+            existing_record = dict(zip(columns, row))
+            doi_str = existing_record["doi"]
+            prev_status = existing_record["status"]
 
-            # A status tuple of ('Pending',3) is higher than ('Draft',2) will
-            # cause an error.
-            #
-            # 🤔 TODO: ``mypy`` has several complaints about this line:
-            # • doi.status is an optional (``None``) so calling ``lower`` on it could fail; there should be a check
-            # • The indexing on ``DoiStatus`` here is by ``str``, but is declared to be ``DoiStatus``
-            # But the tests pass so I'm throwing caution to the wind.
-            if self.m_workflow_order[prev_status.lower()] > self.m_workflow_order[doi.status.lower()]:  # type: ignore
+            # Check the rankings of the current and previous status to see if
+            # we're moving backwards through the workflow. For example, a status
+            # of 'Findable' (5) is higher than 'Review' (3), so a released
+            # DOI record being moved back to review would trip this warning.
+            if self.workflow_order[prev_status] > self.workflow_order[doi.status]:  # type: ignore
                 msg = (
                     f"There is a record for identifier {doi.pds_identifier} "
                     f"(DOI: {doi_str}) with status: '{prev_status.lower()}'.\n"
                     f"Are you sure you want to restart the workflow from step "
-                    f"'{doi.status}'?"
+                    f"'{doi.status}'?\nIf so, use the --force flag to bypass the "
+                    f"results of this check."
                 )
 
                 raise UnexpectedDOIActionException(msg)
 
-    def validate(self, doi: Doi):
+    def validate_reserve_request(self, doi: Doi):
         """
-        Given a Doi object, validate certain fields before sending them to
-        the DOI service provider. Exception(s) will be raised.
+        Perform the suite of validation checks applicable to a reserve request
+        on the provided Doi object.
+
+        Parameters
+        ----------
+        doi : Doi
+            The parsed Doi object to validate.
+
         """
-        self._check_doi_for_existing_identifier(doi)
-        self._check_identifier_for_existing_doi(doi)
+        # For reserve requests, need to make sure there is not already an
+        # existing DOI with the same PDS identifier
+        self._check_for_preexisting_identifier(doi)
+
         self._check_identifier_fields(doi)
         self._check_lidvid_field(doi)
-        self._check_field_site_url(doi)
         self._check_field_title_duplicate(doi)
         self._check_field_title_content(doi)
+
+    def validate_update_request(self, doi: Doi):
+        """
+        Perform the suite of validation checks applicable to an update request
+        on the provided Doi object.
+
+        Parameters
+        ----------
+        doi : Doi
+            The parsed Doi object to validate.
+
+        """
+        # For update requests, need to check if there are any other DOI records
+        # using the same PDS identifier
+        self._check_for_preexisting_doi(doi)
+
+        self._check_identifier_fields(doi)
+        self._check_lidvid_field(doi)
+        self._check_field_title_duplicate(doi)
+        self._check_field_title_content(doi)
+
+        # Also need to check if we're moving backwards through the workflow,
+        # i.e. updating an already released record.
         self._check_field_workflow(doi)
+
+    def validate_release_request(self, doi: Doi):
+        """
+        Perform the suite of validation checks applicable to a release request
+        on the provided Doi object.
+
+        Parameters
+        ----------
+        doi : Doi
+            The parsed Doi object to validate.
+
+        """
+        # For release requests, need to check if there are any other DOI records
+        # using the same PDS identifier
+        if doi.doi:
+            self._check_for_preexisting_doi(doi)
+
+        self._check_identifier_fields(doi)
+        self._check_lidvid_field(doi)
+        self._check_field_title_duplicate(doi)
+        self._check_field_title_content(doi)
+
+        # Release requests require a valid URL assigned, so check for that here
+        self._check_field_site_url(doi)
