@@ -183,7 +183,7 @@ class DOIWebClient:
             f"Subclasses of {self.__class__.__name__} must provide an implementation for query_doi()"
         )
 
-    def endpoint_for_doi(self, doi):
+    def endpoint_for_doi(self, doi, action):
         """
         Returns the proper HTTP verb and URL that form a request endpoint for
         the provided DOI object.
@@ -192,6 +192,8 @@ class DOIWebClient:
         ----------
         doi : Doi
             The DOI object to determine the endpoint for.
+        action : str
+            Name of the action to be performed on the provided Doi object.
 
         Returns
         -------

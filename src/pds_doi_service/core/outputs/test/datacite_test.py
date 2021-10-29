@@ -188,8 +188,9 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
         expected_prefix = config.get("DATACITE", "doi_prefix")
         expected_suffix = "123abc"
 
-        # Correct endpoint method and url are dependent on whether an outgoing
-        # request has a DOI associated or not, so test with both cases
+        # Correct endpoint method and url are dependent on both the action
+        # being performed, and whether an outgoing request has a DOI associated
+        # or not, so test with all cases
         test_doi = Doi(
             title="doi_title",
             publication_date=datetime.now(),
@@ -198,19 +199,35 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
             pds_identifier="urn:nasa:pds:test-collection::1.0",
         )
 
-        # Test with no DOI assigned
-        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi)
+        # Test reserve with no DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="reserve")
 
         self.assertEqual(method, WEB_METHOD_POST)
         self.assertEqual(url, expected_url)
 
-        # Test with DOI assigned
+        # Test release with no DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="release")
+
+        self.assertEqual(method, WEB_METHOD_POST)
+        self.assertEqual(url, expected_url)
+
+        # Test reserve with a DOI assigned (not a valid case, but endpoint_for_doi doesn't care)
         test_doi.doi = f"{expected_prefix}/{expected_suffix}"
 
-        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi)
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="reserve")
+
+        self.assertEqual(method, WEB_METHOD_POST)
+        self.assertEqual(url, expected_url)
+
+        # Test release with a DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="release")
 
         self.assertEqual(method, WEB_METHOD_PUT)
         self.assertEqual(url, f"{expected_url}/{expected_prefix}/{expected_suffix}")
+
+        # Test with an unknown action
+        with self.assertRaises(ValueError):
+            DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="update")
 
 
 class DOIDataCiteWebParserTestCase(unittest.TestCase):
