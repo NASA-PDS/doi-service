@@ -22,6 +22,12 @@ class InputFormatException(Exception):
     pass
 
 
+class UnknownDoiException(Exception):
+    """Raised when an unknown DOI is provided."""
+
+    pass
+
+
 class UnknownNodeException(Exception):
     """Raised when an unknown PDS Node identifier is provided."""
 
@@ -163,8 +169,8 @@ def raise_or_warn_exceptions(exception_classes, exception_messages, log=False):
         if ii == 0:
             message_to_raise = message_to_raise + exception_classes[ii] + " : " + exception_messages[ii]
         else:
-            # Add a comma after every message.
-            message_to_raise = message_to_raise + ", " + exception_classes[ii] + " : " + exception_messages[ii]
+            # Add a newline after every message.
+            message_to_raise = message_to_raise + "\n" + exception_classes[ii] + " : " + exception_messages[ii]
 
     if log:
         logger.warning(message_to_raise)
