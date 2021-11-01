@@ -298,8 +298,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     "node": node,
                     "submitter": submitter,
                     "input": csv_file.name,
-                    "force": force,
-                    "dry_run": False,
+                    "force": force
                 }
 
                 doi_label = reserve_action.run(**reserve_kwargs)
@@ -412,19 +411,8 @@ def post_release_doi(identifier, force=False, **kwargs):
         # Get the latest transaction record for this identifier
         list_record = list_action.transaction_for_identifier(identifier)
 
-        # Make sure we can locate the output label associated with this
-        # transaction
-        transaction_location = list_record["transaction_key"]
-        label_files = glob.glob(join(transaction_location, "output.*"))
-
-        if not label_files or not exists(label_files[0]):
-            raise NoTransactionHistoryForIdentifierException(
-                "Could not find a DOI label associated with identifier {}. "
-                "The database and transaction history location may be out of sync. "
-                "Please try resubmitting the record in reserve or draft.".format(identifier)
-            )
-
-        label_file = label_files[0]
+        # Get the output label associated with this transaction
+        label_file = list_action.output_label_for_transaction(list_record)
 
         # An output label may contain entries other than the requested
         # identifier, extract only the appropriate record into its own temporary
@@ -501,30 +489,12 @@ def get_doi_from_id(identifier):  # noqa: E501
 
     list_action = DOICoreActionList(db_name=_get_db_name())
 
-    list_kwargs = {"ids": identifier}
-
     try:
-        list_results = json.loads(list_action.run(**list_kwargs))
+        # Get the latest transaction record for this identifier
+        list_record = list_action.transaction_for_identifier(identifier)
 
-        if not list_results:
-            raise UnknownIdentifierException("No record(s) could be found for identifier {}".format(identifier))
-
-        # Extract the latest record from all those returned
-        list_record = list_results[0]
-
-        # Make sure we can locate the output label associated with this
-        # transaction
-        transaction_location = list_record["transaction_key"]
-        label_files = glob.glob(join(transaction_location, "output.*"))
-
-        if not label_files or not exists(label_files[0]):
-            raise NoTransactionHistoryForIdentifierException(
-                "Could not find a DOI label associated with identifier {}. "
-                "The database and transaction history location may be out of sync. "
-                "Please try resubmitting the record in reserve or draft.".format(identifier)
-            )
-
-        label_file = label_files[0]
+        # Get the output label associated with this transaction
+        label_file = list_action.output_label_for_transaction(list_record)
 
         # Get only the record corresponding to the requested identifier
         (label_for_id, content_type) = web_parser.get_record_for_identifier(label_file, identifier)
@@ -632,4 +602,4 @@ def put_doi_from_id(identifier, submitter=None, node=None, url=None):  # noqa: E
         A record of the DOI update transaction.
 
     """
-    return format_exceptions(NotImplementedError("Please use the POST /doi endpoint for record " "updates")), 501
+    return format_exceptions(NotImplementedError("Please use the POST /doi endpoint for record updates")), 501

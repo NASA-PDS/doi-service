@@ -648,19 +648,19 @@ class TestDoisController(BaseTestCase):
             "No record(s) could be found for LIDVID " "urn:nasa:pds:insight_cameras::1.1", errors[0]["message"]
         )
 
-    def list_action_run_patch_no_transaction_history(self, **kwargs):
+    def list_action_run_patch_no_transaction_history(self, identifier):
         """
-        Patch for DOICoreActionList.run()
+        Patch for DOICoreActionList.transaction_for_identifier()
 
         Returns a result corresponding to an entry where the listed
         transaction_key location no longer exists.
         """
-        return json.dumps([{"transaction_key": "/dev/null", "is_latest": 1}])
+        return {"identifier": identifier, "transaction_key": "/dev/null", "is_latest": 1}
 
     @unittest.skip("dois/release endpoint is disabled")
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
-        "run",
+        "transaction_for_identifier",
         list_action_run_patch_no_transaction_history,
     )
     def test_post_release_missing_transaction_history(self):
@@ -774,7 +774,7 @@ class TestDoisController(BaseTestCase):
 
     @patch.object(
         pds_doi_service.api.controllers.dois_controller.DOICoreActionList,
-        "run",
+        "transaction_for_identifier",
         list_action_run_patch_no_transaction_history,
     )
     def test_get_doi_missing_transaction_history(self):
