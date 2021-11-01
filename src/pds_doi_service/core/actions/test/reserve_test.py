@@ -303,7 +303,7 @@ class ReserveActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.keywords), 9)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:data::1.0")
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -334,7 +334,7 @@ class ReserveActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.keywords), 9)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:browse::1.0")
         self.assertEqual(doi.description, "Collection of BROWSE products.")
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -365,7 +365,7 @@ class ReserveActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.keywords), 11)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:calibration::1.0")
         self.assertEqual(doi.description, "Collection of CALIBRATION files/products to include in the archive.")
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -396,7 +396,7 @@ class ReserveActionTestCase(unittest.TestCase):
         self.assertEqual(len(doi.keywords), 9)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:document::1.0")
         self.assertEqual(doi.description, "Collection of DOCUMENT products.")
-        self.assertEqual(doi.product_type, ProductType.Dataset)
+        self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
