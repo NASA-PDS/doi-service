@@ -77,7 +77,11 @@ def _write_csv_from_labels(temp_file, labels):
         List of labels to be written out in CSV format.
 
     """
-    csv_writer = csv.DictWriter(temp_file, fieldnames=DOIInputUtil.MANDATORY_COLUMNS)
+    csv_writer = csv.DictWriter(
+        temp_file,
+        fieldnames=DOIInputUtil.MANDATORY_COLUMNS + DOIInputUtil.OPTIONAL_COLUMNS,
+        extrasaction='ignore'
+    )
 
     csv_writer.writeheader()
 

@@ -31,7 +31,6 @@ from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParse
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_logger
 from xmlschema import XMLSchemaValidationError  # type: ignore
 
@@ -41,11 +40,7 @@ logger = get_logger(__name__)
 
 class DOIInputUtil:
 
-    EXPECTED_NUM_COLUMNS = 7
-    """Expected number of columns in an input CSV file."""
-
     MANDATORY_COLUMNS = [
-        "status",
         "title",
         "publication_date",
         "product_type_specific",
@@ -53,7 +48,17 @@ class DOIInputUtil:
         "author_first_name",
         "related_resource",
     ]
-    """The names of the expected columns within a CSV file."""
+    """The names of the expected columns within a spreadsheet file."""
+
+    OPTIONAL_COLUMNS = [
+        "doi",
+        "description",
+        "site_url"
+    ]
+    """The names of optional columns parsed from a spreadsheet file."""
+
+    EXPECTED_NUM_COLUMNS = len(MANDATORY_COLUMNS)
+    """Expected number of columns in an input spreadsheet file."""
 
     EXPECTED_PUBLICATION_DATE_LEN = 10
     """Expected minimum length of a parsed publication date."""
@@ -255,13 +260,6 @@ class DOIInputUtil:
             if not row[column_name]:
                 raise InputFormatException(f"No value provided for {column_name} column")
 
-        # Make sure the status conforms to our enumeration
-        if not row["status"].lower() in DoiStatus.__members__.values():
-            raise InputFormatException(
-                f"Status value {row.status} is invalid.\nValue must be one of: "
-                f"{list(enum.value for enum in DoiStatus)} (case-insensitive)."
-            )
-
         # Make sure we got a valid publication date
         if not isinstance(row["publication_date"], (datetime, pd.Timestamp)):
             try:
@@ -347,17 +345,17 @@ class DOIInputUtil:
             product_type = self._parse_product_type(row["product_type_specific"])
             identifier = row["related_resource"]
 
-            site_url = create_landing_page_url(identifier, product_type)
-
             doi = Doi(
-                status=DoiStatus(row["status"].lower()),
+                doi=row.get("doi"),
+                status=DoiStatus.Unknown,
                 title=row["title"],
                 publication_date=row["publication_date"],
                 product_type=product_type,
                 product_type_specific=row["product_type_specific"],
                 pds_identifier=identifier,
                 authors=[{"first_name": row["author_first_name"], "last_name": row["author_last_name"]}],
-                site_url=site_url,
+                description=row.get("description"),
+                site_url=row.get("site_url"),
                 date_record_added=timestamp,
                 date_record_updated=timestamp,
             )

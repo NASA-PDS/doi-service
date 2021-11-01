@@ -6,7 +6,6 @@ from os.path import abspath
 from os.path import join
 
 from pds_doi_service.core.entities.doi import Doi
-from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.input.input_util import DOIInputUtil
@@ -77,7 +76,6 @@ class InputUtilTestCase(unittest.TestCase):
 
         self.assertIsInstance(doi, Doi)
         self.assertEqual(doi.title, "Laboratory Shocked Feldspars Bundle")
-        self.assertEqual(doi.status, DoiStatus.Reserved)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:lab_shocked_feldspars")
         self.assertEqual(len(doi.authors), 1)
         self.assertEqual(doi.product_type, ProductType.Collection)
@@ -91,7 +89,6 @@ class InputUtilTestCase(unittest.TestCase):
 
         self.assertEqual(len(dois), 3)
         self.assertTrue(all([doi.title.startswith("Laboratory Shocked Feldspars") for doi in dois]))
-        self.assertTrue(all([doi.status == DoiStatus.Reserved for doi in dois]))
         self.assertTrue(all([doi.pds_identifier.startswith("urn:nasa:pds:lab_shocked_feldspars") for doi in dois]))
         self.assertTrue(all([len(doi.authors) == 1 for doi in dois]))
         self.assertTrue(
@@ -135,11 +132,23 @@ class InputUtilTestCase(unittest.TestCase):
         except Exception as err:
             self.assertIsInstance(err, InputFormatException)
             self.assertIn("Failed to parse row 1", str(err))
-            self.assertIn("Reason: Status value Alright is invalid", str(err))
+            self.assertIn("Reason: No value provided for related_resource column", str(err))
             self.assertIn("Failed to parse row 2", str(err))
             self.assertIn("Reason: No value provided for title column", str(err))
             self.assertIn("Failed to parse row 3", str(err))
             self.assertIn("Incorrect publication_date format", str(err))
+
+        # Test with a spreadsheet containing optional columns
+        i_filepath = join(self.input_dir, "DOI-reserve-optionals.xlsx")
+
+        dois = doi_input_util.parse_xls_file(i_filepath)
+
+        doi = dois[0]
+        doi_fields = doi.__dict__
+
+        for optional_column in doi_input_util.OPTIONAL_COLUMNS:
+            self.assertIn(optional_column, doi_fields)
+            self.assertIsNotNone(doi_fields[optional_column])
 
     def test_read_csv(self):
         """Test the DOIInputUtil.parse_csv_file() method"""
@@ -150,7 +159,6 @@ class InputUtilTestCase(unittest.TestCase):
 
         self.assertEqual(len(dois), 3)
         self.assertTrue(all([doi.title.startswith("Laboratory Shocked Feldspars") for doi in dois]))
-        self.assertTrue(all([doi.status == DoiStatus.Reserved for doi in dois]))
         self.assertTrue(all([doi.pds_identifier.startswith("urn:nasa:pds:lab_shocked_feldspars") for doi in dois]))
         self.assertTrue(all([len(doi.authors) == 1 for doi in dois]))
         self.assertTrue(all([doi.product_type == ProductType.Collection for doi in dois]))
@@ -203,11 +211,23 @@ class InputUtilTestCase(unittest.TestCase):
         except Exception as err:
             self.assertIsInstance(err, InputFormatException)
             self.assertIn("Failed to parse row 1", str(err))
-            self.assertIn("Reason: Status value Alright is invalid", str(err))
+            self.assertIn("Reason: No value provided for related_resource column", str(err))
             self.assertIn("Failed to parse row 2", str(err))
             self.assertIn("Reason: No value provided for title column", str(err))
             self.assertIn("Failed to parse row 3", str(err))
             self.assertIn("Incorrect publication_date format", str(err))
+
+        # Test with a spreadsheet containing optional columns
+        i_filepath = join(self.input_dir, "DOI-reserve-optionals.csv")
+
+        dois = doi_input_util.parse_csv_file(i_filepath)
+
+        doi = dois[0]
+        doi_fields = doi.__dict__
+
+        for optional_column in doi_input_util.OPTIONAL_COLUMNS:
+            self.assertIn(optional_column, doi_fields)
+            self.assertIsNotNone(doi_fields[optional_column])
 
     def test_read_xml(self):
         """Test the DOIInputUtil.parse_xml_file() method"""
