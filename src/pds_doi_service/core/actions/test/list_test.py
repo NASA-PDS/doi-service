@@ -13,6 +13,9 @@ from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.exceptions import UnknownDoiException
+from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
+from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -40,6 +43,19 @@ class ListActionTestCase(unittest.TestCase):
     def tearDownClass(cls):
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
+
+    def setUp(self) -> None:
+        """
+        Remove previous transaction DB and reinitialize the action objects so
+        we don't have to worry about conflicts from reusing PDS ID's/DOI's between
+        tests.
+        """
+        if os.path.isfile(self.db_name):
+            os.remove(self.db_name)
+
+        self._list_action = DOICoreActionList(db_name=self.db_name)
+        self._reserve_action = DOICoreActionReserve(db_name=self.db_name)
+        self._release_action = DOICoreActionRelease(db_name=self.db_name)
 
     def webclient_submit_patch(
         self, payload, url=None, username=None, password=None, method=WEB_METHOD_POST, content_type=CONTENT_TYPE_XML
@@ -138,6 +154,125 @@ class ListActionTestCase(unittest.TestCase):
         list_result = json.loads(self._list_action.run(**list_kwargs))
 
         self.assertEqual(len(list_result), 0)
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
+        "submit_content",
+        webclient_submit_patch,
+    )
+    def test_get_transaction_for_doi(self):
+        """Test the transaction_for_doi method"""
+        # Submit a reserve, then use the assigned doi to get the transaction record
+        reserve_kwargs = {
+            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "node": "img",
+            "submitter": "my_user@my_node.gov",
+            "force": True,
+        }
+
+        doi_label = self._reserve_action.run(**reserve_kwargs)
+
+        dois, _ = self._web_parser.parse_dois_from_label(doi_label)
+        doi = dois[0]
+
+        transaction_record = self._list_action.transaction_for_doi(doi.doi)
+
+        self.assertIsInstance(transaction_record, dict)
+
+        # Make sure the transaction record aligns with the Doi record
+        self.assertEqual(doi.doi, transaction_record['doi'])
+        self.assertEqual(doi.pds_identifier, transaction_record['identifier'])
+        self.assertEqual(doi.status, transaction_record['status'])
+        self.assertEqual(doi.title, transaction_record['title'])
+
+        # Ensure we get an exception when searching for an unknown DOI value
+        with self.assertRaises(UnknownDoiException):
+            self._list_action.transaction_for_doi("unknown/doi")
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
+        "submit_content",
+        webclient_submit_patch,
+    )
+    def test_get_transaction_for_identifier(self):
+        """Test the transaction_for_identifier method"""
+        # Submit a reserve, then use the PDS identifier to get the transaction record
+        reserve_kwargs = {
+            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "node": "img",
+            "submitter": "my_user@my_node.gov",
+            "force": True,
+        }
+
+        doi_label = self._reserve_action.run(**reserve_kwargs)
+
+        dois, _ = self._web_parser.parse_dois_from_label(doi_label)
+        doi = dois[0]
+
+        transaction_record = self._list_action.transaction_for_identifier(doi.pds_identifier)
+
+        self.assertIsInstance(transaction_record, dict)
+
+        # Make sure the transaction record aligns with the Doi record
+        self.assertEqual(doi.doi, transaction_record['doi'])
+        self.assertEqual(doi.pds_identifier, transaction_record['identifier'])
+        self.assertEqual(doi.status, transaction_record['status'])
+        self.assertEqual(doi.title, transaction_record['title'])
+
+        # Ensure we get an exception when searching for an unknown ID value
+        with self.assertRaises(UnknownIdentifierException):
+            self._list_action.transaction_for_identifier("urn:unknown_id")
+
+    @patch.object(
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
+        "submit_content",
+        webclient_submit_patch,
+    )
+    def test_get_output_label_for_transaction(self):
+        """Test the output_label_for_transaction method"""
+        # Submit a reserve, then use the PDS identifier to get the transaction record
+        reserve_kwargs = {
+            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "node": "img",
+            "submitter": "my_user@my_node.gov",
+            "force": True,
+        }
+
+        doi_label = self._reserve_action.run(**reserve_kwargs)
+
+        dois, _ = self._web_parser.parse_dois_from_label(doi_label)
+        doi = dois[0]
+
+        transaction_record = self._list_action.transaction_for_identifier(doi.pds_identifier)
+
+        # Now use the transaction record to get the label associated to the transaction
+        output_label_path = self._list_action.output_label_for_transaction(transaction_record)
+
+        # Ensure the path returned corresponds to an actual file
+        self.assertTrue(os.path.exists(output_label_path))
+
+        # Read the output label, its contents should match what was returned from
+        # the reserve request
+        with open(output_label_path, 'r') as infile:
+            output_label = infile.read()
+
+        self.assertEqual(doi_label, output_label)
+
+        # Make sure we get an exception when the transaction record references
+        # a path that does not exist
+        transaction_record['transaction_key'] = '/fake/path/output.json'
+
+        with self.assertRaises(NoTransactionHistoryForIdentifierException):
+            self._list_action.output_label_for_transaction(transaction_record)
 
 
 if __name__ == "__main__":
