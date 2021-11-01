@@ -77,6 +77,38 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
         self.assertEqual(len(related_identifiers), 1)
         self.assertIn(input_doi.pds_identifier, related_identifiers)
 
+    def test_update_datacite_label_json(self):
+        """Test creation of a DataCite label for a DOI record where the identifier has been updated"""
+        input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            input_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+            input_doi = input_dois[0]
+
+        # Assign a new PDS identifier to the parsed DOI as this is a common use case
+        # for update requests
+        input_doi.pds_identifier = "urn:nasa:pds:insight_cameras::2.0"
+
+        # Now create an output label from the parsed Doi
+        output_json = DOIDataCiteRecord().create_doi_record(input_doi)
+        output_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(output_json)
+        output_doi = output_dois[0]
+
+        # Check that the new identifier is the only URN in the "identifiers" section
+        urn_identifiers = list(filter(lambda identifier: identifier["identifierType"] == "URN", output_doi.identifiers))
+
+        self.assertEqual(len(urn_identifiers), 1)
+        self.assertEqual(urn_identifiers[0]["identifier"], "urn:nasa:pds:insight_cameras::2.0")
+
+        # Check that the new identifier has been added to the list of "relatedIdentifiers"
+        urn_identifiers = list(filter(lambda identifier: identifier["relatedIdentifierType"] == "URN", output_doi.related_identifiers))
+
+        self.assertEqual(len(urn_identifiers), 2)
+        identifier_values = [identifier["relatedIdentifier"] for identifier in urn_identifiers]
+        self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifier_values)
+        self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifier_values)
+
 
 def requests_valid_request_patch(method, url, **kwargs):
     response = Response()

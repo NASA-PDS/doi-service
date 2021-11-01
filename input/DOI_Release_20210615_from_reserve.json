@@ -10,6 +10,10 @@
                 {
                     "identifier": "10.13143/yzw2-vz66",
                     "identifierType": "DOI"
+                },
+                {
+                    "identifier": "urn:nasa:pds:insight_cameras::1.0",
+                    "identifierType": "URN"
                 }
             ],
             "alternateIdentifiers": [],
@@ -201,44 +205,6 @@
             "registered": null,
             "published": "2019",
             "updated": "2021-06-03T18:39:13.000Z"
-        },
-        "relationships": {
-            "client": {
-                "data": {
-                    "id": "dev.fhpuqw",
-                    "type": "clients"
-                }
-            },
-            "provider": {
-                "data": {
-                    "id": "dev",
-                    "type": "providers"
-                }
-            },
-            "media": {
-                "data": {
-                    "id": "10.13143/yzw2-vz66",
-                    "type": "media"
-                }
-            },
-            "references": {
-                "data": []
-            },
-            "citations": {
-                "data": []
-            },
-            "parts": {
-                "data": []
-            },
-            "partOf": {
-                "data": []
-            },
-            "versions": {
-                "data": []
-            },
-            "versionOf": {
-                "data": []
-            }
         }
     }
 }
