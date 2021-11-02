@@ -96,15 +96,15 @@ class TestDoisController(BaseTestCase):
         """
         return "[]"
 
-    def draft_action_run_patch(self, **kwargs):
+    def update_action_run_patch(self, **kwargs):
         """
-        Patch for DOICoreActionDraft.run()
+        Patch for DOICoreActionUpdate.run()
 
-        Returns body of a label corresponding to a successful draft
+        Returns body of a label corresponding to a successful update
         request.
         """
-        draft_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "draft_record")
-        with open(draft_record_file, "r") as infile:
+        update_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "draft_record")
+        with open(update_record_file, "r") as infile:
             return infile.read()
 
     def reserve_action_run_patch(self, **kwargs):
@@ -114,8 +114,8 @@ class TestDoisController(BaseTestCase):
         Returns body of a label corresponding to a successful reserve
         (dry-run) request.
         """
-        draft_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "reserve_record")
-        with open(draft_record_file, "r") as infile:
+        reserve_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "reserve_record")
+        with open(reserve_record_file, "r") as infile:
             return infile.read()
 
     def release_action_run_patch(self, **kwargs):
@@ -125,8 +125,8 @@ class TestDoisController(BaseTestCase):
         Returns body of a label corresponding to a successful release
         request.
         """
-        draft_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "release_record")
-        with open(draft_record_file, "r") as infile:
+        release_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "release_record")
+        with open(release_record_file, "r") as infile:
             return infile.read()
 
     def release_action_run_w_error_patch(self, **kwargs):
@@ -136,8 +136,8 @@ class TestDoisController(BaseTestCase):
         Returns body of a label corresponding to errors returned
         from the DOI service provider.
         """
-        draft_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "error_record")
-        with open(draft_record_file, "r") as infile:
+        error_record_file = join(TestDoisController.test_data_dir, TestDoisController.service_type, "error_record")
+        with open(error_record_file, "r") as infile:
             return infile.read()
 
     def transaction_log_patch(self):
@@ -308,62 +308,60 @@ class TestDoisController(BaseTestCase):
         self.assert400(response, "Response body is : " + response.data.decode("utf-8"))
 
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionList, "run", list_action_run_patch)
-    @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft, "run", draft_action_run_patch)
-    def test_post_dois_draft_w_url(self):
-        """Test a draft POST with url input"""
+    @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionUpdate, "run", update_action_run_patch)
+    def test_post_dois_update_w_url(self):
+        """Test an update POST with url input"""
         # We can use a file system path since were working with a local server
         input_bundle = join(self.test_data_dir, "bundle_in.xml")
 
-        # Start by submitting a draft request
+        # Start by submitting an update request
         query_string = [
-            ("action", "draft"),
+            ("action", "update"),
             ("submitter", "eng-submitter@jpl.nasa.gov"),
             ("node", "eng"),
             ("url", input_bundle),
             ("db_name", self.temp_db),
         ]
 
-        draft_response = self.client.open(
+        update_response = self.client.open(
             "/PDS_APIs/pds_doi_api/0.2/dois",
             method="POST",
             query_string=query_string,
             headers={"Referer": "http://localhost"},
         )
 
-        self.assert200(draft_response, "Response body is : " + draft_response.data.decode("utf-8"))
+        self.assert200(update_response, "Response body is : " + update_response.data.decode("utf-8"))
 
         # Recreate a DoiRecord from the response JSON and examine the
         # fields
-        draft_record = DoiRecord.from_dict(draft_response.json[0])
+        update_record = DoiRecord.from_dict(update_response.json[0])
 
-        self.assertEqual(draft_record.node, "eng")
-        self.assertEqual(draft_record.title, "InSight Cameras Bundle 1.1")
-        self.assertEqual(draft_record.submitter, "eng-submitter@jpl.nasa.gov")
-        self.assertEqual(draft_record.identifier, "urn:nasa:pds:insight_cameras::1.1")
-        self.assertEqual(draft_record.doi, "10.17189/28957")
-        self.assertEqual(draft_record.creation_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
-        self.assertEqual(draft_record.update_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
-        # Note we get Pending back from the parsed label, however
-        # the object sent to transaction database has 'Draft' status
-        self.assertEqual(draft_record.status, DoiStatus.Pending)
+        self.assertEqual(update_record.node, "eng")
+        self.assertEqual(update_record.title, "InSight Cameras Bundle 1.1")
+        self.assertEqual(update_record.submitter, "eng-submitter@jpl.nasa.gov")
+        self.assertEqual(update_record.identifier, "urn:nasa:pds:insight_cameras::1.1")
+        self.assertEqual(update_record.doi, "10.17189/28957")
+        self.assertEqual(update_record.creation_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
+        self.assertEqual(update_record.update_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
+        self.assertEqual(update_record.status, DoiStatus.Draft)
 
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionList, "run", list_action_run_patch)
-    @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionDraft, "run", draft_action_run_patch)
-    def test_post_dois_draft_w_payload(self):
-        """Test a draft POST with requestBody input"""
+    @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionUpdate, "run", update_action_run_patch)
+    def test_post_dois_update_w_payload(self):
+        """Test an update POST with requestBody input"""
         input_bundle = join(self.test_data_dir, "bundle_in.xml")
 
         with open(input_bundle, "rb") as infile:
             body = infile.read()
 
         query_string = [
-            ("action", "draft"),
+            ("action", "update"),
             ("submitter", "eng-submitter@jpl.nasa.gov"),
             ("node", "eng"),
             ("db_name", self.temp_db),
         ]
 
-        draft_response = self.client.open(
+        update_response = self.client.open(
             "/PDS_APIs/pds_doi_api/0.2/dois",
             method="POST",
             data=body,
@@ -372,22 +370,20 @@ class TestDoisController(BaseTestCase):
             headers={"Referer": "http://localhost"},
         )
 
-        self.assert200(draft_response, "Response body is : " + draft_response.data.decode("utf-8"))
+        self.assert200(update_response, "Response body is : " + update_response.data.decode("utf-8"))
 
         # Recreate a DoiRecord from the response JSON and examine the
         # fields
-        draft_record = DoiRecord.from_dict(draft_response.json[0])
+        update_record = DoiRecord.from_dict(update_response.json[0])
 
-        self.assertEqual(draft_record.node, "eng")
-        self.assertEqual(draft_record.title, "InSight Cameras Bundle 1.1")
-        self.assertEqual(draft_record.submitter, "eng-submitter@jpl.nasa.gov")
-        self.assertEqual(draft_record.identifier, "urn:nasa:pds:insight_cameras::1.1")
-        self.assertEqual(draft_record.doi, "10.17189/28957")
-        self.assertEqual(draft_record.creation_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
-        self.assertEqual(draft_record.update_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
-        # Note we get Pending back from the parsed label, however
-        # the object sent to transaction database has 'Draft' status
-        self.assertEqual(draft_record.status, DoiStatus.Pending)
+        self.assertEqual(update_record.node, "eng")
+        self.assertEqual(update_record.title, "InSight Cameras Bundle 1.1")
+        self.assertEqual(update_record.submitter, "eng-submitter@jpl.nasa.gov")
+        self.assertEqual(update_record.identifier, "urn:nasa:pds:insight_cameras::1.1")
+        self.assertEqual(update_record.doi, "10.17189/28957")
+        self.assertEqual(update_record.creation_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
+        self.assertEqual(update_record.update_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
+        self.assertEqual(update_record.status, DoiStatus.Draft)
 
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionList, "run", list_action_run_patch)
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionReserve, "run", reserve_action_run_patch)
@@ -456,9 +452,9 @@ class TestDoisController(BaseTestCase):
 
         self.assert400(error_response, "Response body is : " + error_response.data.decode("utf-8"))
 
-        # Test draft action with no url or requestBody input
+        # Test update action with no url or requestBody input
         query_string = [
-            ("action", "draft"),
+            ("action", "update"),
             ("submitter", "img-submitter@jpl.nasa.gov"),
             ("node", "img"),
             ("db_name", self.temp_db),

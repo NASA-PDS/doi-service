@@ -12,10 +12,7 @@ dois_controller.py
 Contains the request handlers for the PDS DOI API.
 """
 import csv
-import glob
 import json
-from os.path import exists
-from os.path import join
 from tempfile import NamedTemporaryFile
 
 import connexion  # type: ignore
@@ -24,12 +21,11 @@ from pds_doi_service.api.models import DoiRecord
 from pds_doi_service.api.models import DoiSummary
 from pds_doi_service.api.util import format_exceptions
 from pds_doi_service.core.actions import DOICoreActionCheck
-from pds_doi_service.core.actions import DOICoreActionDraft
 from pds_doi_service.core.actions import DOICoreActionList
 from pds_doi_service.core.actions import DOICoreActionRelease
 from pds_doi_service.core.actions import DOICoreActionReserve
+from pds_doi_service.core.actions import DOICoreActionUpdate
 from pds_doi_service.core.entities.exceptions import InputFormatException
-from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.entities.exceptions import WarningDOIException
 from pds_doi_service.core.entities.exceptions import WebRequestException
@@ -243,14 +239,14 @@ def get_dois(doi=None, submitter=None, node=None, status=None, ids=None, start_d
 
 def post_dois(action, submitter, node, url=None, body=None, force=False):
     """
-    Submit a DOI in reserve or draft status. The input to the action may be
-    either a JSON labels payload (for reserve or draft), or a URL to a PDS4
-    XML label file (draft only).
+    Submit a DOI to reserve or update. The input to the action may be
+    either a JSON label payload (for reserve or update), or a URL to a PDS4
+    XML label file (update only).
 
     Parameters
     ----------
     action : str
-        The submission action to perform. Must be one of "reserve" or "draft".
+        The submission action to perform. Must be one of "reserve", "update"  or "draft".
     submitter : str
         Email address of the submission requester.
     node : str
@@ -259,13 +255,13 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
     url : str, optional
         URL to provide as the record to register a DOI for. URL must start with
         either "http://" or "https://" and resolve to a valid PDS4 label in XML
-        format. Only used when action is set to "draft". If provided, any
-        requestBody contents are ignored by the draft action.
+        format. Only used when action is set to "draft" or "update". If provided, any
+        requestBody contents are ignored by the update action.
     body : str or dict
         requestBody contents. If provided, should contain an PSD4 label (for
-        draft) or one or more LabelPayload structures (for reserve). Required if
+        update) or one or more LabelPayload structures (for reserve). Required if
         the action is set to "reserve", otherwise it can be used optionally in
-        lieu of url when the action is set to "draft".
+        lieu of url when the action is set to "draft" or "update".
     force : bool
         If true, forces a request to completion, ignoring any warnings
         encountered.
@@ -309,21 +305,21 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
 
             # Parse the JSON string back into a list of DOIs
             dois, _ = web_parser.parse_dois_from_label(doi_label, content_type=CONTENT_TYPE_JSON)
-        elif action == "draft":
+        elif action in ("draft", "update"):
             if not body and not url:
                 raise ValueError(
                     "No requestBody or URL parameter provided "
-                    "as input to draft request. One or the other "
+                    "as input to update request. One or the other "
                     "must be provided."
                 )
 
-            draft_action = DOICoreActionDraft(db_name=_get_db_name())
+            update_action = DOICoreActionUpdate(db_name=_get_db_name())
 
             # Determine how the input label(s) was sent
             if url:
-                draft_kwargs = {"node": node, "submitter": submitter, "input": url, "force": force}
+                update_kwargs = {"node": node, "submitter": submitter, "input": url, "force": force}
 
-                doi_label = draft_action.run(**draft_kwargs)
+                doi_label = update_action.run(**update_kwargs)
             else:
                 # Swagger def only specified application/xml and application/json
                 # as potential input types, so it should be sufficient to just
@@ -339,14 +335,14 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                     outfile.write(body)
                     outfile.flush()
 
-                    draft_kwargs = {"node": node, "submitter": submitter, "input": outfile.name, "force": force}
+                    update_kwargs = {"node": node, "submitter": submitter, "input": outfile.name, "force": force}
 
-                    doi_label = draft_action.run(**draft_kwargs)
+                    doi_label = update_action.run(**update_kwargs)
 
             # Parse the label back into a list of DOIs
             dois, _ = web_parser.parse_dois_from_label(doi_label)
         else:
-            raise ValueError('Action must be either "draft" or "reserve". ' 'Received "{}"'.format(action))
+            raise ValueError('Action must be either "draft", "update", or "reserve". Received "{}"'.format(action))
     # These exceptions indicate some kind of input error, so return the
     # Invalid Argument code
     except (InputFormatException, WarningDOIException, ValueError) as err:
