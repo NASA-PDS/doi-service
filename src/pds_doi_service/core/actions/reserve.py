@@ -17,12 +17,13 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import collect_exception_classes_and_messages
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
+from pds_doi_service.core.entities.exceptions import IllegalDOIActionException
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.entities.exceptions import InvalidIdentifierException
 from pds_doi_service.core.entities.exceptions import raise_or_warn_exceptions
-from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
+from pds_doi_service.core.entities.exceptions import WarningDOIException
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
@@ -65,12 +66,26 @@ class DOICoreActionReserve(DOICoreAction):
             "the Release action with the labels returned by this action.",
         )
         action_parser.add_argument(
+            "-i",
+            "--input",
+            required=True,
+            help="Path to a PDS4 XML label or XLS/CSV "
+                 "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
+        )
+        action_parser.add_argument(
             "-n",
             "--node",
             required=True,
             metavar="NODE_ID",
             help="The PDS Discipline Node in charge of the submission of the DOI. "
             "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
+        )
+        action_parser.add_argument(
+            "-s",
+            "--submitter",
+            required=True,
+            metavar="EMAIL",
+            help="The email address to associate with the Reserve request.",
         )
         action_parser.add_argument(
             "-f",
@@ -81,20 +96,6 @@ class DOICoreActionReserve(DOICoreAction):
             "warnings are encountered during submission of the Reserve "
             "request. Without this flag, any warnings encountered are "
             "treated as fatal exceptions.",
-        )
-        action_parser.add_argument(
-            "-i",
-            "--input",
-            required=True,
-            help="Path to a PDS4 XML label or XLS/CSV "
-            "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
-        )
-        action_parser.add_argument(
-            "-s",
-            "--submitter",
-            required=True,
-            metavar="EMAIL",
-            help="The email address to associate with the Reserve request.",
         )
 
     def _parse_input(self, input_file):
@@ -174,6 +175,12 @@ class DOICoreActionReserve(DOICoreAction):
         exception_messages = []
 
         for doi in dois:
+            if doi.doi:
+                raise IllegalDOIActionException(
+                    f"Provided record with identifier {doi.pds_identifier} already has a DOI ({doi.doi}) assigned.\n"
+                    f"Please use the Update action to modify records with existing DOI."
+                )
+
             try:
                 single_doi_label = self._record_service.create_doi_record(doi)
 
@@ -181,15 +188,14 @@ class DOICoreActionReserve(DOICoreAction):
                 self._validator_service.validate(single_doi_label)
 
                 # Validate the object representation of the DOI
-                self._doi_validator.validate(doi)
+                self._doi_validator.validate_reserve_request(doi)
             # Collect all warnings and exceptions so they can be combined into
             # a single WarningDOIException
             except (
                 DuplicatedTitleDOIException,
                 InvalidIdentifierException,
                 UnexpectedDOIActionException,
-                TitleDoesNotMatchProductTypeException,
-                SiteURLNotExistException,
+                TitleDoesNotMatchProductTypeException
             ) as err:
                 (exception_classes, exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages
@@ -241,7 +247,7 @@ class DOICoreActionReserve(DOICoreAction):
 
                 # Submit the Reserve request
                 # Determine the correct HTTP verb and URL for submission of this DOI
-                method, url = self._web_client.endpoint_for_doi(doi)
+                method, url = self._web_client.endpoint_for_doi(doi, self._name)
 
                 doi, o_doi_label = self._web_client.submit_content(
                     method=method, url=url, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
@@ -264,6 +270,12 @@ class DOICoreActionReserve(DOICoreAction):
         # for this exception specifically
         except InputFormatException as err:
             raise err
+        # If we catch this exception, it means validation produced a warning
+        # and the --force flag is not set, so log the error and exit without
+        # producing an output label
+        except WarningDOIException as err:
+            logger.error(str(err))
+            return None
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
             raise CriticalDOIException(err)
