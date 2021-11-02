@@ -40,7 +40,9 @@ def main():
     kwargs.pop("subcommand", None)
 
     output = action.run(**kwargs)
-    print(output)
+
+    if output is not None:
+        print(output)
 
 
 if __name__ == "__main__":

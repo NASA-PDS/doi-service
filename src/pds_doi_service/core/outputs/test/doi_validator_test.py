@@ -17,6 +17,7 @@ from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
 from pds_doi_service.core.entities.exceptions import IllegalDOIActionException
 from pds_doi_service.core.entities.exceptions import InvalidIdentifierException
 from pds_doi_service.core.entities.exceptions import InvalidRecordException
+from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
@@ -82,7 +83,8 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status,
         )
 
-        self.assertRaises(DuplicatedTitleDOIException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(DuplicatedTitleDOIException):
+            self._doi_validator._check_field_title_duplicate(doi_obj)
 
     def test_new_title_existing_doi_and_lidvid_nominal(self):
         """
@@ -102,12 +104,12 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status,
         )
 
-        self._doi_validator.validate(doi_obj)
+        self._doi_validator._check_field_title_duplicate(doi_obj)
 
     def test_new_title_existing_lidvid_exception(self):
         """
         Test validation of a Doi object with a new title, and an existing
-        LIDVID but no DOI.
+        LIDVID but no DOI (i.e. a reserve request).
         Expecting IllegalDOIActionException: cannot remove a DOI associated
         to an existing LIDVID.
         """
@@ -120,7 +122,8 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status,
         )
 
-        self.assertRaises(IllegalDOIActionException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(IllegalDOIActionException):
+            self._doi_validator._check_for_preexisting_identifier(doi_obj)
 
     def test_title_does_not_match_product_type_exception(self):
         """
@@ -140,7 +143,8 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status,
         )
 
-        self.assertRaises(TitleDoesNotMatchProductTypeException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(TitleDoesNotMatchProductTypeException):
+            self._doi_validator._check_field_title_content(doi_obj)
 
     def test_title_matches_product_type_nominal(self):
         """
@@ -160,14 +164,34 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status.lower(),
         )
 
-        self._doi_validator.validate(doi_obj)
+        self._doi_validator._check_field_title_content(doi_obj)
+
+    def test_existing_lidvid_no_doi_exception(self):
+        """
+        Test validation of a Doi object with a new title, no DOI assigned, and
+        an existing LIDVID.
+        Expecting ValueError: Must have a DOI assigned to perform this check.
+        """
+        doi_obj = Doi(
+            title=self.title + " different",
+            publication_date=self.transaction_date,
+            product_type=self.product_type,
+            product_type_specific=self.product_type_specific,
+            pds_identifier=self.lid + "::" + self.vid,
+            id=self.id,
+            doi=None,
+            status=self.status,
+        )
+
+        with self.assertRaises(ValueError):
+            self._doi_validator._check_for_preexisting_doi(doi_obj)
 
     def test_existing_lidvid_new_doi_exception(self):
         """
         Test validation of a Doi object with a new title, new DOI, and
         an existing LIDVID.
-        Expecting IllegalDOIActionException: Each LIDVID may only be associated
-        to a single DOI value.
+        Expecting IllegalDOIActionException: Each DOI may only be associated
+        to a single PDS identifier value.
         """
         doi_obj = Doi(
             title=self.title + " different",
@@ -180,13 +204,14 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status,
         )
 
-        self.assertRaises(IllegalDOIActionException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(IllegalDOIActionException):
+            self._doi_validator._check_for_preexisting_identifier(doi_obj)
 
     def test_existing_doi_new_lidvid_exception(self):
         """
         Test validation of a Doi object with an existing title, existing DOI, and
         a new LIDVID.
-        Expecting IllegalDOIActionException: DOI may only be associated to
+        Expecting UnexpectedDOIActionException: DOI should only be associated to
         a single LIDVID.
         """
         doi_obj = Doi(
@@ -200,14 +225,15 @@ class DoiValidatorTest(unittest.TestCase):
             status=self.status,
         )
 
-        self.assertRaises(IllegalDOIActionException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(UnexpectedDOIActionException):
+            self._doi_validator._check_for_preexisting_doi(doi_obj)
 
     def test_workflow_sequence_exception(self):
         """
         Test validation of Doi object with new title, existing DOI and
-        LIDVID with the workflow status status 'reserved', when the existing
+        LIDVID with the workflow status status 'unknown', when the existing
         entry is in 'draft'.
-        Expecting UnexpectedDOIActionException: Reserve step is upstream
+        Expecting UnexpectedDOIActionException: Unknown step is upstream
         of Draft step.
         """
         doi_obj = Doi(
@@ -218,17 +244,18 @@ class DoiValidatorTest(unittest.TestCase):
             pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
-            status=DoiStatus.Reserved,
+            status=DoiStatus.Unknown,
         )
 
-        self.assertRaises(UnexpectedDOIActionException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(UnexpectedDOIActionException):
+            self._doi_validator._check_field_workflow(doi_obj)
 
     def test_workflow_sequence_nominal(self):
         """
         Test validation of Doi object with new title, existing DOI and
-        LIDVID with the workflow status status 'registered', when the existing
+        LIDVID with the workflow status status 'findable', when the existing
         entry is in 'draft'.
-        Expecting no error: Registered step is downstream from Draft.
+        Expecting no error: Findable step is downstream from Draft.
         """
         doi_obj = Doi(
             title=self.title + "different",
@@ -238,10 +265,10 @@ class DoiValidatorTest(unittest.TestCase):
             pds_identifier=self.lid + "::" + self.vid,
             id=self.id,
             doi=self.doi,
-            status=DoiStatus.Registered,
+            status=DoiStatus.Findable,
         )
 
-        self._doi_validator.validate(doi_obj)
+        self._doi_validator._check_field_workflow(doi_obj)
 
     def test_identifier_validation_missing_pds_identifier(self):
         """
@@ -260,7 +287,8 @@ class DoiValidatorTest(unittest.TestCase):
             status=DoiStatus.Draft,
         )
 
-        self.assertRaises(InvalidRecordException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidRecordException):
+            self._doi_validator._check_identifier_fields(doi_obj)
 
     def test_identifier_validation_invalid_lidvid(self):
         """
@@ -279,31 +307,37 @@ class DoiValidatorTest(unittest.TestCase):
         # Test invalid starting token (must be urn)
         doi_obj.pds_identifier = "url:nasa:pds:lab_shocked_feldspars::1.0"
 
-        self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
 
         # Test invalid number of tokens (too few)
         doi_obj.pds_identifier = "url:nasa:pds::1.0"
 
-        self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
 
         # Test invalid number of tokens (too many)
         doi_obj.pds_identifier = "url:nasa:pds:lab_shocked_feldspars:collection_1:product_1:dataset_1::1.0"
 
-        self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
 
         # Test invalid field tokens (invalid characters)
         doi_obj.pds_identifier = "urn:nasa:_pds:lab_shocked_feldspars"
 
-        self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
 
         doi_obj.pds_identifier = "urn:nasa:pds:lab_$hocked_feldspars"
 
-        self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
 
         # Test invalid VID
         doi_obj.pds_identifier = "urn:nasa:pds:lab_shocked_feldspars::v1.0"
 
-        self.assertRaises(InvalidIdentifierException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
 
     def test_identifier_validation_doi_id_mismatch(self):
         """
@@ -322,7 +356,31 @@ class DoiValidatorTest(unittest.TestCase):
             status=DoiStatus.Draft,
         )
 
-        self.assertRaises(InvalidRecordException, self._doi_validator.validate, doi_obj)
+        with self.assertRaises(InvalidRecordException):
+            self._doi_validator._check_identifier_fields(doi_obj)
+
+    def test_site_url_validation(self):
+        """ """
+        # Test with an unreachable (fake) URL
+        doi_obj = Doi(
+            title=self.title + " different",
+            publication_date=self.transaction_date,
+            product_type=self.product_type,
+            product_type_specific=self.product_type_specific,
+            pds_identifier=self.lid + "::" + self.vid,
+            id="1234",
+            doi=self.doi,
+            status=DoiStatus.Draft,
+            site_url="http://fakewebsite.fake",
+        )
+
+        with self.assertRaises(SiteURLNotExistException):
+            self._doi_validator._check_field_site_url(doi_obj)
+
+        # Now try again with a valid URL
+        doi_obj.site_url = "http://www.google.com"
+
+        self._doi_validator._check_field_site_url(doi_obj)
 
 
 if __name__ == "__main__":

@@ -119,7 +119,7 @@ class Doi:
     site_url: Optional[str] = None
     publisher: Optional[str] = None
     contributor: Optional[str] = None
-    status: Optional[DoiStatus] = None
+    status: Optional[DoiStatus] = field(default=DoiStatus.Unknown)
     previous_status: Optional[DoiStatus] = None
     message: Optional[str] = None
     date_record_added: Optional[datetime] = None

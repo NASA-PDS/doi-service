@@ -20,6 +20,7 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import UnknownDoiException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
@@ -360,8 +361,8 @@ class DOIDataCiteWebParser(DOIWebParser):
         Returns
         -------
         record : str
-            The single found record embedded in a <records> tag. This string is
-            suitable to be written to disk as a new label.
+            The single found record. This string is suitable to be written to
+            disk as a new label.
         content_type : str
             The determined content type of the provided label.
 
@@ -393,3 +394,51 @@ class DOIDataCiteWebParser(DOIWebParser):
             raise UnknownIdentifierException(
                 f'Could not find entry for identifier "{identifier}" in DataCite label file {label_file}.'
             )
+
+    @staticmethod
+    def get_record_for_doi(label_file, doi):
+        """
+        Returns a new label from the provided one containing only the entry
+        corresponding to the specified DOI.
+
+        Parameters
+        ----------
+        label_file : str
+            Path to the label file to pull a record from.
+        doi : str
+            The DOI to search for within the provided label file.
+
+        Returns
+        -------
+        record : str
+            The single found record. This string is suitable to be written to
+            disk as a new label.
+        content_type : str
+            The determined content type of the provided label.
+
+        Raises
+        ------
+        UnknownDoiException
+            If there is no record for the DOI in the provided label file.
+
+        """
+        with open(label_file, "r") as infile:
+            records = json.load(infile)
+
+        if "data" in records:
+            # Strip off the stuff we don't care about
+            records = records["data"]
+
+        # May have been handed a single record, if so wrap in a list so loop
+        # below still works
+        if not isinstance(records, list):
+            records = [records]
+
+        for record in records:
+            cur_doi = DOIDataCiteWebParser._parse_doi(record["attributes"])
+
+            if cur_doi == doi:
+                # Re-add the data key we stripped off earlier
+                return json.dumps({"data": record}, indent=4), CONTENT_TYPE_JSON
+        else:
+            raise UnknownDoiException(f'Could not find entry for DOI "{doi}" in DataCite label file {label_file}.')

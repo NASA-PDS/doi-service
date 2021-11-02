@@ -12,10 +12,13 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import UnknownDoiException
+from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.outputs.datacite import DOIDataCiteRecord
 from pds_doi_service.core.outputs.datacite import DOIDataCiteValidator
 from pds_doi_service.core.outputs.datacite import DOIDataCiteWebClient
 from pds_doi_service.core.outputs.datacite import DOIDataCiteWebParser
+from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -73,6 +76,40 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
         )
         self.assertEqual(len(related_identifiers), 1)
         self.assertIn(input_doi.pds_identifier, related_identifiers)
+
+    def test_update_datacite_label_json(self):
+        """Test creation of a DataCite label for a DOI record where the identifier has been updated"""
+        input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            input_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+            input_doi = input_dois[0]
+
+        # Assign a new PDS identifier to the parsed DOI as this is a common use case
+        # for update requests
+        input_doi.pds_identifier = "urn:nasa:pds:insight_cameras::2.0"
+
+        # Now create an output label from the parsed Doi
+        output_json = DOIDataCiteRecord().create_doi_record(input_doi)
+        output_dois, _ = DOIDataCiteWebParser.parse_dois_from_label(output_json)
+        output_doi = output_dois[0]
+
+        # Check that the new identifier is the only URN in the "identifiers" section
+        urn_identifiers = list(filter(lambda identifier: identifier["identifierType"] == "URN", output_doi.identifiers))
+
+        self.assertEqual(len(urn_identifiers), 1)
+        self.assertEqual(urn_identifiers[0]["identifier"], "urn:nasa:pds:insight_cameras::2.0")
+
+        # Check that the new identifier has been added to the list of "relatedIdentifiers"
+        urn_identifiers = list(
+            filter(lambda identifier: identifier["relatedIdentifierType"] == "URN", output_doi.related_identifiers)
+        )
+
+        self.assertEqual(len(urn_identifiers), 2)
+        identifier_values = [identifier["relatedIdentifier"] for identifier in urn_identifiers]
+        self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifier_values)
+        self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifier_values)
 
 
 def requests_valid_request_patch(method, url, **kwargs):
@@ -185,8 +222,9 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
         expected_prefix = config.get("DATACITE", "doi_prefix")
         expected_suffix = "123abc"
 
-        # Correct endpoint method and url are dependent on whether an outgoing
-        # request has a DOI associated or not, so test with both cases
+        # Correct endpoint method and url are dependent on both the action
+        # being performed, and whether an outgoing request has a DOI associated
+        # or not, so test with all cases
         test_doi = Doi(
             title="doi_title",
             publication_date=datetime.now(),
@@ -195,19 +233,35 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
             pds_identifier="urn:nasa:pds:test-collection::1.0",
         )
 
-        # Test with no DOI assigned
-        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi)
+        # Test reserve with no DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="reserve")
 
         self.assertEqual(method, WEB_METHOD_POST)
         self.assertEqual(url, expected_url)
 
-        # Test with DOI assigned
+        # Test release with no DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="release")
+
+        self.assertEqual(method, WEB_METHOD_POST)
+        self.assertEqual(url, expected_url)
+
+        # Test reserve with a DOI assigned (not a valid case, but endpoint_for_doi doesn't care)
         test_doi.doi = f"{expected_prefix}/{expected_suffix}"
 
-        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi)
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="reserve")
+
+        self.assertEqual(method, WEB_METHOD_POST)
+        self.assertEqual(url, expected_url)
+
+        # Test release with a DOI assigned
+        method, url = DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="release")
 
         self.assertEqual(method, WEB_METHOD_PUT)
         self.assertEqual(url, f"{expected_url}/{expected_prefix}/{expected_suffix}")
+
+        # Test with an unknown action
+        with self.assertRaises(ValueError):
+            DOIDataCiteWebClient().endpoint_for_doi(test_doi, action="update")
 
 
 class DOIDataCiteWebParserTestCase(unittest.TestCase):
@@ -261,7 +315,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertIsInstance(doi.date_record_updated, datetime)
         self.assertEqual(
             doi.description,
-            "InSight Cameras Experiment Data Record (EDR) " "and Reduced Data Record (RDR) Data Products",
+            "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
         )
         self.assertEqual(doi.doi, "10.13143/yzw2-vz66")
         self.assertListEqual(doi.editors, self.expected_editors)
@@ -294,8 +348,57 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
         self._compare_doi_to_expected(doi)
 
+    def test_get_record_for_identifier(self):
+        """Test isolation of specific record based on PDS identifier"""
+        input_json_file = join(self.input_dir, "DOI_Reserved_multi_entry.json")
 
-class DOIDataCiteValidatorTestCast(unittest.TestCase):
+        # Test extraction of a single record from a multi-entry label, parse the
+        # DOI from the result, and ensure we get the record back we expected
+        record, content_type = DOIDataCiteWebParser.get_record_for_identifier(
+            input_json_file, "urn:nasa:pds:ladee_nms:data_raw::1.0"
+        )
+
+        self.assertEqual(content_type, CONTENT_TYPE_JSON)
+
+        dois, _ = DOIDataCiteWebParser.parse_dois_from_label(record)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:ladee_nms:data_raw::1.0")
+        self.assertEqual(doi.doi, "10.17189/1408893")
+
+        # Make sure we get an exception back for an identifier that is not present
+        # in the file
+        with self.assertRaises(UnknownIdentifierException):
+            DOIDataCiteWebParser.get_record_for_identifier(input_json_file, "urn:nasa:pds:ladee_nms:data_raw::2.0")
+
+    def test_get_record_for_doi(self):
+        """Test isolation of a specific record based on DOI"""
+        input_json_file = join(self.input_dir, "DOI_Reserved_multi_entry.json")
+
+        # Test extraction of a single record from a multi-entry label, parse the DOI
+        # from the result, and ensure we got the record back we expected
+        record, content_type = DOIDataCiteWebParser.get_record_for_doi(input_json_file, "10.17189/1408892")
+
+        self.assertEqual(content_type, CONTENT_TYPE_JSON)
+
+        dois, _ = DOIDataCiteWebParser.parse_dois_from_label(record)
+
+        self.assertEqual(len(dois), 1)
+
+        doi = dois[0]
+
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:ladee_nms:data_calibrated::1.0")
+        self.assertEqual(doi.doi, "10.17189/1408892")
+
+        # Make sure we get an exception for a DOI that is not present in the file
+        with self.assertRaises(UnknownDoiException):
+            DOIDataCiteWebParser.get_record_for_doi(input_json_file, "10.17189/1408890")
+
+
+class DOIDataCiteValidatorTestCase(unittest.TestCase):
     """Unit tests for the datacite_validator.py module"""
 
     @classmethod

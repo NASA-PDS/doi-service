@@ -15,7 +15,7 @@ used to interact with the PDS DOI service.
 from pds_doi_service.core.actions.action import create_parser  # noqa: F401
 from pds_doi_service.core.actions.action import DOICoreAction  # noqa: F401
 from pds_doi_service.core.actions.check import DOICoreActionCheck  # noqa: F401
-from pds_doi_service.core.actions.draft import DOICoreActionDraft  # noqa: F401
 from pds_doi_service.core.actions.list import DOICoreActionList  # noqa: F401
 from pds_doi_service.core.actions.release import DOICoreActionRelease  # noqa: F401
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve  # noqa: F401
+from pds_doi_service.core.actions.update import DOICoreActionUpdate  # noqa: F401

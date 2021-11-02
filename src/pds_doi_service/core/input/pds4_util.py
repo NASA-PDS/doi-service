@@ -225,6 +225,9 @@ class DOIPDS4LabelUtil:
             elif product_class == "Product_Bundle":
                 product_specific_type = "PDS4 Refereed Data Bundle"
                 product_type = ProductType.Bundle
+            elif product_class == "Product_Collection":
+                product_specific_type = "PDS4 Collection"
+                product_type = ProductType.Collection
             else:
                 product_specific_type = "PDS4 Refereed Data " + product_class_suffix
                 product_type = ProductType.Dataset
@@ -362,6 +365,8 @@ class DOIPDS4LabelUtil:
                 person = {
                     "first_name": split_fullname[first_i] + first_name_suffix,
                     "last_name": split_fullname[last_i],
+                    "affiliation": [],
+                    "name_type": "Personal",
                 }
 
                 if len(split_fullname) >= 3:
@@ -370,7 +375,7 @@ class DOIPDS4LabelUtil:
                 break
 
         if not person:
-            person = {"full_name": full_name}
+            person = {"full_name": full_name, "affiliation": [], "name_type": "Personal"}
 
         logger.debug(f"parsed person {person}")
 

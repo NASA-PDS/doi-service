@@ -11,12 +11,17 @@ list.py
 
 Contains the definition for the List action of the Core PDS DOI Service.
 """
+import glob
 import json
+from os.path import exists
+from os.path import join
 
 from dateutil.parser import isoparse
 from pds_doi_service.core.actions.action import DOICoreAction
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
+from pds_doi_service.core.entities.exceptions import UnknownDoiException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
@@ -172,6 +177,76 @@ class DOICoreActionList(DOICoreAction):
             query_criteria["end_update"] = isoparse(end_update)
 
         return query_criteria
+
+    @staticmethod
+    def output_label_for_transaction(transaction_record):
+        """
+        Returns a path to the output label associated to the provided transaction
+        record.
+
+        Parameters
+        ----------
+        transaction_record : dict
+            Details of a transaction as returned from a list request.
+
+        Returns
+        -------
+        label_file : str
+            Path to the output label associated to the provided transaction record.
+
+        Raises
+        ------
+        NoTransactionHistoryForIdentifierException
+            If the output label associated to the transaction cannot be found
+            on local disk.
+
+        """
+        # Make sure we can locate the output label associated with this
+        # transaction
+        transaction_location = transaction_record["transaction_key"]
+        label_files = glob.glob(join(transaction_location, "output.*"))
+
+        if not label_files or not exists(label_files[0]):
+            raise NoTransactionHistoryForIdentifierException(
+                f"Could not find a DOI label associated with identifier {transaction_record['identifier']}. "
+                "The database and transaction history location may be out of sync."
+            )
+
+        label_file = label_files[0]
+
+        return label_file
+
+    def transaction_for_doi(self, doi):
+        """
+        Returns the latest transaction record for the provided DOI.
+
+        Parameters
+        ----------
+        doi : str
+            The DOI to search for.
+
+        Returns
+        -------
+        record : dict
+            Latest transaction database record for the given identifier.
+
+        Raises
+        ------
+        UnknownDoiException
+            If no entry can be found in the transaction database for the
+            provided identifier.
+
+        """
+        list_kwargs = {"doi": doi}
+        list_results = json.loads(self.run(**list_kwargs))
+
+        if not list_results:
+            raise UnknownDoiException(f"No record(s) could be found for DOI {doi}.")
+
+        # Latest record should be the only one returned
+        record = list_results[0]
+
+        return record
 
     def transaction_for_identifier(self, identifier):
         """

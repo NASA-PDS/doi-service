@@ -121,7 +121,13 @@ class DOIDataCiteRecord(DOIRecord):
 
             # Make sure the PDS identifier is included as a "identifier"
             for identifier in doi.identifiers:
+                # If the identifier is already an entry, nothing to be done
                 if identifier["identifier"] == doi.pds_identifier:
+                    break
+                # If there's a URN identifier that does not match the current
+                # identifier, update to the latest
+                elif identifier["identifierType"] in ("URN", "Handle"):
+                    identifier["identifier"] = doi.pds_identifier
                     break
             else:
                 # If here, we need to add the PDS ID
@@ -132,7 +138,8 @@ class DOIDataCiteRecord(DOIRecord):
                     }
                 )
 
-            # Make sure the PDS identifier is included as a "relatedIdentifier"
+            # Make sure the PDS identifier is included as a "relatedIdentifier",
+            # this is a rolling list that captures all previous identifiers used for the current record
             for related_identifier in doi.related_identifiers:
                 if related_identifier["relatedIdentifier"] == doi.pds_identifier:
                     break

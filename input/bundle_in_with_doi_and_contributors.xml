@@ -16,6 +16,11 @@
                 InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
             </description>
         </Citation_Information>
+        <Modification_History>
+            <Modification_Detail>
+                <modification_date>2020-01-01</modification_date>
+            </Modification_Detail>
+        </Modification_History>
     </Identification_Area>
     <Context_Area>
         <comment>Observational Intent</comment>

@@ -24,6 +24,7 @@ from pds_doi_service.core.entities.exceptions import raise_or_warn_exceptions
 from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
+from pds_doi_service.core.entities.exceptions import WarningDOIException
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
@@ -203,7 +204,7 @@ class DOICoreActionRelease(DOICoreAction):
                 self._validator_service.validate(single_doi_label)
 
                 # Validate the object representation of the DOI
-                self._doi_validator.validate(doi)
+                self._doi_validator.validate_release_request(doi)
             except (
                 DuplicatedTitleDOIException,
                 InvalidIdentifierException,
@@ -270,7 +271,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # use the response label for the local transaction database entry
                 if not self._review:
                     # Determine the correct HTTP verb and URL for submission of this DOI
-                    method, url = self._web_client.endpoint_for_doi(doi)
+                    method, url = self._web_client.endpoint_for_doi(doi, self._name)
 
                     doi, o_doi_label = self._web_client.submit_content(
                         url=url, method=method, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
@@ -294,6 +295,12 @@ class DOICoreActionRelease(DOICoreAction):
         # for this exception specifically
         except InputFormatException as err:
             raise err
+        # If we catch this exception, it means validation produced a warning
+        # and the --force flag is not set, so log the error and exit without
+        # producing an output label
+        except WarningDOIException as err:
+            logger.error(str(err))
+            return None
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
             raise CriticalDOIException(str(err))

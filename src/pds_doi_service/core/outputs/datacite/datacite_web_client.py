@@ -202,7 +202,7 @@ class DOIDataCiteWebClient(DOIWebClient):
         # expected by the DataCite parser
         return json.dumps({"data": data})
 
-    def endpoint_for_doi(self, doi):
+    def endpoint_for_doi(self, doi, action):
         """
         Returns the proper HTTP verb and URL that form a request endpoint for
         the provided DOI object.
@@ -211,6 +211,9 @@ class DOIDataCiteWebClient(DOIWebClient):
         ----------
         doi : Doi
             The DOI object to determine the endpoint for.
+        action : str
+            Name of the action to be performed on the provided Doi object.
+            Should be one of: reserve, release
 
         Returns
         -------
@@ -219,18 +222,31 @@ class DOIDataCiteWebClient(DOIWebClient):
         url: str
             The URL to use for the request.
 
+        Raises
+        ------
+        ValueError
+            If an unsupported action is provided.
+
         """
         config = self._config_util.get_config()
 
-        # If a DOI has been assigned already, we need to use the PUT verb and
-        # include the DOI in the URL to signify an update request
-        if doi.doi:
-            method = WEB_METHOD_PUT
-            url = "{url}/{doi}".format(url=config.get("DATACITE", "url"), doi=doi.doi)
-        # Otherwise, we're requesting a new DOI, so the POST verb is used with
-        # the default DataCite API url
-        else:
+        # For reserve requests, there should be no pre-existing DOI, so
+        # POST is always called on the base DataCite URL
+        if action == "reserve":
             method = WEB_METHOD_POST
             url = config.get("DATACITE", "url")
+        # For release, need to determine if any DOI has been allocated yet.
+        # If not, this is a straight-to-release request and should use the POST
+        # endpoint. Otherwise, we're updating an existing DOI via a PUT request
+        # on the URL containing the DOI to be released.
+        elif action == "release":
+            if doi.doi:
+                method = WEB_METHOD_PUT
+                url = "{url}/{doi}".format(url=config.get("DATACITE", "url"), doi=doi.doi)
+            else:
+                method = WEB_METHOD_POST
+                url = config.get("DATACITE", "url")
+        else:
+            raise ValueError(f'Unsupported action "{action}" provided')
 
         return method, url

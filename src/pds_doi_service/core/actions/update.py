@@ -1,23 +1,23 @@
 #
-#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
+#  Copyright 2021, by the California Institute of Technology.  ALL RIGHTS
 #  RESERVED. United States Government Sponsorship acknowledged. Any commercial
 #  use must be negotiated with the Office of Technology Transfer at the
 #  California Institute of Technology.
 #
 """
-==========
-reserve.py
-==========
+=========
+update.py
+=========
 
-Contains the definition for the Reserve action of the Core PDS DOI Service.
+Contains the definition for the Update action of the Core PDS DOI Service.
 """
-from pds_doi_service.core.actions.action import DOICoreAction
-from pds_doi_service.core.entities.doi import DoiEvent
+from pds_doi_service.core.actions import DOICoreAction
+from pds_doi_service.core.actions.list import DOICoreActionList
+from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import collect_exception_classes_and_messages
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
-from pds_doi_service.core.entities.exceptions import IllegalDOIActionException
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.entities.exceptions import InvalidIdentifierException
 from pds_doi_service.core.entities.exceptions import raise_or_warn_exceptions
@@ -34,22 +34,26 @@ from pds_doi_service.core.util.node_util import NodeUtil
 logger = get_logger(__name__)
 
 
-class DOICoreActionReserve(DOICoreAction):
-    _name = "reserve"
+class DOICoreActionUpdate(DOICoreAction):
+    _name = "update"
     _description = (
-        "Submit a request to reserve a DOI prior to public release. "
-        "Reserved DOI's may be released after via the release action"
+        "Update a record with or without submission to the service provider. "
+        "Metadata updates are pulled from the provided input file for the corresponding "
+        "DOI values."
     )
-    _order = 0
+    _order = 10
     _run_arguments = ("input", "node", "submitter", "force")
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._input_util = DOIInputUtil(valid_extensions=[".xml", ".csv", ".xlsx", ".xls"])
+        self._input_util = DOIInputUtil()
         self._record_service = DOIServiceFactory.get_doi_record_service()
         self._validator_service = DOIServiceFactory.get_validator_service()
         self._web_client = DOIServiceFactory.get_web_client_service()
+        self._web_parser = DOIServiceFactory.get_web_parser_service()
+
+        self._list_action = DOICoreActionList(db_name=db_name)
 
         self._input = None
         self._node = None
@@ -58,43 +62,41 @@ class DOICoreActionReserve(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(
-            cls._name,
-            description="Reserve DOI's for one or more unpublished datasets. "
-            "DOI's will be assigned by the provider, but will not be "
-            "publicly findable. To create findable records, utilize "
-            "the Release action with the labels returned by this action.",
-        )
+        action_parser = subparsers.add_parser(cls._name, description="Update records with DOI's already assigned")
+
+        node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument(
             "-i",
             "--input",
-            required=True,
-            help="Path to a PDS4 XML label or XLS/CSV "
-            "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
+            required=False,
+            metavar="INPUT",
+            help="Path to an input XML/JSON label or CSV/XLS spreadsheet. May be "
+            "a local path or an HTTP address resolving to a PDS4 label file. Each "
+            "record parsed from the input MUST define a DOI value in order to be "
+            "updated.",
         )
         action_parser.add_argument(
             "-n",
             "--node",
             required=True,
             metavar="NODE_ID",
-            help="The PDS Discipline Node in charge of the submission of the DOI. "
-            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
+            help="The PDS Discipline Node in charge of the DOI. Authorized values are: " + ",".join(node_values),
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
             required=True,
             metavar="EMAIL",
-            help="The email address to associate with the Reserve request.",
+            help="The email address to associate with the Update request.",
         )
         action_parser.add_argument(
             "-f",
             "--force",
             required=False,
             action="store_true",
-            help="If provided, forces the reserve action to proceed even if "
-            "warnings are encountered during submission of the Reserve "
-            "request. Without this flag, any warnings encountered are "
+            help="If provided, forces the action to proceed even if warnings are "
+            "encountered during submission of the updated record to the "
+            "database. Without this flag, any warnings encountered are "
             "treated as fatal exceptions.",
         )
 
@@ -115,6 +117,45 @@ class DOICoreActionReserve(DOICoreAction):
         """
         return self._input_util.parse_dois_from_input_file(input_file)
 
+    @staticmethod
+    def _meld_dois(existing_doi, new_doi):
+        """
+        Melds the fields from a new Doi object into an existing one, updating
+        only those fields that are set on the new Doi and which are different
+        from those in the existing.
+
+        Parameters
+        ----------
+        existing_doi : Doi
+            The existing Doi to update.
+        new_doi : Doi
+            The new Doi to meld into the existing.
+
+        Returns
+        -------
+        updated_doi : Doi
+            A new Doi object that represents the melding of the provided objects.
+
+        """
+        existing_doi_fields = existing_doi.__dict__.copy()
+        new_doi_fields = new_doi.__dict__
+
+        for key in existing_doi_fields:
+            if new_doi_fields[key] and existing_doi_fields[key] != new_doi_fields[key]:
+                # Don't overwrite the original date_record_added, if present in the existing record
+                if key == "date_record_added" and existing_doi_fields["date_record_added"]:
+                    continue
+
+                # Don't overwrite existing status, we'll be saving it in previous_status later on
+                if key == "status":
+                    continue
+
+                existing_doi_fields[key] = new_doi_fields[key]
+
+        updated_doi = Doi(**existing_doi_fields)
+
+        return updated_doi
+
     def _complete_dois(self, dois):
         """
         Ensures the list of DOI objects to reserve have the requisite fields,
@@ -132,20 +173,67 @@ class DOICoreActionReserve(DOICoreAction):
 
         """
         for doi in dois:
-            # First set contributor, publisher at the beginning of the function
-            # to ensure that they are set in case of an exception.
             doi.contributor = NodeUtil().get_node_long_name(self._node)
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
-            # Add 'status' field so the ranking in the workflow can be determined
-            doi.status = DoiStatus.Draft
+            # Store the previous status of this DOI
+            doi.previous_status = doi.status
 
-            # Add the event field to instruct DataCite to make this entry
-            # hidden so it can be modified (should have no effect for other
-            # providers)
-            doi.event = DoiEvent.Hide
+            # If this DOI has already been released (aka is findable or in review),
+            # then move the status back to the Review step. Otherwise, the record
+            # should still be in draft.
+            if doi.previous_status in (DoiStatus.Findable, DoiStatus.Review):
+                doi.status = DoiStatus.Review
+            else:
+                doi.status = DoiStatus.Draft
 
         return dois
+
+    def _update_dois(self, dois):
+        """
+        Updates the local transaction database using the provided Doi objects.
+        The updates are not pushed to the service provider.
+
+        Parameters
+        ----------
+        dois : Iterable[Doi]
+            The Dois to update.
+
+        Returns
+        -------
+        updated_dois : list[Doi]
+            The list of Dois reflecting their update state. This includes melding
+            with any existing Doi object with the same DOI value.
+
+        """
+        updated_dois = []
+
+        for updated_doi in dois:
+            if not updated_doi.doi:
+                raise RuntimeError(
+                    f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned.\n"
+                    "Use the Reserve action to acquire a DOI for the record before attempting to update it."
+                )
+
+            # Get the record from the transaction database for the current DOI value
+            transaction_record = self._list_action.transaction_for_doi(updated_doi.doi)
+
+            # Get the last output label associated with the transaction.
+            # This represents the latest version of the metadata for the DOI.
+            output_label = self._list_action.output_label_for_transaction(transaction_record)
+
+            # Output labels can contain multiple entries, so get only the one for
+            # the current DOI value
+            existing_doi_label, _ = self._web_parser.get_record_for_doi(output_label, updated_doi.doi)
+
+            # Parse the existing Doi object, and meld it with the new one
+            existing_dois, _ = self._web_parser.parse_dois_from_label(existing_doi_label)
+
+            updated_doi = self._meld_dois(existing_dois[0], updated_doi)
+
+            updated_dois.append(updated_doi)
+
+        return updated_dois
 
     def _validate_dois(self, dois):
         """
@@ -175,12 +263,6 @@ class DOICoreActionReserve(DOICoreAction):
         exception_messages = []
 
         for doi in dois:
-            if doi.doi:
-                raise IllegalDOIActionException(
-                    f"Provided record with identifier {doi.pds_identifier} already has a DOI ({doi.doi}) assigned.\n"
-                    f"Please use the Update action to modify records with existing DOI."
-                )
-
             try:
                 single_doi_label = self._record_service.create_doi_record(doi)
 
@@ -188,7 +270,7 @@ class DOICoreActionReserve(DOICoreAction):
                 self._validator_service.validate(single_doi_label)
 
                 # Validate the object representation of the DOI
-                self._doi_validator.validate_reserve_request(doi)
+                self._doi_validator.validate_update_request(doi)
             # Collect all warnings and exceptions so they can be combined into
             # a single WarningDOIException
             except (
@@ -211,60 +293,40 @@ class DOICoreActionReserve(DOICoreAction):
 
     def run(self, **kwargs):
         """
-        Performs a reserve of a new DOI.
+        Receives a number of input label locations from which to create a
+        draft Data Object Identifier (DOI). Each location may be a local directory
+        or file path, or a remote HTTP address to the input XML PDS4 label file.
 
         Parameters
         ----------
         kwargs : dict
-            The parsed command-line arguments for the reserve action.
-
-        Returns
-        -------
-        output_label : str
-            The output label, in JSON format, reflecting the status of the
-            reserved input DOI's.
+            Contains the arguments for the Draft action as parsed from the
+            command-line.
 
         Raises
         ------
-        CriticalDOIException
-            If any unrecoverable errors are encountered during validation of
-            the input DOI's.
+        ValueError
+            If the provided arguments are invalid.
 
         """
-        output_dois = []
+        updated_dois = []
 
         self.parse_arguments(kwargs)
 
         try:
-            # Parse, complete and validate the set of provided DOI's
             dois = self._parse_input(self._input)
+            dois = self._update_dois(dois)
             dois = self._complete_dois(dois)
             dois = self._validate_dois(dois)
 
             for doi in dois:
-                # Create the JSON request label to send
-                io_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
-
-                # Submit the Reserve request
-                # Determine the correct HTTP verb and URL for submission of this DOI
-                method, url = self._web_client.endpoint_for_doi(doi, self._name)
-
-                doi, o_doi_label = self._web_client.submit_content(
-                    method=method, url=url, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
-                )
-
-                # Log the inputs and outputs of this transaction
                 transaction = self.m_transaction_builder.prepare_transaction(
                     self._node, self._submitter, doi, input_path=self._input, output_content_type=CONTENT_TYPE_JSON
                 )
 
-                # Commit the transaction to the local database
                 transaction.log()
 
-                # Append the latest version of the Doi object to return
-                # as a label
-                output_dois.append(doi)
-
+                updated_dois.append(doi)
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically
@@ -278,11 +340,11 @@ class DOICoreActionReserve(DOICoreAction):
             return None
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
-            raise CriticalDOIException(err)
+            raise CriticalDOIException(str(err))
 
-        # Create the return output label containing records for all submitted DOI's
+        # Create the return output label containing records for all updated DOI's
         # Note this action always returns JSON format to ensure interoperability
         # between the potential service providers
-        output_label = self._record_service.create_doi_record(output_dois, content_type=CONTENT_TYPE_JSON)
+        output_label = self._record_service.create_doi_record(updated_dois, content_type=CONTENT_TYPE_JSON)
 
         return output_label

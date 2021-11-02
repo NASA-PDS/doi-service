@@ -1,0 +1,188 @@
+{
+    "data": [
+        {
+            "id": "10.17189/1408892",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.17189/1408892",
+                "identifiers": [
+                    {
+                        "identifier": "1408892",
+                        "identifierType": "OSTI ID"
+                    },
+                    {
+                        "identifier": "urn:nasa:pds:ladee_nms:data_calibrated::1.0",
+                        "identifierType": "Product Number"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "L.Huber, ",
+                        "nameType": "Personal",
+                        "familyName": "L.Huber",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "LADEE Neutral Mass Spectrometer Calibrated Data Collection"
+                    }
+                ],
+                "publisher": "PDS Planetary Atmospheres Node (ATMOS)",
+                "container": {},
+                "publicationYear": 2014,
+                "subjects": [],
+                "contributors": [],
+                "dates": [
+                    {
+                        "date": "2014",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "en",
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Collection",
+                    "resourceType": "PDS4 Collection",
+                    "resourceTypeGeneral": "Collection"
+                },
+                "relatedIdentifiers": [],
+                "sizes": [],
+                "formats": [],
+                "version": null,
+                "rightsList": [],
+                "descriptions": [
+                    {
+                        "description": "This Collection contains calibrated data, acquired by the Neutral Mass Spectrometer (NMS)\n            instrument aboard the Lunar Atmosphere and Dust Environment Explorer (LADEE)\n            satellite, during its primary mission with corrections and interpretations applied.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [],
+                "fundingReferences": [],
+                "url": "https://pds.jpl.nasa.gov/ds-view/pds/viewCollection.jsp?identifier=urn%3Anasa%3Apds%3Aladee_nms%3Adata_calibrated&version=1.0",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": null,
+                "source": null,
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2017-11-15T17:44:43Z",
+                "registered": "2017-11-15T17:44:44Z",
+                "published": null,
+                "updated": "2020-09-19T06:59:16Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "nasapds.nasapds",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.17189/1408893",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.17189/1408893",
+                "identifiers": [
+                    {
+                        "identifier": "1408893",
+                        "identifierType": "OSTI ID"
+                    },
+                    {
+                        "identifier": "urn:nasa:pds:ladee_nms:data_raw::1.0",
+                        "identifierType": "Product Number"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "L.Huber, ",
+                        "nameType": "Personal",
+                        "familyName": "L.Huber",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "LADEE Neutral Mass Spectrometer Raw Data Collection"
+                    }
+                ],
+                "publisher": "PDS Planetary Atmospheres Node (ATMOS)",
+                "container": {},
+                "publicationYear": 2014,
+                "subjects": [],
+                "contributors": [],
+                "dates": [
+                    {
+                        "date": "2014",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "en",
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Collection",
+                    "resourceType": "PDS4 Collection",
+                    "resourceTypeGeneral": "Collection"
+                },
+                "relatedIdentifiers": [],
+                "sizes": [],
+                "formats": [],
+                "version": null,
+                "rightsList": [],
+                "descriptions": [
+                    {
+                        "description": "This Collection contains raw data, acquired by the Neutral Mass Spectrometer (NMS)\n            instrument aboard the Lunar Atmosphere and Dust Environment Explorer (LADEE)\n            satellite, during its primary mission. No calibrations, corrections, or\n            interpretations are applied.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [],
+                "fundingReferences": [],
+                "url": "https://pds.jpl.nasa.gov/ds-view/pds/viewCollection.jsp?identifier=urn%3Anasa%3Apds%3Aladee_nms%3Adata_raw&version=1.0",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": null,
+                "source": null,
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2017-11-15T17:50:40Z",
+                "registered": "2017-11-15T17:50:41Z",
+                "published": null,
+                "updated": "2020-09-19T06:59:32Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "nasapds.nasapds",
+                        "type": "clients"
+                    }
+                }
+            }
+        }
+    ]
+}

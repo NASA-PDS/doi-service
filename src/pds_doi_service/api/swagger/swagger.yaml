@@ -121,15 +121,15 @@ paths:
     post:
       tags:
       - dois
-      description: Submit a DOI in reserve or draft status. The payload includes URLs
+      description: Submit a DOI to reserve or update. The payload includes URLs
         for one or more  records to be submitted. Record URLs must resolve to PDS4
         label files (xml).
       operationId: post_dois
       parameters:
       - name: action
         in: query
-        description: The submission action to perform. Must be one of "reserve" or
-          "draft".
+        description: The submission action to perform. Must be one of "reserve",
+          "draft" or "update". "draft" is an alias for "update".
         required: true
         style: form
         explode: true
@@ -159,7 +159,7 @@ paths:
         in: query
         description: URL to provide as the record to register a DOI for. URL must
           start with either "http://" or "https://" and resolve to a valid PDS4 label
-          in XML format. This value is only utilized when request is set to "draft".
+          in XML format. This value is only utilized when request is set to "update".
         required: false
         style: form
         explode: true
@@ -168,7 +168,7 @@ paths:
       - name: force
         in: query
         description: If true, forces a reserve request to completion, ignoring any
-          warnings encountered. Has no effect for draft requests.
+          warnings encountered. Has no effect for update requests.
         required: false
         style: form
         explode: true
@@ -177,7 +177,7 @@ paths:
           default: false
       requestBody:
         description: Payload containing one or more labels in JSON or XML (PDS4) format.
-          Required for reserve requests, but optional for draft.
+          Required for reserve requests, but optional for update.
         content:
           application/json:
             schema:
@@ -340,7 +340,7 @@ paths:
     post:
       tags:
       - dois
-      description: Move a DOI record from draft/reserve status to "review".
+      description: Move a DOI record from draft status to "review".
       operationId: post_submit_doi
       parameters:
       - name: identifier
