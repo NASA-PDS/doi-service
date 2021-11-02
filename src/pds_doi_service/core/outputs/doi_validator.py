@@ -230,8 +230,7 @@ class DOIValidator:
 
         """
         if not doi.doi:
-            raise ValueError(f"Provided DOI object (id {doi.pds_identifier}) "
-                             f"does not have a DOI value assigned.")
+            raise ValueError(f"Provided DOI object (id {doi.pds_identifier}) " f"does not have a DOI value assigned.")
 
         # The database expects each field to be a list.
         query_criterias = {"doi": [doi.doi]}

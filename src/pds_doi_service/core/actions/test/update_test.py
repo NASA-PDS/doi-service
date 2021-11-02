@@ -9,8 +9,8 @@ from os.path import join
 from unittest.mock import patch
 
 import pds_doi_service.core.outputs.datacite.datacite_web_client
-from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.actions.release import DOICoreActionRelease
+from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.actions.update import DOICoreActionUpdate
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
@@ -20,22 +20,22 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import create_landing_page_url
-
 from pkg_resources import resource_filename
 
 
 class UpdateActionTestCase(unittest.TestCase):
     _record_service = None
     _web_parser = None
+    db_name = None
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_dir = resource_filename(__name__, "")
         cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
         cls.db_name = join(cls.test_dir, "doi_temp.db")
-        cls._update_action = None
-        cls._reserve_action = None
-        cls._release_action = None
+        cls._update_action = DOICoreActionUpdate(db_name=cls.db_name)
+        cls._reserve_action = DOICoreActionReserve(db_name=cls.db_name)
+        cls._release_action = DOICoreActionRelease(db_name=cls.db_name)
 
         cls._record_service = DOIServiceFactory.get_doi_record_service()
         cls._web_parser = DOIServiceFactory.get_web_parser_service()
@@ -198,17 +198,17 @@ class UpdateActionTestCase(unittest.TestCase):
         # and update the identifier associated with each row
         rows = []
 
-        with open(input_csv, newline='') as csvfile:
+        with open(input_csv, newline="") as csvfile:
             reader = csv.DictReader(csvfile)
             fieldnames = reader.fieldnames
             for row in reader:
-                row['doi'] = doi_map[row['related_resource']]
+                row["doi"] = doi_map[row["related_resource"]]
                 # Add a minor ver to each VID
-                row['related_resource'] += ".99"
-                row['site_url'] = create_landing_page_url(row['related_resource'], product_type=ProductType.Collection)
+                row["related_resource"] += ".99"
+                row["site_url"] = create_landing_page_url(row["related_resource"], product_type=ProductType.Collection)
                 rows.append(row)
 
-        fieldnames.extend(['doi', 'site_url'])
+        fieldnames.extend(["doi", "site_url"])
 
         # Write out a new CSV file and submit it to the update action
         with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".csv") as csvfile:

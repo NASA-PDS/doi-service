@@ -50,11 +50,7 @@ class DOIInputUtil:
     ]
     """The names of the expected columns within a spreadsheet file."""
 
-    OPTIONAL_COLUMNS = [
-        "doi",
-        "description",
-        "site_url"
-    ]
+    OPTIONAL_COLUMNS = ["doi", "description", "site_url"]
     """The names of optional columns parsed from a spreadsheet file."""
 
     EXPECTED_NUM_COLUMNS = len(MANDATORY_COLUMNS)

@@ -11,9 +11,6 @@ update.py
 
 Contains the definition for the Update action of the Core PDS DOI Service.
 """
-
-import sys
-
 from pds_doi_service.core.actions import DOICoreAction
 from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import Doi
@@ -65,9 +62,7 @@ class DOICoreActionUpdate(DOICoreAction):
 
     @classmethod
     def add_to_subparser(cls, subparsers):
-        action_parser = subparsers.add_parser(
-            cls._name, description="Update records with DOI's already assigned"
-        )
+        action_parser = subparsers.add_parser(cls._name, description="Update records with DOI's already assigned")
 
         node_values = NodeUtil.get_permissible_values()
         action_parser.add_argument(
@@ -78,7 +73,7 @@ class DOICoreActionUpdate(DOICoreAction):
             help="Path to an input XML/JSON label or CSV/XLS spreadsheet. May be "
             "a local path or an HTTP address resolving to a PDS4 label file. Each "
             "record parsed from the input MUST define a DOI value in order to be "
-            "updated."
+            "updated.",
         )
         action_parser.add_argument(
             "-n",
@@ -279,10 +274,10 @@ class DOICoreActionUpdate(DOICoreAction):
             # Collect all warnings and exceptions so they can be combined into
             # a single WarningDOIException
             except (
-                    DuplicatedTitleDOIException,
-                    InvalidIdentifierException,
-                    UnexpectedDOIActionException,
-                    TitleDoesNotMatchProductTypeException
+                DuplicatedTitleDOIException,
+                InvalidIdentifierException,
+                UnexpectedDOIActionException,
+                TitleDoesNotMatchProductTypeException,
             ) as err:
                 (exception_classes, exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages

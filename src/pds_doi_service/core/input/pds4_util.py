@@ -366,7 +366,7 @@ class DOIPDS4LabelUtil:
                     "first_name": split_fullname[first_i] + first_name_suffix,
                     "last_name": split_fullname[last_i],
                     "affiliation": [],
-                    "name_type": "Personal"
+                    "name_type": "Personal",
                 }
 
                 if len(split_fullname) >= 3:
@@ -375,11 +375,7 @@ class DOIPDS4LabelUtil:
                 break
 
         if not person:
-            person = {
-                "full_name": full_name,
-                "affiliation": [],
-                "name_type": "Personal"
-            }
+            person = {"full_name": full_name, "affiliation": [], "name_type": "Personal"}
 
         logger.debug(f"parsed person {person}")
 

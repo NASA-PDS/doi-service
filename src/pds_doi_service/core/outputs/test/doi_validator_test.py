@@ -360,9 +360,7 @@ class DoiValidatorTest(unittest.TestCase):
             self._doi_validator._check_identifier_fields(doi_obj)
 
     def test_site_url_validation(self):
-        """
-
-        """
+        """ """
         # Test with an unreachable (fake) URL
         doi_obj = Doi(
             title=self.title + " different",
@@ -373,7 +371,7 @@ class DoiValidatorTest(unittest.TestCase):
             id="1234",
             doi=self.doi,
             status=DoiStatus.Draft,
-            site_url="http://fakewebsite.fake"
+            site_url="http://fakewebsite.fake",
         )
 
         with self.assertRaises(SiteURLNotExistException):

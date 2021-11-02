@@ -13,9 +13,9 @@ from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
+from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.entities.exceptions import UnknownDoiException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
-from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -27,6 +27,7 @@ from pkg_resources import resource_filename
 class ListActionTestCase(unittest.TestCase):
     _record_service = None
     _web_parser = None
+    db_name = None
 
     @classmethod
     def setUpClass(cls):
@@ -183,10 +184,10 @@ class ListActionTestCase(unittest.TestCase):
         self.assertIsInstance(transaction_record, dict)
 
         # Make sure the transaction record aligns with the Doi record
-        self.assertEqual(doi.doi, transaction_record['doi'])
-        self.assertEqual(doi.pds_identifier, transaction_record['identifier'])
-        self.assertEqual(doi.status, transaction_record['status'])
-        self.assertEqual(doi.title, transaction_record['title'])
+        self.assertEqual(doi.doi, transaction_record["doi"])
+        self.assertEqual(doi.pds_identifier, transaction_record["identifier"])
+        self.assertEqual(doi.status, transaction_record["status"])
+        self.assertEqual(doi.title, transaction_record["title"])
 
         # Ensure we get an exception when searching for an unknown DOI value
         with self.assertRaises(UnknownDoiException):
@@ -220,10 +221,10 @@ class ListActionTestCase(unittest.TestCase):
         self.assertIsInstance(transaction_record, dict)
 
         # Make sure the transaction record aligns with the Doi record
-        self.assertEqual(doi.doi, transaction_record['doi'])
-        self.assertEqual(doi.pds_identifier, transaction_record['identifier'])
-        self.assertEqual(doi.status, transaction_record['status'])
-        self.assertEqual(doi.title, transaction_record['title'])
+        self.assertEqual(doi.doi, transaction_record["doi"])
+        self.assertEqual(doi.pds_identifier, transaction_record["identifier"])
+        self.assertEqual(doi.status, transaction_record["status"])
+        self.assertEqual(doi.title, transaction_record["title"])
 
         # Ensure we get an exception when searching for an unknown ID value
         with self.assertRaises(UnknownIdentifierException):
@@ -262,14 +263,14 @@ class ListActionTestCase(unittest.TestCase):
 
         # Read the output label, its contents should match what was returned from
         # the reserve request
-        with open(output_label_path, 'r') as infile:
+        with open(output_label_path, "r") as infile:
             output_label = infile.read()
 
         self.assertEqual(doi_label, output_label)
 
         # Make sure we get an exception when the transaction record references
         # a path that does not exist
-        transaction_record['transaction_key'] = '/fake/path/output.json'
+        transaction_record["transaction_key"] = "/fake/path/output.json"
 
         with self.assertRaises(NoTransactionHistoryForIdentifierException):
             self._list_action.output_label_for_transaction(transaction_record)

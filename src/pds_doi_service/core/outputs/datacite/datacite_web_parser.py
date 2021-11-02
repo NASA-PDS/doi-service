@@ -441,6 +441,4 @@ class DOIDataCiteWebParser(DOIWebParser):
                 # Re-add the data key we stripped off earlier
                 return json.dumps({"data": record}, indent=4), CONTENT_TYPE_JSON
         else:
-            raise UnknownDoiException(
-                f'Could not find entry for DOI "{doi}" in DataCite label file {label_file}.'
-            )
+            raise UnknownDoiException(f'Could not find entry for DOI "{doi}" in DataCite label file {label_file}.')

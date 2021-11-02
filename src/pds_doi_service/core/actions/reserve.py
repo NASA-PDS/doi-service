@@ -70,7 +70,7 @@ class DOICoreActionReserve(DOICoreAction):
             "--input",
             required=True,
             help="Path to a PDS4 XML label or XLS/CSV "
-                 "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
+            "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
         )
         action_parser.add_argument(
             "-n",
@@ -195,7 +195,7 @@ class DOICoreActionReserve(DOICoreAction):
                 DuplicatedTitleDOIException,
                 InvalidIdentifierException,
                 UnexpectedDOIActionException,
-                TitleDoesNotMatchProductTypeException
+                TitleDoesNotMatchProductTypeException,
             ) as err:
                 (exception_classes, exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages

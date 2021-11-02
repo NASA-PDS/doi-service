@@ -102,7 +102,9 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
         self.assertEqual(urn_identifiers[0]["identifier"], "urn:nasa:pds:insight_cameras::2.0")
 
         # Check that the new identifier has been added to the list of "relatedIdentifiers"
-        urn_identifiers = list(filter(lambda identifier: identifier["relatedIdentifierType"] == "URN", output_doi.related_identifiers))
+        urn_identifiers = list(
+            filter(lambda identifier: identifier["relatedIdentifierType"] == "URN", output_doi.related_identifiers)
+        )
 
         self.assertEqual(len(urn_identifiers), 2)
         identifier_values = [identifier["relatedIdentifier"] for identifier in urn_identifiers]
@@ -352,7 +354,9 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
         # Test extraction of a single record from a multi-entry label, parse the
         # DOI from the result, and ensure we get the record back we expected
-        record, content_type = DOIDataCiteWebParser.get_record_for_identifier(input_json_file, "urn:nasa:pds:ladee_nms:data_raw::1.0")
+        record, content_type = DOIDataCiteWebParser.get_record_for_identifier(
+            input_json_file, "urn:nasa:pds:ladee_nms:data_raw::1.0"
+        )
 
         self.assertEqual(content_type, CONTENT_TYPE_JSON)
 

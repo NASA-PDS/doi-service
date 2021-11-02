@@ -74,9 +74,7 @@ def _write_csv_from_labels(temp_file, labels):
 
     """
     csv_writer = csv.DictWriter(
-        temp_file,
-        fieldnames=DOIInputUtil.MANDATORY_COLUMNS + DOIInputUtil.OPTIONAL_COLUMNS,
-        extrasaction='ignore'
+        temp_file, fieldnames=DOIInputUtil.MANDATORY_COLUMNS + DOIInputUtil.OPTIONAL_COLUMNS, extrasaction="ignore"
     )
 
     csv_writer.writeheader()
@@ -294,12 +292,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
 
                 _write_csv_from_labels(csv_file, body["labels"])
 
-                reserve_kwargs = {
-                    "node": node,
-                    "submitter": submitter,
-                    "input": csv_file.name,
-                    "force": force
-                }
+                reserve_kwargs = {"node": node, "submitter": submitter, "input": csv_file.name, "force": force}
 
                 doi_label = reserve_action.run(**reserve_kwargs)
 
