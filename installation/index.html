@@ -28,10 +28,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">📦 Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
@@ -304,6 +304,30 @@ described in the Configuration section above:</p>
 your virtual environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span>
 </pre></div>
+</div>
+<p>Upgrades to the PDS DOI Service should typically not affect any existing transaction
+database, transaction history, or INI configuration settings. If an instance of
+the PDS DOI API is running, for example in a <code class="docutils literal notranslate"><span class="pre">screen</span></code> session, it is recommended that
+it be terminated before performing an upgrade.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An update to an existing virtualenv installation of the PDS DOI Service may fail
+if the underlying minimum required Python version has changed. If so, a new
+virtual environment should be created using the required version of Python, after
+which the latest version of the Service may be installed into it. Consult the
+installation instructions above on how to create a new virtual environment.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In rare circumstances, an upgrade may invalidate an existing transaction
+database if the update includes a change to the underlying schema. Any such changes
+will be clearly identified in the release notes for the version of the service.
+The <code class="docutils literal notranslate"><span class="pre">pds-doi-init</span></code> script may be used in these circumstances to rebuild a fresh
+transaction database and transaction history based on what is available on DataCite.
+For this reason, it is recommended that any outstanding draft or review DOI
+requests are finalized and released before performing an upgrade which invalidates
+the transaction database. Consult the <a class="reference external" href="../usage/index.html">usage</a> documentation for more details
+on running <code class="docutils literal notranslate"><span class="pre">pds-doi-init</span></code>.</p>
 </div>
 </section>
 </section>

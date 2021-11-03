@@ -28,10 +28,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -87,21 +87,14 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">📦 Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">🏃‍♀️ Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#command-line-usage-information">Command Line Usage Information</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Sub-commands:">Sub-commands:</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#reserve">reserve</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#draft">draft</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#release">release</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#check">check</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#list">list</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#pds-doi-cmd">pds-doi-cmd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pds-doi-init">pds-doi-init</a></li>
 </ul>
 </li>
 </ul>
@@ -185,15 +178,15 @@ The DOI is then used to cite the digital object, especially in scientific papers
 <p>In the context of PDS, publishing a new DOI follows this workflow:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><cite>Reserve</cite>: Before a dataset is published in PDS, a DOI is reserved so the
+<li><p><code class="docutils literal notranslate"><span class="pre">Reserve</span></code>: Before a dataset is published in PDS, a DOI is reserved so the
 researchers working with the digital resource can cite it at early stage.</p></li>
-<li><p><cite>Draft</cite>: The metadata associated to an existing DOI is elaborated and validated.</p></li>
-<li><p><cite>Review</cite>: Once all metadata has been properly associated to the DOI, the
+<li><p><code class="docutils literal notranslate"><span class="pre">Draft</span></code>: The metadata associated to an existing DOI is elaborated and validated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Review</span></code>: Once all metadata has been properly associated to the DOI, the
 requester submits the DOI record for review to the PDS Engineering node.</p></li>
-<li><p><cite>Release</cite>: After the PDS Engineering node determines that the DOI record is
+<li><p><code class="docutils literal notranslate"><span class="pre">Release</span></code>: After the PDS Engineering node determines that the DOI record is
 filled out properly, the DOI and its metadata is officially registered at
 <a class="reference external" href="https://datacite.org">DataCite</a> and made available for public discovery. If there any issues with
-the reviewed record, PDS Engineering node may move the record back to <cite>Draft</cite>
+the reviewed record, PDS Engineering node may move the record back to <code class="docutils literal notranslate"><span class="pre">Draft</span></code>
 status for correction by the original submitter.</p></li>
 </ul>
 </div></blockquote>
@@ -205,182 +198,18 @@ spreadsheets.</p>
 used to permanently cite a digital resource. For this reason, all transactions,
 creations, and updates with the PDS DOI Service are registered in a local database.
 This database is used to track submissions-in-progress and help ensure the proper
-workflow (<cite>Reserve</cite> -&gt; <cite>Draft</cite> -&gt; <cite>Review</cite> -&gt; <cite>Release</cite>) is enforced.</p>
+workflow (<code class="docutils literal notranslate"><span class="pre">Reserve</span></code> → <code class="docutils literal notranslate"><span class="pre">Draft</span></code> → <code class="docutils literal notranslate"><span class="pre">Review</span></code> → <code class="docutils literal notranslate"><span class="pre">Release</span></code>) is enforced.</p>
 <p>Currently, the service provides a command line tool for use by a PDS Engineering
 Node operator interacting with the Discipline Nodes, as well as a web API and UI
 to enable Discipline Nodes to directly manage their DOIs.</p>
 </section>
 <section id="command-line-usage-information">
 <h2>Command Line Usage Information<a class="headerlink" href="#command-line-usage-information" title="Permalink to this headline">¶</a></h2>
-<p><p>PDS core command for DOI management. The available subcommands are:
-reserve (Submit a request to reserve a DOI prior to public release. Reserved DOI’s may be released after via the release action.),
-draft (Prepare a draft DOI record created from PDS4 labels.),
-release (Move a reserved DOI to review, or submit a DOI for release to the service provider.),
-check (Check pending DOI statuses from the service provider and update the local database. May be run regularly, for example in a crontab.),
-list (List DOI entries within the transaction database that match the provided search criteria),</p>
-</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">{</span><span class="n">reserve</span><span class="p">,</span><span class="n">draft</span><span class="p">,</span><span class="n">release</span><span class="p">,</span><span class="n">check</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span> <span class="o">...</span>
-</pre></div>
-</div>
-<section id="Positional Arguments">
-<h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
-<dl class="option-list">
-<dt><kbd>subcommand</kbd></dt>
-<dd><p>Possible choices: reserve, draft, release, check, list</p>
-</dd>
-</dl>
+<section id="pds-doi-cmd">
+<h3>pds-doi-cmd<a class="headerlink" href="#pds-doi-cmd" title="Permalink to this headline">¶</a></h3>
 </section>
-<section id="Sub-commands:">
-<h3>Sub-commands:<a class="headerlink" href="#Sub-commands:" title="Permalink to this headline">¶</a></h3>
-<section id="reserve">
-<h4>reserve<a class="headerlink" href="#reserve" title="Permalink to this headline">¶</a></h4>
-<p>Create a DOI for one or more unpublished datasets. The input is a spreadsheet or CSV file containing records to reserve DOIs for.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">reserve</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">DOI_Reserved_GEO_200318</span><span class="o">.</span><span class="n">csv</span> <span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span><span class="p">]</span>
-</pre></div>
-</div>
-<section id="Named Arguments">
-<h5>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h5>
-<dl class="option-list">
-<dt><kbd>-n, --node</kbd></dt>
-<dd><p>The PDS Discipline Node in charge of the submission of the DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn</p>
-</dd>
-<dt><kbd>-f, --force</kbd></dt>
-<dd><p>If provided, forces the reserve action to proceed even if warnings are encountered during submission of the reserve request. Without this flag, any warnings encountered are treated as fatal exceptions.</p>
-<p>Default: False</p>
-</dd>
-<dt><kbd>-i, --input</kbd></dt>
-<dd><p>A PDS4 XML label, OSTI XML/JSON label or XLS/CSV spreadsheet file with the following columns: status,title,publication_date,product_type_specific,author_last_name,author_first_name,related_resource</p>
-</dd>
-<dt><kbd>-s, --submitter</kbd></dt>
-<dd><p>The email address to associate with the Reserve request.</p>
-</dd>
-<dt><kbd>-dry-run, --dry-run</kbd></dt>
-<dd><p>Performs the Reserve request without submitting the record. The record is logged to the local database with a status of ‘reserved_not_submitted’.</p>
-<p>Default: False</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="draft">
-<h4>draft<a class="headerlink" href="#draft" title="Permalink to this headline">¶</a></h4>
-<p>Create a draft DOI record from existing PDS4 or DOI labels.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">draft</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">bundle_in_with_contributors</span><span class="o">.</span><span class="n">xml</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span>
-                  <span class="p">[</span><span class="o">-</span><span class="n">l</span> <span class="n">urn</span><span class="p">:</span><span class="n">nasa</span><span class="p">:</span><span class="n">pds</span><span class="p">:</span><span class="n">lab_shocked_feldspars</span><span class="p">::</span><span class="mf">1.0</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span> <span class="s2">&quot;Image&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<section id="Named Arguments_repeat1">
-<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat1" title="Permalink to this headline">¶</a></h5>
-<dl class="option-list">
-<dt><kbd>-i, --input</kbd></dt>
-<dd><p>An input PDS4/DOI label. May be a local path or an HTTP address resolving to a label file. Multiple inputs may be provided via comma-delimited list. Must be provided if –lidvid is not specified.</p>
-</dd>
-<dt><kbd>-n, --node</kbd></dt>
-<dd><p>The PDS Discipline Node in charge of the DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn</p>
-</dd>
-<dt><kbd>-s, --submitter</kbd></dt>
-<dd><p>The email address to associate with the Draft record.</p>
-</dd>
-<dt><kbd>-l, --lidvid</kbd></dt>
-<dd><p>A LIDVID for an existing DOI record to move back to draft status. Must be provided if –input is not specified.</p>
-</dd>
-<dt><kbd>-f, --force</kbd></dt>
-<dd><p>If provided, forces the action to proceed even if warnings are encountered during submission of the draft record to the database. Without this flag, any warnings encountered are treated as fatal exceptions.</p>
-<p>Default: False</p>
-</dd>
-<dt><kbd>-k, --keywords</kbd></dt>
-<dd><p>Extra keywords to associate with the Draft record. Multiple keywords must be separated by “,”. Ignored when used with the –lidvid option.</p>
-<p>Default: “”</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="release">
-<h4>release<a class="headerlink" href="#release" title="Permalink to this headline">¶</a></h4>
-<p>Release a DOI, in draft or reserve status, for review. A DOI may also be released to the DOI service provider directly.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">release</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img&quot;</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">/</span><span class="n">DOI_Update_GEO_200318</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">review</span><span class="p">]</span>
-</pre></div>
-</div>
-<section id="Named Arguments_repeat2">
-<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat2" title="Permalink to this headline">¶</a></h5>
-<dl class="option-list">
-<dt><kbd>-n, --node</kbd></dt>
-<dd><p>The PDS Discipline Node in charge of the released DOI. Authorized values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn</p>
-</dd>
-<dt><kbd>-f, --force</kbd></dt>
-<dd><p>If provided, forces the release action to proceed even if warning are encountered during submission of the release request. Without this flag, any warnings encountered are treated as fatal exceptions.</p>
-<p>Default: False</p>
-</dd>
-<dt><kbd>-i, --input</kbd></dt>
-<dd><p>A file containing a list of DOI metadata to update/release in OSTI JSON/XML format (see <a class="reference external" href="https://www.osti.gov/iad2/docs#record-model).The">https://www.osti.gov/iad2/docs#record-model).The</a> input is produced by the Reserve and Draft actions, and can be retrieved for a DOI with the List action.</p>
-</dd>
-<dt><kbd>-s, --submitter</kbd></dt>
-<dd><p>The email address to associate with the Release request.</p>
-</dd>
-<dt><kbd>--no-review</kbd></dt>
-<dd><p>If provided, the requested DOI will be released directly to the DOI service provider for registration. Use to override the default behavior of releasing a DOI to “review” status.</p>
-<p>Default: False</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="check">
-<h4>check<a class="headerlink" href="#check" title="Permalink to this headline">¶</a></h4>
-<p>Check the status of all pending DOI submissions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">check</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<section id="Named Arguments_repeat3">
-<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat3" title="Permalink to this headline">¶</a></h5>
-<dl class="option-list">
-<dt><kbd>-e, --email</kbd></dt>
-<dd><p>If provided, the check action sends results to the default recipients and pending DOI submitters.</p>
-<p>Default: False</p>
-</dd>
-<dt><kbd>-a, --attachment</kbd></dt>
-<dd><p>If provided, the check action sends results as an email attachment. Has no effect if –email is not also provided.</p>
-<p>Default: False</p>
-</dd>
-<dt><kbd>-s, --submitter</kbd></dt>
-<dd><p>The email address of the user to register as author of the check action.</p>
-</dd>
-</dl>
-</section>
-</section>
-<section id="list">
-<h4>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h4>
-<p>Extracts the submitted DOI from the local transaction database using the following selection criteria. Output is returned in JSON format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="nb">list</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="s2">&quot;img,eng&quot;</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">status</span> <span class="n">draft</span><span class="p">,</span><span class="n">review</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">doi</span> <span class="mf">10.17189</span><span class="o">/</span><span class="mi">21734</span><span class="p">]</span>
-                 <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">urn</span><span class="p">:</span><span class="n">nasa</span><span class="p">:</span><span class="n">pds</span><span class="p">:</span><span class="n">lab_shocked_feldspars</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">start</span> <span class="mi">2020</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T19</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mf">15.000000</span><span class="p">]</span>
-                 <span class="p">[</span><span class="o">-</span><span class="n">end</span> <span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">311</span><span class="n">T23</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mf">00.000000</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="s2">&quot;my.email@node.gov&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<section id="Named Arguments_repeat4">
-<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat4" title="Permalink to this headline">¶</a></h5>
-<dl class="option-list">
-<dt><kbd>-n, --node</kbd></dt>
-<dd><p>A list of comma-separated node names to filter the available DOI entries by. Valid values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn</p>
-</dd>
-<dt><kbd>-status, --status</kbd></dt>
-<dd><p>A list of comma-separated submission status values to filter the database query results by. Valid status values are: error, unknown, reserved_not_submitted, reserved, draft, review, pending, registered, findable, deactivated</p>
-</dd>
-<dt><kbd>-doi, --doi</kbd></dt>
-<dd><p>A list of comma-delimited DOI values to use as filters with the database query.</p>
-</dd>
-<dt><kbd>-i, --ids</kbd></dt>
-<dd><p>A list of comma-delimited PDS identifiers to use as filters with the database query. Each ID may contain one or more wildcards (*) to pattern match against.</p>
-</dd>
-<dt><kbd>-start, --start-update</kbd></dt>
-<dd><p>The start time of the record update to use as a filter with the database query. Should conform to a valid isoformat date string.</p>
-</dd>
-<dt><kbd>-end, --end-update</kbd></dt>
-<dd><p>The end time for record update time to use as a filter with the database query. Should conform to a valid isoformat date string.</p>
-</dd>
-<dt><kbd>-s, --submitter</kbd></dt>
-<dd><p>A list of comma-separated email addresses to use as a filter with the database query. Only entries containing the one of the provided addresses as the submitter will be returned.</p>
-</dd>
-</dl>
-</section>
-</section>
+<section id="pds-doi-init">
+<h3>pds-doi-init<a class="headerlink" href="#pds-doi-init" title="Permalink to this headline">¶</a></h3>
 </section>
 </section>
 </section>
