@@ -10,6 +10,8 @@ from unittest.mock import patch
 import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions.list import DOICoreActionList
+from pds_doi_service.core.actions.list import FORMAT_LABEL
+from pds_doi_service.core.actions.list import FORMAT_RECORD
 from pds_doi_service.core.actions.release import DOICoreActionRelease
 from pds_doi_service.core.actions.reserve import DOICoreActionReserve
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -149,8 +151,24 @@ class ListActionTestCase(unittest.TestCase):
         self.assertEqual(list_result["subtype"], doi.product_type_specific)
         self.assertEqual(list_result["identifier"], doi.pds_identifier)
 
+        # Run the same query again using the label format
+        list_kwargs = {"status": DoiStatus.Review, "format": FORMAT_LABEL}
+
+        list_result = self._list_action.run(**list_kwargs)
+
+        dois, _ = self._web_parser.parse_dois_from_label(list_result)
+
+        self.assertEqual(len(dois), 1)
+
+        output_doi = dois[0]
+
+        self.assertEqual(doi.pds_identifier, output_doi.pds_identifier)
+        self.assertEqual(doi.title, output_doi.title)
+        self.assertEqual(doi.doi, output_doi.doi)
+        self.assertEqual(doi.status, output_doi.status)
+
         # Finally, query for draft status again, should get no results back
-        list_kwargs = {"status": DoiStatus.Draft}
+        list_kwargs = {"status": DoiStatus.Draft, "format": FORMAT_RECORD}
 
         list_result = json.loads(self._list_action.run(**list_kwargs))
 
