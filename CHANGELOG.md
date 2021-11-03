@@ -1,24 +1,22 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-10-28)
+## [v2.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.2-dev) (2021-11-02)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.2-dev...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v2.0.2-dev)
 
 **Requirements:**
 
 - As a user, I want a simplified DOI lifecycle workflow [\#286](https://github.com/NASA-PDS/pds-doi-service/issues/286)
-
-**Defects:**
-
-- doi-service does not connect to dataCite [\#264](https://github.com/NASA-PDS/pds-doi-service/issues/264) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
-
-## [v2.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.2-dev) (2021-10-21)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v2.0.2-dev)
+- As a user, I want to update the bundle/collection metadata associated with a DOI for accumulating data sets [\#279](https://github.com/NASA-PDS/pds-doi-service/issues/279)
+- As a user, I want to update the LIDVID associated with a DOI  [\#278](https://github.com/NASA-PDS/pds-doi-service/issues/278)
 
 **Improvements:**
 
 - Add new alternateIdentifier to match SBN schema [\#102](https://github.com/NASA-PDS/pds-doi-service/issues/102)
+
+**Defects:**
+
+- doi-service does not connect to dataCite [\#264](https://github.com/NASA-PDS/pds-doi-service/issues/264) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
 
 **Other closed issues:**
 
