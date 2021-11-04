@@ -1,8 +1,16 @@
 # Changelog
 
-## [v2.0.2-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.0.2-dev) (2021-11-02)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-11-04)
 
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v2.0.2-dev)
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.0...«unknown»)
+
+**Other closed issues:**
+
+- As a user, I want to obtain json label format from a list command query [\#289](https://github.com/NASA-PDS/pds-doi-service/issues/289)
+
+## [v2.1.0](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.0) (2021-11-03)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.0.1...v2.1.0)
 
 **Requirements:**
 
