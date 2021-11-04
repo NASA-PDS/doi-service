@@ -23,17 +23,22 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.entities.exceptions import UnknownDoiException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
+from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
 
 logger = get_logger(__name__)
+
+FORMAT_RECORD = "record"
+FORMAT_LABEL = "label"
+VALID_FORMATS = [FORMAT_RECORD, FORMAT_LABEL]
 
 
 class DOICoreActionList(DOICoreAction):
     _name = "list"
     _description = "List DOI entries within the transaction database that match the provided search criteria"
     _order = 40
-    _run_arguments = ("doi", "ids", "node", "status", "start_update", "end_update", "submitter")
+    _run_arguments = ("format", "doi", "ids", "node", "status", "start_update", "end_update", "submitter")
 
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
@@ -46,6 +51,17 @@ class DOICoreActionList(DOICoreAction):
             self.m_default_db_file = self._config.get("OTHER", "db_file")
 
         self._database_obj = DOIDataBase(self.m_default_db_file)
+        self._record_service = DOIServiceFactory.get_doi_record_service()
+        self._web_parser = DOIServiceFactory.get_web_parser_service()
+
+        self._format = None
+        self._doi = None
+        self._ids = None
+        self._node = None
+        self._status = None
+        self._start_update = None
+        self._end_update = None
+        self._submitter = None
 
     @classmethod
     def add_to_subparser(cls, subparsers):
@@ -58,6 +74,17 @@ class DOICoreActionList(DOICoreAction):
         node_values = NodeUtil.get_permissible_values()
         status_values = [status for status in DoiStatus]
 
+        action_parser.add_argument(
+            "-f",
+            "--format",
+            required=False,
+            default=FORMAT_RECORD,
+            choices=VALID_FORMATS,
+            help="Specify the format of the results returned by the list query. "
+            'Valid options are "record" for a list of transaction records, or '
+            '"label" for an output JSON label containing entries for all '
+            'DOI records that match the query. Defaults to "record".',
+        )
         action_parser.add_argument(
             "-n",
             "--node",
@@ -120,9 +147,7 @@ class DOICoreActionList(DOICoreAction):
             "the provided addresses as the submitter will be returned.",
         )
 
-    def parse_criteria(
-        self, doi=None, ids=None, node=None, status=None, start_update=None, end_update=None, submitter=None
-    ):
+    def parse_criteria(self, kwargs):
         """
         Parse the command-line criteria into a dictionary format suitable
         for use to query the the local transaction database.
@@ -131,20 +156,8 @@ class DOICoreActionList(DOICoreAction):
 
         Parameters
         ----------
-        doi : str
-            Comma-delimited string of DOI values to filter by.
-        ids : str
-            Comma-delimited string of PDS identifiers to filter by.
-        node : str
-            Comma-delimited string of PDS node ID's to filter by.
-        status : str
-            Comma-delimited string of DOI workflow status values to filter by.
-        start_update : str
-            ISO-format date string to serve as start date to filter by.
-        end_update : str
-            ISO-format date string to serve as end date to filter by.
-        submitter : str
-            Comma-delimited string of submitter email addresses to filter by.
+        kwargs : dict
+            The command-line arguments as parsed by argparse.
 
         Returns
         -------
@@ -153,28 +166,30 @@ class DOICoreActionList(DOICoreAction):
             filter by.
 
         """
+        super(DOICoreActionList, self).parse_arguments(kwargs)
+
         query_criteria = {}
 
-        if doi:
-            query_criteria["doi"] = doi.split(",")
+        if self._doi:
+            query_criteria["doi"] = self._doi.split(",")
 
-        if ids:
-            query_criteria["ids"] = ids.split(",")
+        if self._ids:
+            query_criteria["ids"] = self._ids.split(",")
 
-        if submitter:
-            query_criteria["submitter"] = submitter.split(",")
+        if self._submitter:
+            query_criteria["submitter"] = self._submitter.split(",")
 
-        if node:
-            query_criteria["node"] = node.strip().split(",")
+        if self._node:
+            query_criteria["node"] = self._node.strip().split(",")
 
-        if status:
-            query_criteria["status"] = status.strip().split(",")
+        if self._status:
+            query_criteria["status"] = self._status.strip().split(",")
 
-        if start_update:
-            query_criteria["start_update"] = isoparse(start_update)
+        if self._start_update:
+            query_criteria["start_update"] = isoparse(self._start_update)
 
-        if end_update:
-            query_criteria["end_update"] = isoparse(end_update)
+        if self._end_update:
+            query_criteria["end_update"] = isoparse(self._end_update)
 
         return query_criteria
 
@@ -298,20 +313,39 @@ class DOICoreActionList(DOICoreAction):
             provided criteria dictionary.
 
         """
-        query_criteria = self.parse_criteria(**kwargs)
+        query_criteria = self.parse_criteria(kwargs)
 
         columns, rows = self._database_obj.select_latest_rows(query_criteria)
 
-        result_json = []
+        transaction_records = []
 
         for row in rows:
             # Convert the datetime objects to iso8601 strings
             for time_col in ("date_added", "date_updated"):
                 row[columns.index(time_col)] = row[columns.index(time_col)].isoformat()
 
-            result_json.append(dict(zip(columns, row)))
+            transaction_records.append(dict(zip(columns, row)))
 
-        o_query_result = json.dumps(result_json)
-        logger.debug("o_select_result: %s", o_query_result)
+        # For label format we need to obtain the output label for each transaction,
+        # parse Doi objects from them, then reform all parsed Dois into the return label
+        if self._format == FORMAT_LABEL:
+            queried_dois = []
+
+            for transaction_record in transaction_records:
+                label_file = self.output_label_for_transaction(transaction_record)
+
+                with open(label_file, "r") as infile:
+                    label_contents = infile.read()
+                    dois, _ = self._web_parser.parse_dois_from_label(label_contents)
+                    queried_dois.extend(dois)
+
+            if queried_dois:
+                o_query_result = self._record_service.create_doi_record(queried_dois)
+            else:
+                o_query_result = ""
+        # If output format is records, just need to dump transaction dictionary to a JSON string
+        else:
+            o_query_result = json.dumps(transaction_records)
+            logger.debug("o_select_result: %s", o_query_result)
 
         return o_query_result
