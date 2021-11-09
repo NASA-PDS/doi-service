@@ -20,6 +20,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import create_landing_page_url
+from pds_doi_service.core.util.general_util import get_global_keywords
 from pkg_resources import resource_filename
 
 
@@ -164,6 +165,9 @@ class UpdateActionTestCase(unittest.TestCase):
         self.assertIn("urn:nasa:pds:insight_cameras::2.0", related_identifiers)
         self.assertIn("urn:nasa:pds:insight_cameras::1.0", related_identifiers)
 
+        # Global keywords should have been assigned, if they weren't already
+        self.assertTrue(all(keyword in updated_doi.keywords for keyword in get_global_keywords()))
+
     @patch.object(
         pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
         "submit_content",
@@ -229,10 +233,11 @@ class UpdateActionTestCase(unittest.TestCase):
         self.assertEqual(len(dois), 3)
         self.assertEqual(len(errors), 0)
 
-        # Make sure the identifiers were updated as expected and the site urls assigned
+        # Make sure the identifiers were updated as expected, the site url is assigned, and global keywords were added
         for doi in updated_dois:
             self.assertTrue(doi.pds_identifier.endswith(".99"))
             self.assertIsNotNone(doi.site_url)
+            self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
 
     @patch.object(
         pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
@@ -314,6 +319,9 @@ class UpdateActionTestCase(unittest.TestCase):
         )
         self.assertIn("urn:nasa:pds:new_insight_cameras::1.0", related_identifiers)
         self.assertIn("urn:nasa:pds:insight_cameras::1.0", related_identifiers)
+
+        # Global keywords should have been assigned, if they weren't already
+        self.assertTrue(all(keyword in updated_doi.keywords for keyword in get_global_keywords()))
 
     def test_invalid_update_requests(self):
         """Test invalid update requests to ensure exceptions are raised"""

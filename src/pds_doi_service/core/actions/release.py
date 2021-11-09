@@ -30,6 +30,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.util.general_util import create_landing_page_url
+from pds_doi_service.core.util.general_util import get_global_keywords
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
 
@@ -144,6 +145,9 @@ class DOICoreActionRelease(DOICoreAction):
             # Make sure correct contributor and publisher fields are set
             doi.contributor = NodeUtil().get_node_long_name(self._node)
             doi.publisher = self._config.get("OTHER", "doi_publisher")
+
+            # Make sure the global keywords from the config are included
+            doi.keywords.update(get_global_keywords())
 
             # Add 'status' field so the ranking in the workflow can be determined.
             if self._review:
