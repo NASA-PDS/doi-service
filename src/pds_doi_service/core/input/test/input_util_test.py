@@ -5,6 +5,7 @@ import unittest
 from os.path import abspath
 from os.path import join
 
+import pandas as pd
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
@@ -150,6 +151,21 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn(optional_column, doi_fields)
             self.assertIsNotNone(doi_fields[optional_column])
 
+        # Test with a spreadsheet containing blank rows (parser should sanitize these)
+        i_filepath = join(self.input_dir, "DOI-reserve-blank-rows.xlsx")
+
+        # Read the spreadsheet to get a total of rows w/ blanks
+        xl_wb = pd.ExcelFile(i_filepath, engine="openpyxl")
+        xl_sheet = pd.read_excel(i_filepath, xl_wb.sheet_names[0], na_filter=False)
+        rows_with_blanks, _ = xl_sheet.shape
+
+        # Now parse DOI's and confirm we get results back and that its less than
+        # the number of rows originaly parsed
+        dois = doi_input_util.parse_xls_file(i_filepath)
+
+        self.assertTrue(len(dois) > 0)
+        self.assertTrue(len(dois) < rows_with_blanks)
+
     def test_read_csv(self):
         """Test the DOIInputUtil.parse_csv_file() method"""
         doi_input_util = DOIInputUtil()
@@ -228,6 +244,20 @@ class InputUtilTestCase(unittest.TestCase):
         for optional_column in doi_input_util.OPTIONAL_COLUMNS:
             self.assertIn(optional_column, doi_fields)
             self.assertIsNotNone(doi_fields[optional_column])
+
+        # Test with a spreadsheet containing blank rows (parser should sanitize these)
+        i_filepath = join(self.input_dir, "DOI-reserve-blank-rows.csv")
+
+        # Read the spreadsheet to get a total of rows w/ blanks
+        csv_sheet = pd.read_csv(i_filepath, na_filter=False)
+        rows_with_blanks, _ = csv_sheet.shape
+
+        # Now parse DOI's and confirm we get results back and that its less than
+        # the number of rows originaly parsed
+        dois = doi_input_util.parse_csv_file(i_filepath)
+
+        self.assertTrue(len(dois) > 0)
+        self.assertTrue(len(dois) < rows_with_blanks)
 
     def test_read_xml(self):
         """Test the DOIInputUtil.parse_xml_file() method"""
