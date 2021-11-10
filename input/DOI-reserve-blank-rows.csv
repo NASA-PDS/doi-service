@@ -1,0 +1,29 @@
+﻿title,publication_date (yyyy-mm-dd),"product_type_specific
+(PDS4 Bundle | PDS4 Collection | PDS4 Document)",author_last_name,author_first_name,"related_resource
+LIDVID"
+"Mars 2020 Mast Camera Zoom Bundle, from Science Team, calibrated products",2021-11-22,PDS4 Bundle,Bell,J.,urn:nasa:pds:mars2020_mastcamz_sci_calibrated::1.0
+"Mars 2020 Mast Camera Zoom Bundle, from Operations Team, raw products",2021-11-22,PDS4 Bundle,Bell,J.,urn:nasa:pds:mars2020_mastcamz_ops_raw::1.0
+"Mars 2020 Mast Camera Zoom Bundle, from Operations Team, mosaic products",2021-11-22,PDS4 Bundle,Bell,J.,urn:nasa:pds:mars2020_mastcamz_ops_mosaic::1.0
+"Mars 2020 Mast Camera Zoom Bundle, from Operations Team, terrain mesh products",2021-11-22,PDS4 Bundle,Bell,J.,urn:nasa:pds:mars2020_mastcamz_ops_mesh::1.0
+"Mars 2020 Mast Camera Zoom Bundle, from Operations Team, stereo products",2021-11-22,PDS4 Bundle,Bell,J.,urn:nasa:pds:mars2020_mastcamz_ops_stereo::1.0
+"Mars 2020 Mast Camera Zoom Bundle, from Operations Team, calibrated products",2021-11-22,PDS4 Bundle,Bell,J.,urn:nasa:pds:mars2020_mastcamz_ops_calibrated::1.0
+,,,,,
+"Mars 2020 Navigation Cameras Bundle, raw products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_navcam_ops_raw::1.0
+"Mars 2020 Navigation Cameras Bundle, calibrated products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_navcam_ops_calibrated::1.0
+"Mars 2020 Navigation Cameras Bundle, stereo products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_navcam_ops_stereo::1.0
+"Mars 2020 Navigation Cameras Bundle, mesh products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_navcam_ops_mesh::1.0
+"Mars 2020 Navigation Cameras Bundle, mosaic products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_navcam_ops_mosaic::1.0
+,,,,,
+"Mars 2020 Hazard Cameras Bundle, raw products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_hazcam_ops_raw::1.0
+"Mars 2020 Hazard Cameras Bundle, calibrated products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_hazcam_ops_calibrated::1.0
+"Mars 2020 Hazard Cameras Bundle, stereo products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_hazcam_ops_stereo::1.0
+"Mars 2020 Hazard Cameras Bundle, terrain mesh product",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_hazcam_ops_mesh::1.0
+"Mars 2020 Hazard Cameras Bundle, mosaic products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_hazcam_ops_mosaic::1.0
+,,,,,
+"Mars 2020 Cache Cameras Bundle, raw products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_cachecam_ops_raw::1.0
+"Mars 2020 Cache Cameras Bundle, calibrated products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_cachecam_ops_calibrated::1.0
+
+"Mars 2020 Entry, Descent, and Landing (EDL) and Lander Visual System Cameras Bundle, raw products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_edlcam_ops_raw::1.0
+"Mars 2020 Entry, Descent, and Landing (EDL) and Lander Visual System Cameras Bundle, calibrated products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_edlcam_ops_calibrated::1.0
+"Mars 2020 Entry, Descent, and Landing (EDL) and Lander Visual System Cameras Bundle, video products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_edlcam_ops_video::1.0
+"Mars 2020 Entry, Descent, and Landing (EDL) and Lander Visual System Cameras Bundle, audio products",2021-11-22,PDS4 Bundle,Maki,J,urn:nasa:pds:mars2020_edlcam_ops_audio::1.0

@@ -189,12 +189,15 @@ class DOIInputUtil:
         # Standardize column names on lowercase
         pd_sheet = pd_sheet.rename(columns=lambda column: column.lower())
 
-        # Rename columns in a simpler way
+        # Rename columns in a simpler way, accounting for both Linux and Windows
+        # line-feeds
         pd_sheet = pd_sheet.rename(
             columns={
                 "publication_date (yyyy-mm-dd)": "publication_date",
+                "product_type_specific\r\n(pds4 bundle | pds4 collection | pds4 document)": "product_type_specific",
                 "product_type_specific\n(pds4 bundle | pds4 collection | pds4 document)": "product_type_specific",
                 "related_resource\nlidvid": "related_resource",
+                "related_resource\r\nlidvid": "related_resource",
             }
         )
 
@@ -301,6 +304,11 @@ class DOIInputUtil:
             na_filter=False,
         )
 
+        # Any empty rows will result in NaT being filled in for the publication_date.
+        # Key off of this to drop those rows. Since we provided na_filter=False,
+        # there should not be any N/A or NaT values anywhere else.
+        xl_sheet = xl_sheet.dropna(how="any")
+
         xl_sheet = self._validate_spreadsheet(xl_sheet)
 
         dois = self._parse_rows_to_dois(xl_sheet)
@@ -329,6 +337,12 @@ class DOIInputUtil:
 
         for index, row in pd_sheet.iterrows():
             try:
+                # Check for the case where an empty row was written as a series of
+                # commas, as can occur with spreadsheets with blank rows converted from
+                # Excel to CSV. These rows should just be skipped outright before validation.
+                if all([str(value).strip() == "" for value in row.values]):
+                    continue
+
                 row = self._validate_spreadsheet_row(row)
             except InputFormatException as err:
                 errors.append(
@@ -422,6 +436,7 @@ class DOIInputUtil:
             csv_path,
             # Remove automatic replacement of empty columns with NaN
             na_filter=False,
+            skip_blank_lines=True,
         )
 
         csv_sheet = self._validate_spreadsheet(csv_sheet)
