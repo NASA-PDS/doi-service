@@ -1,21 +1,17 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-11-10)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.1-dev...«unknown»)
-
-**Defects:**
-
-- Spreadsheet parsers do not handle blank rows gracefully [\#291](https://github.com/NASA-PDS/pds-doi-service/issues/291)
-- Default keywords/subjects are not always added to DOI records [\#273](https://github.com/NASA-PDS/pds-doi-service/issues/273)
-
-## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-04)
+## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-10)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.0...v2.1.1-dev)
 
 **Improvements:**
 
 - As a user, I want to obtain json label format from a list command query [\#289](https://github.com/NASA-PDS/pds-doi-service/issues/289)
+
+**Defects:**
+
+- Spreadsheet parsers do not handle blank rows gracefully [\#291](https://github.com/NASA-PDS/pds-doi-service/issues/291)
+- Default keywords/subjects are not always added to DOI records [\#273](https://github.com/NASA-PDS/pds-doi-service/issues/273)
 
 ## [v2.1.0](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.0) (2021-11-03)
 
