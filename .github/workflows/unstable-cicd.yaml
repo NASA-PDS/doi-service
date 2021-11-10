@@ -81,7 +81,7 @@ jobs:
                 shell: python
             -
                 name: 🤠 Roundup
-                uses: nasa-pds-engineering-node/roundup-action@stable
+                uses: nasa-pds-engineering-node/roundup-action@main
                 with:
                     assembly: unstable
                 env:
