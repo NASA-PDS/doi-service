@@ -207,6 +207,42 @@ def create_landing_page_url(identifier, product_type):
     return site_url
 
 
+def get_global_keywords():
+    """
+    Returns the global keywords (which should get assigned to each Doi object)
+    from the INI config as a set.
+
+    Returns
+    -------
+    global_keywords : set
+        The set of global keywords as parsed from the INI. Any leading/trailing
+        whitespace is removed from each keyword once its been parsed.
+
+    """
+    config = DOIConfigUtil().get_config()
+
+    global_keyword_values = config.get("OTHER", "global_keyword_values")
+
+    # Some older versions of the INI config delimited keywords by semi-colon,
+    # so replace with comma here
+    global_keyword_values = global_keyword_values.replace(";", ",")
+
+    # Parse keywords into list
+    global_keyword_list = global_keyword_values.split(",")
+
+    # Convert all values to string, if for whatever reason a number is being used as a keyword
+    global_keyword_list = map(str, global_keyword_list)
+
+    # Sanitize any leading/trailing whitespace, then convert to a set
+    global_keyword_set = set(map(str.strip, global_keyword_list))
+
+    # It's possible for the empty string to sneak in in certain circumstances,
+    # (trailing comma/semi-colon) so manually remove it, if present
+    global_keyword_set.discard("")
+
+    return global_keyword_set
+
+
 def sanitize_json_string(string):
     """
     Cleans up extraneous whitespace from the provided string so it may be

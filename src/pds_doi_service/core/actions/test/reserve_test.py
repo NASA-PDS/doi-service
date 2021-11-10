@@ -15,6 +15,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.util.general_util import get_global_keywords
 from pkg_resources import resource_filename
 
 
@@ -203,9 +204,10 @@ class ReserveActionTestCase(unittest.TestCase):
 
         self.assertEqual(len(doi.authors), 4)
         self.assertEqual(len(doi.editors), 3)
-        self.assertEqual(len(doi.keywords), 15)
+        self.assertEqual(len(doi.keywords), 17)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.product_type, ProductType.Collection)
+        self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -232,10 +234,11 @@ class ReserveActionTestCase(unittest.TestCase):
 
         for doi in dois:
             self.assertEqual(len(doi.authors), 4)
-            self.assertEqual(len(doi.keywords), 15)
+            self.assertEqual(len(doi.keywords), 17)
             self.assertEqual(doi.product_type, ProductType.Collection)
             self.assertIsInstance(doi.publication_date, datetime)
             self.assertIsInstance(doi.date_record_added, datetime)
+            self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
             self.assertTrue(doi.pds_identifier.startswith("urn:nasa:pds:insight_cameras::1"))
             self.assertTrue(doi.title.startswith("InSight Cameras Bundle 1."))
 
@@ -271,7 +274,8 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 15)
+        self.assertEqual(len(doi.keywords), 17)
+        self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::1.0")
         self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertIsInstance(doi.publication_date, datetime)
@@ -301,9 +305,10 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 9)
+        self.assertEqual(len(doi.keywords), 11)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:data::1.0")
         self.assertEqual(doi.product_type, ProductType.Collection)
+        self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -331,10 +336,11 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 9)
+        self.assertEqual(len(doi.keywords), 11)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:browse::1.0")
         self.assertEqual(doi.description, "Collection of BROWSE products.")
         self.assertEqual(doi.product_type, ProductType.Collection)
+        self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -362,10 +368,11 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 11)
+        self.assertEqual(len(doi.keywords), 13)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:calibration::1.0")
         self.assertEqual(doi.description, "Collection of CALIBRATION files/products to include in the archive.")
         self.assertEqual(doi.product_type, ProductType.Collection)
+        self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 
@@ -393,10 +400,11 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 9)
+        self.assertEqual(len(doi.keywords), 11)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:document::1.0")
         self.assertEqual(doi.description, "Collection of DOCUMENT products.")
         self.assertEqual(doi.product_type, ProductType.Collection)
+        self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
         self.assertIsInstance(doi.publication_date, datetime)
         self.assertIsInstance(doi.date_record_added, datetime)
 

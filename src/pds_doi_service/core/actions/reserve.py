@@ -28,6 +28,7 @@ from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.util.general_util import get_global_keywords
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
 
@@ -139,6 +140,9 @@ class DOICoreActionReserve(DOICoreAction):
 
             # Add 'status' field so the ranking in the workflow can be determined
             doi.status = DoiStatus.Draft
+
+            # Make sure the global keywords from the config are included
+            doi.keywords.update(get_global_keywords())
 
             # Add the event field to instruct DataCite to make this entry
             # hidden so it can be modified (should have no effect for other

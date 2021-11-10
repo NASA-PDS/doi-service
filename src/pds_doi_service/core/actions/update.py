@@ -28,6 +28,7 @@ from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
 from pds_doi_service.core.outputs.service import DOIServiceFactory
+from pds_doi_service.core.util.general_util import get_global_keywords
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
 
@@ -178,6 +179,9 @@ class DOICoreActionUpdate(DOICoreAction):
 
             # Store the previous status of this DOI
             doi.previous_status = doi.status
+
+            # Make sure the global keywords from the config are included
+            doi.keywords.update(get_global_keywords())
 
             # If this DOI has already been released (aka is findable or in review),
             # then move the status back to the Review step. Otherwise, the record

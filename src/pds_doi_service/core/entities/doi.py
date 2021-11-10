@@ -18,6 +18,8 @@ from enum import Enum
 from enum import unique
 from typing import Optional
 
+from pds_doi_service.core.util.general_util import get_global_keywords
+
 
 @unique
 class ProductType(str, Enum):
@@ -111,7 +113,7 @@ class Doi:
     identifiers: list[dict] = field(default_factory=list)
     related_identifiers: list[dict] = field(default_factory=list)
     authors: Optional[list[dict]] = None
-    keywords: set[str] = field(default_factory=set)
+    keywords: set[str] = field(default_factory=get_global_keywords)
     editors: Optional[list[dict]] = None
     description: Optional[str] = None
     id: Optional[str] = None

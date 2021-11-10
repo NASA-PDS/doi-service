@@ -14,6 +14,7 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.util.general_util import get_global_keywords
 from pkg_resources import resource_filename
 
 
@@ -110,6 +111,9 @@ class ReleaseActionTestCase(unittest.TestCase):
 
             # There should always be a DOI assigned, for both review and full-release
             self.assertIsNotNone(doi.doi)
+
+            # Make sure global keywords were assigned at some point in the process
+            self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
 
     def test_reserve_release_to_review(self):
         """Test release to review status with a reserved DOI entry"""
