@@ -220,7 +220,7 @@ class DOIPDS4LabelUtil:
             product_class_suffix = product_class.split("_")[1]
 
             if product_class == "Product_Document":
-                product_specific_type = "PDS4 Refereed Documentation"
+                product_specific_type = "PDS4 Refereed Document"
                 product_type = ProductType.Document
             elif product_class == "Product_Bundle":
                 product_specific_type = "PDS4 Refereed Data Bundle"
