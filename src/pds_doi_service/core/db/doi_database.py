@@ -530,7 +530,7 @@ class DOIDataBase:
 
         """
         # Partition the tokens containing wildcards from the fully specified ones
-        wildcard_tokens = list(filter(lambda token: "*" in token, search_tokens))
+        wildcard_tokens = list(filter(lambda token: "*" in token or "?" in token, search_tokens))
         full_tokens = list(set(search_tokens) - set(wildcard_tokens))
 
         # Clean up the column name provided so it can be used as a suitable
@@ -546,14 +546,31 @@ class DOIDataBase:
         named_parameters = ",".join([f":{named_param_id}_{i}" for i in range(len(full_tokens))])
         named_parameter_values = {f"{named_param_id}_{i}": full_tokens[i] for i in range(len(full_tokens))}
 
-        # Set up the named parameters for the GLOB portion of the WHERE used
+        # Next, because we use actually use LIKE and not GLOB (for the case-insensitivity),
+        # we need to convert wildcards from Unix style (*,?) to SQLite style (%,_),
+        # but we first need to escape any existing characters reserved by LIKE (& and _)
+        like_chars = ["%", "_"]
+        glob_chars = ["*", "?"]
+
+        for index, wildcard_token in enumerate(wildcard_tokens):
+            for like_char, glob_char in zip(like_chars, glob_chars):
+                # Escape reserved wildcards used by LIKE
+                wildcard_token = wildcard_token.replace(like_char, f"\\{like_char}")
+
+                # Replace wildcards used by GLOB with equivalent for LIKE
+                wildcard_token = wildcard_token.replace(glob_char, like_char)
+
+                # Update the list of wildcards
+                wildcard_tokens[index] = wildcard_token
+
+        # Set up the named parameters for the LIKE portion of the WHERE used
         # find tokens containing wildcards
-        glob_parameters = " OR ".join(
-            [f"{column_name} GLOB :{named_param_id}_glob_{i}" for i in range(len(wildcard_tokens))]
+        like_parameters = " OR ".join(
+            [f"{column_name} LIKE :{named_param_id}_like_{i}" for i in range(len(wildcard_tokens))]
         )
 
         named_parameter_values.update(
-            {f"{named_param_id}_glob_{i}": wildcard_tokens[i] for i in range(len(wildcard_tokens))}
+            {f"{named_param_id}_like_{i}": wildcard_tokens[i] for i in range(len(wildcard_tokens))}
         )
 
         # Build the portion of the WHERE clause combining the necessary
@@ -567,7 +584,10 @@ class DOIDataBase:
             where_subclause += " OR "
 
         if wildcard_tokens:
-            where_subclause += f"{glob_parameters}"
+            where_subclause += f"{like_parameters}"
+
+            # Make sure Sqlite knows were using backslash for escaped chars
+            where_subclause += " ESCAPE '\\'"
 
         where_subclause += ")"
 

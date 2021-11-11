@@ -280,6 +280,22 @@ class DOIDatabaseTest(unittest.TestCase):
 
         self.assertEqual(len(o_query_result[-1]), 2)
 
+        # Test case-insensitive search of titles
+        o_query_result = self._doi_database.select_latest_rows(
+            query_criterias={"title": ["*shocked feldspars bundle ?"]}
+        )
+
+        # Should get all rows back
+        self.assertEqual(len(o_query_result[-1]), num_rows)
+
+        # Test combination of wildcard tokens on a DOI search
+        o_query_result = self._doi_database.select_latest_rows(
+            query_criterias={"doi": ["10.17189/?0001", "10.1718*/20003"]}
+        )
+
+        # Should only match two DOI's
+        self.assertEqual(len(o_query_result[-1]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
