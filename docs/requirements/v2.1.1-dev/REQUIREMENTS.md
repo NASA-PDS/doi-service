@@ -208,3 +208,11 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## Update all past DOIs for consistent metadata ([#294](https://github.com/NASA-PDS/pds-doi-service/issues/294)) 
+
+
+This requirement is not impacted by the current version
+## Update default values to sync with SBN documentation ([#295](https://github.com/NASA-PDS/pds-doi-service/issues/295)) 
+
+
+This requirement is not impacted by the current version
