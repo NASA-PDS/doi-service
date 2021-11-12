@@ -32,7 +32,7 @@ class UpdateActionTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
         cls.db_name = join(cls.test_dir, "doi_temp.db")
         cls._update_action = DOICoreActionUpdate(db_name=cls.db_name)
         cls._reserve_action = DOICoreActionReserve(db_name=cls.db_name)

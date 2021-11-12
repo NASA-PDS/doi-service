@@ -18,7 +18,7 @@ from pkg_resources import resource_filename
 class InputUtilTestCase(unittest.TestCase):
     def setUp(self):
         self.test_dir = resource_filename(__name__, "")
-        self.input_dir = abspath(join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        self.input_dir = abspath(join(self.test_dir, "data"))
 
     def test_parse_dois_from_input_file(self):
         """Test the DOIInputUtil.parse_dois_from_input_file() method"""

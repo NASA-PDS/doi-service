@@ -29,7 +29,7 @@ from pkg_resources import resource_filename
 
 class CheckActionTestCase(unittest.TestCase):
     test_dir = resource_filename(__name__, "")
-    input_dir = abspath(join(test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+    input_dir = abspath(join(test_dir, "data"))
 
     @classmethod
     def setUp(cls):

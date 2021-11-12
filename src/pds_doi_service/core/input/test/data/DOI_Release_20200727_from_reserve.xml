@@ -1,7 +1,8 @@
 <records>
-  <record status="draft">
-    <id/>
+  <record status="reserved">
+    <id>29569</id>
     <title>InSight Cameras Bundle</title>
+    <doi>10.17189/29569</doi>
     <sponsoring_organization>National Aeronautics and Space Administration (NASA)</sponsoring_organization>
     <accession_number>urn:nasa:pds:insight_cameras::1.0</accession_number>
     <publisher>NASA Planetary Data System</publisher>

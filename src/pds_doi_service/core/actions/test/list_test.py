@@ -34,7 +34,7 @@ class ListActionTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
         cls.db_name = join(cls.test_dir, "doi_temp.db")
         cls._list_action = DOICoreActionList(db_name=cls.db_name)
         cls._reserve_action = DOICoreActionReserve(db_name=cls.db_name)

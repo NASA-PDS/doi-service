@@ -22,10 +22,7 @@ class DOIOstiRecordTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        # FIXME: moving this code from PACKAGE-DIR to PACKAGE-DIR/src (and, when we add
-        # namepsace packages, to PACKAGE-DIR/src/pds) shouldn't necessitate re-jiggering
-        # all the parent directories:
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     def test_create_osti_label_xml(self):
         """Test creation of an OSTI XML label from a Doi object"""
@@ -83,10 +80,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        # FIXME: moving this code from PACKAGE-DIR to PACKAGE-DIR/src (and, when we add
-        # namepsace packages, to PACKAGE-DIR/src/pds) shouldn't necessitate re-jiggering
-        # all the parent directories:
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         cls.expected_authors = [
             {"first_name": "R.", "last_name": "Deen"},
@@ -132,7 +126,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
         self.assertIsInstance(doi.date_record_added, datetime)
         self.assertEqual(
             doi.description,
-            "InSight Cameras Experiment Data Record (EDR) " "and Reduced Data Record (RDR) Data Products",
+            "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
         )
         self.assertEqual(doi.doi, "10.17189/29569")
         self.assertListEqual(doi.editors, self.expected_editors)

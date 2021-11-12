@@ -32,7 +32,7 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     def test_create_datacite_label_json(self):
         """Test creation of a DataCite JSON label from a Doi object"""
@@ -151,7 +151,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     @patch.object(requests, "request", requests_valid_request_patch)
     def test_submit_content(self):
@@ -270,7 +270,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         cls.expected_authors = [
             {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
@@ -404,7 +404,7 @@ class DOIDataCiteValidatorTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     def test_json_label_validation(self):
         """Test validation against a DataCite label created from a valid Doi object"""

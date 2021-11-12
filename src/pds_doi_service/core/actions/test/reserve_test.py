@@ -27,7 +27,7 @@ class ReserveActionTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         # Remove db_name if exist to have a fresh start otherwise exception will be
         # raised about using existing lidvid.

@@ -16,7 +16,7 @@ from pkg_resources import resource_filename
 class Pds4UtilTestCase(unittest.TestCase):
     def setUp(self):
         self.test_dir = resource_filename(__name__, "")
-        self.input_dir = abspath(join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        self.input_dir = abspath(join(self.test_dir, "data"))
 
         self.expected_authors = [
             {"first_name": "R.", "last_name": "Deen", "affiliation": [], "name_type": "Personal"},
