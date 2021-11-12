@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import os
 import unittest
 from datetime import datetime
 from os.path import abspath
@@ -53,7 +52,7 @@ class Pds4UtilTestCase(unittest.TestCase):
 
         # Test with a PDS4 label containing all the fields we support parsing
         # DOI metadata for
-        i_filepath = join(self.input_dir, "bundle_in_with_doi_and_contributors.xml")
+        i_filepath = join(self.input_dir, "pds4_bundle_with_doi_and_contributors.xml")
 
         with open(i_filepath, "r") as infile:
             xml_contents = infile.read().encode().decode("utf-8-sig")
