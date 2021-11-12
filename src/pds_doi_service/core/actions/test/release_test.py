@@ -119,7 +119,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """Test release to review status with a reserved DOI entry"""
 
         release_args = {
-            "input": join(self.input_dir, "DOI_Release_20200727_from_reserve.xml"),
+            "input": join(self.input_dir, "osti_record_reserved.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
@@ -140,7 +140,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """Test release directly to the service provider with a reserved DOI entry"""
 
         release_args = {
-            "input": join(self.input_dir, "DOI_Release_20200727_from_reserve.xml"),
+            "input": join(self.input_dir, "osti_record_reserved.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
@@ -153,7 +153,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """Test release to review status using a record that has not been reserved (no DOI assigned)"""
 
         release_args = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
@@ -178,7 +178,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """Test release directly to the service provider using a record that has not been reserved (no DOI assigned)"""
 
         release_args = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
@@ -198,7 +198,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """
 
         release_args = {
-            "input": join(self.input_dir, "DOI_Release_20200727_from_review.xml"),
+            "input": join(self.input_dir, "osti_record_review.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,
@@ -219,7 +219,7 @@ class ReleaseActionTestCase(unittest.TestCase):
         """Test release directly to the service provider with a review DOI entry"""
 
         release_args = {
-            "input": join(self.input_dir, "DOI_Release_20200727_from_review.xml"),
+            "input": join(self.input_dir, "osti_record_review.xml"),
             "node": "img",
             "submitter": "img-submitter@jpl.nasa.gov",
             "force": True,

@@ -93,7 +93,7 @@ class ListActionTestCase(unittest.TestCase):
         """Test listing of entries, querying by workflow status"""
         # Submit a reserve, then query by draft status to retrieve
         reserve_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -186,7 +186,7 @@ class ListActionTestCase(unittest.TestCase):
         """Test the transaction_for_doi method"""
         # Submit a reserve, then use the assigned doi to get the transaction record
         reserve_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -223,7 +223,7 @@ class ListActionTestCase(unittest.TestCase):
         """Test the transaction_for_identifier method"""
         # Submit a reserve, then use the PDS identifier to get the transaction record
         reserve_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -260,7 +260,7 @@ class ListActionTestCase(unittest.TestCase):
         """Test the output_label_for_transaction method"""
         # Submit a reserve, then use the PDS identifier to get the transaction record
         reserve_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
