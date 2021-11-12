@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import json
-import os
 import unittest
 from datetime import datetime
 from os.path import abspath
@@ -27,7 +26,7 @@ class DOIOstiRecordTestCase(unittest.TestCase):
     def test_create_osti_label_xml(self):
         """Test creation of an OSTI XML label from a Doi object"""
         # Parse sample input to obtain a Doi object
-        input_xml_file = join(self.input_dir, "DOI_Release_20200727_from_release.xml")
+        input_xml_file = join(self.input_dir, "osti_record_pending.xml")
 
         with open(input_xml_file, "r") as infile:
             input_xml = infile.read()
@@ -52,7 +51,7 @@ class DOIOstiRecordTestCase(unittest.TestCase):
     def test_create_osti_label_json(self):
         """Test creation of an OSTI JSON label from Doi objects"""
         # Parse sample input to obtain a Doi object
-        input_json_file = join(self.input_dir, "DOI_Release_20210216_from_release.json")
+        input_json_file = join(self.input_dir, "osti_record_pending.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()
@@ -147,7 +146,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
     def test_parse_osti_response_xml(self):
         """Test parsing of an OSTI label in XML format"""
         # Test with a nominal file containing most of the optional fields
-        input_xml_file = join(self.input_dir, "DOI_Release_20200727_from_release.xml")
+        input_xml_file = join(self.input_dir, "osti_record_pending.xml")
 
         with open(input_xml_file, "r") as infile:
             input_xml = infile.read()
@@ -161,7 +160,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
         self._compare_doi_to_expected(doi)
 
         # Test with an erroneous file to ensure errors are parsed as we expect
-        input_xml_file = join(self.input_dir, "DOI_Release_20200727_from_error.xml")
+        input_xml_file = join(self.input_dir, "osti_record_error.xml")
 
         with open(input_xml_file, "r") as infile:
             input_xml = infile.read()
@@ -173,7 +172,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
     def test_parse_osti_response_json(self):
         """Test parsing of an OSTI label in JSON format"""
         # Test with a nominal file containing most of the optional fields
-        input_json_file = join(self.input_dir, "DOI_Release_20210216_from_release.json")
+        input_json_file = join(self.input_dir, "osti_record_pending.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()
@@ -187,7 +186,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
         self._compare_doi_to_expected(doi)
 
         # Test with an erroneous file to ensure errors are parsed as we expect
-        input_json_file = join(self.input_dir, "DOI_Release_20210216_from_error.json")
+        input_json_file = join(self.input_dir, "osti_record_error.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()

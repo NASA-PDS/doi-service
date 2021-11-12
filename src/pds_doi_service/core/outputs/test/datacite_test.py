@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import json
-import os
 import unittest
 from datetime import datetime
 from os.path import abspath
@@ -37,7 +36,7 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
     def test_create_datacite_label_json(self):
         """Test creation of a DataCite JSON label from a Doi object"""
         # Parse sample input to obtain a Doi object
-        input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+        input_json_file = join(self.input_dir, "datacite_record_draft.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()
@@ -79,7 +78,7 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
 
     def test_update_datacite_label_json(self):
         """Test creation of a DataCite label for a DOI record where the identifier has been updated"""
-        input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+        input_json_file = join(self.input_dir, "datacite_record_draft.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()
@@ -116,7 +115,7 @@ def requests_valid_request_patch(method, url, **kwargs):
     response = Response()
     response.status_code = 200
 
-    with open(join(DOIDataCiteWebClientTestCase.input_dir, "DOI_Release_20210615_from_release.json")) as infile:
+    with open(join(DOIDataCiteWebClientTestCase.input_dir, "datacite_record_findable.json")) as infile:
         response._content = infile.read().encode()
 
     return response
@@ -335,7 +334,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
     def test_parse_datacite_response_json(self):
         """Test parsing of an DataCite label in JSON format"""
         # Test with a nominal file containing most of the optional fields
-        input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+        input_json_file = join(self.input_dir, "datacite_record_draft.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()
@@ -350,7 +349,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
     def test_get_record_for_identifier(self):
         """Test isolation of specific record based on PDS identifier"""
-        input_json_file = join(self.input_dir, "DOI_Reserved_multi_entry.json")
+        input_json_file = join(self.input_dir, "datacite_record_multi_entry.json")
 
         # Test extraction of a single record from a multi-entry label, parse the
         # DOI from the result, and ensure we get the record back we expected
@@ -376,7 +375,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
     def test_get_record_for_doi(self):
         """Test isolation of a specific record based on DOI"""
-        input_json_file = join(self.input_dir, "DOI_Reserved_multi_entry.json")
+        input_json_file = join(self.input_dir, "datacite_record_multi_entry.json")
 
         # Test extraction of a single record from a multi-entry label, parse the DOI
         # from the result, and ensure we got the record back we expected
@@ -411,7 +410,7 @@ class DOIDataCiteValidatorTestCase(unittest.TestCase):
         validator = DOIDataCiteValidator()
 
         # Parse sample input to obtain a Doi object
-        input_json_file = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+        input_json_file = join(self.input_dir, "datacite_record_draft.json")
 
         # Next, create a valid output DataCite label from the parsed Doi
         with open(input_json_file, "r") as infile:
