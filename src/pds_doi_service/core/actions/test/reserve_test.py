@@ -27,7 +27,7 @@ class ReserveActionTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         # Remove db_name if exist to have a fresh start otherwise exception will be
         # raised about using existing lidvid.
@@ -125,7 +125,7 @@ class ReserveActionTestCase(unittest.TestCase):
         result to the service provider.
         """
         reserve_args = {
-            "input": join(self.input_dir, "DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx"),
+            "input": join(self.input_dir, "spreadsheet_with_pds4_identifiers.xlsx"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -147,7 +147,7 @@ class ReserveActionTestCase(unittest.TestCase):
         service provider.
         """
         reserve_args = {
-            "input": join(self.input_dir, "DOI_Reserved_GEO_200318.csv"),
+            "input": join(self.input_dir, "spreadsheet_with_pds4_identifiers.csv"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -168,7 +168,7 @@ class ReserveActionTestCase(unittest.TestCase):
         Test Reserve action with a local PDS4 XML file, submitting the result to
         the service provider.
         """
-        input_file = join(self.input_dir, "bundle_in_with_contributors.xml")
+        input_file = join(self.input_dir, "pds4_bundle_with_contributors.xml")
 
         reserve_args = {
             "input": input_file,
@@ -189,7 +189,7 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_reserve_local_dir_one_file(self):
         """Test reserve request with local dir containing one file"""
-        input_dir = join(self.input_dir, "draft_dir_one_file")
+        input_dir = join(self.input_dir, "input_dir_one_file")
 
         reserve_args = {
             "input": input_dir,
@@ -221,7 +221,7 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_reserve_local_dir_two_files(self):
         """Test reserve request with local dir containing two files"""
-        input_dir = join(self.input_dir, "draft_dir_two_files")
+        input_dir = join(self.input_dir, "input_dir_two_files")
 
         reserve_args = {
             "input": input_dir,
@@ -240,9 +240,9 @@ class ReserveActionTestCase(unittest.TestCase):
             self.assertIsInstance(doi.date_record_added, datetime)
             self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
             self.assertTrue(doi.pds_identifier.startswith("urn:nasa:pds:insight_cameras::1"))
-            self.assertTrue(doi.title.startswith("InSight Cameras Bundle 1."))
+            self.assertTrue(doi.title.startswith("InSight Cameras Bundle"))
 
-            # Make sure for the "bundle_in_with_contributors.xml" file, we
+            # Make sure for the "pds4_bundle_with_contributors.xml" file, we
             # parsed the editors
             if doi.pds_identifier == "urn:nasa:pds:insight_cameras::1.0":
                 self.assertEqual(len(doi.editors), 3)

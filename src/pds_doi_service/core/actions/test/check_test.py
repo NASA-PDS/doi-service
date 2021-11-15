@@ -29,7 +29,7 @@ from pkg_resources import resource_filename
 
 class CheckActionTestCase(unittest.TestCase):
     test_dir = resource_filename(__name__, "")
-    input_dir = abspath(join(test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+    input_dir = abspath(join(test_dir, "data"))
 
     @classmethod
     def setUp(cls):
@@ -88,9 +88,9 @@ class CheckActionTestCase(unittest.TestCase):
         # Read an output label that corresponds to the DOI we're
         # checking for, and that has a status of 'registered' or 'findable'
         if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
-            label = join(CheckActionTestCase.input_dir, "DOI_Release_20200727_from_register.xml")
+            label = join(CheckActionTestCase.input_dir, "osti_record_registered.xml")
         else:
-            label = join(CheckActionTestCase.input_dir, "DOI_Release_20210615_from_release.json")
+            label = join(CheckActionTestCase.input_dir, "datacite_record_findable.json")
 
         with open(label, "r") as infile:
             label_contents = infile.read()
@@ -109,7 +109,7 @@ class CheckActionTestCase(unittest.TestCase):
         """
         # Read an output label that corresponds to the DOI we're
         # checking for, and that has a status of 'error'
-        with open(join(CheckActionTestCase.input_dir, "DOI_Release_20200727_from_error.xml"), "r") as infile:
+        with open(join(CheckActionTestCase.input_dir, "osti_record_error.xml"), "r") as infile:
             xml_contents = infile.read()
 
         return xml_contents
@@ -127,7 +127,7 @@ class CheckActionTestCase(unittest.TestCase):
         """
         # Read an output label that corresponds to the DOI we're
         # checking for, and that has a status of 'pending'
-        with open(join(CheckActionTestCase.input_dir, "DOI_Release_20200727_from_release.xml"), "r") as infile:
+        with open(join(CheckActionTestCase.input_dir, "osti_record_pending.xml"), "r") as infile:
             xml_contents = infile.read()
 
         return xml_contents

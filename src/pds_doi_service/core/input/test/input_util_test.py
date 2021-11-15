@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import datetime
-import os
 import unittest
 from os.path import abspath
 from os.path import join
@@ -18,14 +17,14 @@ from pkg_resources import resource_filename
 class InputUtilTestCase(unittest.TestCase):
     def setUp(self):
         self.test_dir = resource_filename(__name__, "")
-        self.input_dir = abspath(join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        self.input_dir = abspath(join(self.test_dir, "data"))
 
     def test_parse_dois_from_input_file(self):
         """Test the DOIInputUtil.parse_dois_from_input_file() method"""
         doi_input_util = DOIInputUtil(valid_extensions=".xml")
 
         # Test with local file
-        i_filepath = join(self.input_dir, "bundle_in_with_contributors.xml")
+        i_filepath = join(self.input_dir, "pds4_bundle_with_contributors.xml")
         dois = doi_input_util.parse_dois_from_input_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -37,7 +36,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertEqual(len(dois), 1)
 
         # Test with local directory
-        i_filepath = join(self.input_dir, "draft_dir_two_files")
+        i_filepath = join(self.input_dir, "input_dir_two_files")
         dois = doi_input_util.parse_dois_from_input_file(i_filepath)
 
         self.assertEqual(len(dois), 2)
@@ -53,7 +52,7 @@ class InputUtilTestCase(unittest.TestCase):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
         # Test local file with invalid extension
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_lid_only.xlsx")
         with self.assertRaises(InputFormatException):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
@@ -68,7 +67,7 @@ class InputUtilTestCase(unittest.TestCase):
         doi_input_util = DOIInputUtil()
 
         # Test single entry spreadsheet
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_lid_only.xlsx")
         dois = doi_input_util.parse_xls_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -84,7 +83,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertIsInstance(doi.publication_date, datetime.datetime)
 
         # Test multi entry spreadsheet
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_with_corrected_identifier.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_pds4_identifiers.xlsx")
 
         dois = doi_input_util.parse_xls_file(i_filepath)
 
@@ -98,7 +97,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime) for doi in dois]))
 
         # Test with an invalid spreadsheet (insufficient columns)
-        i_filepath = join(self.input_dir, "DOI-reserve-broken.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_missing_columns.xlsx")
 
         try:
             doi_input_util.parse_xls_file(i_filepath)
@@ -108,7 +107,7 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn("only found 5 column(s)", str(err))
 
         # Test with an invalid spreadsheet (wrong column names)
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_invalid_column_names.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_invalid_column_names.xlsx")
 
         try:
             doi_input_util.parse_xls_file(i_filepath)
@@ -118,14 +117,14 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn("Please assign the correct column names", str(err))
 
         # Test with a valid spreadsheet with malformed column names (that parser should correct)
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_malformed_column_names.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_malformed_column_names.xlsx")
 
         dois = doi_input_util.parse_xls_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
 
         # Test with an invalid spreadsheet (multiple rows with errors)
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_with_invalid_rows.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_invalid_rows.xlsx")
 
         try:
             doi_input_util.parse_xls_file(i_filepath)
@@ -140,7 +139,7 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn("Incorrect publication_date format", str(err))
 
         # Test with a spreadsheet containing optional columns
-        i_filepath = join(self.input_dir, "DOI-reserve-optionals.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_optional_columns.xlsx")
 
         dois = doi_input_util.parse_xls_file(i_filepath)
 
@@ -152,7 +151,7 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIsNotNone(doi_fields[optional_column])
 
         # Test with a spreadsheet containing blank rows (parser should sanitize these)
-        i_filepath = join(self.input_dir, "DOI-reserve-blank-rows.xlsx")
+        i_filepath = join(self.input_dir, "spreadsheet_with_blank_rows.xlsx")
 
         # Read the spreadsheet to get a total of rows w/ blanks
         xl_wb = pd.ExcelFile(i_filepath, engine="openpyxl")
@@ -170,7 +169,7 @@ class InputUtilTestCase(unittest.TestCase):
         """Test the DOIInputUtil.parse_csv_file() method"""
         doi_input_util = DOIInputUtil()
 
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_pds4_identifiers.csv")
         dois = doi_input_util.parse_csv_file(i_filepath)
 
         self.assertEqual(len(dois), 3)
@@ -181,7 +180,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertTrue(all([isinstance(doi.publication_date, datetime.datetime) for doi in dois]))
 
         # Test on a CSV containing a PD3 style identifier
-        i_filepath = join(self.input_dir, "DOI_Reserved_PDS3.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_pds3_identifiers.csv")
         dois = doi_input_util.parse_csv_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -192,7 +191,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertEqual(doi.pds_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
 
         # Test with an invalid spreadsheet (insufficient columns)
-        i_filepath = join(self.input_dir, "DOI-reserve-broken.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_missing_columns.csv")
 
         try:
             doi_input_util.parse_csv_file(i_filepath)
@@ -202,7 +201,7 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn("only found 5 column(s)", str(err))
 
         # Test with an invalid spreadsheet (wrong column names)
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_invalid_column_names.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_invalid_column_names.csv")
 
         try:
             doi_input_util.parse_csv_file(i_filepath)
@@ -212,14 +211,14 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn("Please assign the correct column names", str(err))
 
         # Test with a valid spreadsheet with malformed column names (that parser should correct)
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_malformed_column_names.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_malformed_column_names.csv")
 
         dois = doi_input_util.parse_csv_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
 
         # Test with an invalid spreadsheet (multiple rows with errors)
-        i_filepath = join(self.input_dir, "DOI_Reserved_GEO_200318_with_invalid_rows.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_invalid_rows.csv")
 
         try:
             doi_input_util.parse_csv_file(i_filepath)
@@ -234,7 +233,7 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIn("Incorrect publication_date format", str(err))
 
         # Test with a spreadsheet containing optional columns
-        i_filepath = join(self.input_dir, "DOI-reserve-optionals.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_optional_columns.csv")
 
         dois = doi_input_util.parse_csv_file(i_filepath)
 
@@ -246,7 +245,7 @@ class InputUtilTestCase(unittest.TestCase):
             self.assertIsNotNone(doi_fields[optional_column])
 
         # Test with a spreadsheet containing blank rows (parser should sanitize these)
-        i_filepath = join(self.input_dir, "DOI-reserve-blank-rows.csv")
+        i_filepath = join(self.input_dir, "spreadsheet_with_blank_rows.csv")
 
         # Read the spreadsheet to get a total of rows w/ blanks
         csv_sheet = pd.read_csv(i_filepath, na_filter=False)
@@ -264,7 +263,7 @@ class InputUtilTestCase(unittest.TestCase):
         doi_input_util = DOIInputUtil()
 
         # Test with a PDS4 label
-        i_filepath = join(self.input_dir, "bundle_in_with_contributors.xml")
+        i_filepath = join(self.input_dir, "pds4_bundle_with_contributors.xml")
         dois = doi_input_util.parse_xml_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -274,7 +273,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertIsInstance(doi, Doi)
 
         # Test with an OSTI output label
-        i_filepath = join(self.input_dir, "DOI_Release_20200727_from_reserve.xml")
+        i_filepath = join(self.input_dir, "osti_record_reserved.xml")
         dois = doi_input_util.parse_xml_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -284,7 +283,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertIsInstance(doi, Doi)
 
         # Test with an OSTI label containing a PDS3 identifier
-        i_filepath = join(self.input_dir, "DOI_Release_PDS3.xml")
+        i_filepath = join(self.input_dir, "osti_record_registered_with_pds3_identifier.xml")
         dois = doi_input_util.parse_xml_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -297,7 +296,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertEqual(doi.pds_identifier, "LRO-L-MRFLRO-2/3/5-BISTATIC-V3.0")
 
         # Test with a PDS4 label that contains a UTF-8 byte order marker
-        i_filepath = join(self.input_dir, "bundle_in_with_contributors_utf-8-bom.xml")
+        i_filepath = join(self.input_dir, "pds4_bundle_with_utf-8-bom.xml")
 
         # Run a quick sanity check to ensure the input file starts with the BOM
         with open(i_filepath, "r") as infile:
@@ -320,9 +319,9 @@ class InputUtilTestCase(unittest.TestCase):
 
         # Test with the appropriate JSON label for the current service
         if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
-            i_filepath = join(self.input_dir, "DOI_Release_20210216_from_reserve.json")
+            i_filepath = join(self.input_dir, "osti_record_reserved.json")
         else:
-            i_filepath = join(self.input_dir, "DOI_Release_20210615_from_reserve.json")
+            i_filepath = join(self.input_dir, "datacite_record_draft.json")
 
         dois = doi_input_util.parse_json_file(i_filepath)
 
@@ -334,9 +333,9 @@ class InputUtilTestCase(unittest.TestCase):
 
         # Test with a JSON label that contains a UTF-8 byte order marker
         if DOIServiceFactory.get_service_type() == SERVICE_TYPE_OSTI:
-            i_filepath = join(self.input_dir, "DOI_Release_20210216_from_reserve_utf-8-bom.json")
+            i_filepath = join(self.input_dir, "osti_record_reserved_with_utf-8-bom.json")
         else:
-            i_filepath = join(self.input_dir, "tc-4_reserve_RADARGRAM_v2.0_utf-8-bom.json")
+            i_filepath = join(self.input_dir, "datacite_record_draft_with_utf-8-bom.json")
 
         # Run a quick sanity check to ensure the input file starts with the BOM
         with open(i_filepath, "r") as infile:

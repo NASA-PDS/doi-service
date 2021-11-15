@@ -32,7 +32,7 @@ class UpdateActionTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_dir = resource_filename(__name__, "")
-        cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        cls.input_dir = abspath(join(cls.test_dir, "data"))
         cls.db_name = join(cls.test_dir, "doi_temp.db")
         cls._update_action = DOICoreActionUpdate(db_name=cls.db_name)
         cls._reserve_action = DOICoreActionReserve(db_name=cls.db_name)
@@ -104,7 +104,7 @@ class UpdateActionTestCase(unittest.TestCase):
 
         # Submit a reserve request to get an entry w/ DOI to update
         kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -176,7 +176,7 @@ class UpdateActionTestCase(unittest.TestCase):
     def test_update_reserved_doi_with_spreadsheet(self):
         """Test an update of identifier fields on records via spreadsheet submission"""
         # Submit a reserve request to get an entry w/ DOI to update
-        input_csv = join(self.input_dir, "DOI_Reserved_GEO_200318.csv")
+        input_csv = join(self.input_dir, "spreadsheet_with_pds4_identifiers.csv")
 
         kwargs = {
             "input": input_csv,
@@ -248,7 +248,7 @@ class UpdateActionTestCase(unittest.TestCase):
         """Test an update of identifier fields on a previously released record"""
         # Submit a release request to get an entry w/ DOI to update
         kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_doi_and_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_doi_and_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -328,7 +328,7 @@ class UpdateActionTestCase(unittest.TestCase):
 
         # Attempting to update a record with no DOI assigned should result in an exception
         update_kwargs = {
-            "input": join(self.input_dir, "bundle_in_with_contributors.xml"),
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -338,7 +338,7 @@ class UpdateActionTestCase(unittest.TestCase):
             self._update_action.run(**update_kwargs)
 
         # This should go for spreadsheet submissions as well
-        update_kwargs["input"] = join(self.input_dir, "DOI_Reserved_PDS3.csv")
+        update_kwargs["input"] = join(self.input_dir, "spreadsheet_with_pds3_identifiers.csv")
 
         with self.assertRaises(CriticalDOIException):
             self._update_action.run(**update_kwargs)

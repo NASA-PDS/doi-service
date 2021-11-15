@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import os
 import unittest
 from datetime import datetime
 from os.path import abspath
@@ -16,7 +15,7 @@ from pkg_resources import resource_filename
 class Pds4UtilTestCase(unittest.TestCase):
     def setUp(self):
         self.test_dir = resource_filename(__name__, "")
-        self.input_dir = abspath(join(self.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
+        self.input_dir = abspath(join(self.test_dir, "data"))
 
         self.expected_authors = [
             {"first_name": "R.", "last_name": "Deen", "affiliation": [], "name_type": "Personal"},
@@ -53,7 +52,7 @@ class Pds4UtilTestCase(unittest.TestCase):
 
         # Test with a PDS4 label containing all the fields we support parsing
         # DOI metadata for
-        i_filepath = join(self.input_dir, "bundle_in_with_doi_and_contributors.xml")
+        i_filepath = join(self.input_dir, "pds4_bundle_with_doi_and_contributors.xml")
 
         with open(i_filepath, "r") as infile:
             xml_contents = infile.read().encode().decode("utf-8-sig")
