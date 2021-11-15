@@ -1,20 +1,13 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-11-12)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.1-dev...«unknown»)
-
-**Requirements:**
-
-- As a user, I want to search dois without case sensitiveness [\#223](https://github.com/NASA-PDS/pds-doi-service/issues/223)
-
-## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-11)
+## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-12)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.0...v2.1.1-dev)
 
 **Requirements:**
 
 - Update default values to sync with SBN documentation [\#295](https://github.com/NASA-PDS/pds-doi-service/issues/295)
+- As a user, I want to search dois without case sensitiveness [\#223](https://github.com/NASA-PDS/pds-doi-service/issues/223)
 
 **Improvements:**
 
