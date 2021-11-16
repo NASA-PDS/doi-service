@@ -12,7 +12,9 @@ doi_database.py
 Contains classes and functions for interfacing with the local transaction
 database (SQLite3).
 """
+import os
 import sqlite3
+import stat
 from collections import OrderedDict
 from datetime import datetime
 from datetime import timedelta
@@ -93,6 +95,14 @@ class DOIDataBase:
             self.m_my_conn = sqlite3.connect(self.m_database_name)
         except Error as my_error:
             logger.error("Failed to connect to database, reason: %s", my_error)
+
+        # Make sure Database has proper group permissions set
+        st = os.stat(self.m_database_name)
+        has_group_rw = bool(st.st_mode & stat.S_IRGRP & stat.S_IWGRP)
+
+        if not has_group_rw:
+            logger.debug("Setting group read/write bits on database %s", self.m_database_name)
+            os.chmod(self.m_database_name, st.st_mode | stat.S_IRGRP | stat.S_IWGRP)
 
     def get_connection(self, table_name=None):
         """
