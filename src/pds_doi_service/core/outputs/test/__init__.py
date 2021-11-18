@@ -7,6 +7,7 @@ import unittest
 from . import datacite_test
 from . import doi_validator_test
 from . import osti_test
+from . import transaction_test
 
 
 def suite():
@@ -14,4 +15,5 @@ def suite():
     suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(datacite_test))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(doi_validator_test))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(osti_test))
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(transaction_test))
     return suite
