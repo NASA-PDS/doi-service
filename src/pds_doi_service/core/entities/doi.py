@@ -43,9 +43,6 @@ class DoiStatus(str, Enum):
             An error has occurred with the DOI submission.
         Unknown -
             Default starting state for DOI transactions.
-        Reserve_not_submitted -
-            DOI reserve request in local database, but not published/released.
-            Used for testing of the reserve action.
         Reserved -
             DOI reserve request submitted, but not yet published/released.
         Draft -
@@ -127,3 +124,4 @@ class Doi:
     date_record_added: Optional[datetime] = None
     date_record_updated: Optional[datetime] = None
     event: Optional[DoiEvent] = None
+    input_source: Optional[str] = None

@@ -267,25 +267,32 @@ class DOICoreActionRelease(DOICoreAction):
             dois = self._complete_dois(dois)
             dois = self._validate_dois(dois)
 
-            for doi in dois:
+            for input_doi in dois:
                 # Create a JSON format label to send to the service provider
-                io_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
+                io_doi_label = self._record_service.create_doi_record(input_doi, content_type=CONTENT_TYPE_JSON)
 
                 # If the next step is to release, submit to the service provider and
                 # use the response label for the local transaction database entry
                 if not self._review:
                     # Determine the correct HTTP verb and URL for submission of this DOI
-                    method, url = self._web_client.endpoint_for_doi(doi, self._name)
+                    method, url = self._web_client.endpoint_for_doi(input_doi, self._name)
 
-                    doi, o_doi_label = self._web_client.submit_content(
+                    output_doi, o_doi_label = self._web_client.submit_content(
                         url=url, method=method, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
                     )
+                # Otherwise, DOI object is ready to be logged
+                else:
+                    output_doi = input_doi
 
                 # Otherwise, if the next step is review, the label we've already
                 # created has marked all the Doi's as being the "review" step
                 # so its ready to be submitted to the local transaction history
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node, self._submitter, doi, input_path=self._input, output_content_type=CONTENT_TYPE_JSON
+                    self._node,
+                    self._submitter,
+                    output_doi,
+                    input_path=input_doi.input_source,
+                    output_content_type=CONTENT_TYPE_JSON,
                 )
 
                 # Commit the transaction to the local database
@@ -293,7 +300,7 @@ class DOICoreActionRelease(DOICoreAction):
 
                 # Append the latest version of the Doi object to return
                 # as a label
-                output_dois.append(doi)
+                output_dois.append(output_doi)
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look
         # for this exception specifically

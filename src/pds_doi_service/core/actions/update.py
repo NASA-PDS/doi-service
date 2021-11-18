@@ -325,7 +325,7 @@ class DOICoreActionUpdate(DOICoreAction):
 
             for doi in dois:
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node, self._submitter, doi, input_path=self._input, output_content_type=CONTENT_TYPE_JSON
+                    self._node, self._submitter, doi, input_path=doi.input_source, output_content_type=CONTENT_TYPE_JSON
                 )
 
                 transaction.log()
