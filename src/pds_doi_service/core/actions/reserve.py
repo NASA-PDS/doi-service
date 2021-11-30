@@ -245,29 +245,32 @@ class DOICoreActionReserve(DOICoreAction):
             dois = self._complete_dois(dois)
             dois = self._validate_dois(dois)
 
-            for doi in dois:
+            for input_doi in dois:
                 # Create the JSON request label to send
-                io_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
+                io_doi_label = self._record_service.create_doi_record(input_doi, content_type=CONTENT_TYPE_JSON)
 
                 # Submit the Reserve request
                 # Determine the correct HTTP verb and URL for submission of this DOI
-                method, url = self._web_client.endpoint_for_doi(doi, self._name)
+                method, url = self._web_client.endpoint_for_doi(input_doi, self._name)
 
-                doi, o_doi_label = self._web_client.submit_content(
+                output_doi, o_doi_label = self._web_client.submit_content(
                     method=method, url=url, payload=io_doi_label, content_type=CONTENT_TYPE_JSON
                 )
 
                 # Log the inputs and outputs of this transaction
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node, self._submitter, doi, input_path=self._input, output_content_type=CONTENT_TYPE_JSON
+                    self._node,
+                    self._submitter,
+                    output_doi,
+                    input_path=input_doi.input_source,
+                    output_content_type=CONTENT_TYPE_JSON,
                 )
 
                 # Commit the transaction to the local database
                 transaction.log()
 
-                # Append the latest version of the Doi object to return
-                # as a label
-                output_dois.append(doi)
+                # Append the latest version of the Doi object to return as a label
+                output_dois.append(output_doi)
 
         # Propagate input format exceptions, force flag should not affect
         # these being raised and certain callers (such as the API) look

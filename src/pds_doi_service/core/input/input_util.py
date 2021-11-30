@@ -504,6 +504,11 @@ class DOIInputUtil:
 
         Returns
         -------
+        dois : list[doi]
+            The list of Doi objects parsed from the provided path.
+
+        Raises
+        -------
         InputFormatException
             If an error is encountered while reading a local file.
 
@@ -526,6 +531,12 @@ class DOIInputUtil:
 
                     logger.error(msg)
                     raise InputFormatException(msg)
+
+                # Make a note of where we can find the original input file that
+                # resulted in these DOI's so we can save it to the transaction
+                # history later on
+                for doi in dois:
+                    doi.input_source = path
             else:
                 logger.info("File %s has unsupported extension, ignoring", path)
         else:
@@ -580,7 +591,14 @@ class DOIInputUtil:
             temp_file.write(response.content)
             temp_file.seek(0)
 
-            return self._read_from_path(temp_file.name)
+            dois = self._read_from_path(temp_file.name)
+
+        # Update input source to point to original URL, as the temp file paths
+        # assigned by _read_from_path no longer exist
+        for doi in dois:
+            doi.input_source = input_url
+
+        return dois
 
     def parse_dois_from_input_file(self, input_file):
         """

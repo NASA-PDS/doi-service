@@ -43,12 +43,33 @@ class TransactionBuilder:
 
     def prepare_transaction(self, node_id, submitter_email, doi, input_path=None, output_content_type=CONTENT_TYPE_XML):
         """
-        Build a Transaction from the inputs and outputs to a 'reserve', 'draft'
+        Build a Transaction from the inputs and outputs to a reserve, update
         or release action. The Transaction object is returned.
 
         The field output_content is used for writing the content to disk.
         This is typically the response text from a request to the DOI
         service provider.
+
+        Parameters
+        ----------
+        node_id : str
+            The node identifier associated with the transaction.
+        submitter_email : str
+            The email address associated with the submitter of the transaction
+        doi : Doi
+            The DOI object created from the transaction.
+        input_path : str, optional
+            Path to the source input file of the provided Doi object. If provided,
+            the file will be copied to the local transaction history.
+        output_content_type : str, optional
+            The format to use for saving the output label to associate with the
+            transaction. Should be one of xml or json. Defaults to xml.
+
+        Returns
+        -------
+        Transaction
+            The prepared Transaction object. Callers of this function may call
+            log() on the returned Transaction to commit it to the local database.
 
         """
         if output_content_type not in VALID_CONTENT_TYPES:
