@@ -1,6 +1,14 @@
 # Changelog
 
-## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-15)
+## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-11-30)
+
+[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.1-dev...«unknown»)
+
+**Defects:**
+
+- DOI Service does not assign adequate permissions to transaction database/history [\#299](https://github.com/NASA-PDS/pds-doi-service/issues/299) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
+
+## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-22)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.0...v2.1.1-dev)
 
@@ -15,8 +23,8 @@
 
 **Defects:**
 
-- Spreadsheet parsers do not handle blank rows gracefully [\#291](https://github.com/NASA-PDS/pds-doi-service/issues/291)
-- Default keywords/subjects are not always added to DOI records [\#273](https://github.com/NASA-PDS/pds-doi-service/issues/273)
+- Spreadsheet parsers do not handle blank rows gracefully [\#291](https://github.com/NASA-PDS/pds-doi-service/issues/291) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
+- Default keywords/subjects are not always added to DOI records [\#273](https://github.com/NASA-PDS/pds-doi-service/issues/273) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
 
 ## [v2.1.0](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.0) (2021-11-03)
 
@@ -30,6 +38,7 @@
 
 **Improvements:**
 
+- Improved parsing support for DataCite JSON format [\#274](https://github.com/NASA-PDS/pds-doi-service/issues/274)
 - Add new alternateIdentifier to match SBN schema [\#102](https://github.com/NASA-PDS/pds-doi-service/issues/102)
 
 **Defects:**
@@ -38,7 +47,6 @@
 
 **Other closed issues:**
 
-- Improved parsing support for DataCite JSON format [\#274](https://github.com/NASA-PDS/pds-doi-service/issues/274)
 - Test out and document how to upgrade the service [\#255](https://github.com/NASA-PDS/pds-doi-service/issues/255)
 - Remove Versioneer [\#250](https://github.com/NASA-PDS/pds-doi-service/issues/250)
 
