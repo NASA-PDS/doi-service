@@ -1,14 +1,6 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/pds-doi-service/tree/«unknown») (2021-11-30)
-
-[Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.1-dev...«unknown»)
-
-**Defects:**
-
-- DOI Service does not assign adequate permissions to transaction database/history [\#299](https://github.com/NASA-PDS/pds-doi-service/issues/299) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
-
-## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-22)
+## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-30)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.0...v2.1.1-dev)
 
@@ -23,6 +15,7 @@
 
 **Defects:**
 
+- DOI Service does not assign adequate permissions to transaction database/history [\#299](https://github.com/NASA-PDS/pds-doi-service/issues/299) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
 - Spreadsheet parsers do not handle blank rows gracefully [\#291](https://github.com/NASA-PDS/pds-doi-service/issues/291) [[s.low](https://github.com/NASA-PDS/pds-doi-service/labels/s.low)]
 - Default keywords/subjects are not always added to DOI records [\#273](https://github.com/NASA-PDS/pds-doi-service/issues/273) [[s.medium](https://github.com/NASA-PDS/pds-doi-service/labels/s.medium)]
 
