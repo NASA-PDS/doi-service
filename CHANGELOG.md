@@ -1,6 +1,6 @@
 # Changelog
 
-## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-11-30)
+## [v2.1.1-dev](https://github.com/NASA-PDS/pds-doi-service/tree/v2.1.1-dev) (2021-12-03)
 
 [Full Changelog](https://github.com/NASA-PDS/pds-doi-service/compare/v2.1.0...v2.1.1-dev)
 
