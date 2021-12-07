@@ -22,10 +22,12 @@ from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.entities.exceptions import UnknownDoiException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
+from pds_doi_service.core.entities.exceptions import UnknownNodeException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.general_util import parse_identifier_from_site_url
+from pds_doi_service.core.util.node_util import NodeUtil
 
 logger = get_logger(__name__)
 
@@ -41,6 +43,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     _optional_fields = [
         "id",
         "doi",
+        "node_id",
         "identifiers",
         "related_identifiers",
         "description",
@@ -206,6 +209,17 @@ class DOIDataCiteWebParser(DOIWebParser):
             return contributor
         except (KeyError, StopIteration, ValueError):
             raise UserWarning('Could not parse optional field "contributor"')
+
+    @staticmethod
+    def _parse_node_id(record):
+        try:
+            # Contributor field should be the same as the "long name" version of the Node ID,
+            # so attempt to parse it and convert it back to the ID
+            contributor = DOIDataCiteWebParser._parse_contributor(record)
+
+            return NodeUtil.get_node_id(contributor)
+        except(UserWarning, UnknownNodeException):
+            raise UserWarning('Could not parse optional field "node"')
 
     @staticmethod
     def _parse_pds_identifier(record):
