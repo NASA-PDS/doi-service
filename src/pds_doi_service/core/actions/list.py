@@ -71,7 +71,7 @@ class DOICoreActionList(DOICoreAction):
             "the following selection criteria. Output is returned in JSON format.",
         )
 
-        node_values = NodeUtil.get_permissible_values()
+        node_values = NodeUtil.get_permissible_node_ids()
         status_values = [status for status in DoiStatus]
 
         action_parser.add_argument(

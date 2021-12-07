@@ -78,8 +78,8 @@ class DOICoreActionReserve(DOICoreAction):
             "--node",
             required=True,
             metavar="NODE_ID",
-            help="The PDS Discipline Node in charge of the submission of the DOI. "
-            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
+            help="The PDS Discipline Node in charge of the submission of the DOI(s). "
+            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_node_ids())),
         )
         action_parser.add_argument(
             "-s",

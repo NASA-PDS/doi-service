@@ -65,7 +65,7 @@ class DOICoreActionUpdate(DOICoreAction):
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(cls._name, description="Update records with DOI's already assigned")
 
-        node_values = NodeUtil.get_permissible_values()
+        node_values = NodeUtil.get_permissible_node_ids()
         action_parser.add_argument(
             "-i",
             "--input",
