@@ -65,24 +65,6 @@ class DOICoreActionRelease(DOICoreAction):
             "A DOI may also be released to the DOI service provider directly.",
         )
         action_parser.add_argument(
-            "-n",
-            "--node",
-            required=True,
-            metavar="NODE_ID",
-            help="The PDS Discipline Node in charge of the released DOI. "
-            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
-        )
-        action_parser.add_argument(
-            "-f",
-            "--force",
-            required=False,
-            action="store_true",
-            help="If provided, forces the release action to proceed even if "
-            "warning are encountered during submission of the release "
-            "request. Without this flag, any warnings encountered are "
-            "treated as fatal exceptions.",
-        )
-        action_parser.add_argument(
             "-i",
             "--input",
             required=True,
@@ -92,11 +74,33 @@ class DOICoreActionRelease(DOICoreAction):
             "Draft actions, and can be retrieved for a DOI with the List action.",
         )
         action_parser.add_argument(
+            "-n",
+            "--node",
+            required=False,
+            default=None,
+            metavar="NODE_ID",
+            help="The PDS Discipline Node in charge of the released DOI. If not provided,"
+            "the node(s) currently assigned to each record are maintained."
+            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_node_ids())),
+        )
+        action_parser.add_argument(
             "-s",
             "--submitter",
-            required=True,
+            required=False,
             metavar="EMAIL",
-            help="The email address to associate with the Release request.",
+            default="pds-operator@jpl.nasa.gov",
+            help="The email address to associate with the Release request. "
+            "Defaults to pds-operator@jpl.nasa.gov",
+        )
+        action_parser.add_argument(
+            "-f",
+            "--force",
+            required=False,
+            action="store_true",
+            help="If provided, forces the release action to proceed even if "
+                 "warning are encountered during submission of the release "
+                 "request. Without this flag, any warnings encountered are "
+                 "treated as fatal exceptions.",
         )
         action_parser.add_argument(
             "--no-review",
@@ -142,8 +146,11 @@ class DOICoreActionRelease(DOICoreAction):
 
         """
         for doi in dois:
-            # Make sure correct contributor and publisher fields are set
-            doi.contributor = NodeUtil().get_node_long_name(self._node)
+            # Make sure correct node, contributor and publisher fields are set
+            if self._node:
+                doi.node_id = self._node
+                doi.contributor = NodeUtil.get_node_long_name(self._node)
+
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
             # Make sure the global keywords from the config are included
@@ -288,7 +295,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # created has marked all the Doi's as being the "review" step
                 # so its ready to be submitted to the local transaction history
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node,
+                    input_doi.node_id,
                     self._submitter,
                     output_doi,
                     input_path=input_doi.input_source,
