@@ -50,7 +50,7 @@ class DOIInputUtil:
     ]
     """The names of the expected columns within a spreadsheet file."""
 
-    OPTIONAL_COLUMNS = ["doi", "description", "site_url"]
+    OPTIONAL_COLUMNS = ["doi", "description", "site_url", "node_id"]
     """The names of optional columns parsed from a spreadsheet file."""
 
     EXPECTED_NUM_COLUMNS = len(MANDATORY_COLUMNS)
@@ -366,6 +366,7 @@ class DOIInputUtil:
                 authors=[{"first_name": row["author_first_name"], "last_name": row["author_last_name"]}],
                 description=row.get("description"),
                 site_url=row.get("site_url"),
+                node_id=row.get("node_id"),
                 date_record_added=timestamp,
                 date_record_updated=timestamp,
             )
