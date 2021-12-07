@@ -60,6 +60,7 @@ var/
 bin/
 .*.swp
 typescript
+.ipynb_checkpoints
 
 # OS-specific artifacts
 .DS_Store
