@@ -17,6 +17,7 @@ from datetime import datetime
 
 from dateutil.parser import isoparse
 from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import DoiEvent
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import InputFormatException
@@ -55,6 +56,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         "date_record_added",
         "date_record_updated",
         "contributor",
+        "event"
     ]
 
     _mandatory_fields = [
@@ -83,6 +85,14 @@ class DOIDataCiteWebParser(DOIWebParser):
             return record["doi"]
         except KeyError:
             raise UserWarning('Could not parse optional field "doi"')
+
+    @staticmethod
+    def _parse_event(record):
+        try:
+            if record.get("event"):
+                return DoiEvent(record["event"])
+        except ValueError:
+            raise UserWarning(f'Provided event "{record["event"]}" could not be parsed to a DoiEvent')
 
     @staticmethod
     def _parse_identifiers(record):
@@ -219,7 +229,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             return NodeUtil.get_node_id(contributor)
         except(UserWarning, UnknownNodeException):
-            raise UserWarning('Could not parse optional field "node"')
+            raise UserWarning('Could not parse optional field "node_id"')
 
     @staticmethod
     def _parse_pds_identifier(record):
