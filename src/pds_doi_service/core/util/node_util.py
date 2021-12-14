@@ -26,12 +26,10 @@ class NodeUtil:
         "rs": "Radio Science",
         "rms": "Ring-Moon Systems",
         "sbn": "Small Bodies",
-        "unk": "Unknown"
+        "unk": "Unknown",
     }
 
-    long_name_to_node_id = {
-        long_name.lower(): node_id for node_id, long_name in node_id_to_long_name.items()
-    }
+    long_name_to_node_id = {long_name.lower(): node_id for node_id, long_name in node_id_to_long_name.items()}
 
     @classmethod
     def get_node_long_name(cls, node_id):

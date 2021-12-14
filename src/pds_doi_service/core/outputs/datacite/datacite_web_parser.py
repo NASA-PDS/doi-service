@@ -56,7 +56,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         "date_record_added",
         "date_record_updated",
         "contributor",
-        "event"
+        "event",
     ]
 
     _mandatory_fields = [
@@ -228,7 +228,7 @@ class DOIDataCiteWebParser(DOIWebParser):
             contributor = DOIDataCiteWebParser._parse_contributor(record)
 
             return NodeUtil.get_node_id(contributor)
-        except(UserWarning, UnknownNodeException):
+        except (UserWarning, UnknownNodeException):
             raise UserWarning('Could not parse optional field "node_id"')
 
     @staticmethod

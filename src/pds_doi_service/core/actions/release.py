@@ -89,8 +89,7 @@ class DOICoreActionRelease(DOICoreAction):
             required=False,
             metavar="EMAIL",
             default="pds-operator@jpl.nasa.gov",
-            help="The email address to associate with the Release request. "
-            "Defaults to pds-operator@jpl.nasa.gov",
+            help="The email address to associate with the Release request. " "Defaults to pds-operator@jpl.nasa.gov",
         )
         action_parser.add_argument(
             "-f",
@@ -98,9 +97,9 @@ class DOICoreActionRelease(DOICoreAction):
             required=False,
             action="store_true",
             help="If provided, forces the release action to proceed even if "
-                 "warning are encountered during submission of the release "
-                 "request. Without this flag, any warnings encountered are "
-                 "treated as fatal exceptions.",
+            "warning are encountered during submission of the release "
+            "request. Without this flag, any warnings encountered are "
+            "treated as fatal exceptions.",
         )
         action_parser.add_argument(
             "--no-review",

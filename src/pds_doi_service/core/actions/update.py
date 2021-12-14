@@ -92,8 +92,7 @@ class DOICoreActionUpdate(DOICoreAction):
             required=False,
             default="pds-operator@jpl.nasa.gov",
             metavar="EMAIL",
-            help="The email address to associate with the Update request. "
-            "Defaults to pds-operator@jpl.nasa.gov",
+            help="The email address to associate with the Update request. " "Defaults to pds-operator@jpl.nasa.gov",
         )
         action_parser.add_argument(
             "-f",
@@ -333,7 +332,11 @@ class DOICoreActionUpdate(DOICoreAction):
 
             for doi in dois:
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    doi.node_id, self._submitter, doi, input_path=doi.input_source, output_content_type=CONTENT_TYPE_JSON
+                    doi.node_id,
+                    self._submitter,
+                    doi,
+                    input_path=doi.input_source,
+                    output_content_type=CONTENT_TYPE_JSON,
                 )
 
                 transaction.log()

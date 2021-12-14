@@ -82,15 +82,15 @@ class DOIValidator:
         """
         try:
             if not doi.node_id:
-                raise UnknownNodeException(
-                    f"Doi object does not have a node ID value assigned."
-                )
+                raise UnknownNodeException(f"Doi object does not have a node ID value assigned.")
 
             NodeUtil.validate_node_id(doi.node_id)
         except UnknownNodeException as err:
-            msg = (f"Invalid Node ID for DOI record with identifier {doi.pds_identifier}.\n"
-                   f"Reason: {str(err)}.\n"
-                   "Please use the --node option to specify the apporpriate PDS node ID for the transaction.")
+            msg = (
+                f"Invalid Node ID for DOI record with identifier {doi.pds_identifier}.\n"
+                f"Reason: {str(err)}.\n"
+                "Please use the --node option to specify the apporpriate PDS node ID for the transaction."
+            )
 
             raise UnknownNodeException(msg)
 
