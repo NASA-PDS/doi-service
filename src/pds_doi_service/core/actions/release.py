@@ -165,7 +165,7 @@ class DOICoreActionRelease(DOICoreAction):
             if not doi.site_url:
                 doi.site_url = create_landing_page_url(doi.pds_identifier, doi.product_type)
 
-            if not self._review:
+            if not self._review and doi.event is None:
                 # Add the event field to instruct DataCite to publish DOI to
                 # findable state (should have no effect for other providers)
                 doi.event = DoiEvent.Publish
