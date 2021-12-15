@@ -12,30 +12,53 @@ logger = get_logger(__name__)
 
 
 class NodeUtil:
-    # This class NodeUtil provide services to look up a short name for a long name of the node id.
+    """
+    Provides methods to look up the long name for a PDS node ID and vice-versa.
+    """
 
-    m_node_id_dict = {
-        "ATM": "Atmospheres",
-        "ENG": "Engineering",
-        "GEO": "Geosciences",
-        "IMG": "Cartography and Imaging Sciences Discipline",
-        "NAIF": "Navigational and Ancillary Information Facility",
-        "PPI": "Planetary Plasma Interactions",
-        "RS": "Radio Science",
-        "RMS": "Ring-Moon Systems",
-        "SBN": "Small Bodies",
+    node_id_to_long_name = {
+        "atm": "Atmospheres",
+        "eng": "Engineering",
+        "geo": "Geosciences",
+        "img": "Cartography and Imaging Sciences Discipline",
+        "naif": "Navigational and Ancillary Information Facility",
+        "ppi": "Planetary Plasma Interactions",
+        "rs": "Radio Science",
+        "rms": "Ring-Moon Systems",
+        "sbn": "Small Bodies",
+        "unk": "Unknown",
     }
 
-    def get_node_long_name(self, node_id):
-        self.validate_node_id(node_id.upper())
-        return self.m_node_id_dict[node_id.upper()]
+    long_name_to_node_id = {long_name.lower(): node_id for node_id, long_name in node_id_to_long_name.items()}
 
-    def validate_node_id(self, node_id):
-        if node_id.upper() not in self.m_node_id_dict:
+    @classmethod
+    def get_node_long_name(cls, node_id):
+        cls.validate_node_id(node_id.lower())
+        return cls.node_id_to_long_name[node_id.lower()]
+
+    @classmethod
+    def get_node_id(cls, long_name):
+        cls.validate_node_long_name(long_name.lower())
+        return cls.long_name_to_node_id[long_name.lower()]
+
+    @classmethod
+    def validate_node_long_name(cls, long_name):
+        if long_name not in cls.get_permissible_long_names():
             raise UnknownNodeException(
-                f"node_id {node_id.upper()} is not found in permissible nodes {self.m_node_id_dict.keys()}"
+                f"Node {long_name.capitalize()} is not a permissible node name. Must be one of {cls.long_name_to_node_id.keys()}"
             )
 
     @classmethod
-    def get_permissible_values(cls):
-        return [c.lower() for c in cls.m_node_id_dict.keys()]
+    def validate_node_id(cls, node_id):
+        if node_id not in cls.get_permissible_node_ids():
+            raise UnknownNodeException(
+                f"Node {node_id.upper()} is not a permissible ID. Must be one of {cls.node_id_to_long_name.keys()}"
+            )
+
+    @classmethod
+    def get_permissible_node_ids(cls):
+        return cls.node_id_to_long_name.keys()
+
+    @classmethod
+    def get_permissible_long_names(cls):
+        return cls.long_name_to_node_id.keys()

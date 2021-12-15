@@ -26,7 +26,7 @@ class DOIDiffer:
         # The 'full_name' for contributor may have 'Planetary Data System:" preceding the node name.
         # Historical may have keywords that will not be in new code so a list is needed to skip.
         # Use all lowercase for consistency.
-        keywords_to_skip_compare = NodeUtil.get_permissible_values()
+        keywords_to_skip_compare = NodeUtil.get_permissible_node_ids()
         keywords_to_skip_compare.append("PDS3".lower())
 
         o_difference_is_acceptable_flag = False

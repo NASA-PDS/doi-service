@@ -65,11 +65,11 @@ class DOICoreActionUpdate(DOICoreAction):
     def add_to_subparser(cls, subparsers):
         action_parser = subparsers.add_parser(cls._name, description="Update records with DOI's already assigned")
 
-        node_values = NodeUtil.get_permissible_values()
+        node_values = NodeUtil.get_permissible_node_ids()
         action_parser.add_argument(
             "-i",
             "--input",
-            required=False,
+            required=True,
             metavar="INPUT",
             help="Path to an input XML/JSON label or CSV/XLS spreadsheet. May be "
             "a local path or an HTTP address resolving to a PDS4 label file. Each "
@@ -79,16 +79,20 @@ class DOICoreActionUpdate(DOICoreAction):
         action_parser.add_argument(
             "-n",
             "--node",
-            required=True,
+            required=False,
+            default=None,
             metavar="NODE_ID",
-            help="The PDS Discipline Node in charge of the DOI. Authorized values are: " + ",".join(node_values),
+            help="The PDS Discipline Node to assign to each updated record. If not provided,"
+            "the node(s) currently assigned to each record are maintained. "
+            "Authorized values are: " + ",".join(node_values),
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
-            required=True,
+            required=False,
+            default="pds-operator@jpl.nasa.gov",
             metavar="EMAIL",
-            help="The email address to associate with the Update request.",
+            help="The email address to associate with the Update request. " "Defaults to pds-operator@jpl.nasa.gov",
         )
         action_parser.add_argument(
             "-f",
@@ -174,7 +178,10 @@ class DOICoreActionUpdate(DOICoreAction):
 
         """
         for doi in dois:
-            doi.contributor = NodeUtil().get_node_long_name(self._node)
+            if self._node:
+                doi.node_id = self._node
+                doi.contributor = NodeUtil.get_node_long_name(self._node)
+
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
             # Store the previous status of this DOI
@@ -325,7 +332,11 @@ class DOICoreActionUpdate(DOICoreAction):
 
             for doi in dois:
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node, self._submitter, doi, input_path=doi.input_source, output_content_type=CONTENT_TYPE_JSON
+                    doi.node_id,
+                    self._submitter,
+                    doi,
+                    input_path=doi.input_source,
+                    output_content_type=CONTENT_TYPE_JSON,
                 )
 
                 transaction.log()

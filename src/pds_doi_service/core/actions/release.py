@@ -65,12 +65,31 @@ class DOICoreActionRelease(DOICoreAction):
             "A DOI may also be released to the DOI service provider directly.",
         )
         action_parser.add_argument(
+            "-i",
+            "--input",
+            required=True,
+            help="Path to a file containing the record to release. The format may be "
+            "either a PDS4 label, or a DataCite JSON label. "
+            "DataCite JSON labels are produced by the Reserve and "
+            "Draft actions, and can be retrieved for a DOI with the List action.",
+        )
+        action_parser.add_argument(
             "-n",
             "--node",
-            required=True,
+            required=False,
+            default=None,
             metavar="NODE_ID",
-            help="The PDS Discipline Node in charge of the released DOI. "
-            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
+            help="The PDS Discipline Node in charge of the released DOI. If not provided,"
+            "the node(s) currently assigned to each record are maintained."
+            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_node_ids())),
+        )
+        action_parser.add_argument(
+            "-s",
+            "--submitter",
+            required=False,
+            metavar="EMAIL",
+            default="pds-operator@jpl.nasa.gov",
+            help="The email address to associate with the Release request. " "Defaults to pds-operator@jpl.nasa.gov",
         )
         action_parser.add_argument(
             "-f",
@@ -81,22 +100,6 @@ class DOICoreActionRelease(DOICoreAction):
             "warning are encountered during submission of the release "
             "request. Without this flag, any warnings encountered are "
             "treated as fatal exceptions.",
-        )
-        action_parser.add_argument(
-            "-i",
-            "--input",
-            required=True,
-            help="Path to a file containing the record to release. The format may be "
-            "either a PDS4 label, or a DataCite JSON label. "
-            "DataCite JSON labels are produced by the Reserve and "
-            "Draft actions, and can be retrieved for a DOI with the List action.",
-        )
-        action_parser.add_argument(
-            "-s",
-            "--submitter",
-            required=True,
-            metavar="EMAIL",
-            help="The email address to associate with the Release request.",
         )
         action_parser.add_argument(
             "--no-review",
@@ -142,8 +145,11 @@ class DOICoreActionRelease(DOICoreAction):
 
         """
         for doi in dois:
-            # Make sure correct contributor and publisher fields are set
-            doi.contributor = NodeUtil().get_node_long_name(self._node)
+            # Make sure correct node, contributor and publisher fields are set
+            if self._node:
+                doi.node_id = self._node
+                doi.contributor = NodeUtil.get_node_long_name(self._node)
+
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
             # Make sure the global keywords from the config are included
@@ -158,7 +164,7 @@ class DOICoreActionRelease(DOICoreAction):
             if not doi.site_url:
                 doi.site_url = create_landing_page_url(doi.pds_identifier, doi.product_type)
 
-            if not self._review:
+            if not self._review and doi.event is None:
                 # Add the event field to instruct DataCite to publish DOI to
                 # findable state (should have no effect for other providers)
                 doi.event = DoiEvent.Publish
@@ -288,7 +294,7 @@ class DOICoreActionRelease(DOICoreAction):
                 # created has marked all the Doi's as being the "review" step
                 # so its ready to be submitted to the local transaction history
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node,
+                    input_doi.node_id,
                     self._submitter,
                     output_doi,
                     input_path=input_doi.input_source,

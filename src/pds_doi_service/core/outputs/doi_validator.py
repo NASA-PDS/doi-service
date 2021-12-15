@@ -26,8 +26,10 @@ from pds_doi_service.core.entities.exceptions import InvalidRecordException
 from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
+from pds_doi_service.core.entities.exceptions import UnknownNodeException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.node_util import NodeUtil
 
 
 # Get the common logger and set the level for this file.
@@ -61,6 +63,36 @@ class DOIValidator:
         default_db_file = db_name if db_name else self._config.get("OTHER", "db_file")
 
         self._database_obj = DOIDataBase(default_db_file)
+
+    def _check_node_id(self, doi: Doi):
+        """
+        Checks if the provided Doi object has a valid node ID assigned.
+
+        Parameters
+        ----------
+        doi : Doi
+            The Doi object to check.
+
+        Raises
+        ------
+        UnknownNodeException
+            If the Doi object has an unrecognized node ID assigned, or no
+            node ID assigned at all.
+
+        """
+        try:
+            if not doi.node_id:
+                raise UnknownNodeException(f"Doi object does not have a node ID value assigned.")
+
+            NodeUtil.validate_node_id(doi.node_id)
+        except UnknownNodeException as err:
+            msg = (
+                f"Invalid Node ID for DOI record with identifier {doi.pds_identifier}.\n"
+                f"Reason: {str(err)}.\n"
+                "Please use the --node option to specify the apporpriate PDS node ID for the transaction."
+            )
+
+            raise UnknownNodeException(msg)
 
     def _check_field_site_url(self, doi: Doi):
         """
@@ -230,7 +262,7 @@ class DOIValidator:
 
         """
         if not doi.doi:
-            raise ValueError(f"Provided DOI object (id {doi.pds_identifier}) " f"does not have a DOI value assigned.")
+            raise ValueError(f"Provided DOI object (id {doi.pds_identifier}) does not have a DOI value assigned.")
 
         # The database expects each field to be a list.
         query_criterias = {"doi": [doi.doi]}
@@ -426,6 +458,7 @@ class DOIValidator:
         # existing DOI with the same PDS identifier
         self._check_for_preexisting_identifier(doi)
 
+        self._check_node_id(doi)
         self._check_identifier_fields(doi)
         self._check_lidvid_field(doi)
         self._check_field_title_duplicate(doi)
@@ -446,6 +479,7 @@ class DOIValidator:
         # using the same PDS identifier
         self._check_for_preexisting_doi(doi)
 
+        self._check_node_id(doi)
         self._check_identifier_fields(doi)
         self._check_lidvid_field(doi)
         self._check_field_title_duplicate(doi)
@@ -471,6 +505,7 @@ class DOIValidator:
         if doi.doi:
             self._check_for_preexisting_doi(doi)
 
+        self._check_node_id(doi)
         self._check_identifier_fields(doi)
         self._check_lidvid_field(doi)
         self._check_field_title_duplicate(doi)

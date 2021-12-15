@@ -78,15 +78,16 @@ class DOICoreActionReserve(DOICoreAction):
             "--node",
             required=True,
             metavar="NODE_ID",
-            help="The PDS Discipline Node in charge of the submission of the DOI. "
-            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_values())),
+            help="The PDS Discipline Node in charge of the submission of the DOI(s). "
+            "Authorized values are: {}".format(",".join(NodeUtil.get_permissible_node_ids())),
         )
         action_parser.add_argument(
             "-s",
             "--submitter",
-            required=True,
+            required=False,
+            default="pds-operator@jpl.nasa.gov",
             metavar="EMAIL",
-            help="The email address to associate with the Reserve request.",
+            help="The email address to associate with the Reserve request. Defaults to pds-operator@jpl.nasa.gov",
         )
         action_parser.add_argument(
             "-f",
@@ -133,9 +134,10 @@ class DOICoreActionReserve(DOICoreAction):
 
         """
         for doi in dois:
-            # First set contributor, publisher at the beginning of the function
+            # First set node, contributor, and publisher at the beginning of the function
             # to ensure that they are set in case of an exception.
-            doi.contributor = NodeUtil().get_node_long_name(self._node)
+            doi.node_id = self._node
+            doi.contributor = NodeUtil.get_node_long_name(self._node)
             doi.publisher = self._config.get("OTHER", "doi_publisher")
 
             # Add 'status' field so the ranking in the workflow can be determined
@@ -259,7 +261,7 @@ class DOICoreActionReserve(DOICoreAction):
 
                 # Log the inputs and outputs of this transaction
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    self._node,
+                    input_doi.node_id,
                     self._submitter,
                     output_doi,
                     input_path=input_doi.input_source,
