@@ -16,6 +16,7 @@ import json
 from datetime import datetime
 
 from dateutil.parser import isoparse
+from distutils.version import LooseVersion
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiEvent
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -27,6 +28,7 @@ from pds_doi_service.core.entities.exceptions import UnknownNodeException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import is_pds4_identifier
 from pds_doi_service.core.util.general_util import parse_identifier_from_site_url
 from pds_doi_service.core.util.node_util import NodeUtil
 
@@ -235,19 +237,34 @@ class DOIDataCiteWebParser(DOIWebParser):
     def _parse_pds_identifier(record):
         identifier = None
 
-        # First, check identifiers for a URN
-        if "identifiers" in record:
-            for identifier_record in record["identifiers"]:
-                if identifier_record["identifier"].startswith("urn:"):
-                    identifier = identifier_record["identifier"]
-                    break
+        # First, check identifiers for a PDS ID, giving preference
+        # to a PDS3 dataset ID, if present
+        for identifier_record in record.get("identifiers", []):
+            if identifier_record["identifierType"] in ("Site ID", "Handle") and not is_pds4_identifier(
+                identifier_record["identifier"]
+            ):
+                identifier = identifier_record["identifier"]
+                break
 
-        # Next, try looking for a URN in relatedIdentifiers
-        if not identifier and "relatedIdentifiers" in record:
-            for related_identifier_record in record["relatedIdentifiers"]:
-                if related_identifier_record["relatedIdentifier"].startswith("urn:"):
-                    identifier = related_identifier_record["relatedIdentifier"]
-                    break
+        # Next, try another pass on identifiers, looking for PDS4 URN this time
+        if not identifier:
+            pds4_identifiers = []
+            for identifier_record in record.get("identifiers", []):
+                if identifier_record["identifierType"] in ("Site ID", "URN") and is_pds4_identifier(
+                    identifier_record["identifier"]
+                ):
+                    pds4_identifiers.append(identifier_record["identifier"])
+
+            # There could be multiple PDS4 ID's with the same LID but different
+            # VIDs, so take the newest one. The LooseVersion class is used to
+            # sort VIDs by basic semantic versioning rules (1.9.0 < 1.10.0)
+            if pds4_identifiers:
+                vids = [
+                    pds4_identifier.split("::")[-1] if "::" in pds4_identifier else ""
+                    for pds4_identifier in pds4_identifiers
+                ]
+                sorted_vids = list(sorted(vids, key=LooseVersion))
+                identifier = pds4_identifiers[vids.index(sorted_vids[-1])]
 
         # Lastly, try to parse an ID from the site URL
         if not identifier and "url" in record:
