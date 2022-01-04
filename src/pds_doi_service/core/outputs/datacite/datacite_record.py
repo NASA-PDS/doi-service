@@ -20,7 +20,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
-from pds_doi_service.core.util.general_util import is_psd4_identifier
 from pds_doi_service.core.util.general_util import sanitize_json_string
 from pkg_resources import resource_filename
 
@@ -99,57 +98,36 @@ class DOIDataCiteRecord(DOIRecord):
             if doi.date_record_updated:
                 doi_fields["date_record_updated"] = doi.date_record_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-            # Cleanup extra whitespace that could break JSON format from title
-            # and description
+            # Cleanup extra whitespace that could break JSON format from title,
+            # description and author names
             if doi.title:
                 doi_fields["title"] = sanitize_json_string(doi.title)
 
             if doi.description:
                 doi_fields["description"] = sanitize_json_string(doi.description)
 
+            for author in doi.authors:
+                if "name" in author:
+                    author["name"] = sanitize_json_string(author["name"])
+                else:
+                    author["first_name"] = sanitize_json_string(author["first_name"])
+                    author["last_name"] = sanitize_json_string(author["last_name"])
+
             # Publication year is a must-have
             doi_fields["publication_year"] = doi.publication_date.strftime("%Y")
 
-            # Make sure DOI (if assigned) is included as a "identifier"
-            if doi.doi:
-                for identifier in doi.identifiers:
-                    if identifier["identifier"] == doi.doi:
-                        break
-                else:
-                    # If here, need to add the DOI
-                    doi_fields["identifiers"].append({"identifier": doi.doi, "identifierType": "DOI"})
-
             # Make sure the PDS identifier is included as a "identifier"
+            # this is a rolling list that captures all previous identifiers used for the current record
             for identifier in doi.identifiers:
                 # If the identifier is already an entry, nothing to be done
                 if identifier["identifier"] == doi.pds_identifier:
-                    break
-                # If there's a URN identifier that does not match the current
-                # identifier, update to the latest
-                elif identifier["identifierType"] in ("URN", "Handle"):
-                    identifier["identifier"] = doi.pds_identifier
                     break
             else:
                 # If here, we need to add the PDS ID
                 doi_fields["identifiers"].append(
                     {
                         "identifier": doi.pds_identifier,
-                        "identifierType": "URN" if is_psd4_identifier(doi.pds_identifier) else "Handle",
-                    }
-                )
-
-            # Make sure the PDS identifier is included as a "relatedIdentifier",
-            # this is a rolling list that captures all previous identifiers used for the current record
-            for related_identifier in doi.related_identifiers:
-                if related_identifier["relatedIdentifier"] == doi.pds_identifier:
-                    break
-            else:
-                # If here, we need to add the PDS ID
-                doi_fields["related_identifiers"].append(
-                    {
-                        "relatedIdentifier": doi.pds_identifier,
-                        "relatedIdentifierType": "URN" if is_psd4_identifier(doi.pds_identifier) else "Handle",
-                        "relationType": "IsIdenticalTo",
+                        "identifierType": "Site ID",
                     }
                 )
 
