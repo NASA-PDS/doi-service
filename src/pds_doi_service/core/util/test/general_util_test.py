@@ -5,7 +5,7 @@ from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_global_keywords
-from pds_doi_service.core.util.general_util import is_psd4_identifier
+from pds_doi_service.core.util.general_util import is_pds4_identifier
 from pds_doi_service.core.util.general_util import parse_identifier_from_site_url
 
 
@@ -59,13 +59,13 @@ class GeneralUtilTest(unittest.TestCase):
     def test_is_pds4_identifier(self):
         """Tests for general_util.is_pds4_identifier()"""
         # LID-only
-        self.assertTrue(is_psd4_identifier("urn:nasa:pds:insight_cameras"))
+        self.assertTrue(is_pds4_identifier("urn:nasa:pds:insight_cameras"))
 
         # LIDVID
-        self.assertTrue(is_psd4_identifier("urn:nasa:pds:insight_cameras::1.0"))
+        self.assertTrue(is_pds4_identifier("urn:nasa:pds:insight_cameras::1.0"))
 
         # PDS3 (or anything else really)
-        self.assertFalse(is_psd4_identifier("LRO-L-MRFLRO-2/3/5-BISTATIC-V1.0"))
+        self.assertFalse(is_pds4_identifier("LRO-L-MRFLRO-2/3/5-BISTATIC-V1.0"))
 
     def test_create_landing_page_url(self):
         """Tests for general_util.create_landing_page_url()"""

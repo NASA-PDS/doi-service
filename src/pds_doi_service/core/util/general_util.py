@@ -134,7 +134,7 @@ def parse_identifier_from_site_url(site_url):
     return identifier
 
 
-def is_psd4_identifier(identifier):
+def is_pds4_identifier(identifier):
     """
     Determines if the provided identifier corresponds to the PDS4 LIDVID format
     or not.
@@ -149,8 +149,7 @@ def is_psd4_identifier(identifier):
     True if the identifier is a valid PDS4 identifier, False otherwise.
 
     """
-    # TODO: could this be more sophisticated? for example, checking for urn:nasa:pds?
-    if identifier.startswith("urn:"):
+    if identifier.startswith("urn:nasa:pds"):
         return True
 
     return False
@@ -175,7 +174,7 @@ def create_landing_page_url(identifier, product_type):
         The landing page URL.
 
     """
-    if is_psd4_identifier(identifier):
+    if is_pds4_identifier(identifier):
         logger.debug('Creating URL for PDS4 identifier "%s"', identifier)
 
         template = PDS4_URL_TEMPLATE
