@@ -98,7 +98,7 @@ class DOIDataBase:
 
         # Make sure Database has proper group permissions set
         st = os.stat(self.m_database_name)
-        has_group_rw = bool(st.st_mode & stat.S_IRGRP & stat.S_IWGRP)
+        has_group_rw = bool(st.st_mode & (stat.S_IRGRP | stat.S_IWGRP))
 
         if not has_group_rw:
             logger.debug("Setting group read/write bits on database %s", self.m_database_name)

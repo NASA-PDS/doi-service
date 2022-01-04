@@ -109,9 +109,9 @@ class Doi:
     pds_identifier: str
     identifiers: list[dict] = field(default_factory=list)
     related_identifiers: list[dict] = field(default_factory=list)
-    authors: Optional[list[dict]] = None
+    authors: Optional[list[dict]] = field(default_factory=list)
     keywords: set[str] = field(default_factory=get_global_keywords)
-    editors: Optional[list[dict]] = None
+    editors: Optional[list[dict]] = field(default_factory=list)
     description: Optional[str] = None
     id: Optional[str] = None
     doi: Optional[str] = None

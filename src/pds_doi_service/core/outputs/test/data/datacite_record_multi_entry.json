@@ -8,11 +8,11 @@
                 "identifiers": [
                     {
                         "identifier": "1408892",
-                        "identifierType": "OSTI ID"
+                        "identifierType": "IAD ID"
                     },
                     {
                         "identifier": "urn:nasa:pds:ladee_nms:data_calibrated::1.0",
-                        "identifierType": "Product Number"
+                        "identifierType": "Site ID"
                     }
                 ],
                 "creators": [

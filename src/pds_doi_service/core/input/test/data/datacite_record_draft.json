@@ -8,12 +8,8 @@
             "suffix": "yzw2-vz66",
             "identifiers": [
                 {
-                    "identifier": "10.13143/yzw2-vz66",
-                    "identifierType": "DOI"
-                },
-                {
                     "identifier": "urn:nasa:pds:insight_cameras::1.0",
-                    "identifierType": "URN"
+                    "identifierType": "Site ID"
                 }
             ],
             "alternateIdentifiers": [],
@@ -162,11 +158,6 @@
                 "resourceType": "PDS4 Refereed Data Bundle"
             },
             "relatedIdentifiers": [
-                {
-                    "relatedIdentifier": "urn:nasa:pds:insight_cameras::1.0",
-                    "relatedIdentifierType": "URN",
-                    "relationType": "HasMetadata"
-                }
             ],
             "sizes": [],
             "formats": [],

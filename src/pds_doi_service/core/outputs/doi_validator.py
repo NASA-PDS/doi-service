@@ -82,7 +82,7 @@ class DOIValidator:
         """
         try:
             if not doi.node_id:
-                raise UnknownNodeException(f"Doi object does not have a node ID value assigned.")
+                raise UnknownNodeException("Doi object does not have a node ID value assigned.")
 
             NodeUtil.validate_node_id(doi.node_id)
         except UnknownNodeException as err:
