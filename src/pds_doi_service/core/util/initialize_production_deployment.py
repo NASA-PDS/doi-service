@@ -65,6 +65,7 @@ from datetime import datetime
 
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import InputFormatException
+from pds_doi_service.core.entities.exceptions import UnknownNodeException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -73,6 +74,7 @@ from pds_doi_service.core.outputs.service import VALID_SERVICE_TYPES
 from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.node_util import NodeUtil
 
 # Get the common logger and set the level for this file.
 logger = get_logger(__name__)
@@ -315,58 +317,6 @@ def get_dois_from_provider(service, prefix, output_file=None):
     return dois, server_url
 
 
-def _get_node_id(contributor_name):
-    """
-    Given a doi object, attempt to extract the node_id from contributors field.
-    If unable to, return 'eng' as default.
-    This function is a one-off as well so no fancy logic.
-
-    Parameters
-    ----------
-    doi_fields : dict
-        DOI metadata fields to obtain PDS node ID from.
-
-    Returns
-    -------
-    node_id : str
-        The three-character PDS identifier determined from the DOI's contributor
-        field.
-
-    """
-    node_id = None
-
-    if contributor_name:
-        contributor_name = contributor_name.lower()
-
-        if "atmospheres" in contributor_name:
-            node_id = "atm"
-        elif "engineering" in contributor_name:
-            node_id = "eng"
-        elif "geosciences" in contributor_name:
-            node_id = "geo"
-        elif "imaging" in contributor_name:
-            node_id = "img"
-        elif "cartography" in contributor_name:
-            node_id = "img"
-        # Some uses title: Navigation and Ancillary Information Facility Node
-        # Some uses title: Navigational and Ancillary Information Facility
-        # So check for both
-        elif "navigation" in contributor_name and "ancillary" in contributor_name:
-            node_id = "naif"
-        elif "navigational" in contributor_name and "ancillary" in contributor_name:
-            node_id = "naif"
-        elif "plasma" in contributor_name:
-            node_id = "ppi"
-        elif "radio" in contributor_name:
-            node_id = "rs"
-        elif "ring" in contributor_name and "moon" in contributor_name:
-            node_id = "rms"
-        elif "small" in contributor_name or "bodies" in contributor_name:
-            node_id = "sbn"
-
-    return node_id
-
-
 def perform_import_to_database(service, prefix, db_name, input_source, dry_run, submitter_email, output_file):
     """
     Imports all records from the input source into a local database.
@@ -448,16 +398,12 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
 
         doi_fields = doi.__dict__  # Convert the Doi object to a dictionary.
 
-        # Get the node_id from either the 'contributors' or 'publisher' field, if possible
-        node_id = _get_node_id(doi_fields.get("contributor"))
-
-        if not node_id:
-            node_id = _get_node_id(doi_fields.get("publisher"))
-
-        if node_id:
+        # Get the node_id from the 'contributors' field, if possible
+        try:
+            node_id = NodeUtil.get_node_id(doi_fields.get("contributor"))
             logger.debug("Derived node ID %s for record %d", node_id, item_index)
-        else:
-            node_id = "eng"
+        except UnknownNodeException:
+            node_id = "unk"
             logger.warning(
                 "No node ID could be determined for record %d, defaulting to node ID %s", item_index, node_id
             )
@@ -485,7 +431,7 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
 
             o_records_written += 1
 
-    return (o_records_found, o_records_processed, o_records_written, o_records_dois_skipped)
+    return o_records_found, o_records_processed, o_records_written, o_records_dois_skipped
 
 
 def main():
