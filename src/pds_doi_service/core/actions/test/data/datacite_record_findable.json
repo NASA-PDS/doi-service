@@ -7,8 +7,8 @@
                 "doi": "10.13143/yzw2-vz66",
                 "identifiers": [
                     {
-                        "identifier": "10.13143/yzw2-vz66",
-                        "identifierType": "DOI"
+                        "identifier":  "urn:nasa:pds:insight_cameras::1.0",
+                        "identifierType": "Site ID"
                     }
                 ],
                 "creators": [
@@ -156,12 +156,6 @@
                     "resourceTypeGeneral": "Dataset"
                 },
                 "relatedIdentifiers": [
-                    {
-                        "relationType": "HasMetadata",
-                        "relatedIdentifier": "urn:nasa:pds:insight_cameras::1.0",
-                        "resourceTypeGeneral": "Text",
-                        "relatedIdentifierType": "URN"
-                    }
                 ],
                 "sizes": [],
                 "formats": [],

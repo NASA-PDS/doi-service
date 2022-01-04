@@ -5,6 +5,12 @@
             "type": "dois",
             "attributes": {
                 "doi": "10.17189/21734",
+                "identifiers": [
+                    {
+                        "identifier": "urn:nasa:pds:insight_cameras::1.1",
+                        "identifierType": "Site ID"
+                    }
+                ],
                 "creators": [
                     {
                         "nameType": "Personal",
@@ -71,12 +77,6 @@
                     "resourceType": "PDS4 Refereed Data Bundle"
                 },
                 "relatedIdentifiers": [
-                    {
-                        "relatedIdentifier": "urn:nasa:pds:insight_cameras::1.1",
-                        "relatedIdentifierType": "URN",
-                        "relationType": "HasMetadata",
-                        "resourceTypeGeneral": "Text"
-                    }
                 ],
                 "descriptions": [
                     {

@@ -153,17 +153,10 @@ class UpdateActionTestCase(unittest.TestCase):
         self.assertEqual(doi.date_record_added, updated_doi.date_record_added)
         self.assertNotEqual(doi.date_record_updated, updated_doi.date_record_updated)
 
-        # New PDS identifier should be present in identifiers section, but not the old
+        # Both new and old PDS identifiers should be present in identifiers section
         identifiers = list(map(lambda identifier: identifier["identifier"], updated_doi.identifiers))
         self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifiers)
-        self.assertNotIn("urn:nasa:pds:insight_cameras::1.0", identifiers)
-
-        # Both the old and new PDS identifier should be present in the rolling list of relatedIdentifiers
-        related_identifiers = list(
-            map(lambda related_identifier: related_identifier["relatedIdentifier"], updated_doi.related_identifiers)
-        )
-        self.assertIn("urn:nasa:pds:insight_cameras::2.0", related_identifiers)
-        self.assertIn("urn:nasa:pds:insight_cameras::1.0", related_identifiers)
+        self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifiers)
 
         # Global keywords should have been assigned, if they weren't already
         self.assertTrue(all(keyword in updated_doi.keywords for keyword in get_global_keywords()))
@@ -267,7 +260,7 @@ class UpdateActionTestCase(unittest.TestCase):
 
         # Update the LIDVID for the record in memory, create a new JSON label,
         # and submit it with the update action
-        doi.pds_identifier = "urn:nasa:pds:new_insight_cameras::1.0"
+        doi.pds_identifier = "urn:nasa:pds:insight_cameras::2.0"
         doi.date_record_updated = datetime.now()
         json_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
@@ -299,7 +292,7 @@ class UpdateActionTestCase(unittest.TestCase):
         updated_doi = updated_dois[0]
 
         # LIDVID should be updated
-        self.assertEqual(updated_doi.pds_identifier, "urn:nasa:pds:new_insight_cameras::1.0")
+        self.assertEqual(updated_doi.pds_identifier, "urn:nasa:pds:insight_cameras::2.0")
 
         # Status should have changed from Findable to Review since this DOI was released
         self.assertEqual(updated_doi.status, DoiStatus.Review)
@@ -308,17 +301,10 @@ class UpdateActionTestCase(unittest.TestCase):
         self.assertEqual(doi.date_record_added, updated_doi.date_record_added)
         self.assertNotEqual(doi.date_record_updated, updated_doi.date_record_updated)
 
-        # New PDS identifier should be present in identifiers section, but not the old
+        # Both new and old PDS identifiers should be present in identifiers section
         identifiers = list(map(lambda identifier: identifier["identifier"], updated_doi.identifiers))
-        self.assertIn("urn:nasa:pds:new_insight_cameras::1.0", identifiers)
-        self.assertNotIn("urn:nasa:pds:insight_cameras::1.0", identifiers)
-
-        # Both the old and new PDS identifier should be present in the rolling list of relatedIdentifiers
-        related_identifiers = list(
-            map(lambda related_identifier: related_identifier["relatedIdentifier"], updated_doi.related_identifiers)
-        )
-        self.assertIn("urn:nasa:pds:new_insight_cameras::1.0", related_identifiers)
-        self.assertIn("urn:nasa:pds:insight_cameras::1.0", related_identifiers)
+        self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifiers)
+        self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifiers)
 
         # Global keywords should have been assigned, if they weren't already
         self.assertTrue(all(keyword in updated_doi.keywords for keyword in get_global_keywords()))

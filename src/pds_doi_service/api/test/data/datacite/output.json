@@ -9,8 +9,8 @@
                 "suffix": "28606",
                 "identifiers": [
                     {
-                        "identifier": "10.17189/28606",
-                        "identifierType": "DOI"
+                        "identifier": "urn:nasa:pds:lab_shocked_feldspars",
+                        "identifierType": "Site ID"
                     }
                 ],
                 "creators": [
@@ -45,12 +45,6 @@
                     "resourceType": "PDS4 Bundle"
                 },
                 "relatedIdentifiers": [
-                    {
-                        "relatedIdentifier": "urn:nasa:pds:lab_shocked_feldspars",
-                        "relatedIdentifierType": "URN",
-                        "relationType": "HasMetadata",
-                        "resourceTypeGeneral": "Text"
-                    }
                 ],
                 "created": "2021-08-30T10:23:55.786257Z",
                 "updated": "2021-08-30T10:23:55.786257Z",
@@ -66,8 +60,8 @@
                 "doi": "10.17189/28607",
                 "identifiers": [
                     {
-                        "identifier": "10.17189/28607",
-                        "identifierType": "DOI"
+                        "identifier": "urn:nasa:pds:insight_cameras::1.1",
+                        "identifierType": "Site ID"
                     }
                 ],
                 "creators": [
@@ -136,12 +130,6 @@
                     "resourceType": "PDS4 Refereed Data Bundle"
                 },
                 "relatedIdentifiers": [
-                    {
-                        "relatedIdentifier": "urn:nasa:pds:insight_cameras::1.1",
-                        "relatedIdentifierType": "URN",
-                        "relationType": "HasMetadata",
-                        "resourceTypeGeneral": "Text"
-                    }
                 ],
                 "descriptions": [
                     {
@@ -165,8 +153,8 @@
                 "doi": "10.17189/28608",
                 "identifiers": [
                     {
-                        "identifier": "10.17189/28608",
-                        "identifierType": "DOI"
+                        "identifier": "urn:nasa:pds:insight_cameras",
+                        "identifierType": "Site ID"
                     }
                 ],
                 "creators": [
@@ -235,12 +223,6 @@
                     "resourceType": "PDS4 Refereed Data Bundle"
                 },
                 "relatedIdentifiers": [
-                    {
-                        "relatedIdentifier": "urn:nasa:pds:insight_cameras",
-                        "relatedIdentifierType": "URN",
-                        "relationType": "HasMetadata",
-                        "resourceTypeGeneral": "Text"
-                    }
                 ],
                 "descriptions": [
                     {
