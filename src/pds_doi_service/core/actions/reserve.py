@@ -188,11 +188,6 @@ class DOICoreActionReserve(DOICoreAction):
                 )
 
             try:
-                single_doi_label = self._record_service.create_doi_record(doi)
-
-                # Validate the label representation of the DOI
-                self._validator_service.validate(single_doi_label)
-
                 # Validate the object representation of the DOI
                 self._doi_validator.validate_reserve_request(doi)
             # Collect all warnings and exceptions so they can be combined into
