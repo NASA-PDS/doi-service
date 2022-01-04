@@ -14,9 +14,9 @@ Contains classes used to parse response labels from DataCite DOI service request
 import html
 import json
 from datetime import datetime
+from distutils.version import LooseVersion
 
 from dateutil.parser import isoparse
-from distutils.version import LooseVersion
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiEvent
 from pds_doi_service.core.entities.doi import DoiStatus

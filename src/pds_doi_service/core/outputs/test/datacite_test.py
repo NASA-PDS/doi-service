@@ -86,7 +86,9 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
         output_doi = output_dois[0]
 
         # Check that both the new and old identifiers are in the "identifiers" section
-        urn_identifiers = list(filter(lambda identifier: identifier["identifierType"] == "Site ID", output_doi.identifiers))
+        urn_identifiers = list(
+            filter(lambda identifier: identifier["identifierType"] == "Site ID", output_doi.identifiers)
+        )
 
         self.assertEqual(len(urn_identifiers), 2)
         identifier_values = [identifier["identifier"] for identifier in urn_identifiers]
