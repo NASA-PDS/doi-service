@@ -74,7 +74,7 @@ class DOICoreActionReserve(DOICoreAction):
             "spreadsheet file with the following columns: " + ",".join(DOIInputUtil.MANDATORY_COLUMNS),
         )
         action_parser.add_argument(
-            "-n",
+            "-N",
             "--node",
             required=True,
             metavar="NODE_ID",

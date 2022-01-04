@@ -77,7 +77,7 @@ class DOICoreActionUpdate(DOICoreAction):
             "updated.",
         )
         action_parser.add_argument(
-            "-n",
+            "-N",
             "--node",
             required=False,
             default=None,

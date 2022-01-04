@@ -74,7 +74,7 @@ class DOICoreActionRelease(DOICoreAction):
             "Draft actions, and can be retrieved for a DOI with the List action.",
         )
         action_parser.add_argument(
-            "-n",
+            "-N",
             "--node",
             required=False,
             default=None,
@@ -89,7 +89,7 @@ class DOICoreActionRelease(DOICoreAction):
             required=False,
             metavar="EMAIL",
             default="pds-operator@jpl.nasa.gov",
-            help="The email address to associate with the Release request. " "Defaults to pds-operator@jpl.nasa.gov",
+            help="The email address to associate with the Release request. Defaults to pds-operator@jpl.nasa.gov",
         )
         action_parser.add_argument(
             "-f",

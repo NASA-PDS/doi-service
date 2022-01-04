@@ -86,7 +86,7 @@ class DOICoreActionList(DOICoreAction):
             'DOI records that match the query. Defaults to "record".',
         )
         action_parser.add_argument(
-            "-n",
+            "-N",
             "--node",
             required=False,
             metavar="NODE_ID[,NODE_ID]...",
