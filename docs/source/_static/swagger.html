@@ -1,0 +1,664 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Planetary Data System DOI Service API</title>
+    <style type="text/css">
+      body {
+      	font-family: Trebuchet MS, sans-serif;
+      	font-size: 15px;
+      	color: #444;
+      	margin-right: 24px;
+      }
+
+      h1	{
+      	font-size: 25px;
+      }
+      h2	{
+      	font-size: 20px;
+      }
+      h3	{
+      	font-size: 16px;
+      	font-weight: bold;
+      }
+      hr	{
+      	height: 1px;
+      	border: 0;
+      	color: #ddd;
+      	background-color: #ddd;
+      }
+
+      .app-desc {
+        clear: both;
+        margin-left: 20px;
+      }
+      .param-name {
+        width: 100%;
+      }
+      .license-info {
+        margin-left: 20px;
+      }
+
+      .license-url {
+        margin-left: 20px;
+      }
+
+      .model {
+        margin: 0 0 0px 20px;
+      }
+
+      .method {
+        margin-left: 20px;
+      }
+
+      .method-notes	{
+      	margin: 10px 0 20px 0;
+      	font-size: 90%;
+      	color: #555;
+      }
+
+      pre {
+        padding: 10px;
+        margin-bottom: 2px;
+      }
+
+      .http-method {
+       text-transform: uppercase;
+      }
+
+      pre.get {
+        background-color: #0f6ab4;
+      }
+
+      pre.post {
+        background-color: #10a54a;
+      }
+
+      pre.put {
+        background-color: #c5862b;
+      }
+
+      pre.delete {
+        background-color: #a41e22;
+      }
+
+      .huge	{
+      	color: #fff;
+      }
+
+      pre.example {
+        background-color: #f3f3f3;
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+
+      code {
+        white-space: pre;
+      }
+
+      .nickname {
+        font-weight: bold;
+      }
+
+      .method-path {
+        font-size: 1.5em;
+        background-color: #0f6ab4;
+      }
+
+      .up {
+        float:right;
+      }
+
+      .parameter {
+        width: 500px;
+      }
+
+      .param {
+        width: 500px;
+        padding: 10px 0 0 20px;
+        font-weight: bold;
+      }
+
+      .param-desc {
+        width: 700px;
+        padding: 0 0 0 20px;
+        color: #777;
+      }
+
+      .param-type {
+        font-style: italic;
+      }
+
+      .param-enum-header {
+      width: 700px;
+      padding: 0 0 0 60px;
+      color: #777;
+      font-weight: bold;
+      }
+
+      .param-enum {
+      width: 700px;
+      padding: 0 0 0 80px;
+      color: #777;
+      font-style: italic;
+      }
+
+      .field-label {
+        padding: 0;
+        margin: 0;
+        clear: both;
+      }
+
+      .field-items	{
+      	padding: 0 0 15px 0;
+      	margin-bottom: 15px;
+      }
+
+      .return-type {
+        clear: both;
+        padding-bottom: 10px;
+      }
+
+      .param-header {
+        font-weight: bold;
+      }
+
+      .method-tags {
+        text-align: right;
+      }
+
+      .method-tag {
+        background: none repeat scroll 0% 0% #24A600;
+        border-radius: 3px;
+        padding: 2px 10px;
+        margin: 2px;
+        color: #FFF;
+        display: inline-block;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+  <h1>Planetary Data System DOI Service API</h1>
+    <div class="app-desc">PDS API for managing DOI registration with a DOI service provider (OSTI, DataCite, etc.).</div>
+    <div class="app-desc">More information: <a href="https://github.com/NASA-PDS/doi-service">https://github.com/NASA-PDS/doi-service</a></div>
+    <div class="app-desc">Contact Info: <a href="pds-operator@jpl.nasa.gov">pds-operator@jpl.nasa.gov</a></div>
+    <div class="app-desc">Version: 0.2</div>
+    <div class="app-desc">BasePath:/PDS_APIs/pds_doi_api/0.2</div>
+    <div class="license-info">All rights reserved</div>
+    <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h3>Table of Contents </h3>
+  <div class="method-summary"></div>
+  <h4><a href="#Dois">Dois</a></h4>
+  <ul>
+  <li><a href="#getCheckDois"><code><span class="http-method">get</span> /dois/check</code></a></li>
+  <li><a href="#getDoiFromId"><code><span class="http-method">get</span> /doi</code></a></li>
+  <li><a href="#getDois"><code><span class="http-method">get</span> /dois</code></a></li>
+  <li><a href="#postDois"><code><span class="http-method">post</span> /dois</code></a></li>
+  <li><a href="#postSubmitDoi"><code><span class="http-method">post</span> /doi/submit</code></a></li>
+  <li><a href="#putDoiFromId"><code><span class="http-method">put</span> /doi</code></a></li>
+  </ul>
+
+  <h1><a name="Dois">Dois</a></h1>
+  <div class="method"><a name="getCheckDois"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /dois/check</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">getCheckDois</span>)</div>
+    <div class="method-notes">Check submission status of all records pending release.</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">email (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; If true, the check action sends results to the default recipients and pending DOI submitters. default: false </div>      <div class="param">attachment (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; If true, the check action sends results as an email attachment. Has no effect if the email flag is not set to true. default: false </div>      <div class="param">submitter (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The email address of the user to register as author of the check action. This address is also included in the list of recipients. </div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#doi_record">doi_record</a>
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>""</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#doi_record">doi_record</a>
+    <h4 class="field-label">400</h4>
+    DOI service provider cannot be reached
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Internal error
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getDoiFromId"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /doi</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">getDoiFromId</span>)</div>
+    <div class="method-notes">Get the status of a DOI from the transaction database.</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">identifier (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The PDS identifier associated with the record to fetch. </div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#doi_record">doi_record</a>
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>""</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#doi_record">doi_record</a>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[
+    {
+        &quot;creation_date&quot;:&quot;2021-03-09T00:00:00Z&quot;,
+        &quot;doi&quot;:&quot;10.17189/29476&quot;,
+        &quot;identifier&quot;:&quot;urn:nasa:pds:lab_shocked_feldspars::1.0&quot;,
+        &quot;node&quot;:&quot;eng&quot;,
+        &quot;record&quot;:&quot;&lt;?xml version&#x3D;\&quot;1.0\&quot; encoding&#x3D;\&quot;UTF-8\&quot;?&gt;\n&lt;records&gt;\n
+            &lt;record status&#x3D;\&quot;reserved\&quot;&gt;\n        &lt;id&gt;29476&lt;/id&gt;\n
+            &lt;title&gt;Laboratory Shocked Feldspars Bundle&lt;/title&gt;\n
+            &lt;doi&gt;10.17189/29476&lt;/doi&gt;\n        ...\n
+            &lt;contact_name&gt;PDS Operator&lt;/contact_name&gt;\n
+            &lt;contact_org&gt;PDS&lt;/contact_org&gt;\n
+            &lt;contact_email&gt;pds-operator@jpl.nasa.gov&lt;/contact_email&gt;\n
+            &lt;contact_phone&gt;818.393.7165&lt;/contact_phone&gt;\n
+            &lt;/record&gt;\n&lt;/records&gt;\n&quot;,
+        &quot;status&quot;:&quot;reserved&quot;,
+        &quot;submitter&quot;:&quot;my.email@node.gov&quot;
+    }
+]</code></pre>
+    <h4 class="field-label">404</h4>
+    Not existing
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Internal error
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getDois"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /dois</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">getDois</span>)</div>
+    <div class="method-notes">List the DOI requests within the transaction database</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">doi (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; List of DOIs to fetch from transaction database. </div>      <div class="param">submitter (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; List of submitter email addresses to filter DOIs by. </div>      <div class="param">node (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; List of PDS node names cited as contributor of the DOI to filter by. Each identifier must be one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146 </div>      <div class="param">status (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; List of DOI workflow status values to filter results by. Status must be one of the following - &quot;unknown&quot;, &quot;draft&quot;, &quot;review&quot;, or &quot;findable&quot;. </div>      <div class="param">ids (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; List of PDS identifiers to filter DOIs by. Each identifier may contain one or more Unix-style wildcards (*) to pattern match against. </div>      <div class="param">start_date (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; A start date to filter resulting DOI records by. Only records with an update time after this date will be returned. Value must be a valid isoformat string of the form &lt;YYYY&gt;-&lt;mm&gt;-&lt;dd&gt;[T&lt;HH&gt;:&lt;MM&gt;:&lt;SS&gt;.&lt;ms&gt;] </div>      <div class="param">end_date (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; An end date to filter resulting DOI records by. Only records with an update time prior to this date will be returned. Value must be a valid isoformat string of the form &lt;YYYY&gt;-&lt;mm&gt;-&lt;dd&gt;[T&lt;HH&gt;:&lt;SS&gt;.&lt;ms&gt;] </div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#doi_summary">doi_summary</a>]
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[
+    {
+        "identifier" : "identifier",
+        "node" : "node",
+        "submitter" : "submitter",
+        "title" : "title",
+        "update_date" : "2000-01-23T04:56:07.000+00:00",
+        "doi" : "doi",
+        "status" : "status"
+    },
+    {
+        "identifier" : "identifier",
+        "node" : "node",
+        "submitter" : "submitter",
+        "title" : "title",
+        "update_date" : "2000-01-23T04:56:07.000+00:00",
+        "doi" : "doi",
+        "status" : "status"
+    }
+]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+
+    <h4 class="field-label">400</h4>
+    Invalid Argument
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Internal error
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="postDois"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /dois</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">postDois</span>)</div>
+    <div class="method-notes">Submit a DOI to reserve or update. The payload includes URLs for one or more  records to be submitted. Record URLs must resolve to PDS4 label files (xml).</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+      <li><code>application/xml</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#labels_payload">labels_payload</a> (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Payload containing one or more labels in JSON or XML (PDS4) format. Required for reserve requests, but optional for update. </div>
+            <div class="param-desc"><span class="param-type">example: <code>{
+  &quot;labels&quot; : [ {
+    &quot;status&quot; : &quot;Reserved&quot;,
+    &quot;title&quot; : &quot;Laboratory Shocked Feldspars Bundle&quot;,
+    &quot;publication_date&quot; : &quot;2020-03-11&quot;,
+    &quot;product_type_specific&quot; : &quot;PDS4 Collection&quot;,
+    &quot;author_last_name&quot; : &quot;Johnson&quot;,
+    &quot;author_first_name&quot; : &quot;J. R.&quot;,
+    &quot;related_resource&quot; : &quot;urn:nasa:pds:lab_shocked_feldspars&quot;
+  } ]
+}</code></span></div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">action (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The submission action to perform. Must be one of &quot;reserve&quot;, &quot;draft&quot; or &quot;update&quot;. &quot;draft&quot; is an alias for &quot;update&quot;. </div>      <div class="param">submitter (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Email address of the submission requester. </div>      <div class="param">node (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The PDS node name to cite as contributor of the DOI. Must be one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146 </div>      <div class="param">url (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; URL to provide as the record to register a DOI for. URL must start with either &quot;http://&quot; or &quot;https://&quot; and resolve to a valid PDS4 label in XML format. This value is only utilized when request is set to &quot;update&quot;. </div>      <div class="param">force (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; If true, forces a reserve request to completion, ignoring any warnings encountered. Has no effect for update requests. default: false </div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#doi_record">doi_record</a>
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>""</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#doi_record">doi_record</a>
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[
+    {
+        &quot;creation_date&quot;:&quot;2021-03-09T00:00:00Z&quot;,
+        &quot;doi&quot;:&quot;10.17189/29476&quot;,
+        &quot;identifier&quot;:&quot;urn:nasa:pds:lab_shocked_feldspars::1.0&quot;,
+        &quot;node&quot;:&quot;eng&quot;,
+        &quot;record&quot;:&quot;&lt;?xml version&#x3D;\&quot;1.0\&quot; encoding&#x3D;\&quot;UTF-8\&quot;?&gt;\n
+            &lt;records&gt;\n    &lt;record status&#x3D;\&quot;reserved\&quot;&gt;\n
+            &lt;id&gt;29476&lt;/id&gt;\n        &lt;title&gt;Laboratory Shocked Feldspars Bundle&lt;/title&gt;\n
+            &lt;doi&gt;10.17189/29476&lt;/doi&gt;\n        ...\n
+            &lt;contact_name&gt;PDS Operator&lt;/contact_name&gt;\n
+            &lt;contact_org&gt;PDS&lt;/contact_org&gt;\n
+            &lt;contact_email&gt;pds-operator@jpl.nasa.gov&lt;/contact_email&gt;\n
+            &lt;contact_phone&gt;818.393.7165&lt;/contact_phone&gt;\n
+            &lt;/record&gt;\n&lt;/records&gt;\n&quot;,
+        &quot;status&quot;:&quot;reserved&quot;,
+        &quot;submitter&quot;:&quot;my.email@node.gov&quot;
+     }
+]</code></pre>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Invalid Argument
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Internal error
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="postSubmitDoi"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /doi/submit</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">postSubmitDoi</span>)</div>
+    <div class="method-notes">Move a DOI record from draft status to &quot;review&quot;.</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">identifier (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The PDS identifier associated with the record to submit for review. </div>      <div class="param">force (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; If true, forces a submit request to completion, ignoring any warnings encountered. default: false </div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#doi_record">doi_record</a>
+
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>""</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#doi_record">doi_record</a>
+    <h4 class="field-label">400</h4>
+    Can not be released
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    No entry found for identifier
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Internal error
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="putDoiFromId"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /doi</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">putDoiFromId</span>)</div>
+    <div class="method-notes">Update the record associated with an existing DOI.</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">identifier (required)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The PDS identifier associated with the record to fetch. </div>      <div class="param">submitter (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Email address of the DOI update requester. </div>      <div class="param">node (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The PDS node name to cite as contributor of the DOI. Must be one of the valid PDS steward IDs, see  https://pds.nasa.gov/datastandards/documents/dd/current/PDS4_PDS_DD_1D00.html#d5e72146 </div>      <div class="param">url (optional)</div>
+
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; URL to provide as the record to update the DOI with. URL must start with either &quot;http://&quot; or &quot;https://&quot; and resolve to a valid PDS4 label in XML format. </div>    </div>  <!-- field-items -->
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">501</h4>
+    Not implemented
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#doi_record"><code>doi_record</code></a></li>
+    <li><a href="#doi_summary"><code>doi_summary</code></a></li>
+    <li><a href="#label_payload"><code>label_payload</code></a></li>
+    <li><a href="#labels_payload"><code>labels_payload</code></a></li>
+  </ol>
+
+  <div class="model">
+    <h3><a name="doi_record"><code>doi_record</code></a> <a class="up" href="#__Models">Up</a></h3>
+
+    <div class="field-items">
+      <div class="param">doi (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">identifier (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">node (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">submitter (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">update_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#DateTime">Date</a></span>  format: date-time</div>
+<div class="param">record (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> full DOI label </div>
+<div class="param">creation_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#DateTime">Date</a></span> Creation date of the DOI record in iso8601 format format: date-time</div>
+<div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="doi_summary"><code>doi_summary</code></a> <a class="up" href="#__Models">Up</a></h3>
+
+    <div class="field-items">
+      <div class="param">doi (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">identifier (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">node (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">submitter (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">update_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#DateTime">Date</a></span>  format: date-time</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="label_payload"><code>label_payload</code></a> <a class="up" href="#__Models">Up</a></h3>
+
+    <div class="field-items">
+      <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">publication_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#DateTime">Date</a></span>  format: date-time</div>
+<div class="param">product_type_specific (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">author_last_name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">author_first_name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">related_resource (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="labels_payload"><code>labels_payload</code></a> <a class="up" href="#__Models">Up</a></h3>
+
+    <div class="field-items">
+      <div class="param">labels (optional)</div><div class="param-desc"><span class="param-type"><a href="#label_payload">array[label_payload]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>
