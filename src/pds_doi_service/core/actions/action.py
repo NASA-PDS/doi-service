@@ -55,6 +55,8 @@ class DOICoreAction:
         """
         parser = argparse.ArgumentParser(
             description="PDS core command for DOI management. The available subcommands are:\n",
+            epilog="Usage for each subcommand is available by providing the --help argument to the subcommand:\n"
+                   "    pds-doi-cmd reserve --help\n",
             formatter_class=argparse.RawTextHelpFormatter,
         )
 
