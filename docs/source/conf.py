@@ -17,7 +17,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'PDS DOI Service'
-copyright = '2020–2021 California Institute of Technology'
+copyright = '2020–2022 California Institute of Technology'
 author = 'NASA PDS Engineering Node'
 
 
@@ -33,6 +33,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.autosummary',
+    'sphinx.ext.napoleon',
     'sphinx_rtd_theme',
     'sphinxarg.ext',
 ]
