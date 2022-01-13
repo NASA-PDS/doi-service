@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="🚑 Support" href="../support/index.html" />
-    <link rel="prev" title="🏃‍♀️ Usage" href="../usage/index.html" /> 
+    <link rel="next" title="🏃‍ ️Usage" href="../usage/index.html" />
+    <link rel="prev" title="📦 Installation" href="../installation/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -90,7 +90,6 @@
               <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">📦 Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">🏃‍♀️ Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">👩‍💻 Development</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
@@ -98,6 +97,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#contribute">Contribute</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">🏃‍ ️Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">️Command Line API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html#swagger-api">Swagger API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../support/index.html">🚑 Support</a></li>
 </ul>
 
@@ -169,7 +171,7 @@
 <section id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <p>To obtain a copy of the code and work on a new branch:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">NASA</span><span class="o">-</span><span class="n">PDS</span><span class="o">/</span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">NASA</span><span class="o">-</span><span class="n">PDS</span><span class="o">/</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span><span class="o">.</span><span class="n">git</span>
 <span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="s2">&quot;&lt;issue number&gt;_&lt;issue name&gt;&quot;</span>
 </pre></div>
 </div>
@@ -207,7 +209,7 @@ the service, you can run the unit tests with the following command:</p>
 <p>Releases are done on GitHub and PyPI. This is implemented through the CI/CD
 framework using GitHub <a class="reference external" href="https://github.com/features/actions">Actions</a> on the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch. To trigger a release
 via the CI/CD framework, create a branch named <code class="docutils literal notranslate"><span class="pre">release/&lt;version</span> <span class="pre">number&gt;</span></code>,
-and push it to the GitHub origin (<a class="reference external" href="https://github.com/NASA-PDS/pds-doi-service.git">https://github.com/NASA-PDS/pds-doi-service.git</a>)
+and push it to the GitHub origin (<a class="reference external" href="https://github.com/NASA-PDS/doi-service.git">https://github.com/NASA-PDS/doi-service.git</a>)
 to trigger the <a class="reference external" href="https://github.com/features/actions">Actions</a> framework for release, for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">release</span><span class="o">/</span><span class="mf">1.2</span>
 <span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">release</span><span class="o">/</span><span class="mf">1.2</span>
@@ -218,7 +220,7 @@ number, tag and build a release, and push it to PyPI.</p>
 </section>
 <section id="contribute">
 <h2>Contribute<a class="headerlink" href="#contribute" title="Permalink to this headline">¶</a></h2>
-<p>Clone the repo from : <a class="reference external" href="https://github.com/NASA-PDS/pds-doi-service">https://github.com/NASA-PDS/pds-doi-service</a> and then
+<p>Clone the repo from : <a class="reference external" href="https://github.com/NASA-PDS/doi-service">https://github.com/NASA-PDS/doi-service</a> and then
 submit a pull request for your branch when complete. At least one PDS Engineering
 Node developer must approve the request before it is merged.</p>
 </section>
@@ -232,10 +234,10 @@ Node developer must approve the request before it is merged.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../support/index.html" class="btn btn-neutral float-right" title="🚑 Support" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../usage/index.html" class="btn btn-neutral float-right" title="🏃‍ ️Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../usage/index.html" class="btn btn-neutral float-left" title="🏃‍♀️ Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../installation/index.html" class="btn btn-neutral float-left" title="📦 Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -245,7 +247,7 @@ Node developer must approve the request before it is merged.</p>
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright 2020–2021 California Institute of Technology
+        &copy; Copyright 2020–2022 California Institute of Technology
 
     </p>
   </div>

@@ -17,8 +17,9 @@ Currently, this service is deployed as a Python package
    :caption: Contents:
 
    installation/index
-   usage/index
    development/index
+   usage/index
+   api/index
    support/index
 
 
