@@ -1,30 +1,22 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-01-13)
+## [2.1.2](https://github.com/NASA-PDS/doi-service/tree/2.1.2) (2022-01-13)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2-dev...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2-dev...2.1.2)
 
-**Requirements:**
+**Improvements:**
 
-- As an operator, I want one place to go for all DOI Service / API / UI documentation [\#202](https://github.com/NASA-PDS/doi-service/issues/202)
-- As an operator, I want to know how to deploy and use the API from the Sphinx documentation [\#201](https://github.com/NASA-PDS/doi-service/issues/201)
+- Update all past DOIs for consistent metadata [\#294](https://github.com/NASA-PDS/doi-service/issues/294)
 
-**Defects:**
-
-- Document need to be update after adding the update argument [\#313](https://github.com/NASA-PDS/doi-service/issues/313)
-- identifiers vs alternateIdentifiers appear disconnected from current DataCite schema [\#303](https://github.com/NASA-PDS/doi-service/issues/303) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
-
-**Other closed issues:**
-
-- Develop DOI documentation for PDS Operator [\#256](https://github.com/NASA-PDS/doi-service/issues/256)
-
-## [v2.1.2-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.2-dev) (2022-01-08)
+## [v2.1.2-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.2-dev) (2022-01-13)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.1...v2.1.2-dev)
 
 **Requirements:**
 
 - As a PDS Operator, I want to perform a bulk update of a specific field across many DOI records [\#257](https://github.com/NASA-PDS/doi-service/issues/257)
+- As an operator, I want one place to go for all DOI Service / API / UI documentation [\#202](https://github.com/NASA-PDS/doi-service/issues/202)
+- As an operator, I want to know how to deploy and use the API from the Sphinx documentation [\#201](https://github.com/NASA-PDS/doi-service/issues/201)
 
 **Improvements:**
 
@@ -32,7 +24,13 @@
 
 **Defects:**
 
+- Document need to be update after adding the update argument [\#313](https://github.com/NASA-PDS/doi-service/issues/313)
 - --no-review argument has potential to be confused with -n \(node ID\) argument [\#305](https://github.com/NASA-PDS/doi-service/issues/305) [[s.low](https://github.com/NASA-PDS/doi-service/labels/s.low)]
+- identifiers vs alternateIdentifiers appear disconnected from current DataCite schema [\#303](https://github.com/NASA-PDS/doi-service/issues/303) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+
+**Other closed issues:**
+
+- Develop DOI documentation for PDS Operator [\#256](https://github.com/NASA-PDS/doi-service/issues/256)
 
 ## [v2.1.1](https://github.com/NASA-PDS/doi-service/tree/v2.1.1) (2021-12-07)
 
