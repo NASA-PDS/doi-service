@@ -6,7 +6,7 @@ Quick start
 
 To obtain a copy of the code and work on a new branch::
 
-    git clone https://github.com/NASA-PDS/pds-doi-service.git
+    git clone https://github.com/NASA-PDS/doi-service.git
     git checkout -b "<issue number>_<issue name>"
 
 Create a virtual environment in ``venv`` using Python 3.9 or later::
@@ -45,7 +45,7 @@ Making Releases
 Releases are done on GitHub and PyPI. This is implemented through the CI/CD
 framework using GitHub Actions_ on the ``main`` branch. To trigger a release
 via the CI/CD framework, create a branch named ``release/<version number>``,
-and push it to the GitHub origin (https://github.com/NASA-PDS/pds-doi-service.git)
+and push it to the GitHub origin (https://github.com/NASA-PDS/doi-service.git)
 to trigger the Actions_ framework for release, for example::
 
     git checkout -b release/1.2
@@ -57,7 +57,7 @@ number, tag and build a release, and push it to PyPI.
 Contribute
 ----------
 
-Clone the repo from : https://github.com/NASA-PDS/pds-doi-service and then
+Clone the repo from : https://github.com/NASA-PDS/doi-service and then
 submit a pull request for your branch when complete. At least one PDS Engineering
 Node developer must approve the request before it is merged.
 

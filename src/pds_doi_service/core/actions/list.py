@@ -106,7 +106,8 @@ class DOICoreActionList(DOICoreAction):
             "--doi",
             required=False,
             metavar="DOI[,DOI]...",
-            help="A list of comma-delimited DOI values to use as filters with the database query.",
+            help="A list of comma-delimited DOI values to use as filters with the database query. "
+            "Each DOI may contain one or more wildcards (*) to pattern match against.",
         )
         action_parser.add_argument(
             "-i",

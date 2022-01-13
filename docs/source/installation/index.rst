@@ -3,11 +3,6 @@
 
 This section describes how to install the PDS DOI Service.
 
-The service is composed of a command line tool (``pds-doi-cmd``) and a web API
-(``pds-doi-api``) which provides an interface to the command line that may be
-accessed remotely or via web UI.
-
-
 Requirements
 ------------
 
