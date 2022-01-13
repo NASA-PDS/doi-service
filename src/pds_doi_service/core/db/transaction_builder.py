@@ -16,7 +16,7 @@ from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.doi_record import VALID_CONTENT_TYPES
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.outputs.transaction import Transaction
+from pds_doi_service.core.db.transaction import Transaction
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 

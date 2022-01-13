@@ -5,15 +5,15 @@ import unittest
 from datetime import datetime
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
+from pds_doi_service.core.db.transaction import Transaction
+from pds_doi_service.core.db.transaction_builder import TransactionBuilder
+from pds_doi_service.core.db.transaction_on_disk import TransactionOnDisk
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.datacite.datacite_record import DOIDataCiteRecord
 from pds_doi_service.core.outputs.datacite.datacite_web_parser import DOIDataCiteWebParser
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
-from pds_doi_service.core.outputs.transaction import Transaction
-from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
-from pds_doi_service.core.outputs.transaction_on_disk import TransactionOnDisk
 from pkg_resources import resource_filename
 
 

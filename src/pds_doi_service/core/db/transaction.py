@@ -14,7 +14,7 @@ disk and database table.
 """
 from datetime import datetime
 
-from pds_doi_service.core.outputs.transaction_on_disk import TransactionOnDisk
+from pds_doi_service.core.db.transaction_on_disk import TransactionOnDisk
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 

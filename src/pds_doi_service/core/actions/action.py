@@ -13,7 +13,7 @@ Contains the parent class definition for actions of the Core PDS DOI Service.
 """
 import argparse
 
-from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
+from pds_doi_service.core.db.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
