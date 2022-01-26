@@ -223,7 +223,7 @@ def _read_from_local_json(service, path):
         dois, _ = web_parser.parse_dois_from_label(doi_json, content_type=CONTENT_TYPE_JSON)
     except Exception:
         raise InputFormatException(
-            f"Unable to parse input file {path} using parser {web_parser.__name__}\n"
+            f"Unable to parse input file {path} using parser {web_parser.__class__.__name__}\n"
             f"Please ensure the --service flag is set correctly to specify the "
             f"correct parser type for the format."
         )
@@ -396,25 +396,13 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
             o_records_dois_skipped += 1
             continue
 
-        doi_fields = doi.__dict__  # Convert the Doi object to a dictionary.
-
-        # Get the node_id from the 'contributors' field, if possible
-        try:
-            node_id = NodeUtil.get_node_id(doi_fields.get("contributor"))
-            logger.debug("Derived node ID %s for record %d", node_id, item_index)
-        except UnknownNodeException:
-            node_id = "unk"
-            logger.warning(
-                "No node ID could be determined for record %d, defaulting to node ID %s", item_index, node_id
-            )
-
         logger.debug("------------------------------------")
         logger.debug("Processed DOI at index %d", item_index)
-        logger.debug("Title: %s", doi_fields.get("title"))
-        logger.debug("DOI: %s", doi_fields.get("doi"))
-        logger.debug("PDS Identifier: %s", doi_fields.get("pds_identifier"))
-        logger.debug("Node ID: %s", node_id)
-        logger.debug("Status: %s", str(doi_fields.get("status", "unknown")))
+        logger.debug("Title: %s", doi.title)
+        logger.debug("DOI: %s", doi.doi)
+        logger.debug("PDS Identifier: %s", doi.pds_identifier)
+        logger.debug("Node ID: %s", doi.node_id)
+        logger.debug("Status: %s", str(doi.status))
 
         o_records_processed += 1
 
@@ -424,12 +412,16 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
             # of the output label is based on the service provider setting in
             # the INI config.
             transaction = transaction_builder.prepare_transaction(
-                node_id, submitter_email, doi, output_content_type=CONTENT_TYPE_JSON
+                submitter_email, doi, output_content_type=CONTENT_TYPE_JSON
             )
 
-            transaction.log()
+            doi_logged = transaction.log()
 
-            o_records_written += 1
+            if doi_logged:
+                o_records_written += 1
+            else:
+                o_records_dois_skipped += 1
+                logger.info(f"Record for DOI {doi.doi} ({doi.pds_identifier}) has not changed, skipping...")
 
     return o_records_found, o_records_processed, o_records_written, o_records_dois_skipped
 
