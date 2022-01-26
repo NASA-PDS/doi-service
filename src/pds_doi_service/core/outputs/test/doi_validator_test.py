@@ -11,6 +11,7 @@ import unittest
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
@@ -35,8 +36,8 @@ class DoiValidatorTest(unittest.TestCase):
         self.vid = "1.0"
         self.identifier = self.lid + "::" + self.vid
         self.transaction_key = "./transaction_history/img/2020-06-15T18:42:45.653317"
-        self.release_date = datetime.datetime.now()
-        self.transaction_date = datetime.datetime.now()
+        self.release_date = datetime.datetime.now(tz=datetime.timezone.utc)
+        self.transaction_date = datetime.datetime.now(tz=datetime.timezone.utc)
         self.status = DoiStatus.Draft
         self.title = "Laboratory Shocked Feldspars Collection"
         self.product_type = ProductType.Collection
@@ -47,21 +48,24 @@ class DoiValidatorTest(unittest.TestCase):
         self.id = "21940"
         self.doi = "10.17189/" + self.id
 
+        doi_record = DoiRecord(
+            identifier=self.identifier,
+            status=self.status,
+            date_added=self.release_date,
+            date_updated=self.transaction_date,
+            submitter=self.submitter,
+            title=self.title,
+            type=self.product_type,
+            subtype=self.product_type_specific,
+            node_id=self.discipline_node,
+            doi=self.doi,
+            transaction_key=self.transaction_key,
+            is_latest=True
+        )
+
         # Write a record into database
         # All fields are valid.
-        self._database_obj.write_doi_info_to_database(
-            self.doi,
-            self.transaction_key,
-            self.identifier,
-            self.release_date,
-            self.transaction_date,
-            self.status,
-            self.title,
-            self.product_type,
-            self.product_type_specific,
-            self.submitter,
-            self.discipline_node,
-        )
+        self._database_obj.write_doi_info_to_database(doi_record)
 
     def tearDown(self):
         if os.path.isfile(self.db_name):
