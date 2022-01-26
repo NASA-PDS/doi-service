@@ -11,6 +11,7 @@ general_util.py
 
 General utility functions for things like logging.
 """
+import hashlib
 import logging
 import re
 from html import escape
@@ -26,6 +27,26 @@ PDS3_URL_TEMPLATE = "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid={iden
 
 PDS4_URL_TEMPLATE = "https://pds.nasa.gov/ds-view/pds/view{product_type}.jsp?{identifier_query}{amp}{version_query}"
 """The landing page URL template for PDS4 datasets"""
+
+
+def checksum(record_payload):
+    """
+    Returns a md5 checksum calculated from the provided DOI record payload.
+
+    Parameters
+    ----------
+    record_payload : str
+        Text contents of a DOI record to generate the checksum for.
+
+    Returns
+    -------
+    hex_digest : str
+        The hex digest of the md5 checksum.
+
+    """
+    md5 = hashlib.md5()
+    md5.update(record_payload.encode())
+    return md5.hexdigest()
 
 
 def get_logger(module_name=None):
