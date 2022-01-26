@@ -148,7 +148,7 @@ class DOICoreActionCheck(DOICoreAction):
 
                 # Log the update to the DOI entry
                 transaction_obj = self.m_transaction_builder.prepare_transaction(
-                    pending_record["node_id"], self._submitter, doi, output_content_type=CONTENT_TYPE_JSON
+                    self._submitter, doi, output_content_type=CONTENT_TYPE_JSON
                 )
 
                 transaction_obj.log()

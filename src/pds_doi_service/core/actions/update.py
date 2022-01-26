@@ -332,7 +332,6 @@ class DOICoreActionUpdate(DOICoreAction):
 
             for doi in dois:
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    doi.node_id,
                     self._submitter,
                     doi,
                     input_path=doi.input_source,

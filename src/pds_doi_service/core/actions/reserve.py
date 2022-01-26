@@ -256,7 +256,6 @@ class DOICoreActionReserve(DOICoreAction):
 
                 # Log the inputs and outputs of this transaction
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    input_doi.node_id,
                     self._submitter,
                     output_doi,
                     input_path=input_doi.input_source,
