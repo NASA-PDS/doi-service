@@ -12,15 +12,16 @@ doi_database.py
 Contains classes and functions for interfacing with the local transaction
 database (SQLite3).
 """
+import dataclasses
 import os
 import sqlite3
 import stat
 from collections import OrderedDict
 from datetime import datetime
-from datetime import timedelta
 from datetime import timezone
 from sqlite3 import Error
 
+from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -265,54 +266,15 @@ class DOIDataBase:
 
         logger.info("Table created successfully")
 
-    def write_doi_info_to_database(
-        self,
-        doi,
-        transaction_key,
-        identifier=None,
-        date_added=datetime.now(),
-        date_updated=datetime.now(),
-        status=DoiStatus.Unknown,
-        title="",
-        product_type=ProductType.Collection,
-        product_type_specific="",
-        submitter="",
-        discipline_node="",
-    ):
+    def write_doi_info_to_database(self, doi_record):
         """
         Write a new row to the Sqlite3 transaction database with the provided
         DOI entry information.
 
         Parameters
         ----------
-        doi : str
-            The DOI value to associate as the primary key for the new row.
-        transaction_key : str
-            Path to the local transaction history location associated with the
-            new row.
-        identifier : str, optional
-            The PDS identifier to associate to the new row. Defaults to None.
-        date_added : datetime, optional
-            Time that the row was initially added to the database. Defaults
-            to the current time.
-        date_updated : datetime, optional
-            Time that the row was last updated. Defaults to the current time.
-        status : DoiStatus
-            The status of the transaction. Defaults to DoiStatus.Unknown.
-        title : str
-            The title associated with the transaction. Defaults to an empty string.
-        product_type : ProductType
-            The product type associated with the transaction. Defaults to
-            ProductType.Collection.
-        product_type_specific : str
-            The specific product type associated with the transaction.
-            Defaults to an empty string.
-        submitter : str
-            The submitter email associated with the transaction. Defaults
-            to an empty string.
-        discipline_node : str
-            The discipline node ID associated with the transaction. Defaults
-            to an empty string.
+        doi_record : DoiRecord
+            The DOI record to create a database new entry with.
 
         Raises
         ------
@@ -322,36 +284,23 @@ class DOIDataBase:
         """
         self.m_my_conn = self.get_connection()
 
-        # Convert timestamps to Unix epoch floats for simpler table storage
-        date_added = date_added.replace(tzinfo=timezone.utc).timestamp()
-        date_updated = date_updated.replace(tzinfo=timezone.utc).timestamp()
-
-        # Map the inputs to the appropriate column names. By doing so, we
+        # Convert the DOI record to a dictionary representation. By doing so, we
         # can ignore database column ordering for now.
-        data = {
-            "identifier": identifier,
-            "status": status,
-            "date_added": date_added,
-            "date_updated": date_updated,
-            "submitter": submitter,
-            "title": title,
-            "type": product_type,
-            "subtype": product_type_specific,
-            "node_id": discipline_node,
-            "doi": doi,
-            "transaction_key": transaction_key,
-            "is_latest": True,
-        }
+        data = dataclasses.asdict(doi_record)
+
+        # Convert timestamps to Unix epoch floats for simpler table storage
+        data["date_added"] = data["date_added"].replace(tzinfo=timezone.utc).timestamp()
+        data["date_updated"] = data["date_updated"].replace(tzinfo=timezone.utc).timestamp()
 
         try:
             # Create and execute the query to unset the is_latest field for all
             # records with the same identifier field.
             query_string = self.query_string_for_is_latest_update(self.m_default_table_name, primary_key_column="doi")
 
-            self.m_my_conn.execute(query_string, (doi,))
+            self.m_my_conn.execute(query_string, (doi_record.doi,))
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = f"Failed to update is_latest field for DOI {doi}, reason: {err}"
+            msg = f"Failed to update is_latest field for DOI {doi_record.doi}, reason: {err}"
             logger.error(msg)
             raise RuntimeError(msg)
 
@@ -366,28 +315,28 @@ class DOIDataBase:
             self.m_my_conn.execute(query_string, data_tuple)
             self.m_my_conn.commit()
         except sqlite3.Error as err:
-            msg = f"Failed to commit transaction for DOI {doi}, " f"reason: {err}"
+            msg = f"Failed to commit transaction for DOI {doi_record.doi}, " f"reason: {err}"
             logger.error(msg)
             raise RuntimeError(msg)
 
     def _normalize_rows(self, columns, rows):
         """
-        Normalize columns from each rows to be the data types we expect,
+        Normalize columns from each row to be the data types we expect,
         rather than the types which are convenient for table storage
         """
         for row in rows:
-            # Convert the add/update times from Unix epoch back to datetime,
-            # accounting for the expected (PST) timezone
+            # Convert the add/update times from Unix epoch back to datetime
             for time_column in ("date_added", "date_updated"):
                 time_val = row[columns.index(time_column)]
-                time_val = datetime.fromtimestamp(time_val, tz=timezone.utc).replace(
-                    tzinfo=timezone(timedelta(hours=--8.0))
-                )
+                time_val = datetime.fromtimestamp(time_val, tz=timezone.utc)
                 row[columns.index(time_column)] = time_val
 
             # Convert status/product type back to Enums
             row[columns.index("status")] = DoiStatus(row[columns.index("status")].lower())
             row[columns.index("type")] = ProductType(row[columns.index("type")].capitalize())
+
+            # Convert is_latest flag back to native Python bool (sqlite returns an int)
+            row[columns.index("is_latest")] = bool(row[columns.index("is_latest")])
 
         return rows
 
@@ -447,6 +396,31 @@ class DOIDataBase:
         logger.debug("Query returned %d result(s)", len(rows))
 
         return columns, rows
+
+    def select_latest_records(self, query_criterias, table_name=None):
+        """
+        Returns the latest set of rows from the database matching the provided
+        query criteria reformatted as DoiRecord objects.
+
+        Parameters
+        ----------
+        query_criterias : dict
+            Dictionary mapping database column names to criteria values to match.
+        table_name : str, optional
+            Name of the database table to query. Defaults to the default table
+            name "doi".
+
+        Returns
+        -------
+        records : list of DoiRecord
+            The list of DoiRecord objects matching the query criteria.
+
+        """
+        columns, rows = self.select_latest_rows(query_criterias, table_name)
+
+        records = [DoiRecord(**dict(zip(columns, row))) for row in rows]
+
+        return records
 
     def select_all_rows(self, table_name=None):
         """Select all rows from the database"""
