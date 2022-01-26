@@ -12,6 +12,7 @@ pds4_util.py
 Contains functions and classes for parsing PDS4 XML labels.
 """
 from datetime import datetime
+from datetime import timezone
 from enum import Enum
 
 from pds_doi_service.core.entities.doi import Doi
@@ -253,7 +254,7 @@ class DOIPDS4LabelUtil:
                 if len(doi_prefix_suffix) == 2:
                     doi_suffix = doi_prefix_suffix[1]
 
-            timestamp = datetime.now()
+            timestamp = datetime.now(tz=timezone.utc)
 
             identifier = pds4_fields["lid"]
 
@@ -307,7 +308,7 @@ class DOIPDS4LabelUtil:
         elif "publication_year" in pds4_fields:
             publication_date = datetime.strptime(pds4_fields["publication_year"], "%Y")
         else:
-            publication_date = datetime.now()
+            publication_date = datetime.now(tz=timezone.utc)
 
         return publication_date
 

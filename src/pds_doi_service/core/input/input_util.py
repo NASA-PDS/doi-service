@@ -15,6 +15,7 @@ import os
 import tempfile
 import urllib.parse
 from datetime import datetime
+from datetime import timezone
 from os.path import basename
 
 import pandas as pd
@@ -334,7 +335,7 @@ class DOIInputUtil:
         """
         dois = []
         errors = []
-        timestamp = datetime.now()
+        timestamp = datetime.now(tz=timezone.utc)
 
         for index, row in pd_sheet.iterrows():
             try:
