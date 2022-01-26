@@ -258,9 +258,11 @@ class DOIDataCiteWebParser(DOIWebParser):
             # There could be multiple PDS4 ID's with the same LID but different
             # VIDs, so take the newest one. The LooseVersion class is used to
             # sort VIDs by basic semantic versioning rules (1.9.0 < 1.10.0)
+            # For LID's only, assign a version 0.0 so they're always superseded by
+            # a LIDVID
             if pds4_identifiers:
                 vids = [
-                    pds4_identifier.split("::")[-1] if "::" in pds4_identifier else ""
+                    pds4_identifier.split("::")[-1] if "::" in pds4_identifier else "0.0"
                     for pds4_identifier in pds4_identifiers
                 ]
                 sorted_vids = list(sorted(vids, key=LooseVersion))
