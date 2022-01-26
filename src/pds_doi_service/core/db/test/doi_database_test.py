@@ -7,6 +7,7 @@ from datetime import timezone
 from os.path import exists
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
+from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.general_util import get_logger
@@ -35,91 +36,70 @@ class DOIDatabaseTest(unittest.TestCase):
     def test_select_latest_rows(self):
         """Test selecting of latest rows from the transaction database"""
         # Set up a sample db entry
-        identifier = "urn:nasa:pds:lab_shocked_feldspars::1.0"
-        transaction_key = "img/2020-06-15T18:42:45.653317"
-        doi = "10.17189/21729"
-        date_added = datetime.datetime.now()
-        date_updated = datetime.datetime.now()
-        status = DoiStatus.Unknown
-        title = "Laboratory Shocked Feldspars Bundle"
-        product_type = ProductType.Collection
-        product_type_specific = "PDS4 Collection"
-        submitter = "img-submitter@jpl.nasa.gov"
-        discipline_node = "img"
+        doi_record = DoiRecord(
+            identifier="urn:nasa:pds:lab_shocked_feldspars::1.0",
+            status=DoiStatus.Unknown,
+            date_added=datetime.datetime.now(tz=timezone.utc),
+            date_updated=datetime.datetime.now(tz=timezone.utc),
+            submitter="img-submitter@jpl.nasa.gov",
+            title="Laboratory Shocked Feldspars Bundle",
+            type=ProductType.Collection,
+            subtype="PDS4 Collection",
+            node_id="img",
+            doi="10.17189/21729",
+            transaction_key="img/2020-06-15T18:42:45.653317",
+            is_latest=True
+        )
 
         # Insert a row in the 'doi' table
-        self._doi_database.write_doi_info_to_database(
-            doi,
-            transaction_key,
-            identifier,
-            date_added,
-            date_updated,
-            status,
-            title,
-            product_type,
-            product_type_specific,
-            submitter,
-            discipline_node,
-        )
+        self._doi_database.write_doi_info_to_database(doi_record)
 
         # Select the row we just added
         # The type of o_query_result should be JSON and a list of 1
-        o_query_result = self._doi_database.select_latest_rows(query_criterias={"doi": [doi]})
+        o_query_result = self._doi_database.select_latest_rows(query_criterias={"doi": [doi_record.doi]})
 
         # Reformat results to a dictionary to test with
         query_result = dict(zip(o_query_result[0], o_query_result[1][0]))
 
         # Ensure we got back everything we just put in
-        self.assertEqual(query_result["status"], status)
+        self.assertEqual(query_result["status"], doi_record.status)
         self.assertEqual(
             int(query_result["date_added"].timestamp()),
-            int(date_added.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp()),
+            int(doi_record.date_added.timestamp()),
         )
         self.assertEqual(
             int(query_result["date_updated"].timestamp()),
-            int(date_updated.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp()),
+            int(doi_record.date_updated.timestamp()),
         )
-        self.assertEqual(query_result["submitter"], submitter)
-        self.assertEqual(query_result["title"], title)
-        self.assertEqual(query_result["type"], product_type)
-        self.assertEqual(query_result["subtype"], product_type_specific)
-        self.assertEqual(query_result["node_id"], discipline_node)
-        self.assertEqual(query_result["identifier"], identifier)
-        self.assertEqual(query_result["doi"], doi)
-        self.assertEqual(query_result["transaction_key"], transaction_key)
+        self.assertEqual(query_result["submitter"], doi_record.submitter)
+        self.assertEqual(query_result["title"], doi_record.title)
+        self.assertEqual(query_result["type"], doi_record.type)
+        self.assertEqual(query_result["subtype"], doi_record.subtype)
+        self.assertEqual(query_result["node_id"], doi_record.node_id)
+        self.assertEqual(query_result["identifier"], doi_record.identifier)
+        self.assertEqual(query_result["doi"], doi_record.doi)
+        self.assertEqual(query_result["transaction_key"], doi_record.transaction_key)
 
         self.assertTrue(query_result["is_latest"])
 
         # Update some fields and write a new "latest" entry
-        status = DoiStatus.Draft
-        submitter = "eng-submitter@jpl.nasa.gov"
-        discipline_node = "eng"
+        doi_record.status = DoiStatus.Draft
+        doi_record.submitter = "eng-submitter@jpl.nasa.gov"
+        doi_record.node_id = "eng"
 
-        self._doi_database.write_doi_info_to_database(
-            doi,
-            transaction_key,
-            identifier,
-            date_added,
-            date_updated,
-            status,
-            title,
-            product_type,
-            product_type_specific,
-            submitter,
-            discipline_node,
-        )
+        self._doi_database.write_doi_info_to_database(doi_record)
 
         # Query again and ensure we only get latest back
-        o_query_result = self._doi_database.select_latest_rows(query_criterias={"doi": [doi]})
+        o_query_result = self._doi_database.select_latest_rows(query_criterias={"doi": [doi_record.doi]})
 
         # Should only get the one row back
         self.assertEqual(len(o_query_result[-1]), 1)
 
         query_result = dict(zip(o_query_result[0], o_query_result[-1][0]))
 
-        self.assertEqual(query_result["status"], status)
-        self.assertEqual(query_result["submitter"], submitter)
-        self.assertEqual(query_result["node_id"], discipline_node)
+        self.assertEqual(query_result["status"], doi_record.status)
+        self.assertEqual(query_result["submitter"], doi_record.submitter)
+        self.assertEqual(query_result["node_id"], doi_record.node_id)
 
         self.assertTrue(query_result["is_latest"])
 
@@ -128,91 +108,70 @@ class DOIDatabaseTest(unittest.TestCase):
     def test_select_latest_rows_lid_only(self):
         """Test corner case where we select and update rows that only specify a LID"""
         # Set up a sample db entry
-        identifier = "urn:nasa:pds:insight_cameras"
-        transaction_key = "img/2021-05-10T00:00:00.000000"
-        doi = "10.17189/22000"
-        date_added = datetime.datetime.now()
-        date_updated = datetime.datetime.now()
-        status = DoiStatus.Unknown
-        title = "Insight Cameras Bundle"
-        product_type = ProductType.Collection
-        product_type_specific = "PDS4 Collection"
-        submitter = "eng-submitter@jpl.nasa.gov"
-        discipline_node = "eng"
+        doi_record = DoiRecord(
+            identifier="urn:nasa:pds:insight_cameras",
+            status=DoiStatus.Unknown,
+            date_added=datetime.datetime.now(tz=timezone.utc),
+            date_updated=datetime.datetime.now(tz=timezone.utc),
+            submitter="eng-submitter@jpl.nasa.gov",
+            title="Insight Cameras Bundle",
+            type=ProductType.Collection,
+            subtype="PDS4 Collection",
+            node_id="eng",
+            doi="10.17189/22000",
+            transaction_key="img/2021-05-10T00:00:00.000000",
+            is_latest=True
+        )
 
         # Insert a row in the 'doi' table
-        self._doi_database.write_doi_info_to_database(
-            doi,
-            transaction_key,
-            identifier,
-            date_added,
-            date_updated,
-            status,
-            title,
-            product_type,
-            product_type_specific,
-            submitter,
-            discipline_node,
-        )
+        self._doi_database.write_doi_info_to_database(doi_record)
 
         # Select the row we just added
         # The type of o_query_result should be JSON and a list of 1
-        o_query_result = self._doi_database.select_latest_rows(query_criterias={"ids": [identifier]})
+        o_query_result = self._doi_database.select_latest_rows(query_criterias={"ids": [doi_record.identifier]})
 
         # Reformat results to a dictionary to test with
         query_result = dict(zip(o_query_result[0], o_query_result[1][0]))
 
         # Ensure we got back everything we just put in
-        self.assertEqual(query_result["status"], status)
+        self.assertEqual(query_result["status"], doi_record.status)
         self.assertEqual(
             int(query_result["date_added"].timestamp()),
-            int(date_added.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp()),
+            int(doi_record.date_added.timestamp()),
         )
         self.assertEqual(
             int(query_result["date_updated"].timestamp()),
-            int(date_updated.replace(tzinfo=timezone(timedelta(hours=--8.0))).timestamp()),
+            int(doi_record.date_updated.timestamp()),
         )
-        self.assertEqual(query_result["submitter"], submitter)
-        self.assertEqual(query_result["title"], title)
-        self.assertEqual(query_result["type"], product_type)
-        self.assertEqual(query_result["subtype"], product_type_specific)
-        self.assertEqual(query_result["node_id"], discipline_node)
-        self.assertEqual(query_result["identifier"], identifier)
-        self.assertEqual(query_result["doi"], doi)
-        self.assertEqual(query_result["transaction_key"], transaction_key)
+        self.assertEqual(query_result["submitter"], doi_record.submitter)
+        self.assertEqual(query_result["title"], doi_record.title)
+        self.assertEqual(query_result["type"], doi_record.type)
+        self.assertEqual(query_result["subtype"], doi_record.subtype)
+        self.assertEqual(query_result["node_id"], doi_record.node_id)
+        self.assertEqual(query_result["identifier"], doi_record.identifier)
+        self.assertEqual(query_result["doi"], doi_record.doi)
+        self.assertEqual(query_result["transaction_key"], doi_record.transaction_key)
 
         self.assertTrue(query_result["is_latest"])
 
         # Update some fields and write a new "latest" entry
-        status = DoiStatus.Pending
-        submitter = "img-submitter@jpl.nasa.gov"
-        discipline_node = "img"
+        doi_record.status = DoiStatus.Pending
+        doi_record.submitter = "img-submitter@jpl.nasa.gov"
+        doi_record.node_id = "img"
 
-        self._doi_database.write_doi_info_to_database(
-            doi,
-            transaction_key,
-            identifier,
-            date_added,
-            date_updated,
-            status,
-            title,
-            product_type,
-            product_type_specific,
-            submitter,
-            discipline_node,
-        )
+        self._doi_database.write_doi_info_to_database(doi_record)
 
         # Query again and ensure we only get latest back
-        o_query_result = self._doi_database.select_latest_rows(query_criterias={"ids": [identifier]})
+        o_query_result = self._doi_database.select_latest_rows(query_criterias={"ids": [doi_record.identifier]})
 
         # Should only get the one row back
         self.assertEqual(len(o_query_result[-1]), 1)
 
         query_result = dict(zip(o_query_result[0], o_query_result[-1][0]))
 
-        self.assertEqual(query_result["status"], status)
-        self.assertEqual(query_result["submitter"], submitter)
-        self.assertEqual(query_result["node_id"], discipline_node)
+        self.assertEqual(query_result["status"], doi_record.status)
+        self.assertEqual(query_result["submitter"], doi_record.submitter)
+        self.assertEqual(query_result["node_id"], doi_record.node_id)
 
         self.assertTrue(query_result["is_latest"])
 
@@ -227,33 +186,22 @@ class DOIDatabaseTest(unittest.TestCase):
         num_rows = 6
 
         for _id in range(1, 1 + num_rows):
-            lid = "urn:nasa:pds:lab_shocked_feldspars"
-            vid = f"{_id}.0"
-            identifier = lid + "::" + vid
-            transaction_key = f"img/{_id}/2020-06-15T18:42:45.653317"
-            doi = f"10.17189/2000{_id}"
-            date_added = datetime.datetime.now()
-            date_updated = datetime.datetime.now()
-            status = DoiStatus.Draft
-            title = f"Laboratory Shocked Feldspars Bundle {_id}"
-            product_type = ProductType.Collection
-            product_type_specific = "PDS4 Collection"
-            submitter = "img-submitter@jpl.nasa.gov"
-            discipline_node = "img"
-
-            self._doi_database.write_doi_info_to_database(
-                doi,
-                transaction_key,
-                identifier,
-                date_added,
-                date_updated,
-                status,
-                title,
-                product_type,
-                product_type_specific,
-                submitter,
-                discipline_node,
+            doi_record = DoiRecord(
+                identifier=f"urn:nasa:pds:lab_shocked_feldspars::{_id}.0",
+                status=DoiStatus.Draft,
+                date_added=datetime.datetime.now(),
+                date_updated=datetime.datetime.now(),
+                submitter="img-submitter@jpl.nasa.gov",
+                title=f"Laboratory Shocked Feldspars Bundle {_id}",
+                type=ProductType.Collection,
+                subtype="PDS4 Collection",
+                node_id="img",
+                doi=f"10.17189/2000{_id}",
+                transaction_key=f"img/{_id}/2020-06-15T18:42:45.653317",
+                is_latest=True
             )
+
+            self._doi_database.write_doi_info_to_database(doi_record)
 
         # Use a wildcard with lidvid column to select everything we just
         # inserted

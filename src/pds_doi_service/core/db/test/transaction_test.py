@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import os
 import shutil
+import time
 import unittest
 from datetime import datetime
+from datetime import timezone
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.db.transaction import Transaction
@@ -11,8 +13,6 @@ from pds_doi_service.core.db.transaction_on_disk import TransactionOnDisk
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
-from pds_doi_service.core.outputs.datacite.datacite_record import DOIDataCiteRecord
-from pds_doi_service.core.outputs.datacite.datacite_web_parser import DOIDataCiteWebParser
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pkg_resources import resource_filename
 
@@ -46,22 +46,23 @@ class TransactionTestCase(unittest.TestCase):
             pds_identifier="urn:nasa:pds:fake_doi_entry::1.0",
             doi="10.17189/abc123",
             status=DoiStatus.Draft,
-            date_record_added=datetime.now(),
-            date_record_updated=datetime.now(),
+            date_record_added=datetime.now(tz=timezone.utc),
+            date_record_updated=datetime.now(tz=timezone.utc),
+            node_id="eng"
         )
 
-        output_content = DOIDataCiteRecord().create_doi_record(test_doi)
         output_content_type = CONTENT_TYPE_JSON
-        node_id = "eng"
         submitter_email = "pds-operator@jpl.nasa.gov"
 
         # Create a Transaction object and log it
-        transaction = Transaction(output_content, output_content_type, node_id, submitter_email, test_doi, doi_database)
+        transaction = Transaction(output_content_type, submitter_email, test_doi, doi_database)
 
         transaction_key = None
 
         try:
-            transaction.log()
+            doi_logged = transaction.log()
+
+            self.assertTrue(doi_logged)
 
             # Logging should result in an entry written to the database, check for it
             # now
@@ -78,6 +79,26 @@ class TransactionTestCase(unittest.TestCase):
             transaction_key = db_fields["transaction_key"]
             self.assertIsNotNone(transaction_key)
             self.assertTrue(os.path.isdir(transaction_key))
+
+            # Try logging the same transaction again, this time it should fail
+            # since there have been no changes to the record
+            doi_logged = transaction.log()
+
+            self.assertFalse(doi_logged)
+
+            # Update a single field of the test DOI, which should result in
+            # the transaction getting logged again
+
+            # Wait for a beat to ensure we get a new update timestamp
+            time.sleep(0.1)
+
+            test_doi.date_record_updated = datetime.now(tz=timezone.utc)
+
+            transaction = Transaction(output_content_type, submitter_email, test_doi, doi_database)
+
+            doi_logged = transaction.log()
+
+            self.assertTrue(doi_logged)
         finally:
             # Clean up the fake transaction, if it was created
             if transaction_key and os.path.exists(transaction_key):
@@ -101,75 +122,32 @@ class TransactionBuilderTestCase(unittest.TestCase):
 
     def test_prepare_transaction(self):
         """Test the TransactionBuilder.prepare_transaction() method"""
-        # Create a fresh transaction database and populate it with an existing entry
-        doi_database = DOIDataBase(self.db_name)
 
-        identifier = "urn:nasa:pds:existing_doi::1.0"
-        transaction_key = "img/2020-06-15T18:42:45.653317"
-        doi = "10.17189/abc123"
-        date_added = datetime.now()
-        date_updated = datetime.now()
-        status = DoiStatus.Draft
-        title = "Existing DOI"
-        product_type = ProductType.Collection
-        product_type_specific = "PDS4 Collection"
-        submitter = "img-submitter@jpl.nasa.gov"
-        discipline_node = "img"
-
-        # Insert a row in the 'doi' table
-        doi_database.write_doi_info_to_database(
-            doi,
-            transaction_key,
-            identifier,
-            date_added,
-            date_updated,
-            status,
-            title,
-            product_type,
-            product_type_specific,
-            submitter,
-            discipline_node,
-        )
-
-        # Create the transaction builder and have it point to the same database
+        # Create the transaction builder and have it point to the database
         transaction_builder = TransactionBuilder(db_name=self.db_name)
 
         # Create a Doi object to be handled by the transaction builder
         test_doi = Doi(
-            title=title,
+            title="Existing DOI",
             publication_date=datetime.now(),
             product_type=ProductType.Dataset,
             product_type_specific="PDS4 Dataset",
-            pds_identifier="",
-            doi=doi,
+            pds_identifier="urn:nasa:pds:existing_doi::1.0",
+            doi="10.17189/abc123",
             status=DoiStatus.Draft,
-            date_record_updated=datetime.now(),
+            date_record_updated=datetime.now(tz=timezone.utc),
+            node_id="eng"
         )
 
         # Create the transaction from the Doi
         transaction = transaction_builder.prepare_transaction(
-            node_id=discipline_node, submitter_email=submitter, doi=test_doi, output_content_type=CONTENT_TYPE_JSON
+            submitter_email="pds-operator@jpl.nasa.gov", doi=test_doi, output_content_type=CONTENT_TYPE_JSON
         )
 
         self.assertIsInstance(transaction, Transaction)
-
-        # Get the output label created by the transaction builder and make sure
-        # it lines up with our original DOI
-        output_content = transaction.output_content
-
-        output_dois, _ = DOIDataCiteWebParser().parse_dois_from_label(output_content)
-
-        self.assertEqual(len(output_dois), 1)
-
-        output_doi = output_dois[0]
-
-        # These two fields should be carried over from the existing database entry,
-        # since they were not provided with the Doi object we prepared the transaction
-        # for
-        self.assertEqual(output_doi.pds_identifier, identifier)
-        self.assertEqual(
-            output_doi.date_record_added.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_added.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        )
+        self.assertEqual(transaction._doi, test_doi)
+        self.assertEqual(transaction._node_id, test_doi.node_id)
+        self.assertEqual(transaction._submitter_email, "pds-operator@jpl.nasa.gov")
 
 
 class TransactionOnDiskTestCase(unittest.TestCase):
@@ -193,12 +171,11 @@ class TransactionOnDiskTestCase(unittest.TestCase):
         with open(output_label, "r") as infile:
             output_content = infile.read()
 
-        transaction_key = None
+        transaction_key = transaction_on_disk.get_transaction_key(node_id, transaction_time)
 
         try:
-            transaction_key = transaction_on_disk.write(
-                node_id,
-                transaction_time,
+            transaction_on_disk.write(
+                transaction_key,
                 input_ref=input_label,
                 output_content=output_content,
                 output_content_type=CONTENT_TYPE_JSON,
