@@ -12,12 +12,12 @@ transaction_on_disk.py
 Defines the TransactionOnDisk class, which manages writing of a transaction's
 input and output products to local disk.
 """
-
 import glob
 import os
 import shutil
 from distutils.dir_util import copy_tree
-from os.path import exists, join
+from os.path import exists
+from os.path import join
 
 import requests
 from pds_doi_service.core.entities.doi import DoiRecord
@@ -40,7 +40,7 @@ class TransactionOnDisk:
         self._config = self.m_doi_config_util.get_config()
 
     @staticmethod
-    def get_transaction_key(node_id, transaction_time):
+    def get_transaction_key(node_id, doi, transaction_time):
         """
         Returns a transaction key incorporating the provided PDS node ID and
         transaction time. This key may then be used as a local file path for
@@ -48,15 +48,18 @@ class TransactionOnDisk:
 
         A transaction key is formed by combined the location of the local
         transaction history directory (specified in the INI config), with
-        subdirectories for the node ID and transaction timestamp:
+        subdirectories for the node ID, DOI (prefix and suffix) and transaction
+        timestamp:
 
-            <transaction dir>/<node ID>/<isoformat transaction time>
+            <transaction dir>/<node ID>/<DOI prefix>/<DOI suffix>/<isoformat transaction time>
 
         Parameters
         ----------
         node_id : str
             The PDS node identifier associated with the transaction. Becomes
             a subdirectory in the transaction key path returned.
+        doi : str
+            The DOI for the transaction.
         transaction_time : datetime.datetime
             The time of the transaction. The value is converted to an isoformat
             string and used as a subdirectory in the transaction key returned.
@@ -71,7 +74,9 @@ class TransactionOnDisk:
 
         transaction_dir = config.get("OTHER", "transaction_dir")
 
-        return os.path.join(transaction_dir, node_id, transaction_time.isoformat())
+        prefix, suffix = doi.split("/", maxsplit=1)
+
+        return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.isoformat())
 
     @staticmethod
     def output_label_for_transaction(transaction_record):

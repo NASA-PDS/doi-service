@@ -33,9 +33,7 @@ class Transaction:
 
     m_doi_config_util = DOIConfigUtil()
 
-    def __init__(
-        self, output_content_type, submitter_email, doi, transaction_db, input_path=None
-    ):
+    def __init__(self, output_content_type, submitter_email, doi, transaction_db, input_path=None):
         self._config = self.m_doi_config_util.get_config()
         self._doi = doi
         self._node_id = self._doi.node_id
@@ -102,7 +100,7 @@ class Transaction:
         date_updated = doi_fields.get("date_record_updated", self._transaction_time)
 
         # Determine where the updated label will be written to local disk
-        transaction_io_dir = self._transaction_disk.get_transaction_key(self._node_id, date_updated)
+        transaction_io_dir = self._transaction_disk.get_transaction_key(self._node_id, self._doi.doi, date_updated)
 
         doi_record = DoiRecord(
             identifier=doi_fields["pds_identifier"],
@@ -116,7 +114,7 @@ class Transaction:
             node_id=self._node_id,
             doi=doi_fields["doi"],
             transaction_key=transaction_io_dir,
-            is_latest=True
+            is_latest=True,
         )
 
         # Before committing the new transaction, check to see if there are any
@@ -135,4 +133,3 @@ class Transaction:
             doi_logged = True
 
         return doi_logged
-

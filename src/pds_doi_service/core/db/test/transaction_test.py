@@ -48,7 +48,7 @@ class TransactionTestCase(unittest.TestCase):
             status=DoiStatus.Draft,
             date_record_added=datetime.now(tz=timezone.utc),
             date_record_updated=datetime.now(tz=timezone.utc),
-            node_id="eng"
+            node_id="eng",
         )
 
         output_content_type = CONTENT_TYPE_JSON
@@ -136,7 +136,7 @@ class TransactionBuilderTestCase(unittest.TestCase):
             doi="10.17189/abc123",
             status=DoiStatus.Draft,
             date_record_updated=datetime.now(tz=timezone.utc),
-            node_id="eng"
+            node_id="eng",
         )
 
         # Create the transaction from the Doi
@@ -161,6 +161,7 @@ class TransactionOnDiskTestCase(unittest.TestCase):
 
         transaction_on_disk = TransactionOnDisk()
 
+        doi = "10.0000/abc123"
         node_id = "eng"
         transaction_time = datetime.now()
 
@@ -171,7 +172,7 @@ class TransactionOnDiskTestCase(unittest.TestCase):
         with open(output_label, "r") as infile:
             output_content = infile.read()
 
-        transaction_key = transaction_on_disk.get_transaction_key(node_id, transaction_time)
+        transaction_key = transaction_on_disk.get_transaction_key(node_id, doi, transaction_time)
 
         try:
             transaction_on_disk.write(
