@@ -70,13 +70,19 @@ class DOIDataCiteWebParser(DOIWebParser):
         "pds_identifier",
     ]
 
+    _pds3_identifier_types = ["PDS3 Data Set ID", "PDS3 Dataset ID", "Site ID", "Handle"]
+    """The set of identifier types which indicate a PDS3 dataset"""
+
+    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "Site ID", "URN"]
+    """The set of identifier types which indicate a PDS4 dataset"""
+
     @staticmethod
     def _parse_id(record):
         try:
             if "suffix" in record:
                 return record["suffix"]
             else:
-                # Parse the ID from the DOI field, it it's available
+                # Parse the ID from the DOI field, if it's available
                 return record.get("doi").split("/")[-1]
         except (AttributeError, KeyError):
             raise UserWarning('Could not parse optional field "id"')
@@ -240,7 +246,9 @@ class DOIDataCiteWebParser(DOIWebParser):
         # First, check identifiers for a PDS ID, giving preference
         # to a PDS3 dataset ID, if present
         for identifier_record in record.get("identifiers", []):
-            if identifier_record["identifierType"] in ("Site ID", "Handle") and not is_pds4_identifier(
+            if identifier_record[
+                "identifierType"
+            ] in DOIDataCiteWebParser._pds3_identifier_types and not is_pds4_identifier(
                 identifier_record["identifier"]
             ):
                 identifier = identifier_record["identifier"]
@@ -250,8 +258,10 @@ class DOIDataCiteWebParser(DOIWebParser):
         if not identifier:
             pds4_identifiers = []
             for identifier_record in record.get("identifiers", []):
-                if identifier_record["identifierType"] in ("Site ID", "URN") and is_pds4_identifier(
-                    identifier_record["identifier"]
+                if identifier_record.get(
+                    "identifierType", ""
+                ) in DOIDataCiteWebParser._pds4_identifier_types and is_pds4_identifier(
+                    identifier_record.get("identifier", "")
                 ):
                     pds4_identifiers.append(identifier_record["identifier"])
 
