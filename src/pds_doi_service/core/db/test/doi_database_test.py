@@ -48,7 +48,7 @@ class DOIDatabaseTest(unittest.TestCase):
             node_id="img",
             doi="10.17189/21729",
             transaction_key="img/2020-06-15T18:42:45.653317",
-            is_latest=True
+            is_latest=True,
         )
 
         # Insert a row in the 'doi' table
@@ -120,7 +120,7 @@ class DOIDatabaseTest(unittest.TestCase):
             node_id="eng",
             doi="10.17189/22000",
             transaction_key="img/2021-05-10T00:00:00.000000",
-            is_latest=True
+            is_latest=True,
         )
 
         # Insert a row in the 'doi' table
@@ -198,7 +198,7 @@ class DOIDatabaseTest(unittest.TestCase):
                 node_id="img",
                 doi=f"10.17189/2000{_id}",
                 transaction_key=f"img/{_id}/2020-06-15T18:42:45.653317",
-                is_latest=True
+                is_latest=True,
             )
 
             self._doi_database.write_doi_info_to_database(doi_record)

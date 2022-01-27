@@ -352,7 +352,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::2.0")
 
         # All other identifiers should be present
-        identifiers = [identifier['identifier'] for identifier in doi.identifiers]
+        identifiers = [identifier["identifier"] for identifier in doi.identifiers]
         self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifiers)
         self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifiers)
         self.assertIn("urn:nasa:pds:insight_cameras", identifiers)

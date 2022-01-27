@@ -11,8 +11,8 @@ from os.path import join
 from unittest.mock import patch
 
 import pds_doi_service.api.controllers.dois_controller
-import pds_doi_service.core.outputs.osti.osti_web_client
 import pds_doi_service.core.db.transaction
+import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import DoiRecord
 from pds_doi_service.api.models import DoiSummary

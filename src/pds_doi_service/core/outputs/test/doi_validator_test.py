@@ -60,7 +60,7 @@ class DoiValidatorTest(unittest.TestCase):
             node_id=self.discipline_node,
             doi=self.doi,
             transaction_key=self.transaction_key,
-            is_latest=True
+            is_latest=True,
         )
 
         # Write a record into database

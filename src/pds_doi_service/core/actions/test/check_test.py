@@ -50,7 +50,7 @@ class CheckActionTestCase(unittest.TestCase):
             node_id="img",
             doi="10.17189/29348",
             transaction_key="./transaction_history/img/2020-06-15T18:42:45.653317",
-            is_latest=True
+            is_latest=True,
         )
 
         cls._database_obj.write_doi_info_to_database(doi_record)
