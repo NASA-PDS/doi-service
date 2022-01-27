@@ -117,7 +117,7 @@ class Doi:
     doi: Optional[str] = None
     site_url: Optional[str] = None
     publisher: Optional[str] = None
-    node_id: Optional[str] = None
+    node_id: Optional[str] = field(default="unk")
     contributor: Optional[str] = None
     status: Optional[DoiStatus] = field(default=DoiStatus.Unknown)
     previous_status: Optional[DoiStatus] = None
