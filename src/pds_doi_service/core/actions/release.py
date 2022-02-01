@@ -294,7 +294,6 @@ class DOICoreActionRelease(DOICoreAction):
                 # created has marked all the Doi's as being the "review" step
                 # so its ready to be submitted to the local transaction history
                 transaction = self.m_transaction_builder.prepare_transaction(
-                    input_doi.node_id,
                     self._submitter,
                     output_doi,
                     input_path=input_doi.input_source,

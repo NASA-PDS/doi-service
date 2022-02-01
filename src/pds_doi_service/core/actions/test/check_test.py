@@ -17,6 +17,7 @@ import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions import DOICoreActionCheck
 from pds_doi_service.core.db.doi_database import DOIDataBase
+from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
@@ -37,33 +38,22 @@ class CheckActionTestCase(unittest.TestCase):
         cls._database_obj = DOIDataBase(cls.db_name)
 
         # Write a record with new doi into temporary database
-        doi = "10.17189/29348"
-        lid = "urn:nasa:pds:lab_shocked_feldspars"
-        vid = "1.0"
-        identifier = lid + "::" + vid
-        transaction_key = "./transaction_history/img/2020-06-15T18:42:45.653317"
-        date_added = datetime.datetime.now()
-        date_updated = datetime.datetime.now()
-        status = DoiStatus.Pending
-        title = "Laboratory Shocked Feldspars Bundle"
-        product_type = ProductType.Collection
-        product_type_specific = "PDS4 Collection"
-        discipline_node = "img"
-        submitter = "img-submitter@jpl.nasa.gov"
-
-        cls._database_obj.write_doi_info_to_database(
-            doi,
-            transaction_key,
-            identifier,
-            date_added,
-            date_updated,
-            status,
-            title,
-            product_type,
-            product_type_specific,
-            submitter,
-            discipline_node,
+        doi_record = DoiRecord(
+            identifier="urn:nasa:pds:lab_shocked_feldspars::1.0",
+            status=DoiStatus.Pending,
+            date_added=datetime.datetime.now(),
+            date_updated=datetime.datetime.now(),
+            submitter="img-submitter@jpl.nasa.gov",
+            title="Laboratory Shocked Feldspars Bundle",
+            type=ProductType.Collection,
+            subtype="PDS4 Collection",
+            node_id="img",
+            doi="10.17189/29348",
+            transaction_key="./transaction_history/img/2020-06-15T18:42:45.653317",
+            is_latest=True,
         )
+
+        cls._database_obj.write_doi_info_to_database(doi_record)
 
         # Create the check action and assign it our temp database
         cls._action = DOICoreActionCheck(cls.db_name)

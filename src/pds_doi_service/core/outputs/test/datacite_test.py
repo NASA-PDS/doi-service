@@ -332,6 +332,31 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
         self._compare_doi_to_expected(doi)
 
+    def test_parse_datacite_multi_id_json(self):
+        """Test parsing of a DataCite label where a history of identifiers is present"""
+        # This file provides a record where multiple LID's are specified with
+        # different VID's to simulate an entry that has been updated over time.
+        # Parser should assign the newest LIDVID as the primary PDS identifier
+        input_file_json = join(self.input_dir, "datacite_record_multi_id.json")
+
+        with open(input_file_json, "r") as infile:
+            input_json = infile.read()
+            dois, errors = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+
+        doi = dois[0]
+
+        # Newest LIDVID should have been assigned
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras::2.0")
+
+        # All other identifiers should be present
+        identifiers = [identifier["identifier"] for identifier in doi.identifiers]
+        self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifiers)
+        self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifiers)
+        self.assertIn("urn:nasa:pds:insight_cameras", identifiers)
+
     def test_get_record_for_identifier(self):
         """Test isolation of specific record based on PDS identifier"""
         input_json_file = join(self.input_dir, "datacite_record_multi_entry.json")

@@ -63,6 +63,7 @@ import logging
 import os
 from datetime import datetime
 
+from pds_doi_service.core.db.transaction_builder import TransactionBuilder
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.entities.exceptions import UnknownNodeException
@@ -71,7 +72,6 @@ from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParse
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.outputs.service import VALID_SERVICE_TYPES
-from pds_doi_service.core.outputs.transaction_builder import TransactionBuilder
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.node_util import NodeUtil
@@ -86,7 +86,7 @@ m_config = m_doi_config_util.get_config()
 
 def create_cmd_parser():
     parser = argparse.ArgumentParser(
-        description="Script to bulk import existing DOIs into the local " "transaction database.",
+        description="Script to bulk import existing DOIs into the local transaction database.",
         epilog="Note: When DOI records are imported to the local transaction "
         "database, the DOI service creates an associated output label "
         "for each record under the transaction_history directory. The "
@@ -223,7 +223,7 @@ def _read_from_local_json(service, path):
         dois, _ = web_parser.parse_dois_from_label(doi_json, content_type=CONTENT_TYPE_JSON)
     except Exception:
         raise InputFormatException(
-            f"Unable to parse input file {path} using parser {web_parser.__name__}\n"
+            f"Unable to parse input file {path} using parser {web_parser.__class__.__name__}\n"
             f"Please ensure the --service flag is set correctly to specify the "
             f"correct parser type for the format."
         )
@@ -258,14 +258,14 @@ def _read_from_path(service, path):
 
     """
     if not os.path.exists(path):
-        raise InputFormatException(f"Error reading file {path}. " "File may not exist.")
+        raise InputFormatException(f"Error reading file {path}. File may not exist.")
 
     if path.endswith(".xml"):
         return _read_from_local_xml(path)
     elif path.endswith(".json"):
         return _read_from_local_json(service, path)
 
-    raise InputFormatException(f"File {path} is not supported. " f"Only .xml and .json are supported.")
+    raise InputFormatException(f"File {path} is not supported. Only .xml and .json are supported.")
 
 
 def get_dois_from_provider(service, prefix, output_file=None):
@@ -391,30 +391,18 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         # If the field 'pds_identifier' is None, we cannot proceed since
         # it serves as the primary key for our transaction database.
         if not doi.pds_identifier:
-            logger.warning("Skipping DOI with missing PDS identifier %s, " "index %d", doi.doi, item_index)
+            logger.warning("Skipping DOI with missing PDS identifier %s, index %d", doi.doi, item_index)
 
             o_records_dois_skipped += 1
             continue
 
-        doi_fields = doi.__dict__  # Convert the Doi object to a dictionary.
-
-        # Get the node_id from the 'contributors' field, if possible
-        try:
-            node_id = NodeUtil.get_node_id(doi_fields.get("contributor"))
-            logger.debug("Derived node ID %s for record %d", node_id, item_index)
-        except UnknownNodeException:
-            node_id = "unk"
-            logger.warning(
-                "No node ID could be determined for record %d, defaulting to node ID %s", item_index, node_id
-            )
-
         logger.debug("------------------------------------")
         logger.debug("Processed DOI at index %d", item_index)
-        logger.debug("Title: %s", doi_fields.get("title"))
-        logger.debug("DOI: %s", doi_fields.get("doi"))
-        logger.debug("PDS Identifier: %s", doi_fields.get("pds_identifier"))
-        logger.debug("Node ID: %s", node_id)
-        logger.debug("Status: %s", str(doi_fields.get("status", "unknown")))
+        logger.debug("Title: %s", doi.title)
+        logger.debug("DOI: %s", doi.doi)
+        logger.debug("PDS Identifier: %s", doi.pds_identifier)
+        logger.debug("Node ID: %s", doi.node_id)
+        logger.debug("Status: %s", str(doi.status))
 
         o_records_processed += 1
 
@@ -424,12 +412,16 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
             # of the output label is based on the service provider setting in
             # the INI config.
             transaction = transaction_builder.prepare_transaction(
-                node_id, submitter_email, doi, output_content_type=CONTENT_TYPE_JSON
+                submitter_email, doi, output_content_type=CONTENT_TYPE_JSON
             )
 
-            transaction.log()
+            doi_logged = transaction.log()
 
-            o_records_written += 1
+            if doi_logged:
+                o_records_written += 1
+            else:
+                o_records_dois_skipped += 1
+                logger.info(f"Record for DOI {doi.doi} ({doi.pds_identifier}) has not changed, skipping...")
 
     return o_records_found, o_records_processed, o_records_written, o_records_dois_skipped
 

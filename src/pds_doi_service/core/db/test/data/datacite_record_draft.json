@@ -1,0 +1,201 @@
+{
+    "data": {
+        "id": "10.13143/yzw2-vz66",
+        "type": "dois",
+        "attributes": {
+            "doi": "10.13143/yzw2-vz66",
+            "prefix": "10.13143",
+            "suffix": "yzw2-vz66",
+            "identifiers": [
+                {
+                    "identifier": "urn:nasa:pds:insight_cameras::1.0",
+                    "identifierType": "Site ID"
+                }
+            ],
+            "alternateIdentifiers": [],
+            "creators": [
+                {
+                    "nameType": "Personal",
+                    "name": "Deen, R.",
+                    "givenName": "R.",
+                    "familyName": "Deen",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                },
+                {
+                    "nameType": "Personal",
+                    "name": "Abarca, H.",
+                    "givenName": "H.",
+                    "familyName": "Abarca",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                },
+                {
+                    "nameType": "Personal",
+                    "name": "Zamani, P.",
+                    "givenName": "P.",
+                    "familyName": "Zamani",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                },
+                {
+                    "nameType": "Personal",
+                    "name": "Maki, J.",
+                    "givenName": "J.",
+                    "familyName": "Maki",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                }
+            ],
+            "titles": [
+                {
+                    "title": "InSight Cameras Bundle"
+                }
+            ],
+            "publisher": "NASA Planetary Data System",
+            "container": {},
+            "publicationYear": "2019",
+            "subjects": [
+                {
+                    "subject": "PDS"
+                },
+                {
+                    "subject": "PDS4"
+                },
+                {
+                    "subject": "camera"
+                },
+                {
+                    "subject": "context"
+                },
+                {
+                    "subject": "data"
+                },
+                {
+                    "subject": "deployment"
+                },
+                {
+                    "subject": "edr"
+                },
+                {
+                    "subject": "engineering"
+                },
+                {
+                    "subject": "experiment"
+                },
+                {
+                    "subject": "insight"
+                },
+                {
+                    "subject": "lander"
+                },
+                {
+                    "subject": "mars"
+                },
+                {
+                    "subject": "product"
+                },
+                {
+                    "subject": "raw"
+                },
+                {
+                    "subject": "rdr"
+                },
+                {
+                    "subject": "record"
+                },
+                {
+                    "subject": "reduced"
+                },
+                {
+                    "subject": "science"
+                }
+            ],
+            "contributors": [
+                {
+                    "nameType": "Personal",
+                    "name": "Smith, P. H.",
+                    "givenName": "P. H.",
+                    "familyName": "Smith",
+                    "contributorType": "Editor",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                },
+                {
+                    "nameType": "Personal",
+                    "name": "Lemmon, M.",
+                    "givenName": "M.",
+                    "familyName": "Lemmon",
+                    "contributorType": "Editor",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                },
+                {
+                    "nameType": "Personal",
+                    "name": "Beebe, R. F.",
+                    "givenName": "R. F.",
+                    "familyName": "Beebe",
+                    "contributorType": "Editor",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                },
+                {
+                    "nameType": "Organizational",
+                    "name": "Planetary Data System: Engineering Node",
+                    "contributorType": "DataCurator",
+                    "affiliation": ["NASA PDS"],
+                    "nameIdentifiers": []
+                }
+            ],
+            "dates": [],
+            "language": "en",
+            "types": {
+                "schemaOrg": "Dataset",
+                "citeproc": "dataset",
+                "bibtex": "misc",
+                "ris": "DATA",
+                "resourceTypeGeneral": "Dataset",
+                "resourceType": "PDS4 Refereed Data Bundle"
+            },
+            "relatedIdentifiers": [
+            ],
+            "sizes": [],
+            "formats": [],
+            "rightsList": [],
+            "descriptions": [
+                {
+                    "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+                    "descriptionType": "Abstract",
+                    "lang": "english"
+                }
+            ],
+            "geoLocations": [],
+            "fundingReferences": [],
+            "xml": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHJlc291cmNlIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00L21ldGFkYXRhLnhzZCI+CiAgPGlkZW50aWZpZXIgaWRlbnRpZmllclR5cGU9IkRPSSI+MTAuMTMxNDMvWVpXMi1WWjY2PC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWUgbmFtZVR5cGU9IlBlcnNvbmFsIj5EZWVuLCBSLjwvY3JlYXRvck5hbWU+CiAgICAgIDxnaXZlbk5hbWU+Ui48L2dpdmVuTmFtZT4KICAgICAgPGZhbWlseU5hbWU+RGVlbjwvZmFtaWx5TmFtZT4KICAgIDwvY3JlYXRvcj4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWUgbmFtZVR5cGU9IlBlcnNvbmFsIj5BYmFyY2EsIEguPC9jcmVhdG9yTmFtZT4KICAgICAgPGdpdmVuTmFtZT5ILjwvZ2l2ZW5OYW1lPgogICAgICA8ZmFtaWx5TmFtZT5BYmFyY2E8L2ZhbWlseU5hbWU+CiAgICA8L2NyZWF0b3I+CiAgICA8Y3JlYXRvcj4KICAgICAgPGNyZWF0b3JOYW1lIG5hbWVUeXBlPSJQZXJzb25hbCI+WmFtYW5pLCBQLjwvY3JlYXRvck5hbWU+CiAgICAgIDxnaXZlbk5hbWU+UC48L2dpdmVuTmFtZT4KICAgICAgPGZhbWlseU5hbWU+WmFtYW5pPC9mYW1pbHlOYW1lPgogICAgPC9jcmVhdG9yPgogICAgPGNyZWF0b3I+CiAgICAgIDxjcmVhdG9yTmFtZSBuYW1lVHlwZT0iUGVyc29uYWwiPk1ha2ksIEouPC9jcmVhdG9yTmFtZT4KICAgICAgPGdpdmVuTmFtZT5KLjwvZ2l2ZW5OYW1lPgogICAgICA8ZmFtaWx5TmFtZT5NYWtpPC9mYW1pbHlOYW1lPgogICAgPC9jcmVhdG9yPgogIDwvY3JlYXRvcnM+CiAgPHRpdGxlcz4KICAgIDx0aXRsZT5JblNpZ2h0IENhbWVyYXMgQnVuZGxlPC90aXRsZT4KICA8L3RpdGxlcz4KICA8cHVibGlzaGVyPk5BU0EgUGxhbmV0YXJ5IERhdGEgU3lzdGVtPC9wdWJsaXNoZXI+CiAgPHB1YmxpY2F0aW9uWWVhcj4yMDE5PC9wdWJsaWNhdGlvblllYXI+CiAgPHJlc291cmNlVHlwZSByZXNvdXJjZVR5cGVHZW5lcmFsPSJEYXRhc2V0Ij5QRFM0IFJlZmVyZWVkIERhdGEgQnVuZGxlPC9yZXNvdXJjZVR5cGU+CiAgPHN1YmplY3RzPgogICAgPHN1YmplY3Q+UERTPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+UERTNDwvc3ViamVjdD4KICAgIDxzdWJqZWN0PmNhbWVyYTwvc3ViamVjdD4KICAgIDxzdWJqZWN0PmNvbnRleHQ8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5kYXRhPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+ZGVwbG95bWVudDwvc3ViamVjdD4KICAgIDxzdWJqZWN0PmVkcjwvc3ViamVjdD4KICAgIDxzdWJqZWN0PmVuZ2luZWVyaW5nPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+ZXhwZXJpbWVudDwvc3ViamVjdD4KICAgIDxzdWJqZWN0Pmluc2lnaHQ8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5sYW5kZXI8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5tYXJzPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+cHJvZHVjdDwvc3ViamVjdD4KICAgIDxzdWJqZWN0PnJhdzwvc3ViamVjdD4KICAgIDxzdWJqZWN0PnJkcjwvc3ViamVjdD4KICAgIDxzdWJqZWN0PnJlY29yZDwvc3ViamVjdD4KICAgIDxzdWJqZWN0PnJlZHVjZWQ8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5zY2llbmNlPC9zdWJqZWN0PgogIDwvc3ViamVjdHM+CiAgPGNvbnRyaWJ1dG9ycz4KICAgIDxjb250cmlidXRvciBjb250cmlidXRvclR5cGU9IkVkaXRvciI+CiAgICAgIDxjb250cmlidXRvck5hbWUgbmFtZVR5cGU9IlBlcnNvbmFsIj5TbWl0aCwgUC4gSC48L2NvbnRyaWJ1dG9yTmFtZT4KICAgICAgPGdpdmVuTmFtZT5QLiBILjwvZ2l2ZW5OYW1lPgogICAgICA8ZmFtaWx5TmFtZT5TbWl0aDwvZmFtaWx5TmFtZT4KICAgIDwvY29udHJpYnV0b3I+CiAgICA8Y29udHJpYnV0b3IgY29udHJpYnV0b3JUeXBlPSJFZGl0b3IiPgogICAgICA8Y29udHJpYnV0b3JOYW1lIG5hbWVUeXBlPSJQZXJzb25hbCI+TGVtbW9uLCBNLjwvY29udHJpYnV0b3JOYW1lPgogICAgICA8Z2l2ZW5OYW1lPk0uPC9naXZlbk5hbWU+CiAgICAgIDxmYW1pbHlOYW1lPkxlbW1vbjwvZmFtaWx5TmFtZT4KICAgIDwvY29udHJpYnV0b3I+CiAgICA8Y29udHJpYnV0b3IgY29udHJpYnV0b3JUeXBlPSJFZGl0b3IiPgogICAgICA8Y29udHJpYnV0b3JOYW1lIG5hbWVUeXBlPSJQZXJzb25hbCI+QmVlYmUsIFIuIEYuPC9jb250cmlidXRvck5hbWU+CiAgICAgIDxnaXZlbk5hbWU+Ui4gRi48L2dpdmVuTmFtZT4KICAgICAgPGZhbWlseU5hbWU+QmVlYmU8L2ZhbWlseU5hbWU+CiAgICA8L2NvbnRyaWJ1dG9yPgogICAgPGNvbnRyaWJ1dG9yIGNvbnRyaWJ1dG9yVHlwZT0iRGF0YUN1cmF0b3IiPgogICAgICA8Y29udHJpYnV0b3JOYW1lIG5hbWVUeXBlPSJPcmdhbml6YXRpb25hbCI+UGxhbmV0YXJ5IERhdGEgU3lzdGVtOiBFbmdpbmVlcmluZyBOb2RlPC9jb250cmlidXRvck5hbWU+CiAgICA8L2NvbnRyaWJ1dG9yPgogIDwvY29udHJpYnV0b3JzPgogIDxyZWxhdGVkSWRlbnRpZmllcnM+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJVUk4iIHJlbGF0aW9uVHlwZT0iSGFzTWV0YWRhdGEiIHJlc291cmNlVHlwZUdlbmVyYWw9IlRleHQiPnVybjpuYXNhOnBkczppbnNpZ2h0X2NhbWVyYXM6OjEuMDwvcmVsYXRlZElkZW50aWZpZXI+CiAgPC9yZWxhdGVkSWRlbnRpZmllcnM+CiAgPHNpemVzLz4KICA8Zm9ybWF0cy8+CiAgPHZlcnNpb24vPgogIDxkZXNjcmlwdGlvbnM+CiAgICA8ZGVzY3JpcHRpb24geG1sOmxhbmc9ImVuZ2xpc2giIGRlc2NyaXB0aW9uVHlwZT0iQWJzdHJhY3QiPkluU2lnaHQgQ2FtZXJhcyBFeHBlcmltZW50IERhdGEgUmVjb3JkIChFRFIpIGFuZCBSZWR1Y2VkIERhdGEgUmVjb3JkIChSRFIpIERhdGEgUHJvZHVjdHM8L2Rlc2NyaXB0aW9uPgogIDwvZGVzY3JpcHRpb25zPgo8L3Jlc291cmNlPgo=",
+            "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0",
+            "contentUrl": null,
+            "metadataVersion": 0,
+            "schemaVersion": "http://datacite.org/schema/kernel-4",
+            "source": "api",
+            "isActive": false,
+            "state": "draft",
+            "reason": null,
+            "landingPage": null,
+            "viewCount": 0,
+            "viewsOverTime": [],
+            "downloadCount": 0,
+            "downloadsOverTime": [],
+            "referenceCount": 0,
+            "citationCount": 0,
+            "citationsOverTime": [],
+            "partCount": 0,
+            "partOfCount": 0,
+            "versionCount": 0,
+            "versionOfCount": 0,
+            "created": "2021-06-03T18:39:13.000Z",
+            "registered": null,
+            "published": "2019",
+            "updated": "2021-06-03T18:39:13.000Z"
+        }
+    }
+}

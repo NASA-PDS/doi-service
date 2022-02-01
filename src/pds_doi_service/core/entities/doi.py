@@ -117,7 +117,7 @@ class Doi:
     doi: Optional[str] = None
     site_url: Optional[str] = None
     publisher: Optional[str] = None
-    node_id: Optional[str] = None
+    node_id: Optional[str] = field(default="unk")
     contributor: Optional[str] = None
     status: Optional[DoiStatus] = field(default=DoiStatus.Unknown)
     previous_status: Optional[DoiStatus] = None
@@ -126,3 +126,21 @@ class Doi:
     date_record_updated: Optional[datetime] = None
     event: Optional[DoiEvent] = None
     input_source: Optional[str] = None
+
+
+@dataclass
+class DoiRecord:
+    """Dataclass for a DOI record's representation within the transaction database"""
+
+    identifier: str
+    status: DoiStatus
+    date_added: datetime
+    date_updated: datetime
+    submitter: str
+    title: str
+    type: ProductType
+    subtype: str
+    node_id: str
+    doi: str
+    transaction_key: str
+    is_latest: bool

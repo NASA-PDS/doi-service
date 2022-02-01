@@ -1,0 +1,211 @@
+{
+    "data": [
+        {
+            "id": "10.13143/yzw2-vz66",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.13143/yzw2-vz66",
+                "identifiers": [
+                    {
+                        "identifier":  "urn:nasa:pds:insight_cameras::2.0",
+                        "identifierType": "Site ID"
+                    },
+                    {
+                        "identifier":  "urn:nasa:pds:insight_cameras::1.0",
+                        "identifierType": "Site ID"
+                    },
+                    {
+                        "identifier":  "urn:nasa:pds:insight_cameras",
+                        "identifierType": "Site ID"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Deen, R.",
+                        "nameType": "Personal",
+                        "givenName": "R.",
+                        "familyName": "Deen",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    },
+                    {
+                        "name": "Abarca, H.",
+                        "nameType": "Personal",
+                        "givenName": "H.",
+                        "familyName": "Abarca",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    },
+                    {
+                        "name": "Zamani, P.",
+                        "nameType": "Personal",
+                        "givenName": "P.",
+                        "familyName": "Zamani",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    },
+                    {
+                        "name": "Maki, J.",
+                        "nameType": "Personal",
+                        "givenName": "J.",
+                        "familyName": "Maki",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "InSight Cameras Bundle"
+                    }
+                ],
+                "publisher": "NASA Planetary Data System",
+                "container": {},
+                "publicationYear": "2019",
+                "subjects": [
+                    {
+                        "subject": "PDS"
+                    },
+                    {
+                        "subject": "PDS4"
+                    },
+                    {
+                        "subject": "camera"
+                    },
+                    {
+                        "subject": "context"
+                    },
+                    {
+                        "subject": "data"
+                    },
+                    {
+                        "subject": "deployment"
+                    },
+                    {
+                        "subject": "edr"
+                    },
+                    {
+                        "subject": "engineering"
+                    },
+                    {
+                        "subject": "experiment"
+                    },
+                    {
+                        "subject": "insight"
+                    },
+                    {
+                        "subject": "lander"
+                    },
+                    {
+                        "subject": "mars"
+                    },
+                    {
+                        "subject": "product"
+                    },
+                    {
+                        "subject": "raw"
+                    },
+                    {
+                        "subject": "rdr"
+                    },
+                    {
+                        "subject": "record"
+                    },
+                    {
+                        "subject": "reduced"
+                    },
+                    {
+                        "subject": "science"
+                    }
+                ],
+                "contributors": [
+                    {
+                        "name": "Smith, P. H.",
+                        "nameType": "Personal",
+                        "givenName": "P. H.",
+                        "familyName": "Smith",
+                        "contributorType": "Editor",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    },
+                    {
+                        "name": "Lemmon, M.",
+                        "nameType": "Personal",
+                        "givenName": "M.",
+                        "familyName": "Lemmon",
+                        "contributorType": "Editor",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    },
+                    {
+                        "name": "Beebe, R. F.",
+                        "nameType": "Personal",
+                        "givenName": "R. F.",
+                        "familyName": "Beebe",
+                        "contributorType": "Editor",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    },
+                    {
+                        "name": "Planetary Data System: Engineering Node",
+                        "nameType": "Organizational",
+                        "contributorType": "DataCurator",
+                        "affiliation": [],
+                        "nameIdentifiers": []
+                    }
+                ],
+                "dates": [],
+                "language": "en",
+                "types": {
+                    "ris": "DATA",
+                    "bibtex": "misc",
+                    "citeproc": "dataset",
+                    "schemaOrg": "Dataset",
+                    "resourceType": "PDS4 Refereed Data Bundle",
+                    "resourceTypeGeneral": "Dataset"
+                },
+                "relatedIdentifiers": [
+                ],
+                "sizes": [],
+                "formats": [],
+                "rightsList": [],
+                "descriptions": [
+                    {
+                        "lang": "english",
+                        "description": "InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [],
+                "fundingReferences": [],
+                "url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn%3Anasa%3Apds%3Ainsight_cameras&version=1.0",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2021-06-22T22:55:19Z",
+                "registered": "2021-06-22T22:55:53Z",
+                "published": null,
+                "updated": "2021-06-22T23:00:09Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "dev.fhpuqw",
+                        "type": "clients"
+                    }
+                }
+            }
+        }
+    ]
+}

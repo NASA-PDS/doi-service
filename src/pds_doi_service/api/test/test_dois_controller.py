@@ -11,8 +11,8 @@ from os.path import join
 from unittest.mock import patch
 
 import pds_doi_service.api.controllers.dois_controller
+import pds_doi_service.core.db.transaction
 import pds_doi_service.core.outputs.osti.osti_web_client
-import pds_doi_service.core.outputs.transaction
 from pds_doi_service.api.encoder import JSONEncoder
 from pds_doi_service.api.models import DoiRecord
 from pds_doi_service.api.models import DoiSummary
@@ -829,7 +829,7 @@ class TestDoisController(BaseTestCase):
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "query_doi", webclient_query_patch
     )
-    @patch.object(pds_doi_service.core.outputs.transaction.Transaction, "log", transaction_log_patch)
+    @patch.object(pds_doi_service.core.db.transaction.Transaction, "log", transaction_log_patch)
     def test_get_check_dois(self):
         """Test case for get_check_dois"""
         test_db = join(self.test_data_dir, "pending_dois.db")
