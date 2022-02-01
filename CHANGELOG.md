@@ -1,16 +1,16 @@
 # Changelog
 
-## [2.1.2](https://github.com/NASA-PDS/doi-service/tree/2.1.2) (2022-01-13)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-02-01)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2-dev...2.1.2)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2...«unknown»)
 
-**Improvements:**
+**Other closed issues:**
 
-- Update all past DOIs for consistent metadata [\#294](https://github.com/NASA-PDS/doi-service/issues/294)
+- Develop script to sync SBN DOIs with DOI Service [\#312](https://github.com/NASA-PDS/doi-service/issues/312)
 
-## [v2.1.2-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.2-dev) (2022-01-13)
+## [v2.1.2](https://github.com/NASA-PDS/doi-service/tree/v2.1.2) (2022-01-13)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.1...v2.1.2-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.1...v2.1.2)
 
 **Requirements:**
 
@@ -20,6 +20,7 @@
 
 **Improvements:**
 
+- Update all past DOIs for consistent metadata [\#294](https://github.com/NASA-PDS/doi-service/issues/294)
 - Improve upon application security for write access [\#231](https://github.com/NASA-PDS/doi-service/issues/231)
 
 **Defects:**
