@@ -1,8 +1,8 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-02-01)
+## [v2.1.3-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.3-dev) (2022-02-01)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2...v2.1.3-dev)
 
 **Other closed issues:**
 
