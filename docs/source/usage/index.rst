@@ -289,6 +289,12 @@ configured in the INI are set to ``localhost`` and ``8080``, respectively.
 A copy of the Swagger API definition, with available endpoints and URL query
 parameters, for the ``pds-doi-api`` application is available within the `api`_ section.
 
+
+Bulk Updates with Jupyter
+=========================
+Bulk updates of DOI records are most easily accomplished using Python Jupyter notebooks. There is an `example notebook <https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb>`_ in the repo and a `tutorial for using the notebook <https://drive.google.com/file/d/13BecbQt1aUugct9830vpbnIIoMg_yXa2/view?usp=sharing>`_ posted on our internal Google Workspace Shared Drive.
+
+
 .. _api: ../api/index.html
 .. _installation: ../installation/index.html
 .. _Readme: https://github.com/NASA-PDS/doi-ui#readme
