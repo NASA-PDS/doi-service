@@ -1,12 +1,26 @@
 # Changelog
 
-## [v2.1.3-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.3-dev) (2022-02-01)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-03-01)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2...v2.1.3-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...«unknown»)
+
+**Requirements:**
+
+- Add Radio Science to set of possible nodes [\#317](https://github.com/NASA-PDS/doi-service/issues/317)
+- The software shall maintain the ability to manage DOIs through DataCite. [\#16](https://github.com/NASA-PDS/doi-service/issues/16)
+
+**Defects:**
+
+- Corruption in local database with invalid JSON [\#318](https://github.com/NASA-PDS/doi-service/issues/318) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+- Test DOIs are showing up in pds-gamma DOI search now linked from operations Citing PDS Data page [\#310](https://github.com/NASA-PDS/doi-service/issues/310) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
 **Other closed issues:**
 
 - Develop script to sync SBN DOIs with DOI Service [\#312](https://github.com/NASA-PDS/doi-service/issues/312)
+
+## [v2.1.3](https://github.com/NASA-PDS/doi-service/tree/v2.1.3) (2022-02-01)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.2...v2.1.3)
 
 ## [v2.1.2](https://github.com/NASA-PDS/doi-service/tree/v2.1.2) (2022-01-13)
 
