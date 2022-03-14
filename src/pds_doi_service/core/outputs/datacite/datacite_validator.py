@@ -12,10 +12,10 @@ datacite_validator.py
 Contains functions for validating the contents of DataCite JSON labels.
 """
 import json
-from distutils.util import strtobool
 from os.path import exists
 
 import jsonschema
+from distutils.util import strtobool
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger

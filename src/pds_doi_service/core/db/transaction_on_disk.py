@@ -15,12 +15,11 @@ input and output products to local disk.
 import glob
 import os
 import shutil
-from distutils.dir_util import copy_tree
 from os.path import exists
 from os.path import join
 
 import requests
-from pds_doi_service.core.entities.doi import DoiRecord
+from distutils.dir_util import copy_tree
 from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger

@@ -12,10 +12,10 @@ osti_validator.py
 Contains functions for validating the contents of OSTI XML labels.
 """
 import tempfile
-from distutils.util import strtobool
 from os.path import exists
 
 import xmlschema  # type: ignore
+from distutils.util import strtobool
 from lxml import etree
 from lxml import isoschematron  # type: ignore
 from pds_doi_service.core.entities.doi import DoiStatus
