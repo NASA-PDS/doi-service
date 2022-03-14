@@ -437,6 +437,8 @@ class DOIInputUtil:
         # Read the CSV file into memory
         csv_sheet = pd.read_csv(
             csv_path,
+            # for all columns to be string
+            dtype=str,
             # Remove automatic replacement of empty columns with NaN
             na_filter=False,
             skip_blank_lines=True,

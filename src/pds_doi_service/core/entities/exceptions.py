@@ -174,5 +174,6 @@ def raise_or_warn_exceptions(exception_classes, exception_messages, log=False):
 
     if log:
         logger.warning(message_to_raise)
+        logger.info('Since the force flag was used, the previous warning is ignored')
     else:
         raise WarningDOIException(message_to_raise)
