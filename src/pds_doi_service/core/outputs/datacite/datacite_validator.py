@@ -70,36 +70,40 @@ class DOIDataCiteValidator(DOIServiceValidator):
 
         # Check the label contents against the DataCite JSON schema
         if strtobool(validate_against_schema):
-            json_contents = json.loads(label_contents)
+            try:
+                json_contents = json.loads(label_contents)
 
-            if "data" in json_contents:
-                # Strip off the stuff that is not covered by the JSON schema
-                json_contents = json_contents["data"]
+                if "data" in json_contents:
+                    # Strip off the stuff that is not covered by the JSON schema
+                    json_contents = json_contents["data"]
 
-            # DataCite labels can contain a single or multiple records,
-            # wrap single records in a list for a common interface
-            if not isinstance(json_contents, list):
-                json_contents = [json_contents]
+                # DataCite labels can contain a single or multiple records,
+                # wrap single records in a list for a common interface
+                if not isinstance(json_contents, list):
+                    json_contents = [json_contents]
 
-            error_message = ""
+                error_message = ""
 
-            for index, record in enumerate(json_contents):
-                if "attributes" not in record:
-                    error_message += (
-                        f"JSON record at index {index} does not appear "
-                        "to be in DataCite format.\n"
-                        "Please ensure the label is valid DataCite "
-                        "JSON (as opposed to OSTI-format)."
-                    )
-                elif not self._schema_validator.is_valid(record["attributes"]):
-                    error_message += (
-                        f"JSON record at index {index} does not " f"conform to the DataCite Schema, reason(s):\n"
-                    )
-
-                    for error in self._schema_validator.iter_errors(record["attributes"]):
-                        error_message += "{path}: {message}\n".format(
-                            path="/".join(map(str, error.path)), message=error.message
+                for index, record in enumerate(json_contents):
+                    if "attributes" not in record:
+                        error_message += (
+                            f"JSON record at index {index} does not appear "
+                            "to be in DataCite format.\n"
+                            "Please ensure the label is valid DataCite "
+                            "JSON (as opposed to OSTI-format)."
                         )
+                    elif not self._schema_validator.is_valid(record["attributes"]):
+                        error_message += (
+                            f"JSON record at index {index} does not " f"conform to the DataCite Schema, reason(s):\n"
+                        )
+
+                        for error in self._schema_validator.iter_errors(record["attributes"]):
+                            error_message += "{path}: {message}\n".format(
+                                path="/".join(map(str, error.path)), message=error.message
+                            )
+            except json.decoder.JSONDecodeError as err:
+                error_message = f"unable to parse JSON input {err}"
+                logger.info(label_contents)
 
             if error_message:
                 raise InputFormatException(error_message)
