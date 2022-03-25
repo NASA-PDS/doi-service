@@ -1,8 +1,17 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-03-01)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-03-25)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.4-dev...«unknown»)
+
+**Defects:**
+
+- Fix issues related to integration with Web UI [\#326](https://github.com/NASA-PDS/doi-service/issues/326) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
+- deactivate registered cassini doi 10.17189/1517823 [\#321](https://github.com/NASA-PDS/doi-service/issues/321) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+
+## [v2.1.4-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.4-dev) (2022-03-01)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...v2.1.4-dev)
 
 **Requirements:**
 
