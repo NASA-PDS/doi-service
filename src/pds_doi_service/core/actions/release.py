@@ -316,7 +316,7 @@ class DOICoreActionRelease(DOICoreAction):
         # producing an output label
         except WarningDOIException as err:
             logger.error(str(err))
-            return None
+            raise err
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
             raise CriticalDOIException(str(err))

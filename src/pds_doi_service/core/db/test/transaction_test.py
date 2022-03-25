@@ -19,6 +19,7 @@ from pkg_resources import resource_filename
 
 class TransactionTestCase(unittest.TestCase):
     db_name = "doi_temp.db"
+    test_dir = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -107,6 +108,7 @@ class TransactionTestCase(unittest.TestCase):
 
 class TransactionBuilderTestCase(unittest.TestCase):
     db_name = "doi_temp.db"
+    test_dir = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -151,6 +153,9 @@ class TransactionBuilderTestCase(unittest.TestCase):
 
 
 class TransactionOnDiskTestCase(unittest.TestCase):
+    test_dir = ""
+    data_dir = ""
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_dir = resource_filename(__name__, "")

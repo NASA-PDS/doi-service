@@ -15,6 +15,7 @@ from pds_doi_service.core.actions.update import DOICoreActionUpdate
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
+from pds_doi_service.core.entities.exceptions import WarningDOIException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -27,7 +28,9 @@ from pkg_resources import resource_filename
 class UpdateActionTestCase(unittest.TestCase):
     _record_service = None
     _web_parser = None
-    db_name = None
+    db_name: str = ""
+    test_dir = None
+    input_dir = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -270,11 +273,10 @@ class UpdateActionTestCase(unittest.TestCase):
 
             update_kwargs = {"input": outfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": False}
 
-            updated_doi_label = self._update_action.run(**update_kwargs)
-
             # Since we're attempting to move a label from Findable back to Review,
-            # we'll get a warning back from the service and no output label
-            self.assertIsNone(updated_doi_label)
+            # we'll get a warning back from the service
+            with self.assertRaises(WarningDOIException):
+                updated_doi_label = self._update_action.run(**update_kwargs)
 
             # Enable the force flag and try again, should get a label back now
             update_kwargs["force"] = True

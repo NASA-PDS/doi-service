@@ -2,7 +2,6 @@
 import datetime
 import os
 import unittest
-from datetime import timedelta
 from datetime import timezone
 from os.path import exists
 

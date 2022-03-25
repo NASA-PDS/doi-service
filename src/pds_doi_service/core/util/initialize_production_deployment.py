@@ -65,8 +65,8 @@ from datetime import datetime
 
 from pds_doi_service.core.db.transaction_builder import TransactionBuilder
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
-from pds_doi_service.core.entities.exceptions import InputFormatException
-from pds_doi_service.core.entities.exceptions import UnknownNodeException
+from pds_doi_service.core.entities.exceptions import InputFormatException  # noqa
+from pds_doi_service.core.entities.exceptions import UnknownNodeException  # noqa
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
 from pds_doi_service.core.outputs.service import DOIServiceFactory
@@ -74,7 +74,8 @@ from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.outputs.service import VALID_SERVICE_TYPES
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
-from pds_doi_service.core.util.node_util import NodeUtil
+
+# from pds_doi_service.core.util.node_util import NodeUtil
 
 # Get the common logger and set the level for this file.
 logger = get_logger(__name__)

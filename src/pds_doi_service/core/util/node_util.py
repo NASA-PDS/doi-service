@@ -33,7 +33,7 @@ class NodeUtil:
 
     @classmethod
     def get_node_long_name(cls, node_id):
-        cls.validate_node_id(node_id.lower())
+        cls.validate_node_id(node_id)
         return cls.node_id_to_long_name[node_id.lower()]
 
     @classmethod
@@ -50,7 +50,7 @@ class NodeUtil:
 
     @classmethod
     def validate_node_id(cls, node_id):
-        if node_id not in cls.get_permissible_node_ids():
+        if node_id.lower() not in cls.get_permissible_node_ids():
             raise UnknownNodeException(
                 f"Node {node_id.upper()} is not a permissible ID. Must be one of {cls.node_id_to_long_name.keys()}"
             )

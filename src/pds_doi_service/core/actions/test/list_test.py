@@ -29,7 +29,7 @@ from pkg_resources import resource_filename
 class ListActionTestCase(unittest.TestCase):
     _record_service = None
     _web_parser = None
-    db_name = None
+    db_name: str = ""
 
     @classmethod
     def setUpClass(cls):
