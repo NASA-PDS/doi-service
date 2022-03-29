@@ -75,7 +75,6 @@ from pds_doi_service.core.outputs.service import VALID_SERVICE_TYPES
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 
-# from pds_doi_service.core.util.node_util import NodeUtil
 
 # Get the common logger and set the level for this file.
 logger = get_logger(__name__)
