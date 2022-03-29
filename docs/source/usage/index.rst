@@ -12,6 +12,12 @@ A DOI Service GUI is also available for interfacing with the web API from a brow
 however, it is provided as a separate application with its own github repository.
 For more information on installing and running the PDS DOI UI, consult its `Readme`_.
 
+At last, for operators who would need to process to bulk updates of the metadata
+(e.g.  change all license information to X, in a CSV), an example **notebook for bulk updates** is provided.
+It is self described and is meant to be adaptable for different cases.
+See https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb
+
+
 Overview
 ========
 
