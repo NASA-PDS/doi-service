@@ -28,10 +28,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -87,14 +87,28 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">📦 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/index.html">👩‍💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">🏃‍ ️Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">️Command Line API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#pds-doi-cmd">pds-doi-cmd</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pds-doi-init">pds-doi-init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pds-doi-cmd">pds-doi-cmd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Sub-commands:">Sub-commands:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#reserve">reserve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#update">update</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#release">release</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#check">check</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#list">list</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#pds-doi-init">pds-doi-init</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#swagger-api">Swagger API</a></li>
@@ -169,9 +183,222 @@
 <p>This section contains details on the interfaces for the command line tools.</p>
 <section id="pds-doi-cmd">
 <h2>pds-doi-cmd<a class="headerlink" href="#pds-doi-cmd" title="Permalink to this headline">¶</a></h2>
+<p><p>PDS core command for DOI management. The available subcommands are:
+reserve (Submit a request to reserve a DOI prior to public release. Reserved DOI’s may be released after via the release action),
+update (Update a record with or without submission to the service provider. Metadata updates are pulled from the provided input file for the corresponding DOI values.),
+release (Move a reserved DOI to review, or submit a DOI for release to the service provider),
+check (Check for pending DOI submissions from the service provider and update the local database with any changes in status),
+list (List DOI entries within the transaction database that match the provided search criteria),</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">{</span><span class="n">reserve</span><span class="p">,</span><span class="n">update</span><span class="p">,</span><span class="n">release</span><span class="p">,</span><span class="n">check</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span> <span class="o">...</span>
+</pre></div>
+</div>
+<section id="Positional Arguments">
+<h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>subcommand</kbd></dt>
+<dd><p>Possible choices: reserve, update, release, check, list</p>
+</dd>
+</dl>
+</section>
+<section id="Sub-commands:">
+<h3>Sub-commands:<a class="headerlink" href="#Sub-commands:" title="Permalink to this headline">¶</a></h3>
+<section id="reserve">
+<h4>reserve<a class="headerlink" href="#reserve" title="Permalink to this headline">¶</a></h4>
+<p>Reserve DOI’s for one or more unpublished datasets. DOI’s will be assigned by the provider, but will not be publicly findable. To create findable records, utilize the Release action with the labels returned by this action.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">reserve</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="n">INPUT</span> <span class="o">-</span><span class="n">N</span> <span class="n">NODE_ID</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">EMAIL</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="Named Arguments">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-i, --input</kbd></dt>
+<dd><p>Path to a PDS4 XML label or XLS/CSV spreadsheet file with the following columns: title,publication_date,product_type_specific,author_last_name,author_first_name,related_resource</p>
+</dd>
+<dt><kbd>-N, --node</kbd></dt>
+<dd><p>The PDS Discipline Node in charge of the submission of the DOI(s). Authorized values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn,unk</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>The email address to associate with the Reserve request. Defaults to <a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a></p>
+<p>Default: “<a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a>”</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>If provided, forces the reserve action to proceed even if warnings are encountered during submission of the Reserve request. Without this flag, any warnings encountered are treated as fatal exceptions.</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="update">
+<h4>update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h4>
+<p>Update records with DOI’s already assigned</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">update</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="n">INPUT</span> <span class="p">[</span><span class="o">-</span><span class="n">N</span> <span class="n">NODE_ID</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">EMAIL</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="Named Arguments_repeat1">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat1" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-i, --input</kbd></dt>
+<dd><p>Path to an input XML/JSON label or CSV/XLS spreadsheet. May be a local path or an HTTP address resolving to a PDS4 label file. Each record parsed from the input MUST define a DOI value in order to be updated.</p>
+</dd>
+<dt><kbd>-N, --node</kbd></dt>
+<dd><p>The PDS Discipline Node to assign to each updated record. If not provided,the node(s) currently assigned to each record are maintained. Authorized values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn,unk</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>The email address to associate with the Update request. Defaults to <a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a></p>
+<p>Default: “<a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a>”</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>If provided, forces the action to proceed even if warnings are encountered during submission of the updated record to the database. Without this flag, any warnings encountered are treated as fatal exceptions.</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="release">
+<h4>release<a class="headerlink" href="#release" title="Permalink to this headline">¶</a></h4>
+<p>Release a DOI, in draft or reserve status, for review. A DOI may also be released to the DOI service provider directly.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">release</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="n">INPUT</span> <span class="p">[</span><span class="o">-</span><span class="n">N</span> <span class="n">NODE_ID</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">EMAIL</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">review</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="Named Arguments_repeat2">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat2" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-i, --input</kbd></dt>
+<dd><p>Path to a file containing the record to release. The format may be either a PDS4 label, or a DataCite JSON label. DataCite JSON labels are produced by the Reserve and Draft actions, and can be retrieved for a DOI with the List action.</p>
+</dd>
+<dt><kbd>-N, --node</kbd></dt>
+<dd><p>The PDS Discipline Node in charge of the released DOI. If not provided,the node(s) currently assigned to each record are maintained.Authorized values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn,unk</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>The email address to associate with the Release request. Defaults to <a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a></p>
+<p>Default: “<a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a>”</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>If provided, forces the release action to proceed even if warning are encountered during submission of the release request. Without this flag, any warnings encountered are treated as fatal exceptions.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--no-review</kbd></dt>
+<dd><p>If provided, the requested DOI will be released directly to the DOI service provider for registration. Use to override the default behavior of releasing a DOI to “Review” status.</p>
+<p>Default: True</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="check">
+<h4>check<a class="headerlink" href="#check" title="Permalink to this headline">¶</a></h4>
+<p>Check the status of all pending DOI submissions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="n">check</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">EMAIL</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="Named Arguments_repeat3">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat3" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-e, --email</kbd></dt>
+<dd><p>If provided, the check action sends results to the default recipients and pending DOI submitters.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-a, --attachment</kbd></dt>
+<dd><p>If provided, the check action sends results as an email attachment. Has no effect if –email is not also provided.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>The email address of the user to register as author of the check action.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="list">
+<h4>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h4>
+<p>Extracts the submitted DOI from the local transaction database using the following selection criteria. Output is returned in JSON format.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">cmd</span> <span class="nb">list</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="p">{</span><span class="n">record</span><span class="p">,</span><span class="n">label</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">N</span> <span class="n">NODE_ID</span><span class="p">[,</span><span class="n">NODE_ID</span><span class="p">]</span><span class="o">...</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">status</span> <span class="n">STATUS</span><span class="p">[,</span><span class="n">STATUS</span><span class="p">]</span><span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">doi</span> <span class="n">DOI</span><span class="p">[,</span><span class="n">DOI</span><span class="p">]</span><span class="o">...</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">ID</span><span class="p">[,</span><span class="n">ID</span><span class="p">]</span><span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">start</span> <span class="n">YYYY</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">DD</span><span class="p">[</span><span class="n">THH</span><span class="p">:</span><span class="n">mm</span><span class="p">:</span><span class="n">ss</span><span class="o">.</span><span class="n">ssssss</span><span class="p">[</span><span class="n">Z</span><span class="p">]]]</span>
+                 <span class="p">[</span><span class="o">-</span><span class="n">end</span> <span class="n">YYYY</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">DD</span><span class="p">[</span><span class="n">THH</span><span class="p">:</span><span class="n">mm</span><span class="p">:</span><span class="n">ss</span><span class="o">.</span><span class="n">ssssss</span><span class="p">[</span><span class="n">Z</span><span class="p">]]]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">EMAIL</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="Named Arguments_repeat4">
+<h5>Named Arguments<a class="headerlink" href="#Named Arguments_repeat4" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>-f, --format</kbd></dt>
+<dd><p>Possible choices: record, label</p>
+<p>Specify the format of the results returned by the list query. Valid options are “record” for a list of transaction records, or “label” for an output JSON label containing entries for all DOI records that match the query. Defaults to “record”.</p>
+<p>Default: “record”</p>
+</dd>
+<dt><kbd>-N, --node</kbd></dt>
+<dd><p>A list of comma-separated node names to filter the available DOI entries by. Valid values are: atm,eng,geo,img,naif,ppi,rs,rms,sbn,unk</p>
+</dd>
+<dt><kbd>-status, --status</kbd></dt>
+<dd><p>A list of comma-separated submission status values to filter the database query results by. Valid status values are: error, unknown, reserved, draft, review, pending, registered, findable, deactivated</p>
+</dd>
+<dt><kbd>-doi, --doi</kbd></dt>
+<dd><p>A list of comma-delimited DOI values to use as filters with the database query. Each DOI may contain one or more wildcards (*) to pattern match against.</p>
+</dd>
+<dt><kbd>-i, --ids</kbd></dt>
+<dd><p>A list of comma-delimited PDS identifiers to use as filters with the database query. Each ID may contain one or more wildcards (*) to pattern match against.</p>
+</dd>
+<dt><kbd>-start, --start-update</kbd></dt>
+<dd><p>The start time of the record update to use as a filter with the database query. Should conform to a valid isoformat date string. By default, the local time zone is assumed. To provide a time in UTC, append a ‘Z’ to the time portion of the provided date-time.</p>
+</dd>
+<dt><kbd>-end, --end-update</kbd></dt>
+<dd><p>The end time for record update time to use as a filter with the database query. Should conform to a valid isoformat date string. By default, the local time zone is assumed. To provide a time in UTC, append a ‘Z’ to the time portion of the provided date-time.</p>
+</dd>
+<dt><kbd>-s, --submitter</kbd></dt>
+<dd><p>A list of comma-separated email addresses to use as a filter with the database query. Only entries containing the one of the provided addresses as the submitter will be returned.</p>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+<p><dl class="simple">
+<dt>Usage for each subcommand is available by providing the –help argument to the subcommand:</dt><dd><p>pds-doi-cmd reserve –help</p>
+</dd>
+</dl>
+</p>
 </section>
 <section id="pds-doi-init">
 <h2>pds-doi-init<a class="headerlink" href="#pds-doi-init" title="Permalink to this headline">¶</a></h2>
+<p><p>Script to bulk import existing DOIs into the local transaction database.</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">S</span> <span class="n">SERVICE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PREFIX</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">SUBMITTER_EMAIL</span><span class="p">]</span>
+                    <span class="p">[</span><span class="o">-</span><span class="n">d</span> <span class="n">DB_NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">INPUT_FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT_FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span><span class="p">]</span>
+                    <span class="p">[</span><span class="o">--</span><span class="n">debug</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-S, --service</kbd></dt>
+<dd><p>Name of the service provider to pull existing DOI records from. If not provided, the provider configured by the DOI service configuration INI is used by default. Should be one of: [osti, datacite]</p>
+</dd>
+<dt><kbd>-p, --prefix</kbd></dt>
+<dd><p>Specify the DOI prefix value to query the service provider for. If not provided, the prefix value configured to the providing in the INI config is used by default.</p>
+</dd>
+<dt><kbd>-s, --submitter-email</kbd></dt>
+<dd><p>The email address of the user performing the deployment database initialization. Defaults to <a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a>.</p>
+<p>Default: “<a class="reference external" href="mailto:pds-operator&#37;&#52;&#48;jpl&#46;nasa&#46;gov">pds-operator<span>&#64;</span>jpl<span>&#46;</span>nasa<span>&#46;</span>gov</a>”</p>
+</dd>
+<dt><kbd>-d, --db-name</kbd></dt>
+<dd><p>Name of the SQLite3 database file name to commit DOI records to. If not provided, the file name is obtained from the DOI service INI config.</p>
+</dd>
+<dt><kbd>-i, --input-file</kbd></dt>
+<dd><p>Input file (XML or JSON) to import existing DOIs from. If no value is provided, the server URL specified by the DOI service configuration INI file is used by default.</p>
+</dd>
+<dt><kbd>-o, --output-file</kbd></dt>
+<dd><p>Path to write out the DOI JSON labels as returned from the query. When created, this file can be used with the –input option to import records at a later time without re-querying the server. This option has no effect if –input already specifies an input file.</p>
+</dd>
+<dt><kbd>--dry-run</kbd></dt>
+<dd><p>Flag to suppress actual writing of DOIs to database.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--debug</kbd></dt>
+<dd><p>Flag to print debug statements.</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</section>
+<p><p>Note: When DOI records are imported to the local transaction database, the DOI service creates an associated output label for each record under the transaction_history directory. The format of this output label is driven by the SERVICE.provider field of the INI. Please ensure the field is set appropriately before using this script, as a mismatch could cause parsing errors when using the DOI service after this script.</p>
+</p>
 </section>
 </section>
 <section id="swagger-api">

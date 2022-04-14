@@ -12,6 +12,12 @@ A DOI Service GUI is also available for interfacing with the web API from a brow
 however, it is provided as a separate application with its own github repository.
 For more information on installing and running the PDS DOI UI, consult its `Readme`_.
 
+At last, for operators who would need to process to bulk updates of the metadata
+(e.g.  change all license information to X, in a CSV), an example **notebook for bulk updates** is provided.
+It is self described and is meant to be adaptable for different cases.
+See https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb
+
+
 Overview
 ========
 
@@ -288,6 +294,12 @@ configured in the INI are set to ``localhost`` and ``8080``, respectively.
 
 A copy of the Swagger API definition, with available endpoints and URL query
 parameters, for the ``pds-doi-api`` application is available within the `api`_ section.
+
+
+Bulk Updates with Jupyter
+=========================
+Bulk updates of DOI records are most easily accomplished using Python Jupyter notebooks. There is an `example notebook <https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb>`_ in the repo and a `tutorial for using the notebook <https://drive.google.com/file/d/13BecbQt1aUugct9830vpbnIIoMg_yXa2/view?usp=sharing>`_ posted on our internal Google Workspace Shared Drive.
+
 
 .. _api: ../api/index.html
 .. _installation: ../installation/index.html
