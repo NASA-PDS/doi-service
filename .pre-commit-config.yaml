@@ -36,7 +36,7 @@ repos:
         ]
 
 -   repo: https://github.com/python/black
-    rev: 21.7b0
+    rev: 22.3.0
     hooks:
     -   id: black
         files: ^src/|tests/
