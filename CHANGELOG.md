@@ -1,16 +1,16 @@
 # Changelog
 
-## [2.2.0](https://github.com/NASA-PDS/doi-service/tree/2.2.0) (2022-04-14)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-05-17)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.4-dev...2.2.0)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...«unknown»)
 
 **Defects:**
 
-- Deprecate VCO and Akatsuki DOIs [\#324](https://github.com/NASA-PDS/doi-service/issues/324) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+- doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
-## [v2.1.4-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.4-dev) (2022-03-25)
+## [v2.2.0](https://github.com/NASA-PDS/doi-service/tree/v2.2.0) (2022-04-14)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...v2.1.4-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...v2.2.0)
 
 **Requirements:**
 
@@ -20,6 +20,7 @@
 **Defects:**
 
 - Fix issues related to integration with Web UI [\#326](https://github.com/NASA-PDS/doi-service/issues/326) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
+- Deprecate VCO and Akatsuki DOIs [\#324](https://github.com/NASA-PDS/doi-service/issues/324) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - deactivate registered cassini doi 10.17189/1517823 [\#321](https://github.com/NASA-PDS/doi-service/issues/321) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Corruption in local database with invalid JSON [\#318](https://github.com/NASA-PDS/doi-service/issues/318) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - Test DOIs are showing up in pds-gamma DOI search now linked from operations Citing PDS Data page [\#310](https://github.com/NASA-PDS/doi-service/issues/310) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
