@@ -1,8 +1,8 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-05-17)
+## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-05-17)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
 
 **Defects:**
 
@@ -50,7 +50,7 @@
 
 **Defects:**
 
-- Document need to be update after adding the update argument [\#313](https://github.com/NASA-PDS/doi-service/issues/313)
+- Document need to be update after adding the update argument [\#313](https://github.com/NASA-PDS/doi-service/issues/313) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - --no-review argument has potential to be confused with -n \(node ID\) argument [\#305](https://github.com/NASA-PDS/doi-service/issues/305) [[s.low](https://github.com/NASA-PDS/doi-service/labels/s.low)]
 - identifiers vs alternateIdentifiers appear disconnected from current DataCite schema [\#303](https://github.com/NASA-PDS/doi-service/issues/303) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 
