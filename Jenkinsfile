@@ -71,8 +71,8 @@ pipeline {
                 withCredentials([
                     usernamePassword(credentialsId: 'datacite-dev', passwordVariable: 'p', usernameVariable: 'u')
                 ]) {
-                    sh "rm --force ${env.WORKSPACE}/doi_service.env"
-                    sh "sed -e s=secret=$p=g -e s=username=$u=g ${env.WORKSPACE}/doi_service.env.in > ${env.WORKSPACE}/doi_service.env"
+                    sh 'rm --force ${env.WORKSPACE}/doi_service.env'
+                    sh 'sed -e "s=secret=$p=g" -e "s=username=$u=g" ${env.WORKSPACE}/doi_service.env.in > ${env.WORKSPACE}/doi_service.env'
                 }
             }
         }
