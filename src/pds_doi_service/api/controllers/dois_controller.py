@@ -256,7 +256,7 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
         format. Only used when action is set to "draft" or "update". If provided, any
         requestBody contents are ignored by the update action.
     body : str or dict
-        requestBody contents. If provided, should contain an PSD4 label (for
+        requestBody contents. If provided, should contain an PDS4 label (for
         update) or one or more LabelPayload structures (for reserve). Required if
         the action is set to "reserve", otherwise it can be used optionally in
         lieu of url when the action is set to "draft" or "update".
