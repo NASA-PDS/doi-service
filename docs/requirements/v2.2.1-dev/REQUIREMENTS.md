@@ -168,7 +168,7 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
-## As a user, I would like to include licensing information with all PDS DOIs ([#224](https://github.com/NASA-PDS/doi-service/issues/224)) 
+## As a DOI user, I would like to know the licensing information PDS data ([#224](https://github.com/NASA-PDS/doi-service/issues/224)) 
 
 
 This requirement is not impacted by the current version
@@ -217,6 +217,10 @@ This requirement is not impacted by the current version
 
 This requirement is not impacted by the current version
 ## As an administrator, I would like to synchronize my database with server which is not configured in the current deployment ([#330](https://github.com/NASA-PDS/doi-service/issues/330)) 
+
+
+This requirement is not impacted by the current version
+## As a DOI user, I would like to know the copyright for PDS data ([#335](https://github.com/NASA-PDS/doi-service/issues/335)) 
 
 
 This requirement is not impacted by the current version
