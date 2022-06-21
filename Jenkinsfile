@@ -55,7 +55,6 @@ pipeline {
         PDS_DOI_PUBLISHED_PORT = "3176"
         PDS_DOI_TLS_PORT = "3177"
         CERT_CN = "pds-expo.jpl.nasa.gov"
-        PROXY_REDIRECT = "http://pds-doi-api:8080/ https://pds-dev.jpl.nasa.gov/doi/"
     }
 
     options {
