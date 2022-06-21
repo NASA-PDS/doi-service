@@ -70,7 +70,8 @@ services:
         image: nasapds/proxycrypt:latest
         environment:
             PROXY_URL: http://pds-doi-api:8080/
-            PROXY_REDIRECT:
+            PROXY_REDIRECT: default
+            # This'll be provided by Jenkins:
             CERT_CN:
         ports:
             -
