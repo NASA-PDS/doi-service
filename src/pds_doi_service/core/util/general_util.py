@@ -265,9 +265,9 @@ def get_global_keywords():
 
 def sanitize_json_string(string):
     """
-    Cleans up extraneous whitespace from the provided string so it may be
-    written to a JSON file. Extraneous whitespace include any before or after
-    the provided string, as well as between words.
+    Cleans up extraneous whitespace and escape quotation marks from the provided string so it may
+    be written to a JSON file. Extraneous whitespace include any before or after the provided
+    string, as well as between words.
 
     Parameters
     ----------
@@ -282,4 +282,7 @@ def sanitize_json_string(string):
     """
     # Clean up whitespace (including line breaks) both between words and
     # at the ends of the string
-    return re.sub(r"\s+", " ", string, flags=re.UNICODE).strip()
+    stripped = re.sub(r"\s+", " ", string, flags=re.UNICODE).strip()
+
+    # Now escape those quotation marks
+    return re.sub(r'"', r"\"", stripped, flags=re.UNICODE)

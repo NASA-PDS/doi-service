@@ -7,6 +7,7 @@ from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_global_keywords
 from pds_doi_service.core.util.general_util import is_pds4_identifier
 from pds_doi_service.core.util.general_util import parse_identifier_from_site_url
+from pds_doi_service.core.util.general_util import sanitize_json_string
 
 
 class GeneralUtilTest(unittest.TestCase):
@@ -139,6 +140,22 @@ class GeneralUtilTest(unittest.TestCase):
         finally:
             # Restore the original global keywords to the config
             config.set("OTHER", "global_keyword_values", global_keyword_values)
+
+    def test_sanitizing_json_strings(self):
+        """Ensure we can properly sanitize JSON strings about to go into Jinja2 templates.
+
+        ☝️ Note: using Jinja2 templates to generate JSON is not a bulletproof way to go. In the
+        future, it would be better to just create JSON structures in memory and then serialize them.
+        Serialization > templating.
+        """
+        self.assertEqual("", sanitize_json_string(""))
+        self.assertEqual("", sanitize_json_string(" "))
+        self.assertEqual("", sanitize_json_string("   "))
+        self.assertEqual("👋", sanitize_json_string("👋"))
+        self.assertEqual("👋", sanitize_json_string(" 👋"))
+        self.assertEqual("👋", sanitize_json_string("👋 "))
+        self.assertEqual("👋", sanitize_json_string(" 👋 "))
+        self.assertEqual('👋\\"', sanitize_json_string('👋"'))
 
 
 if __name__ == "__main__":
