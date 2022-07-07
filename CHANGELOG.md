@@ -1,5 +1,22 @@
 # Changelog
 
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-07-07)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1-dev...«unknown»)
+
+**Requirements:**
+
+- The software shall validate the DOI metadata when reserving, releasing, or updating a DOI. [\#13](https://github.com/NASA-PDS/doi-service/issues/13)
+- The software shall release a DOI \(making it findable\). [\#7](https://github.com/NASA-PDS/doi-service/issues/7)
+
+**Defects:**
+
+- Valid PDS4 xml input is converted into an invalid json that fails internal datacite validator [\#328](https://github.com/NASA-PDS/doi-service/issues/328) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)] [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+
+**Other closed issues:**
+
+- Develop script to sync DOIs to registry [\#249](https://github.com/NASA-PDS/doi-service/issues/249)
+
 ## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-06-16)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
