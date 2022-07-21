@@ -50,7 +50,7 @@ def handle_invalid_usage(error):
     return response
 
 
-@app.app.before_request
+#@app.app.before_request
 def _check_referrer():
     """
     Checks the referrer header field of the current request to ensure it was
