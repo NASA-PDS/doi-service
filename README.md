@@ -13,7 +13,7 @@ The Planetary Data System (PDS) Digital Object Identifier (DOI) Service provides
 
 ## User Documentation
 
-Please visit the documentation at: https://nasa-pds.github.io/pds-doi-service/
+Please visit the documentation at: https://nasa-pds.github.io/doi-service/
 
 
 ## Developers

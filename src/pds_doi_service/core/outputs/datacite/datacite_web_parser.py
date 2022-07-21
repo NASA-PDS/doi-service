@@ -108,7 +108,13 @@ class DOIDataCiteWebParser(DOIWebParser):
             identifiers = record["identifiers"]
 
             for identifier in identifiers:
-                identifier["identifier"] = identifier["identifier"].strip()
+                if identifier["identifier"] is None:
+                    logger.warn(
+                        f"Odd metadata. NoneType identifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
+                    )
+                    identifiers.remove(identifier)
+                else:
+                    identifier["identifier"] = identifier["identifier"].strip()
 
             return identifiers
         except KeyError:

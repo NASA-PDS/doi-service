@@ -56,7 +56,7 @@ class DOIPDS4LabelUtil:
         }
 
     def is_pds4_label(self, xml_tree):
-        # If reading xpaths with the PSD4 namespace returns anything, it should
+        # If reading xpaths with the PDS4 namespace returns anything, it should
         # be safe to assume its a PDS4 label, additional validation can occur
         # downstream.
         if self.read_pds4(xml_tree):
