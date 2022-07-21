@@ -1,14 +1,6 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-07-21)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1-dev...«unknown»)
-
-**Defects:**
-
-- Fix broken build [\#341](https://github.com/NASA-PDS/doi-service/issues/341) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
-
-## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-07-07)
+## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-07-21)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
 
@@ -19,6 +11,7 @@
 
 **Defects:**
 
+- Fix broken build [\#341](https://github.com/NASA-PDS/doi-service/issues/341) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Valid PDS4 xml input is converted into an invalid json that fails internal datacite validator [\#328](https://github.com/NASA-PDS/doi-service/issues/328) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)] [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 
