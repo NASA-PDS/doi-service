@@ -224,3 +224,11 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a DOI user, I want to know when this data set was made available ([#343](https://github.com/NASA-PDS/doi-service/issues/343)) 
+
+
+This requirement is not impacted by the current version
+## As a user, I want to release a DOI with a label that does not contain the DOI ([#344](https://github.com/NASA-PDS/doi-service/issues/344)) 
+
+
+This requirement is not impacted by the current version
