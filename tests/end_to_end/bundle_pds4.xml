@@ -2,7 +2,7 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xmlns="http://pds.nasa.gov/pds4/pds/v1">
 <Identification_Area>
-<logical_identifier>urn:nasa:pds:testtetst</logical_identifier>
+<logical_identifier>urn:nasa:pds:insight_cameras::1.0</logical_identifier>
 <version_id>1.0</version_id>
 <title>InSight Cameras Bundle</title>
 <information_model_version>1.11.1.0</information_model_version>
