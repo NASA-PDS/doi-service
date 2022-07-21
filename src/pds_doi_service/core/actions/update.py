@@ -220,11 +220,16 @@ class DOICoreActionUpdate(DOICoreAction):
         updated_dois = []
 
         for updated_doi in dois:
-            if not updated_doi.doi:
-                raise RuntimeError(
-                    f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned.\n"
-                    "Use the Reserve action to acquire a DOI for the record before attempting to update it."
-                )
+            if not updated_doi.doi :
+                if self._force:
+                    updated_doi.doi = self._record_service
+                else:
+                    raise WarningDOIException(
+                        f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned in the label.\n"
+                        "Use the Reserve action to acquire a DOI and add it in the Citation_Information/doi tag \n"
+                        "if the version of PDS4 information model you are using allows it."
+                    )
+
 
             # Get the record from the transaction database for the current DOI value
             transaction_record = self._list_action.transaction_for_doi(updated_doi.doi)
