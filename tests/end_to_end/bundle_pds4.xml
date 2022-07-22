@@ -2,9 +2,15 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xmlns="http://pds.nasa.gov/pds4/pds/v1">
 <Identification_Area>
+<<<<<<< Updated upstream
 <logical_identifier>{{random_lid}}</logical_identifier>
 <version_id>1.0</version_id>
 <title>InSight Cameras Bundle</title>
+=======
+<logical_identifier>urn:nasa:pds:insight_cameras</logical_identifier>
+<version_id>54.0</version_id>
+<title>InSight Cameras XXXX Example Bundle</title>
+>>>>>>> Stashed changes
 <information_model_version>1.11.1.0</information_model_version>
 <product_class>Product_Bundle</product_class>
 <Citation_Information>
@@ -20,6 +26,10 @@
 <description>
 InSight Cameras Experiment Data Record (EDR) and Reduced Data Record (RDR) Data Products
 </description>
+<<<<<<< Updated upstream
+=======
+<doi>10.13143/43g3-kk20</doi>
+>>>>>>> Stashed changes
 </Citation_Information>
 </Identification_Area>
 <Context_Area>

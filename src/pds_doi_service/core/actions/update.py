@@ -16,6 +16,7 @@ from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import collect_exception_classes_and_messages
+from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
 from pds_doi_service.core.entities.exceptions import InputFormatException
@@ -220,36 +221,68 @@ class DOICoreActionUpdate(DOICoreAction):
         updated_dois = []
 
         for updated_doi in dois:
-            if not updated_doi.doi :
-                if self._force:
-                    updated_doi.doi = self._record_service
-                else:
-                    raise WarningDOIException(
-                        f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned in the label.\n"
-                        "Use the Reserve action to acquire a DOI and add it in the Citation_Information/doi tag \n"
-                        "if the version of PDS4 information model you are using allows it."
+            if updated_doi.doi:
+                existing_doi = self._get_doi_record_from_doi_identifier(updated_doi.doi)
+            elif self._force:
+                try:
+                    # try to get DOI from the local database
+                    existing_doi = self._get_doi_record_from_pds_identifier(updated_doi.pds_identifier)
+                except UnknownIdentifierException as e:
+                    raise CriticalDOIException(
+                        f"The identifier {updated_doi.pds_identifier} does not have DOI yet"
+                        "use the reserve step to get one"
                     )
 
+            else:
+                raise WarningDOIException(
+                    f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned.\n"
+                    "Add it in the Citation_Information/doi tag in the label\n"
+                    " if the version of PDS4 information model you are using allows it.\n"
+                    "Otherwise ignore this warning"
+                )
 
-            # Get the record from the transaction database for the current DOI value
-            transaction_record = self._list_action.transaction_for_doi(updated_doi.doi)
-
-            # Get the last output label associated with the transaction.
-            # This represents the latest version of the metadata for the DOI.
-            output_label = self._list_action.output_label_for_transaction(transaction_record)
-
-            # Output labels can contain multiple entries, so get only the one for
-            # the current DOI value
-            existing_doi_label, _ = self._web_parser.get_record_for_doi(output_label, updated_doi.doi)
-
-            # Parse the existing Doi object, and meld it with the new one
-            existing_dois, _ = self._web_parser.parse_dois_from_label(existing_doi_label)
-
-            updated_doi = self._meld_dois(existing_dois[0], updated_doi)
+            updated_doi = self._meld_dois(existing_doi, updated_doi)
 
             updated_dois.append(updated_doi)
 
         return updated_dois
+
+    def _get_doi_record_from_pds_identifier(self, pds_identifier):
+
+        # Get the record from the transaction database for the current DOI value
+        transaction_record = self._list_action.transaction_for_identifier(pds_identifier)
+
+        # Get the last output label associated with the transaction.
+        # This represents the latest version of the metadata for the DOI.
+        output_label = self._list_action.output_label_for_transaction(transaction_record)
+
+        # Output labels can contain multiple entries, so get only the one for
+        # the current DOI value
+        existing_doi_label, _ = self._web_parser.get_record_for_identifier(output_label, pds_identifier)
+
+        # Parse the existing Doi object, and meld it with the new one
+        existing_dois, _ = self._web_parser.parse_dois_from_label(existing_doi_label)
+
+        return existing_dois[0]
+
+    def _get_doi_record_from_doi_identifier(self, doi_identifier):
+
+        # Get the record from the transaction database for the current DOI value
+        transaction_record = self._list_action.transaction_for_doi(doi_identifier)
+
+        # Get the last output label associated with the transaction.
+        # This represents the latest version of the metadata for the DOI.
+        output_label = self._list_action.output_label_for_transaction(transaction_record)
+
+        # Output labels can contain multiple entries, so get only the one for
+        # the current DOI value
+        existing_doi_label, _ = self._web_parser.get_record_for_doi(output_label, doi_identifier)
+
+        # Parse the existing Doi object, and meld it with the new one
+        existing_dois, _ = self._web_parser.parse_dois_from_label(existing_doi_label)
+
+        return existing_dois[0]
+
 
     def _validate_dois(self, dois):
         """
