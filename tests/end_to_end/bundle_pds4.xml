@@ -4,7 +4,7 @@
 <Identification_Area>
 <title>InSight Cameras Bundle</title>
 <logical_identifier>urn:nasa:pds:insight_cameras</logical_identifier>
-<version_id>54.0</version_id>
+<version_id>55.0</version_id>
 <title>InSight Cameras XXXX Example Bundle</title>
 <information_model_version>1.11.1.0</information_model_version>
 <product_class>Product_Bundle</product_class>
