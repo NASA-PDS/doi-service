@@ -223,23 +223,22 @@ class DOICoreActionUpdate(DOICoreAction):
         for updated_doi in dois:
             if updated_doi.doi:
                 existing_doi = self._get_doi_record_from_doi_identifier(updated_doi.doi)
-            elif self._force:
+            else:
                 try:
-                    # try to get DOI from the local database
+                    # try this command first so that it raises an critical exception whatever the force warning status
                     existing_doi = self._get_doi_record_from_pds_identifier(updated_doi.pds_identifier)
+                    if not self._force:
+                        raise WarningDOIException(
+                            f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned.\n"
+                            "Add it in the Citation_Information/doi tag in the label\n"
+                            " if the version of PDS4 information model you are using allows it.\n"
+                            "Otherwise ignore this warning"
+                        )
                 except UnknownIdentifierException as e:
                     raise CriticalDOIException(
-                        f"The identifier {updated_doi.pds_identifier} does not have DOI yet"
-                        "use the reserve step to get one"
+                        f"The identifier {updated_doi.pds_identifier} does not have DOI yet."
+                        " Use the reserve step to get one"
                     )
-
-            else:
-                raise WarningDOIException(
-                    f"Record provided for identifier {updated_doi.pds_identifier} does not have a DOI assigned.\n"
-                    "Add it in the Citation_Information/doi tag in the label\n"
-                    " if the version of PDS4 information model you are using allows it.\n"
-                    "Otherwise ignore this warning"
-                )
 
             updated_doi = self._meld_dois(existing_doi, updated_doi)
 
