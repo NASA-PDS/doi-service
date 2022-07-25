@@ -331,11 +331,6 @@ class UpdateActionTestCase(unittest.TestCase):
         with self.assertRaises(CriticalDOIException):
             self._update_action.run(**update_kwargs)
 
-    #@patch.object(
-    #
-    #)
-    #def test_update_doi(self):
-    #    pass
 
 if __name__ == "__main__":
     unittest.main()
