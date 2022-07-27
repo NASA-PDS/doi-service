@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -31,6 +31,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -172,10 +173,10 @@
            <div itemprop="articleBody">
             
   <section id="installation">
-<h1>📦 Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<h1>📦 Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h1>
 <p>This section describes how to install the PDS DOI Service.</p>
 <section id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h2>
 <p>Prior to installing this software, ensure your system meets the following
 requirements:</p>
 <ul class="simple">
@@ -189,10 +190,10 @@ can use a local <a class="reference external" href="https://www.python.org/">Pyt
 installation.</p>
 </section>
 <section id="installation-instructions">
-<h2>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h2>
+<h2>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this heading">¶</a></h2>
 <p>This section documents the installation procedure.</p>
 <section id="id1">
-<h3>Installation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>Installation<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
 <p>The easiest way to install this software is to use <a class="reference external" href="https://pip.pypa.io/en/stable/">Pip</a>, the Python Package
 Installer. If you have Python on your system, you probably already have Pip;
 you can run <code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">--help</span></code> to check. Then run:</p>
@@ -227,7 +228,7 @@ in <code class="docutils literal notranslate"><span class="pre">$HOME/.venv/pds-
 </div>
 </section>
 <section id="configuration">
-<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
+<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">¶</a></h3>
 <p>The PDS DOI Service utilizes an INI file for its configuration. While there is a
 default configuration file bundled with the service, it may be superseded by
 a user-provided configuration within the installation directory.</p>
@@ -273,13 +274,13 @@ however, it can be updated as follows in the configuration:</p>
 (see <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging-levels">https://docs.python.org/3/library/logging.html#logging-levels</a>)</p>
 </section>
 <section id="running-the-service-via-command-line-tool">
-<h3>Running the service via command line tool<a class="headerlink" href="#running-the-service-via-command-line-tool" title="Permalink to this headline">¶</a></h3>
+<h3>Running the service via command line tool<a class="headerlink" href="#running-the-service-via-command-line-tool" title="Permalink to this heading">¶</a></h3>
 <p>Once installed, you can run <code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span> <span class="pre">--help</span></code> to get a usage message and ensure
 the service is properly installed. You can then consult the <a class="reference external" href="../usage/index.html">usage</a> documentation
 for more details.</p>
 </section>
 <section id="running-the-service-via-web-api">
-<h3>Running the service via Web API<a class="headerlink" href="#running-the-service-via-web-api" title="Permalink to this headline">¶</a></h3>
+<h3>Running the service via Web API<a class="headerlink" href="#running-the-service-via-web-api" title="Permalink to this heading">¶</a></h3>
 <p>You can start the web API service with command line <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code>.</p>
 <p>You can explore the API documentation and test it using its built-in Swagger UI.
 To access the test UI, navigate to <a class="reference external" href="http://localhost:8080/PDS_APIs/pds_doi_api/0.2/ui/">http://localhost:8080/PDS_APIs/pds_doi_api/0.2/ui/</a>
@@ -298,7 +299,7 @@ described in the Configuration section above:</p>
 </section>
 </section>
 <section id="upgrading-the-service">
-<h2>Upgrading the Service<a class="headerlink" href="#upgrading-the-service" title="Permalink to this headline">¶</a></h2>
+<h2>Upgrading the Service<a class="headerlink" href="#upgrading-the-service" title="Permalink to this heading">¶</a></h2>
 <p>To check for and install an upgrade to the service, run the following command in
 your virtual environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pds</span><span class="o">-</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span>
