@@ -1,19 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-07-25)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1-dev...«unknown»)
-
-**Requirements:**
-
-- As a user, I want to release a DOI with a label that does not contain the DOI [\#344](https://github.com/NASA-PDS/doi-service/issues/344)
-
-## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-07-21)
+## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-07-25)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
 
 **Requirements:**
 
+- As a user, I want to release a DOI with a label that does not contain the DOI [\#344](https://github.com/NASA-PDS/doi-service/issues/344)
 - The software shall validate the DOI metadata when reserving, releasing, or updating a DOI. [\#13](https://github.com/NASA-PDS/doi-service/issues/13)
 - The software shall release a DOI \(making it findable\). [\#7](https://github.com/NASA-PDS/doi-service/issues/7)
 
