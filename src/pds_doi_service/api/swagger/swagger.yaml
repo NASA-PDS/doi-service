@@ -125,6 +125,8 @@ paths:
         for one or more  records to be submitted. Record URLs must resolve to PDS4
         label files (xml).
       operationId: post_dois
+      security:
+      - jwt: ['']
       parameters:
       - name: action
         in: query
@@ -532,3 +534,9 @@ components:
             format: date-time
           message:
             type: string
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: pds_doi_service.api.controllers.authentication.decode_token
