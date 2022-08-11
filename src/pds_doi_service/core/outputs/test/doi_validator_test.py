@@ -294,6 +294,26 @@ class DoiValidatorTest(unittest.TestCase):
         with self.assertRaises(InvalidRecordException):
             self._doi_validator._check_identifier_fields(doi_obj)
 
+    def test_identifier_validation_valid_lidvid(self):
+        """
+        Test validation of DOI object with various valid LIDVIDs
+        Expecting no errors
+        """
+        doi_obj = Doi(
+            title=self.title + " different",
+            publication_date=self.transaction_date,
+            product_type=self.product_type,
+            product_type_specific=self.product_type_specific,
+            pds_identifier="",
+            status=DoiStatus.Draft,
+        )
+
+        # Test max valid identifier length
+        partial_id = "urn:nasa:pds:lab_shocked_feldspars"
+        doi_obj.pds_identifier = f"{partial_id}{'a'*(255 - len(partial_id))}"
+
+        self._doi_validator._check_lidvid_field(doi_obj)
+
     def test_identifier_validation_invalid_lidvid(self):
         """
         Test validation of Doi object with various invalid LIDVIDs.
@@ -326,8 +346,8 @@ class DoiValidatorTest(unittest.TestCase):
         with self.assertRaises(InvalidIdentifierException):
             self._doi_validator._check_lidvid_field(doi_obj)
 
-        # Test invalid field tokens (invalid characters)
-        doi_obj.pds_identifier = "urn:nasa:_pds:lab_shocked_feldspars"
+        # Test invalid field tokens (invalid mandatory values)
+        doi_obj.pds_identifier = "urn:nasa:not_pds:lab_shocked_feldspars"
 
         with self.assertRaises(InvalidIdentifierException):
             self._doi_validator._check_lidvid_field(doi_obj)

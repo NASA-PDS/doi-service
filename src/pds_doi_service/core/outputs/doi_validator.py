@@ -347,9 +347,10 @@ class DOIValidator:
         lid_tokens = lid.split(":")
 
         try:
-            # Make sure we got a URN
-            if lid_tokens[0] != "urn":
-                raise InvalidIdentifierException('LIDVID must start with "urn"')
+            # Make sure the prescribed static fields are correct
+            required_prefix_elements = ["urn", "nasa", "pds"]
+            if lid_tokens[:3] != required_prefix_elements:
+                raise InvalidIdentifierException(f"LIDVID must start with elements {required_prefix_elements}")
 
             # Make sure we got the minimum number of fields, and that
             # the number of fields is consistent with the product type
