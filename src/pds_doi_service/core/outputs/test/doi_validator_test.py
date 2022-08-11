@@ -343,6 +343,13 @@ class DoiValidatorTest(unittest.TestCase):
         with self.assertRaises(InvalidIdentifierException):
             self._doi_validator._check_lidvid_field(doi_obj)
 
+        # Test invalid identifier length
+        partial_id = "urn:nasa:pds:lab_shocked_feldspars"
+        doi_obj.pds_identifier = f"{partial_id}{'a'*(256 - len(partial_id))}"
+
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
+
     def test_identifier_validation_doi_id_mismatch(self):
         """
         Test validation of Doi with inconsistent doi and id fields.
