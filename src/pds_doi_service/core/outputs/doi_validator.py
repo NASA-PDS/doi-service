@@ -361,15 +361,14 @@ class DOIValidator:
                 )
 
             # Now check each field for the expected set of characters
-            token_regex = re.compile(r"[a-z0-9][a-z0-9-._]{0,31}")
+            token_regex = re.compile(r"[a-z0-9-._]*")
 
             for index, token in enumerate(lid_tokens):
                 if not token_regex.fullmatch(token):
                     raise InvalidIdentifierException(
-                        f"LIDVID field {index + 1} ({token}) is invalid. "
-                        f"Fields must begin with a letter or digit, and only "
-                        f"consist of letters, digits, hyphens (-), underscores (_) "
-                        f"or periods (.)"
+                        f"LID field {index + 1} ({token}) is invalid. "
+                        f"Fields must only consist of lowercase letters, digits, "
+                        f"hyphens (-), underscores (_) or periods (.)"
                     )
 
             # Finally, make sure the VID conforms to a version number
