@@ -368,17 +368,25 @@ class DOIValidator:
                     raise InvalidIdentifierException(
                         f"LID field {index + 1} ({token}) is invalid. "
                         f"Fields must only consist of lowercase letters, digits, "
-                        f"hyphens (-), underscores (_) or periods (.)"
+                        f"hyphens (-), underscores (_) or periods (.), per PDS SR Sec. 6D.2"
                     )
 
-            # Finally, make sure the VID conforms to a version number
+            # Make sure the VID conforms to a version number
             version_regex = re.compile(r"^\d+\.\d+$")
 
             if vid and not version_regex.fullmatch(vid):
                 raise InvalidIdentifierException(
                     f"Parsed VID ({vid}) does not conform to a valid version identifier. "
                     "Version identifier must consist only of a major and minor version "
-                    "joined with a period (ex: 1.0)"
+                    "joined with a period (ex: 1.0), per PDS SR Sec. 6D.3"
+                )
+
+            # Finally, ensure the whole identifier conforms to the length constraint
+            identifier_max_length = 255
+            if not len(doi.pds_identifier) <= identifier_max_length:
+                raise InvalidIdentifierException(
+                    f"LIDVID {doi.pds_identifier} does not conform to PDS identifier max length constraint "
+                    f"({identifier_max_length}), per SR Sec. 6D"
                 )
         except InvalidIdentifierException as err:
             raise InvalidIdentifierException(
