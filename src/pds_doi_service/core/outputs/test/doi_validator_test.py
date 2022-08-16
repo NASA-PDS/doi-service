@@ -347,6 +347,16 @@ class DoiValidatorTest(unittest.TestCase):
             self._doi_validator._check_lidvid_field(doi_obj)
 
         # Test invalid field tokens (invalid mandatory values)
+        doi_obj.pds_identifier = "not_urn:nasa:pds:lab_shocked_feldspars"
+
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
+
+        doi_obj.pds_identifier = "urn:not_nasa:pds:lab_shocked_feldspars"
+
+        with self.assertRaises(InvalidIdentifierException):
+            self._doi_validator._check_lidvid_field(doi_obj)
+
         doi_obj.pds_identifier = "urn:nasa:not_pds:lab_shocked_feldspars"
 
         with self.assertRaises(InvalidIdentifierException):
