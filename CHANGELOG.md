@@ -1,8 +1,20 @@
 # Changelog
 
-## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-07-25)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-08-16)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...«unknown»)
+
+**Defects:**
+
+- DOI-service application inaccurately reports LID as being invalid [\#336](https://github.com/NASA-PDS/doi-service/issues/336) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+
+**Other closed issues:**
+
+- Tag and deploy new release per \#331 [\#342](https://github.com/NASA-PDS/doi-service/issues/342)
+
+## [v2.2.1](https://github.com/NASA-PDS/doi-service/tree/v2.2.1) (2022-07-27)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1)
 
 **Requirements:**
 
