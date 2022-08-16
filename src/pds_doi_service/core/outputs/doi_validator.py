@@ -387,7 +387,7 @@ class DOIValidator:
             if not len(doi.pds_identifier) <= identifier_max_length:
                 raise InvalidIdentifierException(
                     f"LIDVID {doi.pds_identifier} does not conform to PDS identifier max length constraint "
-                    f"({identifier_max_length}), per SR Sec. 6D"
+                    f"({identifier_max_length}), per PDS SR Sec. 6D"
                 )
         except InvalidIdentifierException as err:
             raise InvalidIdentifierException(
