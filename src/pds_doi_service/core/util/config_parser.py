@@ -79,32 +79,34 @@ class DOIConfigUtil:
         parser = DOIConfigParser()
 
         # default configuration
-        conf_default = "conf.ini.default"
-        conf_default_path = resource_filename(__name__, conf_default)
+        default_config_filename = "conf.ini.default"
+        default_config_filepath = resource_filename(__name__, default_config_filename)
 
         # user-specified configuration for production
-        conf_user = "pds_doi_service.ini"
-        conf_user_prod_path = os.path.join(PROJECT_ROOT_DIR, conf_user)
+        user_defined_config_filename = "pds_doi_service.ini"
+        user_defined_config_filepath = os.path.join(PROJECT_ROOT_DIR, user_defined_config_filename)
 
         # user-specified configuration for development
-        conf_user_dev_path = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user))
+        dev_config_filename = "pds_doi_service.ini"
+        dev_config_filepath = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, dev_config_filename))
 
-        candidates_full_path = [conf_default_path, conf_user_prod_path, conf_user_dev_path]
+        # Parsed in order, with subsequent config values overwriting values provided in preceding configs
+        config_candidate_filepaths = [default_config_filepath, user_defined_config_filepath, dev_config_filepath]
 
-        logger.info("Searching for configuration files in %s", candidates_full_path)
-        found = parser.read(candidates_full_path)
+        logger.info("Searching for configuration files from candidates %s", config_candidate_filepaths)
+        found = parser.read(config_candidate_filepaths)
 
         if not found:
             raise RuntimeError(
                 "Could not find an INI configuration file to "
-                f"parse from the following candidates: {candidates_full_path}"
+                f"parse from the following candidates: {config_candidate_filepaths}"
             )
 
         # When providing multiple configs they are parsed in successive order,
         # and any previously parsed values are overwritten. So the config
         # we use should correspond to the last file in the list returned
         # from ConfigParser.read()
-        logger.info("Using the following configuration file: %s", found[-1])
+        logger.info("Using configs (with later files overwriting previous files' values): %s", found)
         parser = DOIConfigUtil._resolve_relative_path(parser)
 
         return parser
