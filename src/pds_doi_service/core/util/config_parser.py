@@ -23,6 +23,8 @@ from os.path import join
 
 from pkg_resources import resource_filename
 
+from projectdefinitions import PROJECT_ROOT_DIR
+
 
 class DOIConfigParser(configparser.ConfigParser):
     """
@@ -82,7 +84,7 @@ class DOIConfigUtil:
 
         # user-specified configuration for production
         conf_user = "pds_doi_service.ini"
-        conf_user_prod_path = os.path.join(sys.prefix, conf_user)
+        conf_user_prod_path = os.path.join(PROJECT_ROOT_DIR, conf_user)
 
         # user-specified configuration for development
         conf_user_dev_path = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, conf_user))
