@@ -20,10 +20,9 @@ from os.path import abspath
 from os.path import dirname
 from os.path import join
 
-from pkg_resources import resource_filename
-
-from projectdefinitions import PROJECT_ROOT_DIR
+from constants import PROJECT_ROOT_DIR
 from pds_doi_service.core.util.logging import get_logger
+from pkg_resources import resource_filename
 
 logger = get_logger()
 
