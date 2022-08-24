@@ -16,7 +16,6 @@ from pds_doi_service.core.actions.list import DOICoreActionList
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import collect_exception_classes_and_messages
-from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import DuplicatedTitleDOIException
 from pds_doi_service.core.entities.exceptions import InputFormatException
@@ -24,6 +23,7 @@ from pds_doi_service.core.entities.exceptions import InvalidIdentifierException
 from pds_doi_service.core.entities.exceptions import raise_or_warn_exceptions
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
+from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.entities.exceptions import WarningDOIException
 from pds_doi_service.core.input.input_util import DOIInputUtil
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
@@ -281,7 +281,6 @@ class DOICoreActionUpdate(DOICoreAction):
         existing_dois, _ = self._web_parser.parse_dois_from_label(existing_doi_label)
 
         return existing_dois[0]
-
 
     def _validate_dois(self, dois):
         """

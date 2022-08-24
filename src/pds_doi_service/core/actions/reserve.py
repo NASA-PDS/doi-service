@@ -281,6 +281,12 @@ class DOICoreActionReserve(DOICoreAction):
             raise err
         # Convert all other errors into a CriticalDOIException to report back
         except Exception as err:
+            error_message = str(err)
+            bad_credentials_error_substr = "reason: 404 Client Error"
+            if bad_credentials_error_substr in error_message:
+                explanatory_message = "This error may also be indicative of bad credentials when returned by DataCite."
+                raise CriticalDOIException(f"{error_message}.  {explanatory_message}")
+
             raise CriticalDOIException(err)
 
         # Create the return output label containing records for all submitted DOI's
