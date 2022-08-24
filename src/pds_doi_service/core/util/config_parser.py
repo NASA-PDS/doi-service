@@ -14,7 +14,6 @@ core DOI service.
 """
 import configparser
 import functools
-import logging
 import os
 import sys
 from os.path import abspath
@@ -24,6 +23,9 @@ from os.path import join
 from pkg_resources import resource_filename
 
 from projectdefinitions import PROJECT_ROOT_DIR
+from pds_doi_service.core.util.logging import get_logger
+
+logger = get_logger()
 
 
 class DOIConfigParser(configparser.ConfigParser):
@@ -74,8 +76,6 @@ class DOIConfigUtil:
     @staticmethod
     @functools.lru_cache()
     def get_config():
-        logger = logging.getLogger(__name__)
-
         parser = DOIConfigParser()
 
         # default configuration

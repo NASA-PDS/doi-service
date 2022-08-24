@@ -21,6 +21,7 @@ from urllib.parse import unquote
 from urllib.parse import urlparse
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.util.logging import get_logger as _get_logger
 
 PDS3_URL_TEMPLATE = "https://pds.nasa.gov/ds-view/pds/viewDataset.jsp?dsid={identifier}"
 """The landing page URL template for PDS3 datasets"""
@@ -72,20 +73,9 @@ def get_logger(module_name=None):
         The logger object.
 
     """
-    if module_name:
-        _logger = logging.getLogger(module_name)
-    else:
-        _logger = logging.getLogger(__name__)
-
-    my_format = "%(levelname)s %(name)s:%(funcName)s %(message)s"
-
-    logging.basicConfig(format=my_format, filemode="a")
-
     config = DOIConfigUtil().get_config()
     logging_level = config.get("OTHER", "logging_level")
-    _logger.setLevel(getattr(logging, logging_level.upper()))
-
-    return _logger
+    return _get_logger(name=module_name, logging_level=logging_level)
 
 
 logger = get_logger(__name__)
