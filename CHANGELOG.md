@@ -1,8 +1,16 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-08-16)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-08-25)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.0-dev...«unknown»)
+
+**Defects:**
+
+- dataCite reserve error on title [\#350](https://github.com/NASA-PDS/doi-service/issues/350) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
+
+## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-08-16)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...v2.3.0-dev)
 
 **Defects:**
 
