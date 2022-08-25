@@ -1,7 +1,8 @@
 import logging
+from typing import Optional
 
 
-def get_logger(name: str = None, logging_level: int = logging.INFO):
+def get_logger(name: Optional[str] = None, logging_level: int = logging.INFO):
     """
     Creates and returns a logging object for the provided module name. The
     logger is configured according to the settings of the INI config.
@@ -16,7 +17,7 @@ def get_logger(name: str = None, logging_level: int = logging.INFO):
     ----------
     name : str, optional
         If provided, the name to create logger for. Defaults to the name of the current module.
-    log_level: int, optional
+    logging_level: int, optional
         If provided, the logging level.  Defaults to INFO
 
     Returns
