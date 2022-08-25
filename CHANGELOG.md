@@ -1,19 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-08-25)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.0-dev...«unknown»)
-
-**Defects:**
-
-- dataCite reserve error on title [\#350](https://github.com/NASA-PDS/doi-service/issues/350) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
-
-## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-08-16)
+## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-08-25)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...v2.3.0-dev)
 
 **Defects:**
 
+- dataCite reserve error on title [\#350](https://github.com/NASA-PDS/doi-service/issues/350) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
 - DOI-service application inaccurately reports LID as being invalid [\#336](https://github.com/NASA-PDS/doi-service/issues/336) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
 **Other closed issues:**
