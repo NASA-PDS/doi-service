@@ -1,5 +1,18 @@
 # Changelog
 
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-09-01)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.0-dev...«unknown»)
+
+**Requirements:**
+
+- As a DOI user, I would like to know the copyright for PDS data [\#335](https://github.com/NASA-PDS/doi-service/issues/335)
+- As a DOI user, I would like to know the licensing information PDS data [\#224](https://github.com/NASA-PDS/doi-service/issues/224)
+
+**Improvements:**
+
+- Add licensing information to DOI metadata for new DOIs [\#225](https://github.com/NASA-PDS/doi-service/issues/225)
+
 ## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-08-25)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...v2.3.0-dev)
