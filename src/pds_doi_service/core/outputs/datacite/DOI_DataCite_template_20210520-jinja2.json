@@ -69,6 +69,11 @@
                 ],
                 "publisher": "{{ doi.publisher }}",
                 "publicationYear": "{{ doi.publication_year }}",
+                "rightsList": [
+                    {% for rights_element in doi.rights_list %}
+                    {{ rights_element }}{% if not loop.last %},{% endif +%}
+                    {% endfor %}
+                ],
                 "subjects": [
                     {% for keyword in doi.keywords %}
                     { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif +%}

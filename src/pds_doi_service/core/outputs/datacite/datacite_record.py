@@ -12,10 +12,12 @@ datacite_record.py
 Contains classes used to create DataCite-compatible labels from Doi objects in
 memory.
 """
+import json
 from os.path import exists
 
 import jinja2
 from pds_doi_service.core.entities.doi import Doi
+from pds_doi_service.core.outputs.datacite.schemaentities.datacite_rights import DOIDataCiteRights
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -130,6 +132,11 @@ class DOIDataCiteRecord(DOIRecord):
                         "identifierType": "Site ID",
                     }
                 )
+
+            # Sanitization is performed in Rights.to_endpoint_dict()
+            doi_fields["rights_list"] = [
+                json.dumps(r.convert(DOIDataCiteRights).to_endpoint_dict()) for r in doi_fields["rights_list"]
+            ]
 
             rendered_dois.append(doi_fields)
 
