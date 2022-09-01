@@ -9,7 +9,7 @@ config = DOIConfigUtil().get_config()
 
 JWT_ISSUER = config.get('API_AUTHENTICATION', 'jwt_issuer')
 JWT_SECRET = config.get('API_AUTHENTICATION', 'jwt_secret')
-JWT_LIFETIME_SECONDS = 600
+JWT_LIFETIME_SECONDS = 3600
 JWT_ALGORITHM = "RS256"
 
 
