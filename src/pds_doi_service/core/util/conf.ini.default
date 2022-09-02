@@ -25,9 +25,10 @@ pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
 [API_AUTHENTICATION]
 # Add the issuer of the oauth tokens, for cognito https://cognito-idp.<aws-region>.amazonaws.com/<userpoolID>
 jwt_issuer =
-# Add the public key of the oauth, for cognito, see https://cognito-idp.<aws-region>.amazonaws.com/<userpoolID>/.well-known/jwks.json, one of the kid value
-jwt_secret =
-
+# Add the entire content of the JSON file at https://cognito-idp.<aws-region>.amazonaws.com/<userpoolID>/.well-known/jwks.json
+json_web_key_set =
+jwt_lifetime_seconds = 3600
+jwt_algorithm = RS256
 
 [OTHER]
 logging_level = DEBUG

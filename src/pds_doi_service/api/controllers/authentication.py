@@ -8,21 +8,20 @@ from pds_doi_service.core.util.config_parser import DOIConfigUtil
 config = DOIConfigUtil().get_config()
 
 JWT_ISSUER = config.get('API_AUTHENTICATION', 'jwt_issuer')
-JWT_SECRET = config.get('API_AUTHENTICATION', 'jwt_secret')
-JWT_LIFETIME_SECONDS = 3600
-JWT_ALGORITHM = "RS256"
-
+JSON_WEB_KEY_SET = config.get('API_AUTHENTICATION', 'json_web_key_set')
+JWT_LIFETIME_SECONDS = config.get('API_AUTHENTICATION', 'jwt_lifetime_seconds')
+JWT_ALGORITHM = config.get('API_AUTHENTICATION', 'jwt_algorithm')
 
 def decode_token(token):
     try:
         current_app.logger.debug("try to decode/validate token %s", token)
         return jwt.decode(
             token,
-            JWT_SECRET,
+            JSON_WEB_KEY_SET,
             algorithms=[JWT_ALGORITHM],
             issuer=JWT_ISSUER,
             options={
-                'verify_signature': False,
+                'verify_signature': True,
                 'verify_iss': True
             }
         )
