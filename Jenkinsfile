@@ -91,6 +91,9 @@ pipeline {
             steps {
                 sh "$compose down --remove-orphans --timeout ${shutdown_timeout} --volumes ||:"
                 sh "$compose up --detach --quiet-pull --timeout ${shutdown_timeout}"
+
+                // devops#30: populate the database
+                sh "$compose exec pds-doi-api /usr/local/bin/pds-doi-init --service datacite --prefix 10.13143 --submitter pdsen-ci@jpl.nasa.gov"
             }
             // 🔮 TODO: Include a `post {…}` block to do post-deployment test queries?
         }

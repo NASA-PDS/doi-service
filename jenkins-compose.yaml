@@ -82,6 +82,7 @@ services:
         depends_on:
             -   pds-doi-api
 
+
 # Volumes
 # -------
 #
@@ -93,7 +94,6 @@ volumes:
         labels:
             org.label-schema.name: DOI Persistence
             org.label-schema.description: Volume with a SQLite database for use by the DOI API service
-
 
 
 # Misc
