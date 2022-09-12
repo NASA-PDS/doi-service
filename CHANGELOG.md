@@ -1,16 +1,54 @@
 # Changelog
 
-## [2.2.0](https://github.com/NASA-PDS/doi-service/tree/2.2.0) (2022-04-14)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-09-01)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.4-dev...2.2.0)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.0-dev...«unknown»)
+
+**Requirements:**
+
+- As a DOI user, I would like to know the copyright for PDS data [\#335](https://github.com/NASA-PDS/doi-service/issues/335)
+- As a DOI user, I would like to know the licensing information PDS data [\#224](https://github.com/NASA-PDS/doi-service/issues/224)
+
+**Improvements:**
+
+- Add licensing information to DOI metadata for new DOIs [\#225](https://github.com/NASA-PDS/doi-service/issues/225)
+
+## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-08-25)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...v2.3.0-dev)
 
 **Defects:**
 
-- Deprecate VCO and Akatsuki DOIs [\#324](https://github.com/NASA-PDS/doi-service/issues/324) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+- dataCite reserve error on title [\#350](https://github.com/NASA-PDS/doi-service/issues/350) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
+- DOI-service application inaccurately reports LID as being invalid [\#336](https://github.com/NASA-PDS/doi-service/issues/336) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
-## [v2.1.4-dev](https://github.com/NASA-PDS/doi-service/tree/v2.1.4-dev) (2022-03-25)
+**Other closed issues:**
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...v2.1.4-dev)
+- Tag and deploy new release per \#331 [\#342](https://github.com/NASA-PDS/doi-service/issues/342)
+
+## [v2.2.1](https://github.com/NASA-PDS/doi-service/tree/v2.2.1) (2022-07-27)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1)
+
+**Requirements:**
+
+- As a user, I want to release a DOI with a label that does not contain the DOI [\#344](https://github.com/NASA-PDS/doi-service/issues/344)
+- The software shall validate the DOI metadata when reserving, releasing, or updating a DOI. [\#13](https://github.com/NASA-PDS/doi-service/issues/13)
+- The software shall release a DOI \(making it findable\). [\#7](https://github.com/NASA-PDS/doi-service/issues/7)
+
+**Defects:**
+
+- Fix broken build [\#341](https://github.com/NASA-PDS/doi-service/issues/341) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+- doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+- Valid PDS4 xml input is converted into an invalid json that fails internal datacite validator [\#328](https://github.com/NASA-PDS/doi-service/issues/328) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)] [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+
+**Other closed issues:**
+
+- Develop script to sync DOIs to registry [\#249](https://github.com/NASA-PDS/doi-service/issues/249)
+
+## [v2.2.0](https://github.com/NASA-PDS/doi-service/tree/v2.2.0) (2022-04-14)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.1.3...v2.2.0)
 
 **Requirements:**
 
@@ -20,6 +58,7 @@
 **Defects:**
 
 - Fix issues related to integration with Web UI [\#326](https://github.com/NASA-PDS/doi-service/issues/326) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
+- Deprecate VCO and Akatsuki DOIs [\#324](https://github.com/NASA-PDS/doi-service/issues/324) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - deactivate registered cassini doi 10.17189/1517823 [\#321](https://github.com/NASA-PDS/doi-service/issues/321) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Corruption in local database with invalid JSON [\#318](https://github.com/NASA-PDS/doi-service/issues/318) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - Test DOIs are showing up in pds-gamma DOI search now linked from operations Citing PDS Data page [\#310](https://github.com/NASA-PDS/doi-service/issues/310) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
@@ -49,7 +88,7 @@
 
 **Defects:**
 
-- Document need to be update after adding the update argument [\#313](https://github.com/NASA-PDS/doi-service/issues/313)
+- Document need to be update after adding the update argument [\#313](https://github.com/NASA-PDS/doi-service/issues/313) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - --no-review argument has potential to be confused with -n \(node ID\) argument [\#305](https://github.com/NASA-PDS/doi-service/issues/305) [[s.low](https://github.com/NASA-PDS/doi-service/labels/s.low)]
 - identifiers vs alternateIdentifiers appear disconnected from current DataCite schema [\#303](https://github.com/NASA-PDS/doi-service/issues/303) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 

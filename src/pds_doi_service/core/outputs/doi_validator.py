@@ -347,9 +347,10 @@ class DOIValidator:
         lid_tokens = lid.split(":")
 
         try:
-            # Make sure we got a URN
-            if lid_tokens[0] != "urn":
-                raise InvalidIdentifierException('LIDVID must start with "urn"')
+            # Make sure the prescribed static fields are correct
+            required_prefix_elements = ["urn", "nasa", "pds"]
+            if lid_tokens[:3] != required_prefix_elements:
+                raise InvalidIdentifierException(f"LIDVID must start with elements {required_prefix_elements}")
 
             # Make sure we got the minimum number of fields, and that
             # the number of fields is consistent with the product type
@@ -361,25 +362,32 @@ class DOIValidator:
                 )
 
             # Now check each field for the expected set of characters
-            token_regex = re.compile(r"[a-z0-9][a-z0-9-._]{0,31}")
+            token_regex = re.compile(r"[a-z0-9-._]*")
 
             for index, token in enumerate(lid_tokens):
                 if not token_regex.fullmatch(token):
                     raise InvalidIdentifierException(
-                        f"LIDVID field {index + 1} ({token}) is invalid. "
-                        f"Fields must begin with a letter or digit, and only "
-                        f"consist of letters, digits, hyphens (-), underscores (_) "
-                        f"or periods (.)"
+                        f"LID field {index + 1} ({token}) is invalid. "
+                        f"Fields must only consist of lowercase letters, digits, "
+                        f"hyphens (-), underscores (_) or periods (.), per PDS SR Sec. 6D.2"
                     )
 
-            # Finally, make sure the VID conforms to a version number
+            # Make sure the VID conforms to a version number
             version_regex = re.compile(r"^\d+\.\d+$")
 
             if vid and not version_regex.fullmatch(vid):
                 raise InvalidIdentifierException(
                     f"Parsed VID ({vid}) does not conform to a valid version identifier. "
                     "Version identifier must consist only of a major and minor version "
-                    "joined with a period (ex: 1.0)"
+                    "joined with a period (ex: 1.0), per PDS SR Sec. 6D.3"
+                )
+
+            # Finally, ensure the whole identifier conforms to the length constraint
+            identifier_max_length = 255
+            if not len(doi.pds_identifier) <= identifier_max_length:
+                raise InvalidIdentifierException(
+                    f"LIDVID {doi.pds_identifier} does not conform to PDS identifier max length constraint "
+                    f"({identifier_max_length}), per PDS SR Sec. 6D"
                 )
         except InvalidIdentifierException as err:
             raise InvalidIdentifierException(

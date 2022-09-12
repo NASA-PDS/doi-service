@@ -16,8 +16,12 @@ from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from enum import unique
+from typing import List
 from typing import Optional
 
+from pds_doi_service.core.outputs.schemaentities.rights import CC0_LICENSE
+from pds_doi_service.core.outputs.schemaentities.rights import GOVERNMENT_WORKS_COPYRIGHT
+from pds_doi_service.core.outputs.schemaentities.rights import Rights
 from pds_doi_service.core.util.general_util import get_global_keywords
 
 
@@ -126,6 +130,7 @@ class Doi:
     date_record_updated: Optional[datetime] = None
     event: Optional[DoiEvent] = None
     input_source: Optional[str] = None
+    rights_list: List[Rights] = field(default_factory=lambda: [GOVERNMENT_WORKS_COPYRIGHT, CC0_LICENSE])
 
 
 @dataclass

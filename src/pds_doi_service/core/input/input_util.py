@@ -135,9 +135,9 @@ class DOIInputUtil:
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
-        # Check if we were handed a PSD4 label
+        # Check if we were handed a PDS4 label
         if self._label_util.is_pds4_label(xml_tree):
-            logger.info("Parsing xml file %s as a PSD4 label", basename(xml_path))
+            logger.info("Parsing xml file %s as a PDS4 label", basename(xml_path))
 
             try:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))

@@ -14,6 +14,7 @@ Contains classes used to parse response labels from DataCite DOI service request
 import html
 import json
 from datetime import datetime
+from typing import List
 
 from dateutil.parser import isoparse
 from distutils.version import LooseVersion
@@ -25,6 +26,7 @@ from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.entities.exceptions import UnknownDoiException
 from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.entities.exceptions import UnknownNodeException
+from pds_doi_service.core.outputs.datacite.schemaentities.datacite_rights import DOIDataCiteRights
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_parser import DOIWebParser
 from pds_doi_service.core.util.general_util import get_logger
@@ -59,6 +61,7 @@ class DOIDataCiteWebParser(DOIWebParser):
         "date_record_updated",
         "contributor",
         "event",
+        "rights_list",
     ]
 
     _mandatory_fields = [
@@ -103,12 +106,26 @@ class DOIDataCiteWebParser(DOIWebParser):
             raise UserWarning(f'Provided event "{record["event"]}" could not be parsed to a DoiEvent')
 
     @staticmethod
+    def _parse_rights_list(record) -> List[DOIDataCiteRights]:
+        try:
+            elements = record["rightsList"]
+            return [DOIDataCiteRights.from_endpoint_data(element) for element in elements]
+        except KeyError:
+            raise UserWarning('Could not parse optional field "rights_list"')
+
+    @staticmethod
     def _parse_identifiers(record):
         try:
             identifiers = record["identifiers"]
 
             for identifier in identifiers:
-                identifier["identifier"] = identifier["identifier"].strip()
+                if identifier["identifier"] is None:
+                    logger.warn(
+                        f"Odd metadata. NoneType identifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
+                    )
+                    identifiers.remove(identifier)
+                else:
+                    identifier["identifier"] = identifier["identifier"].strip()
 
             return identifiers
         except KeyError:

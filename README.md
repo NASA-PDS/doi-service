@@ -13,7 +13,7 @@ The Planetary Data System (PDS) Digital Object Identifier (DOI) Service provides
 
 ## User Documentation
 
-Please visit the documentation at: https://nasa-pds.github.io/pds-doi-service/
+Please visit the documentation at: https://nasa-pds.github.io/doi-service/
 
 
 ## Developers
@@ -67,6 +67,14 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     [PDS4_DICTIONARY]
     url = https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_JSON_1D00.JSON
     pds_node_identifier = 0001_NASA_PDS_1.pds.Node.pds.name
+
+    [API_AUTHENTICATION]
+    # Add the issuer of the oauth tokens, for cognito https://cognito-idp.<aws-region>.amazonaws.com/<userpoolID>
+    jwt_issuer =
+    # Add the entire content of the JSON file at https://cognito-idp.<aws-region>.amazonaws.com/<userpoolID>/.well-known/jwks.json
+    json_web_key_set =
+    jwt_lifetime_seconds = 3600
+    jwt_algorithm = RS256
 
     [OTHER]
     logging_level = INFO
