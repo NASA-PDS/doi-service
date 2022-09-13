@@ -84,7 +84,7 @@ def prepare_email_message(
     msg["To"] = receiver_email
 
     email_content = prepare_email_content(first_date, last_date, modified_doi_records)
-    msg.attach(MIMEText(email_content))
+    msg.attach(MIMEText(email_content, 'html'))
     attachment_filename = f'updated_dois_{first_date.isoformat()}_{last_date.isoformat()}.json'
     attach_json_data(attachment_filename, modified_doi_records, msg)
 
