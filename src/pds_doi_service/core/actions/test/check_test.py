@@ -16,6 +16,8 @@ from unittest.mock import patch
 import pds_doi_service.core.outputs.datacite.datacite_web_client
 import pds_doi_service.core.outputs.osti.osti_web_client
 from pds_doi_service.core.actions import DOICoreActionCheck
+from pds_doi_service.core.actions.test.util.email import capture_email
+from pds_doi_service.core.actions.test.util.email import get_local_smtp_patched_config
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -188,26 +190,7 @@ class CheckActionTestCase(unittest.TestCase):
         self.assertEqual(pending_record["doi"], "10.17189/29348")
         self.assertEqual(pending_record["identifier"], "urn:nasa:pds:lab_shocked_feldspars::1.0")
 
-    def get_config_patch(self):
-        """
-        Return a modified default config that points to a local test smtp
-        server for use with the email test
-        """
-        parser = configparser.ConfigParser()
-
-        # default configuration
-        conf_default = "conf.ini.default"
-        conf_default_path = abspath(join(dirname(__file__), os.pardir, os.pardir, "util", conf_default))
-
-        parser.read(conf_default_path)
-        parser["OTHER"]["emailer_local_host"] = "localhost"
-        parser["OTHER"]["emailer_port"] = "1025"
-
-        parser = DOIConfigUtil._resolve_relative_path(parser)
-
-        return parser
-
-    @patch.object(pds_doi_service.core.util.config_parser.DOIConfigUtil, "get_config", get_config_patch)
+    @patch.object(pds_doi_service.core.util.config_parser.DOIConfigUtil, "get_config", get_local_smtp_patched_config)
     @patch.object(
         pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "query_doi", webclient_query_patch_nominal
     )
@@ -221,30 +204,7 @@ class CheckActionTestCase(unittest.TestCase):
         # Create a new check action so our patched config is pulled in
         action = DOICoreActionCheck(self.db_name)
 
-        with tempfile.TemporaryFile() as temp_file:
-            # Stand up a subprocess running a debug smtpd server
-            # By default, all this server is does is echo email payloads to
-            # standard out, so provide a temp file to capture it
-            debug_email_proc = subprocess.Popen(
-                ["python", "-u", "-m", "smtpd", "-n", "-c", "DebuggingServer", "localhost:1025"], stdout=temp_file
-            )
-
-            # Give the debug smtp server a chance to start listening
-            time.sleep(1)
-
-            try:
-                # Run the check action and have it send an email w/ attachment
-                action.run(email=True, attachment=True, submitter="email-test@email.com")
-
-                # Read the raw email contents (payload) from the subprocess
-                # into a string
-                temp_file.seek(0)
-                email_contents = temp_file.read()
-                message = message_from_bytes(email_contents).get_payload()
-            finally:
-                # Send the debug smtp server a ctrl+C and wait for it to stop
-                os.kill(debug_email_proc.pid, signal.SIGINT)
-                debug_email_proc.wait()
+        message = capture_email(lambda: action.run(email=True, attachment=True, submitter="email-test@email.com"))
 
         # Run some string searches on the email body to ensure what we expect
         # made it in
