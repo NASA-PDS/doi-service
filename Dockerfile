@@ -33,7 +33,7 @@ FROM python:3.9-slim
 RUN mkdir --parents /usr/src/app
 WORKDIR /usr/src/app
 
-COPY setup.py setup.cfg versioneer.py /usr/src/app/
+COPY setup.py setup.cfg /usr/src/app/
 COPY src/ /usr/src/app/src/
 RUN pip3 install --no-cache-dir /usr/src/app
 

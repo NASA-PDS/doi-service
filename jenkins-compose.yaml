@@ -1,0 +1,108 @@
+# Copyright © 2022, California Institute of Technology ("Caltech").
+# U.S. Government sponsorship acknowledged.
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# • Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# • Redistributions must reproduce the above copyright notice, this list of
+#   conditions and the following disclaimer in the documentation and/or other
+#   materials provided with the distribution.
+# • Neither the name of Caltech nor its operating division, the Jet Propulsion
+#   Laboratory, nor the names of its contributors may be used to endorse or
+#   promote products derived from this software without specific prior written
+#   permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+---
+
+# Services
+# --------
+#
+# The containers that comprise the DOI service.
+
+services:
+    # DOI API
+    # ~~~~~~~
+    #
+    # Actual DOI ReST-based API.
+    pds-doi-api:
+        image: ${PDS_IMAGE_OWNER-nasapds/}pds-doi-service:${PDS_DOI_SERVICE_TAG:-latest}
+        ports:
+            -
+                target: 8080
+                published: ${PDS_DOI_PUBLISHED_PORT:-3176}
+                protocol: tcp
+                mode: host
+        working_dir: /usr/src/app
+        volumes:
+            -
+                type: volume
+                source: doi-data
+                target: /usr/src/data
+        environment:
+            # By setting this variable in the composition file, it supersedes anything set in
+            # doi_service.env. This is how we ensure the SQLite file is written to the doi-data
+            # persistent volume.
+            OTHER_DB_FILE: /usr/src/data/doi.db
+        env_file:
+            -   doi_service.env
+
+    # TLS Termination
+    # ~~~~~~~~~~~~~~~
+    #
+    # For https support with self-signed certificate.
+    tls-termination:
+        image: nasapds/proxycrypt:latest
+        environment:
+            PROXY_URL: http://pds-doi-api:8080/
+            PROXY_REDIRECT: default
+            # This'll be provided by Jenkins:
+            CERT_CN:
+        ports:
+            -
+                target: 443
+                published: ${PDS_DOI_TLS_PORT:-3177}
+                protocol: tcp
+                mode: host
+        depends_on:
+            -   pds-doi-api
+
+
+# Volumes
+# -------
+#
+# Persistence happens here.
+
+volumes:
+    doi-data:
+        driver: local
+        labels:
+            org.label-schema.name: DOI Persistence
+            org.label-schema.description: Volume with a SQLite database for use by the DOI API service
+
+
+# Misc
+# ----
+#
+# Only thing we have here is some Docker Compose metadata.
+
+version: '3.9'
+
+...
+
+# -*- mode: YAML; tab-width: 4 -*-

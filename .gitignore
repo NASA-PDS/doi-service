@@ -75,6 +75,7 @@ typescript
 
 # Project-specific
 pds_doi_service.ini
+doi_service.env
 allure/
 WhereAmI.py
 doi.db

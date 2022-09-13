@@ -32,6 +32,12 @@ Install the package and its dependencies for development into the virtual enviro
 
     pip install --editable '.[dev]'
 
+If you get an error like
+
+    src/types.h:36:2: error: You need a compatible libgit2 version (1.1.x)
+
+then you're probably using [brew.sh](https://brew.sh)'s Python 3.10. Use their Python 3.9 instead.
+
 Update your local configuration to access the DOI service provider's test server.
 
 Create a file in the base directory of the project named `pds_doi_service.ini`; the following may be used as a template
@@ -74,7 +80,7 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     logging_level = INFO
     doi_publisher = NASA Planetary Data System
     global_keyword_values = PDS,PDS4
-    pds_uri = http://pds.nasa.gov/pds4/pds/v1
+    pds_uri = https://pds.nasa.gov/pds4/pds/v1/
     transaction_dir = ./transaction_history
     db_file = doi.db
     db_table = doi
@@ -97,6 +103,7 @@ $ pds-doi-api
 ```
 
 The started service documentation is available on http://localhost:8080/PDS_APIs/pds_doi_api/0.2/ui/
+
 👉 **Note:** When the `api_valid_referrers` option is set in `pds_doi_service.ini`, this service documentation UI will be unavailable.
 
 
@@ -111,14 +118,18 @@ $ # starting up a container
 $ docker container run --publish 8080:8080 pds-doi-service
 ```
 
-However, note that when launching the container via `docker container run`, all configuration values are derived from the default INI file bundled with the repo. To override the configuration, it is recommended to launch the service via docker-compose:
+However, note that when launching the container via `docker container run`, all configuration values are derived from the default INI file bundled with the repository. To override the configuration, it is recommended to launch the service via a Docker Composition:
 
 ```console
+$ # Make a copy of the docker composition environment template:
+$ cp doi_service.env.in doi_service.env
+$ # Edit the environment file, setting the credentials within:
+$ vi doi_service.env
+$ # Start the composition; on some systems, `docker compose` is `docker-compose`:
 $ docker compose up
 ```
 
-This will launch the DOI Service container using the top-level `docker-compose.yml` file, which specifies that environment variables be imported from `doi_service.env`. Modify `doi_service.env` to define any configuration values to override when the service is launched.
-
+This will launch the DOI Service container using the top-level `docker-compose.yml` file, which specifies that environment variables be imported from `doi_service.env`. Modify `doi_service.env` (after copying it from `doi_service.env.in`) to define any configuration values to override when the service is launched.
 
 ## Test
 
