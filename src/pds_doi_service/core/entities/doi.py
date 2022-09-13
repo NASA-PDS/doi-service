@@ -12,7 +12,8 @@ doi.py
 Contains the dataclass and enumeration definitions for Doi objects.
 """
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
+from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 from enum import Enum
