@@ -4,8 +4,8 @@ import signal
 import subprocess
 import tempfile
 import time
-from email import message_from_bytes
 from email.message import Message
+from email.parser import Parser
 from typing import Callable
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
@@ -52,14 +52,19 @@ def capture_email(f: Callable[[], None], port: int = 1025) -> Message:
         try:
             # Run the check action and have it send an email w/ attachment
             f()
-            # Read the raw email contents (payload) from the subprocess
-            # into a string
+
+            # Isolate the payload from the SMTP subprocess stdout and parse it
             temp_file.seek(0)
-            email_contents = temp_file.read()
-            message = message_from_bytes(email_contents).get_payload()
+            message_lines = temp_file.readlines()[1:-1]  # strip the leading/trailing server messages
+            cleaned_message_lines = [
+                bytes.decode(l)[2:-2] for l in message_lines
+            ]  # strip the leading "b'" and trailing "'" from each line
+            email_contents = "\n".join(cleaned_message_lines)
+
+            message = Parser().parsestr(email_contents)
         finally:
             # Send the debug smtp server a ctrl+C and wait for it to stop
             os.kill(debug_email_proc.pid, signal.SIGINT)
             debug_email_proc.wait()
 
-        return message
+    return message

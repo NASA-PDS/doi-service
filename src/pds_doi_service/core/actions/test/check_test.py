@@ -205,18 +205,19 @@ class CheckActionTestCase(unittest.TestCase):
         action = DOICoreActionCheck(self.db_name)
 
         message = capture_email(lambda: action.run(email=True, attachment=True, submitter="email-test@email.com"))
+        html_part, attachment_part = message.get_payload()
+        attachment = attachment_part.get_payload()[0].get_payload()[0]
 
-        # Run some string searches on the email body to ensure what we expect
-        # made it in
-
-        # Email address provided to check action should be present
-        self.assertIn("email-test@email.com", message)
+        # Email address provided to check action should be present in recipients
+        recipients = message["To"].strip().split(", ")
+        self.assertIn("email-test@email.com", recipients)
 
         # Subject line should be present
-        self.assertIn("DOI Submission Status Report For Node", message)
+        self.assertTrue(message["Subject"].strip().startswith("DOI Submission Status Report For Node"))
 
         # Attachment should also be provided
-        self.assertIn("Content-Disposition: attachment; filename=doi_status_", message)
+        self.assertTrue(attachment["Content-Disposition"].startswith("attachment; filename=doi_status_"))
+        self.assertTrue(attachment["Content-Disposition"].endswith(".json"))
 
 
 if __name__ == "__main__":
