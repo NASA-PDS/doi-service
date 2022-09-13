@@ -1,5 +1,6 @@
 import os.path
 from pds_doi_service.core.actions.roundup import run as run_weekly_roundup
+from pds_doi_service.core.db.doi_database import DOIDataBase
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -10,7 +11,8 @@ if __name__ == '__main__':
     db_filepath = os.path.abspath(config['OTHER']['db_file'])
     sender_email_address = config['OTHER']['emailer_sender']
     receiver_email_address = config['OTHER']['emailer_receivers']
+    db = DOIDataBase(db_filepath)
 
-    run_weekly_roundup(db_filepath, sender_email_address, receiver_email_address)
+    run_weekly_roundup(db, sender_email_address, receiver_email_address)
 
     logging.info('Completed DOI weekly roundup email transmission')

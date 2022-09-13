@@ -25,8 +25,8 @@ def get_start_of_local_week() -> datetime:
     return start_of_today.astimezone() - timedelta(days=today.weekday())
 
 
-def fetch_dois_modified_between(begin: datetime, end: datetime, db_filepath) -> List[DoiRecord]:
-    doi_records = DOIDataBase(db_filepath).select_latest_records({})
+def fetch_dois_modified_between(begin: datetime, end: datetime, database: DOIDataBase) -> List[DoiRecord]:
+    doi_records = database.select_latest_records({})
     return [r for r in doi_records if begin <= r.date_added < end or begin <= r.date_updated < end]
 
 
@@ -91,12 +91,12 @@ def prepare_email_message(
     return msg
 
 
-def run(db_filepath: str, sender_email: str, receiver_email: str) -> None:
+def run(database: DOIDataBase, sender_email: str, receiver_email: str) -> None:
     target_week_begin = get_start_of_local_week() - timedelta(days=7)
     target_week_end = target_week_begin + timedelta(days=7, microseconds=-1)
     last_date_of_week = (target_week_end - timedelta(microseconds=1)).date()
 
-    modified_doi_records = fetch_dois_modified_between(target_week_begin, target_week_end, db_filepath)
+    modified_doi_records = fetch_dois_modified_between(target_week_begin, target_week_end, database)
 
     msg = prepare_email_message(
         sender_email, receiver_email, target_week_begin.date(), last_date_of_week, modified_doi_records
