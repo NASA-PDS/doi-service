@@ -37,12 +37,6 @@ COPY setup.py setup.cfg /usr/src/app/
 COPY src/ /usr/src/app/src/
 RUN pip3 install --no-cache-dir /usr/src/app
 
-# The DOI service is weird and includes one file outside of its namespace package, `contants.py`,
-# which means it doesn't get included in an installation. So we have to manually install it. Why
-# is the DOI service this way? I don't know! 🤷‍♀️
-
-COPY src/constants.py /usr/local/lib/python3.9/site-packages/
-
 EXPOSE 8080
 ENTRYPOINT ["python3"]
 CMD ["-m", "pds_doi_service.api"]
