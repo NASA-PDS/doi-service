@@ -1,6 +1,10 @@
+import json
 import os.path
 from datetime import datetime, timedelta, date
-from email.message import EmailMessage
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import List, Dict
 
 import jinja2
@@ -59,18 +63,30 @@ def prepare_email_content(first_date: date, last_date: date, modified_doi_record
     return full_content
 
 
+def attach_json_data(filename: str, doi_records: List[DoiRecord], msg: MIMEMultipart) -> None:
+    part = MIMEBase('application', "octet-stream")
+    data = json.dumps([r.to_json_dict() for r in doi_records])
+    part.set_payload(data)
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition',
+                    f'attachment; filename={filename}')
+    msg.attach(part)
+
+
 def prepare_email_message(
         sender_email: str, receiver_email: str,
-        first_date: date, last_date: date, modified_doi_records: List[DoiRecord]) -> EmailMessage:
+        first_date: date, last_date: date, modified_doi_records: List[DoiRecord]) -> MIMEMultipart:
     email_subject = f"DOI WEEKLY ROUNDUP: {first_date} through {last_date}"
 
-    msg = EmailMessage()
+    msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["Subject"] = email_subject
     msg["To"] = receiver_email
 
     email_content = prepare_email_content(first_date, last_date, modified_doi_records)
-    msg.set_content(email_content)
+    msg.attach(MIMEText(email_content))
+    attachment_filename = f'updated_dois_{first_date.isoformat()}_{last_date.isoformat()}.json'
+    attach_json_data(attachment_filename, modified_doi_records, msg)
 
     return msg
 
