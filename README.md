@@ -18,6 +18,8 @@ Please visit the documentation at: https://nasa-pds.github.io/doi-service/
 
 ## Developers
 
+[JPL Internal Wiki](https://wiki.jpl.nasa.gov/display/PDSEN/DOI+Service)
+
 Get the code and work on a branch:
 
     git clone ...
