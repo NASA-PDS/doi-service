@@ -8,7 +8,8 @@ from datetime import datetime
 from datetime import timedelta
 from email.message import Message
 
-from pds_doi_service.core.actions.roundup import run as do_roundup
+import jinja2
+from pds_doi_service.core.actions.roundup import run as do_roundup, get_start_of_local_week
 from pds_doi_service.core.actions.test.util.email import capture_email
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
@@ -29,6 +30,11 @@ class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
 
     sender = "test_sender@jpl.nasa.gov"
     recipient = "test_recipient@jpl.nasa.gov"
+
+    # Some reference datetimes that are referenced in SetUpClass and in tests
+    _now = datetime.now()
+    _last_week = _now - timedelta(days=4)
+    _ages_ago = _now - timedelta(days=30)
 
     @classmethod
     def setUpClass(cls):
@@ -58,10 +64,16 @@ class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
         self.assertEqual(self.recipient, self._message["To"])
 
     def test_html_content(self):
+        template_dict = {
+             "week_start": get_start_of_local_week().date() - timedelta(days=7),
+             "week_end": get_start_of_local_week().date() - timedelta(days=1),
+             "modifications_date": self._last_week.date(),
+        }
         html_content = self._message.get_payload(0).get_payload()
-        expected_content_filepath = os.path.join(self.resources_dir, "roundup_email_body.html")
+        expected_content_filepath = os.path.join(self.resources_dir, "roundup_email_body.jinja2")
         with open(expected_content_filepath, "r") as infile:
-            expected_html_content = infile.read()
+            template = jinja2.Template(infile.read())
+            expected_html_content = template.render(template_dict)
         self.assertEqual(expected_html_content.replace(" ", "").strip(), html_content.replace(" ", "").strip())
 
     def test_attachment_content(self):
@@ -80,13 +92,11 @@ class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
 
         self.assertEqual(expected_data, attachment_data)
 
-    @staticmethod
-    def generate_doi_record(uid: str, added_last_week: bool, updated_last_week: bool):
+
+    @classmethod
+    def generate_doi_record(cls, uid: str, added_last_week: bool, updated_last_week: bool):
         if added_last_week:
             assert updated_last_week
-        now = datetime.now()
-        last_week = now - timedelta(days=4)
-        ages_ago = now - timedelta(days=30)
 
         pds_id = f"urn:nasa:pds:product_{uid}::1.0"
         doi_id = f"10.17189/{uid}"
@@ -94,8 +104,8 @@ class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
         return DoiRecord(
             identifier=pds_id,
             status=DoiStatus.Pending,
-            date_added=last_week if added_last_week else ages_ago,
-            date_updated=last_week if updated_last_week else ages_ago,
+            date_added=cls._last_week if added_last_week else cls._ages_ago,
+            date_updated=cls._last_week if updated_last_week else cls._ages_ago,
             submitter="img-submitter@jpl.nasa.gov",
             title="Laboratory Shocked Feldspars Bundle",
             type=ProductType.Collection,
