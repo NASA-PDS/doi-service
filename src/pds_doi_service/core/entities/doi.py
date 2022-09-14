@@ -18,7 +18,8 @@ from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from enum import unique
-from typing import List, Dict
+from typing import Dict
+from typing import List
 from typing import Optional
 
 from pds_doi_service.core.outputs.schemaentities.rights import CC0_LICENSE

@@ -9,7 +9,8 @@ from datetime import timedelta
 from email.message import Message
 
 import jinja2
-from pds_doi_service.core.actions.roundup import run as do_roundup, get_start_of_local_week
+from pds_doi_service.core.actions.roundup import get_start_of_local_week
+from pds_doi_service.core.actions.roundup import run as do_roundup
 from pds_doi_service.core.actions.test.util.email import capture_email
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
@@ -18,7 +19,7 @@ from pds_doi_service.core.entities.doi import ProductType
 from pkg_resources import resource_filename
 
 
-@unittest.skipIf(os.environ.get('CI') == 'true', "Test is currently broken in Github Actions workflow. See #<TBD>")
+@unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #361")
 class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
     tests_dir = os.path.abspath(resource_filename(__name__, ""))
     resources_dir = os.path.join(tests_dir, "data", "roundup")
@@ -66,9 +67,9 @@ class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
 
     def test_html_content(self):
         template_dict = {
-             "week_start": get_start_of_local_week().date() - timedelta(days=7),
-             "week_end": get_start_of_local_week().date() - timedelta(days=1),
-             "modifications_date": self._last_week.date(),
+            "week_start": get_start_of_local_week().date() - timedelta(days=7),
+            "week_end": get_start_of_local_week().date() - timedelta(days=1),
+            "modifications_date": self._last_week.date(),
         }
         html_content = self._message.get_payload(0).get_payload()
         expected_content_filepath = os.path.join(self.resources_dir, "roundup_email_body.jinja2")
@@ -92,7 +93,6 @@ class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
                     r.pop(k)
 
         self.assertEqual(expected_data, attachment_data)
-
 
     @classmethod
     def generate_doi_record(cls, uid: str, added_last_week: bool, updated_last_week: bool):
