@@ -70,7 +70,7 @@ class Emailer:
 
         Parameters
         ----------
-        message : Union[email.message.Message,
+        message : email.message.Message,
             A message object with the 'From' and 'To:' and 'Subject' already
             filled in.
 
