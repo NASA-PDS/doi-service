@@ -15,6 +15,7 @@ import configparser
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from email.message import Message
@@ -56,7 +57,7 @@ def capture_email(f: Callable[[], None], port: int = 1025) -> Message:
         # By default, all this server is does is echo email payloads to
         # standard out, so provide a temp file to capture it
         debug_email_proc = subprocess.Popen(
-            ["python", "-u", "-m", "smtpd", "-n", "-c", "DebuggingServer", f"localhost:{port}"], stdout=temp_file
+            [sys.executable, "-u", "-m", "smtpd", "-n", "-c", "DebuggingServer", f"localhost:{port}"], stdout=temp_file
         )
 
         # Give the debug smtp server a chance to start listening
