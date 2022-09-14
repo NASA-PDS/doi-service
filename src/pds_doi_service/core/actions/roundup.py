@@ -39,6 +39,7 @@ def get_email_content_template(template_filename: str = "email_weekly_roundup.ji
 
 
 def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, str]:
+    """Map a DoiRecord to the set of information required for rendering it in the template"""
     update_type = "submitted" if record.date_added == record.date_updated else "updated"
     prepared_record = {
         "datacite_id": record.doi,
@@ -51,7 +52,7 @@ def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, str]:
     return prepared_record
 
 
-def prepare_email_content(first_date: date, last_date: date, modified_doi_records: List[DoiRecord]) -> str:
+def prepare_email_html_content(first_date: date, last_date: date, modified_doi_records: List[DoiRecord]) -> str:
     template = get_email_content_template()
     template_dict = {
         "first_date": first_date,
@@ -83,7 +84,7 @@ def prepare_email_message(
     msg["Subject"] = email_subject
     msg["To"] = receiver_email
 
-    email_content = prepare_email_content(first_date, last_date, modified_doi_records)
+    email_content = prepare_email_html_content(first_date, last_date, modified_doi_records)
     msg.attach(MIMEText(email_content, "html"))
     attachment_filename = f"updated_dois_{first_date.isoformat()}_{last_date.isoformat()}.json"
     attach_json_data(attachment_filename, modified_doi_records, msg)
@@ -92,6 +93,10 @@ def prepare_email_message(
 
 
 def run(database: DOIDataBase, sender_email: str, receiver_email: str) -> None:
+    """
+    Send an email consisting of a summary of all DOIs updated in the previous week (i.e. between the previous Sunday
+    and the Monday before that, inclusive), with a JSON attachment for those DoiRecords.
+    """
     target_week_begin = get_start_of_local_week() - timedelta(days=7)
     target_week_end = target_week_begin + timedelta(days=7, microseconds=-1)
     last_date_of_week = (target_week_end - timedelta(microseconds=1)).date()
