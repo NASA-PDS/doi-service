@@ -1,3 +1,16 @@
+#
+#  Copyright 2022, by the California Institute of Technology.  ALL RIGHTS
+#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
+#  use must be negotiated with the Office of Technology Transfer at the
+#  California Institute of Technology.
+#
+"""
+======
+email.py
+======
+
+Contains utility functions for testing email functionality.
+"""
 import configparser
 import os
 import signal

@@ -7,9 +7,9 @@ from pds_doi_service.core.util.general_util import get_logger
 
 if __name__ == '__main__':
     """
-    Send an email consisting of a summary of all DOIs updated in the previous week (i.e. between the previous Sunday 
+    Send an email consisting of a summary of all DOIs updated in the previous week (i.e. between the previous Sunday
     and the Monday before that, inclusive), with a JSON attachment for those DoiRecords.
-    
+
     Should be run in a crontab, preferably on Monday, for example:
     0 0 * * MON . path/to/doi-service/venv/bin/python path/to/doi-service/scripts/email_weekly_roundup.py
     """
