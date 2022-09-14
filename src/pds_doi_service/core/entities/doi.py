@@ -18,7 +18,7 @@ from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from enum import unique
-from typing import List
+from typing import List, Dict
 from typing import Optional
 
 from pds_doi_service.core.outputs.schemaentities.rights import CC0_LICENSE
@@ -152,7 +152,7 @@ class DoiRecord:
     transaction_key: str
     is_latest: bool
 
-    def to_json_dict(self) -> str:
+    def to_json_dict(self) -> Dict:
         """Return a json-serializable dict equivalent to this DoiRecord"""
         d = asdict(self)
         for k, v in d.items():
@@ -160,4 +160,4 @@ class DoiRecord:
                 d[k] = v.isoformat()
             elif issubclass(type(v), Enum):
                 d[k] = v.title()
-        return json.dumps(d)
+        return d
