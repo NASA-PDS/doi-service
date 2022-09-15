@@ -12,6 +12,7 @@ check.py
 Contains the definition for the Check action of the Core PDS DOI Service.
 """
 import json
+import os
 from copy import deepcopy
 from datetime import date
 from datetime import datetime
@@ -54,9 +55,12 @@ class DOICoreActionCheck(DOICoreAction):
         self._email = True
         self._attachment = True
 
-        self.email_header_template_file = resource_filename(__name__, "email_template_header.txt")
-
-        self.email_body_template_file = resource_filename(__name__, "email_template_body.txt")
+        self.email_header_template_file = resource_filename(
+            __name__, os.path.join("templates", "email_template_header.txt")
+        )
+        self.email_body_template_file = resource_filename(
+            __name__, os.path.join("templates", "email_template_body.txt")
+        )
 
         # Make sure templates are where we expect them to be
         if not exists(self.email_header_template_file) or not exists(self.email_body_template_file):

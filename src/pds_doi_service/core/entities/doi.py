@@ -11,11 +11,14 @@ doi.py
 
 Contains the dataclass and enumeration definitions for Doi objects.
 """
+import json
+from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from enum import unique
+from typing import Dict
 from typing import List
 from typing import Optional
 
@@ -149,3 +152,13 @@ class DoiRecord:
     doi: str
     transaction_key: str
     is_latest: bool
+
+    def to_json_dict(self) -> Dict:
+        """Return a json-serializable dict equivalent to this DoiRecord"""
+        d = asdict(self)
+        for k, v in d.items():
+            if type(v) is datetime:
+                d[k] = v.isoformat()
+            elif issubclass(type(v), Enum):
+                d[k] = v.title()
+        return d

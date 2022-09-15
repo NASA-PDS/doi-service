@@ -1,4 +1,3 @@
-from abc import ABC
 from dataclasses import asdict
 from dataclasses import dataclass
 from typing import Dict

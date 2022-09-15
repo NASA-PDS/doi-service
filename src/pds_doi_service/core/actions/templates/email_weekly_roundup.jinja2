@@ -1,0 +1,13 @@
+<h2>DataCite DOI Weekly Roundup</h2>
+{% if doi_records %}
+    <p>The following DOIs were reserved, updated or released during the week {{ first_date.strftime('%m/%d') }} through {{ last_date.strftime('%m/%d') }}:</p>
+    <ul>
+        {% for doi in doi_records %}
+            <li>{{ doi.datacite_id }} {{ doi.pds_id }} ({{ doi.status }}) {{ doi.update_type }} {{ doi.last_modified.strftime('%Y-%m-%d') }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No DOI records were reserved, updated or released  modified during the week {{ first_date.strftime('%m/%d') }} through {{ last_date.strftime('%m/%d') }}.</p>
+{% endif %}
+
+<p><a href="mailto:Jordan.Padams@jpl.nasa.gov?subject=doi-service DOI Weekly Roundup">Contact Us</a></p>

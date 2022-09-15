@@ -1,0 +1,30 @@
+[
+  {
+    "identifier": "urn:nasa:pds:product_11111::1.0",
+    "status": "Pending",
+    "date_added": "2022-09-09T17:44:30.165920+00:00",
+    "date_updated": "2022-09-09T17:44:30.165920+00:00",
+    "submitter": "img-submitter@jpl.nasa.gov",
+    "title": "Laboratory Shocked Feldspars Bundle",
+    "type": "Collection",
+    "subtype": "PDS4 Collection",
+    "node_id": "img",
+    "doi": "10.17189/11111",
+    "transaction_key": "./transaction_history/img/2020-06-15T18:42:45.653317",
+    "is_latest": true
+  },
+  {
+    "identifier": "urn:nasa:pds:product_22222::1.0",
+    "status": "Pending",
+    "date_added": "2022-08-14T17:44:30.165940+00:00",
+    "date_updated": "2022-09-09T17:44:30.165940+00:00",
+    "submitter": "img-submitter@jpl.nasa.gov",
+    "title": "Laboratory Shocked Feldspars Bundle",
+    "type": "Collection",
+    "subtype": "PDS4 Collection",
+    "node_id": "img",
+    "doi": "10.17189/22222",
+    "transaction_key": "./transaction_history/img/2020-06-15T18:42:45.653317",
+    "is_latest": true
+  }
+]
