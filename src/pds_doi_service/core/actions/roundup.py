@@ -51,7 +51,7 @@ def get_email_content_template(template_filename: str = "email_weekly_roundup.ji
     return template
 
 
-def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, str]:
+def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, object]:
     """Map a DoiRecord to the set of information required for rendering it in the template"""
     update_type = "submitted" if record.date_added == record.date_updated else "updated"
     prepared_record = {
