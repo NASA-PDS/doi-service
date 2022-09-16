@@ -162,20 +162,20 @@ It is strongly recommended to add `tox -e lint` to your `pre-commit` [git hook](
 You can also run `pytest`, `sphinx-build`, `mypy`, etc., if that's more your speed.
 
 
-### Behavioral testing (for Integration & Testing)
+### ~~Behavioral testing (for Integration & Testing)~~
 
-Behavioral tests are also pre-installed in the Python virtual environment when you run `pip install --editable .[dev]`. Launch those by running:
+~~Behavioral tests are also pre-installed in the Python virtual environment when you run `pip install --editable .[dev]`. Launch those by running:~~
 
     behave
 
-Note this will download reference test data. If they need to be updated you have to first remove your local copy of the reference data (`test/aaDOI_production_submitted_labels`)
+~~Note this will download reference test data. If they need to be updated you have to first remove your local copy of the reference data (`test/aaDOI_production_submitted_labels`)~~
 
-You can also run them for a nicer reporting:
+~~You can also run them for a nicer reporting:~~
 
     behave -f allure_behave.formatter:AllureFormatter -o ./allure ./features
     allure service allure
 
-👉 **Note:** This assumes you have [Allure Test Reporting](http://allure.qatools.ru/) framework installed.
+~~👉 **Note:** This assumes you have [Allure Test Reporting](http://allure.qatools.ru/) framework installed.~~
 
 
 #### Testrail Reporting
