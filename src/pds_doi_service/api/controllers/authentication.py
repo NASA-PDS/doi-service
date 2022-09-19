@@ -2,7 +2,7 @@ import logging
 import time
 
 from flask import current_app
-from jose import jwt
+from jose import jwt  # type: ignore
 from jose import JWTError
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from werkzeug.exceptions import Unauthorized
