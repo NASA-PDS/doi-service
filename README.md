@@ -140,6 +140,8 @@ Testing details are detailed in this section.
 
 ### Tox (for developers)
 
+#### N.B. Updates to pip dependencies are not automatically applied to existing tox virtual environments, to keep unit testing fast.  The simplest way to propagate dependency updates is to delete `./.tox` and run tox again.
+
 [tox](https://tox.readthedocs.io/) is installed automatically during `pip install --editable .[dev]`, and provides virtual environments and run configurations for
 - unit/functional testing
 - linting
