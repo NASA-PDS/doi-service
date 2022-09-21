@@ -26,7 +26,7 @@ class ConfigParserTest(unittest.TestCase):
         parser = DOIConfigParser()
 
         # Populate our config parser with the default INI
-        conf_file_path = resource_filename("pds_doi_service", "core/util/conf.ini.default")
+        conf_file_path = resource_filename("pds_doi_service", "core/util/conf.default.ini")
         parser.read(conf_file_path)
 
         # Ensure we get values from the default INI to begin with

@@ -33,7 +33,7 @@ def get_local_smtp_patched_config(self):
     parser = configparser.ConfigParser()
 
     # default configuration
-    conf_default = "conf.ini.default"
+    conf_default = "conf.default.ini"
     conf_default_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, "util", conf_default)
     )
