@@ -1,8 +1,8 @@
 # Changelog
 
-## [2.3.2](https://github.com/NASA-PDS/doi-service/tree/2.3.2) (2022-09-21)
+## [v2.3.2](https://github.com/NASA-PDS/doi-service/tree/v2.3.2) (2022-09-21)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.2...2.3.2)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.2...v2.3.2)
 
 **Other closed issues:**
 
