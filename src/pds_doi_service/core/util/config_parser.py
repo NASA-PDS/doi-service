@@ -34,7 +34,7 @@ class DOIConfigParser(configparser.ConfigParser):
 
     """
 
-    def get(self, section, option, *, raw=False, vars=None, fallback=object()):
+    def get(self, section, option, *, raw=False, vars=None, fallback=None):
         """
         Overloaded version of ConfigParser.get() which searches the
         current environment for potential configuration values before checking
