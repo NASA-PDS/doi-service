@@ -1,8 +1,20 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-09-01)
+## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-09-21)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.0-dev...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.1...v2.3.0-dev)
+
+**Defects:**
+
+- Unit tests for reserve.py and input\_util.py due to unpinned pandas dependency [\#368](https://github.com/NASA-PDS/doi-service/issues/368)
+
+## [release/2.3.1](https://github.com/NASA-PDS/doi-service/tree/release/2.3.1) (2022-09-20)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.0...release/2.3.1)
+
+## [release/2.3.0](https://github.com/NASA-PDS/doi-service/tree/release/2.3.0) (2022-09-19)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...release/2.3.0)
 
 **Requirements:**
 
@@ -11,20 +23,20 @@
 
 **Improvements:**
 
-- Add licensing information to DOI metadata for new DOIs [\#225](https://github.com/NASA-PDS/doi-service/issues/225)
-
-## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-08-25)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...v2.3.0-dev)
+- As a publisher, I want to be notified when a new DOI has been minted or significant update to the metadata [\#283](https://github.com/NASA-PDS/doi-service/issues/283)
 
 **Defects:**
 
+- \#349 merged with failing unit tests [\#362](https://github.com/NASA-PDS/doi-service/issues/362) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - dataCite reserve error on title [\#350](https://github.com/NASA-PDS/doi-service/issues/350) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
 - DOI-service application inaccurately reports LID as being invalid [\#336](https://github.com/NASA-PDS/doi-service/issues/336) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
 **Other closed issues:**
 
+- Implement COGNITO token verification in the doi-service API [\#348](https://github.com/NASA-PDS/doi-service/issues/348)
 - Tag and deploy new release per \#331 [\#342](https://github.com/NASA-PDS/doi-service/issues/342)
+- SBN DOI records that are incompatible with EN system [\#316](https://github.com/NASA-PDS/doi-service/issues/316)
+- Add licensing information to DOI metadata for new DOIs [\#225](https://github.com/NASA-PDS/doi-service/issues/225)
 
 ## [v2.2.1](https://github.com/NASA-PDS/doi-service/tree/v2.2.1) (2022-07-27)
 
