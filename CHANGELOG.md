@@ -1,8 +1,20 @@
 # Changelog
 
-## [v2.3.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.3.0-dev) (2022-09-21)
+## [2.3.2](https://github.com/NASA-PDS/doi-service/tree/2.3.2) (2022-09-21)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.1...v2.3.0-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.2...2.3.2)
+
+**Other closed issues:**
+
+- Update version spec to indicate Pandas 1.4.4 in setup.cfg [\#369](https://github.com/NASA-PDS/doi-service/issues/369)
+
+## [release/2.3.2](https://github.com/NASA-PDS/doi-service/tree/release/2.3.2) (2022-09-21)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.1...release/2.3.2)
+
+## [v2.3.1](https://github.com/NASA-PDS/doi-service/tree/v2.3.1) (2022-09-21)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.1...v2.3.1)
 
 **Defects:**
 
