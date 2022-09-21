@@ -34,6 +34,14 @@ class DOIConfigParser(configparser.ConfigParser):
 
     """
 
+    @property
+    def config_defaults_filepath(self) -> str:
+        return DOIConfigUtil.get_config_defaults_filepath()
+
+    @property
+    def user_config_filepath(self) -> str:
+        return DOIConfigUtil.get_user_config_filepath()
+
     def get(self, section, option, *, raw=False, vars=None, fallback=None):
         """
         Overloaded version of ConfigParser.get() which searches the
