@@ -63,6 +63,11 @@ class DOIConfigParser(configparser.ConfigParser):
 
 class DOIConfigUtil:
     @staticmethod
+    def get_user_config_filepath():
+        """Return the expected path of the user-specified configuration"""
+        return os.path.join(PROJECT_ROOT_DIR, "pds_doi_service.ini")
+
+    @staticmethod
     def _resolve_relative_path(parser):
         # resolve relative path with sys.prefix base path
         for section in parser.sections():
