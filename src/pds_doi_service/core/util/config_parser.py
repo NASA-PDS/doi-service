@@ -20,7 +20,6 @@ from os.path import abspath
 from os.path import dirname
 from os.path import join
 
-from pds_doi_service.constants import PROJECT_ROOT_DIR
 from pds_doi_service.core.util.logging import get_logger
 from pkg_resources import resource_filename
 
@@ -73,7 +72,7 @@ class DOIConfigUtil:
     @staticmethod
     def get_user_config_filepath():
         """Return the expected path of the user-specified configuration"""
-        return os.path.join(PROJECT_ROOT_DIR, "pds_doi_service.ini")
+        return os.path.join(sys.prefix, "pds_doi_service.ini")
 
     @staticmethod
     def get_config_defaults_filepath():
