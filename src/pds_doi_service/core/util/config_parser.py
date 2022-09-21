@@ -93,24 +93,16 @@ class DOIConfigUtil:
     @staticmethod
     @functools.lru_cache()
     def get_config():
-        parser = DOIConfigParser()
-
-        # default configuration
-        default_config_filename = "conf.ini.default"
-        default_config_filepath = resource_filename(__name__, default_config_filename)
-
-        # user-specified configuration for production
-        user_defined_config_filename = "pds_doi_service.ini"
-        user_defined_config_filepath = os.path.join(PROJECT_ROOT_DIR, user_defined_config_filename)
-
-        # user-specified configuration for development
-        dev_config_filename = "pds_doi_service.ini"
-        dev_config_filepath = abspath(join(dirname(__file__), os.pardir, os.pardir, os.pardir, dev_config_filename))
 
         # Parsed in order, with subsequent config values overwriting values provided in preceding configs
-        config_candidate_filepaths = [default_config_filepath, user_defined_config_filepath, dev_config_filepath]
+        config_candidate_filepaths = [
+            DOIConfigUtil.get_config_defaults_filepath(),
+            DOIConfigUtil.get_user_config_filepath(),
+        ]
 
         logger.info("Searching for configuration files from candidates %s", config_candidate_filepaths)
+
+        parser = DOIConfigParser()
         found = parser.read(config_candidate_filepaths)
 
         if not found:
