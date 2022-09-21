@@ -22,6 +22,7 @@ from pds_doi_service.core.outputs.web_client import DOIWebClient
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_GET
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
+from pds_doi_service.core.util.config_parser import DOIConfigParser
 from pds_doi_service.core.util.general_util import get_logger
 from requests.auth import HTTPBasicAuth
 
@@ -76,13 +77,24 @@ class DOIDataCiteWebClient(DOIWebClient):
             Body of the response label from DataCite.
 
         """
-        config = self._config_util.get_config()
+        config: DOIConfigParser = self._config_util.get_config()
+
+        datacite_config_section = "DATACITE"
+        datacite_username = username or config.get(datacite_config_section, "user")
+        datacite_password = password or config.get(datacite_config_section, "password")
+
+        if datacite_username is None or datacite_password is None:
+            raise RuntimeError(
+                f'Values for configuration keys "user" and "password" must be specified in section '
+                f'"{datacite_config_section}" of {config.user_config_filepath}, or as environment variables '
+                f"DATACITE_USER and DATACITE_PASSWORD"
+            )
 
         response_text = super()._submit_content(
             payload,
             url=url or config.get("DATACITE", "url"),
-            username=username or config.get("DATACITE", "user"),
-            password=password or config.get("DATACITE", "password"),
+            username=datacite_username,
+            password=datacite_password,
             method=method,
             content_type=content_type,
         )
