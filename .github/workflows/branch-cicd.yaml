@@ -28,7 +28,6 @@ jobs:
     branch-testing:
         name: 🪵 Branch Testing
         runs-on: ubuntu-latest
-        environment: branch-integration-testing
         if: github.actor != 'pdsen-ci'
 
         steps:
@@ -62,3 +61,6 @@ jobs:
 
                     tox
                 shell: bash
+                env:
+                    DATACITE_USER: ${{secrets.DATACITE_USER}}
+                    DATACITE_PASSWORD: ${{secrets.DATACITE_PASSWORD}}
