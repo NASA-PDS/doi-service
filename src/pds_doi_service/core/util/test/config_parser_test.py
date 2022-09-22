@@ -30,22 +30,24 @@ class ConfigParserTest(unittest.TestCase):
         parser.read(conf_file_path)
 
         # Ensure we get values from the default INI to begin with
-        self.assertEqual(parser["OSTI"]["user"], "username")
+        self.assertIsNone(parser.get("OSTI", "user"))
         self.assertEqual(parser["PDS4_DICTIONARY"]["pds_node_identifier"], "0001_NASA_PDS_1.pds.Node.pds.name")
         self.assertEqual(parser["OTHER"]["db_file"], "doi.db")
 
         # Now provide some environment variables to override with
-        os.environ["OSTI_USER"] = "actual_username"
-        os.environ["PDS4_DICTIONARY_PDS_NODE_IDENTIFIER"] = "123ABC"
-        os.environ["OTHER_DB_FILE"] = "/path/to/other/doi.db"
+        osti_user_override = "actual_username"
+        node_id_override = "123ABC"
+        other_db_override = "/path/to/other/doi.db"
+
+        os.environ["OSTI_USER"] = osti_user_override
+        os.environ["PDS4_DICTIONARY_PDS_NODE_IDENTIFIER"] = node_id_override
+        os.environ["OTHER_DB_FILE"] = other_db_override
 
         # Our config parser should prioritize the environment variables
         try:
-            self.assertEqual(parser["OSTI"]["user"], os.environ["OSTI_USER"])
-            self.assertEqual(
-                parser["PDS4_DICTIONARY"]["pds_node_identifier"], os.environ["PDS4_DICTIONARY_PDS_NODE_IDENTIFIER"]
-            )
-            self.assertEqual(parser["OTHER"]["db_file"], os.environ["OTHER_DB_FILE"])
+            self.assertEqual(parser.get("OSTI", "user"), osti_user_override)
+            self.assertEqual(parser.get("PDS4_DICTIONARY", "pds_node_identifier"), node_id_override)
+            self.assertEqual(parser.get("OTHER", "db_file"), other_db_override)
         finally:
             os.environ.pop("OSTI_USER")
             os.environ.pop("PDS4_DICTIONARY_PDS_NODE_IDENTIFIER")
