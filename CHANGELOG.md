@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.2](https://github.com/NASA-PDS/doi-service/tree/2.3.2) (2022-09-22)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...2.3.2)
+
+**Other closed issues:**
+
+- Correct pandas pip pin. [\#370](https://github.com/NASA-PDS/doi-service/issues/370)
+
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-09-21)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.2...v2.4.0-dev)
+
 ## [v2.3.2](https://github.com/NASA-PDS/doi-service/tree/v2.3.2) (2022-09-21)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.2...v2.3.2)
