@@ -92,6 +92,11 @@ class DOIConfigUtil:
     @staticmethod
     @functools.lru_cache()
     def get_config():
+        return DOIConfigUtil._get_config()
+
+    @staticmethod
+    def _get_config():
+        """Non-cached version, for improved testability"""
 
         # Parsed in order, with subsequent config values overwriting values provided in preceding configs
         config_candidate_filepaths = [
