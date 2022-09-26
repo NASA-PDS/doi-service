@@ -1,16 +1,24 @@
 # Changelog
 
-## [2.3.2](https://github.com/NASA-PDS/doi-service/tree/2.3.2) (2022-09-22)
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-09-26)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...2.3.2)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.4...v2.4.0-dev)
+
+## [release/2.3.4](https://github.com/NASA-PDS/doi-service/tree/release/2.3.4) (2022-09-26)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.3...release/2.3.4)
+
+**Defects:**
+
+- DOI Service not logging into Datacite to import data [\#371](https://github.com/NASA-PDS/doi-service/issues/371)
+
+## [release/2.3.3](https://github.com/NASA-PDS/doi-service/tree/release/2.3.3) (2022-09-22)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.2...release/2.3.3)
 
 **Other closed issues:**
 
 - Correct pandas pip pin. [\#370](https://github.com/NASA-PDS/doi-service/issues/370)
-
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-09-21)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.2...v2.4.0-dev)
 
 ## [v2.3.2](https://github.com/NASA-PDS/doi-service/tree/v2.3.2) (2022-09-21)
 
