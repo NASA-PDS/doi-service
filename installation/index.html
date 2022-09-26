@@ -33,6 +33,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -239,9 +240,9 @@ following:</p>
 </div>
 <p>Within the directory returned, create a file named <code class="docutils literal notranslate"><span class="pre">pds_doi_service.ini</span></code>.</p>
 <p>In this file you can override any option set in the default configuration file
-<code class="docutils literal notranslate"><span class="pre">pds_doi_service/core/util/conf.ini.default</span></code> found within the package. An
+<code class="docutils literal notranslate"><span class="pre">pds_doi_service/core/util/conf.default.ini</span></code> found within the package. An
 example of this file may be found
-<a class="reference external" href="https://raw.githubusercontent.com/NASA-PDS/pds-doi-service/main/src/pds_doi_service/core/util/conf.ini.default">here</a>.</p>
+<a class="reference external" href="https://raw.githubusercontent.com/NASA-PDS/pds-doi-service/main/src/pds_doi_service/core/util/conf.default.ini">here</a>.</p>
 <p>For example, if you want the service to create production DOIs, update the
 DataCite server url:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DATACITE</span><span class="p">]</span>
