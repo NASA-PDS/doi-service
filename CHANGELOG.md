@@ -1,8 +1,21 @@
 # Changelog
 
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-09-26)
+## [2.3.4](https://github.com/NASA-PDS/doi-service/tree/2.3.4) (2022-09-30)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.4...v2.4.0-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...2.3.4)
+
+**Defects:**
+
+- pds-doi-init loads invalid state from DataCite [\#376](https://github.com/NASA-PDS/doi-service/issues/376)
+- Bulk Record Update notebook contains confusing instructions/labeling [\#374](https://github.com/NASA-PDS/doi-service/issues/374)
+
+**Other closed issues:**
+
+- Update existing DOIs with licensing information [\#226](https://github.com/NASA-PDS/doi-service/issues/226)
+
+## [v2.3.4](https://github.com/NASA-PDS/doi-service/tree/v2.3.4) (2022-09-26)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.4...v2.3.4)
 
 ## [release/2.3.4](https://github.com/NASA-PDS/doi-service/tree/release/2.3.4) (2022-09-26)
 
