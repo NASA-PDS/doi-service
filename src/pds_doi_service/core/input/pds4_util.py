@@ -358,18 +358,25 @@ class DOIPDS4LabelUtil:
         :returns: the parsed entity
         :rtype: Dict[str, Union[str, List[str]]]
         """
+
+        # helper function to encapsulate logic for detecting organizational names
+        def name_str_is_organization(separators: Tuple[str], name: str) -> bool:
+            is_mononym = not any([sep in name for sep in separators])
+            has_trailing_period = name[-1] == "."
+            return is_mononym or has_trailing_period
+
         logger.debug(f"parse full_name {full_name}")
 
         full_name = full_name.strip()
 
         # Detect organization names, which lack separable chunks
-        if not any([sep in full_name for sep in first_last_name_separators]):
+        if name_str_is_organization(first_last_name_separators, full_name):
             entity = {
                 "name": full_name,
                 "affiliation": [
                     full_name,
                 ],
-                "name_type": "Organization",
+                "name_type": "Organizational",
             }
 
             logger.debug(f"parsed organization {entity}")
@@ -390,6 +397,7 @@ class DOIPDS4LabelUtil:
                     first_i, last_i = tuple(first_last_name_order)
 
                 # re-add . if it has been removed as a separator
+                # it's unclear why this is being appended - this should be clarified
                 first_name_suffix = "." if sep == "." else ""
 
                 entity = {
