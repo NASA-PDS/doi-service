@@ -14,6 +14,10 @@ Contains functions and classes for parsing PDS4 XML labels.
 from datetime import datetime
 from datetime import timezone
 from enum import Enum
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -340,13 +344,25 @@ class DOIPDS4LabelUtil:
 
     @staticmethod
     def _get_name_components(
-        full_name, first_last_name_order, first_last_name_separators, use_smart_first_name_detector=True
-    ):
+        full_name: str,
+        first_last_name_order: Tuple[int, int],
+        first_last_name_separators: Tuple[str],
+        use_smart_first_name_detector: bool = True,
+    ) -> Dict[str, Union[str, List[str]]]:
+        """
+        Given a raw full_name string and some splitting configuration, return a dict describing the named entity
+        :param full_name: a raw full-name string to parse
+        :param first_last_name_order: a tuple of indices by which to identify the first and last name chunks, respectively
+        :param first_last_name_separators: a tuple of chars by which to split the full_name into a first and last name chunk
+        :param use_smart_first_name_detector: use an automatic first/last splitting algorithm
+        :returns: the parsed entity
+        :rtype: Dict[str, Union[str, List[str]]]
+        """
         logger.debug(f"parse full_name {full_name}")
 
         full_name = full_name.strip()
 
-        person = None
+        entity = None
 
         for sep in first_last_name_separators:
             split_fullname = [name.strip() for name in full_name.split(sep)]
@@ -363,7 +379,7 @@ class DOIPDS4LabelUtil:
                 # re-add . if it has been removed as a separator
                 first_name_suffix = "." if sep == "." else ""
 
-                person = {
+                entity = {
                     "first_name": split_fullname[first_i] + first_name_suffix,
                     "last_name": split_fullname[last_i],
                     "affiliation": [],
@@ -371,16 +387,16 @@ class DOIPDS4LabelUtil:
                 }
 
                 if len(split_fullname) >= 3:
-                    person["middle_name"] = split_fullname[1]
+                    entity["middle_name"] = split_fullname[1]
 
                 break
 
-        if not person:
-            person = {"full_name": full_name, "affiliation": [], "name_type": "Personal"}
+        if not entity:
+            entity = {"full_name": full_name, "affiliation": [], "name_type": "Personal"}
 
-        logger.debug(f"parsed person {person}")
+        logger.debug(f"parsed person {entity}")
 
-        return person
+        return entity
 
     def get_names(self, name_list, first_last_name_order=(0, -1), first_last_name_separator=(",", ".")):
         logger.debug(f"name_list {name_list}")
@@ -393,7 +409,7 @@ class DOIPDS4LabelUtil:
 
         return persons
 
-    def get_author_names(self, name_list):
+    def get_author_names(self, name_list: List[str]) -> List:
         return self.get_names(name_list, first_last_name_order=(-1, 0))
 
     def get_editor_names(self, name_list):
