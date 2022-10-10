@@ -161,6 +161,28 @@ $ tox -e docs  # Build the documentation to see if that works
 
 It is strongly recommended to add `tox -e lint` to your `pre-commit` [git hook](https://www.atlassian.com/git/tutorials/git-hooks), and `tox -e tests` in a `pre-push` hook, as only linted and test-passing PRs will be merged.
 
+The following linting example is provided for ease of use:
+
+```bash
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep ".py$")
+
+echo "Linting files"
+tox -e lint
+git add $STAGED_FILES  # add any lint-related changes to the current commit
+
+if [ $? -ne 0 ]
+then
+    echo "Initial lint detected errors, re-linting to determine whether errors remain"
+    tox -e lint
+    if [ $? -ne 0 ]
+    then
+      exit 1
+    fi
+fi
+
+exit 0
+```
+
 You can also run `pytest`, `sphinx-build`, `mypy`, etc., if that's more your speed.
 
 
