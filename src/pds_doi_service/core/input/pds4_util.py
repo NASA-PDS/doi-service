@@ -404,8 +404,9 @@ class DOIPDS4LabelUtil:
 
                 break
 
+        # In practice, this default should never be reached, as it requires a mononym WITH a separator, like "somename,"
         if not entity:
-            entity = {"full_name": full_name, "affiliation": [], "name_type": "Personal"}
+            entity = {"name": full_name, "affiliation": [], "name_type": "Personal"}
 
         logger.debug(f"parsed person {entity}")
 
