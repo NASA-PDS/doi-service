@@ -412,19 +412,33 @@ class DOIPDS4LabelUtil:
 
         return entity
 
-    def get_names(self, name_list, first_last_name_order=(0, -1), first_last_name_separator=(",", ".")):
+    def get_names(
+        self,
+        name_list: List[str],
+        first_last_name_order: Tuple[int, int] = (0, -1),
+        first_last_name_separators: Tuple[str] = (",", "."),
+    ) -> List[Dict[str, Union[str, List[str]]]]:
+        """
+        Given a list of personal/organizational name strings and some parsing configuration, return a list of Dicts
+        representing the named entities.
+        :param name_list: a list of raw name strings to parse
+        :param first_last_name_order: a tuple of indices by which to identify the first and last name chunks, respectively
+        :param first_last_name_separators: a tuple of chars by which to split the full_name into a first and last name chunk
+        :returns: a List of parsed entities
+        :rtype: List[Dict[str, Union[str, List[str]]]]
+        """
         logger.debug(f"name_list {name_list}")
         logger.debug(f"first_last_name_order {first_last_name_order}")
 
         persons = []
 
         for full_name in name_list:
-            persons.append(self._get_name_components(full_name, first_last_name_order, first_last_name_separator))
+            persons.append(self._get_name_components(full_name, first_last_name_order, first_last_name_separators))
 
         return persons
 
-    def get_author_names(self, name_list: List[str]) -> List:
+    def get_author_names(self, name_list: List[str]) -> List[Dict[str, Union[str, List[str]]]]:
         return self.get_names(name_list, first_last_name_order=(-1, 0))
 
     def get_editor_names(self, name_list):
-        return self.get_names(name_list, first_last_name_separator=(",",))
+        return self.get_names(name_list, first_last_name_separators=(",",))
