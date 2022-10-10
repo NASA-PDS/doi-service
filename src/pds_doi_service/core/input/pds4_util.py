@@ -362,6 +362,19 @@ class DOIPDS4LabelUtil:
 
         full_name = full_name.strip()
 
+        # Detect organization names, which lack separable chunks
+        if not any([sep in full_name for sep in first_last_name_separators]):
+            entity = {
+                "name": full_name,
+                "affiliation": [
+                    full_name,
+                ],
+                "name_type": "Organization",
+            }
+
+            logger.debug(f"parsed organization {entity}")
+            return entity
+
         entity = None
 
         for sep in first_last_name_separators:
