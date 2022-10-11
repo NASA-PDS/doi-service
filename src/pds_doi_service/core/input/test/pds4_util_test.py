@@ -24,9 +24,9 @@ class Pds4UtilTestCase(unittest.TestCase):
             {"first_name": "J.", "last_name": "Maki", "affiliation": [], "name_type": "Personal"},
         ]
         self.expected_editors = [
-            {"first_name": "P. H.", "last_name": "Smith", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "P.", "middle_name": "H.", "last_name": "Smith", "affiliation": [], "name_type": "Personal"},
             {"first_name": "M.", "last_name": "Lemmon", "affiliation": [], "name_type": "Personal"},
-            {"first_name": "R. F.", "last_name": "Beebe", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "R.", "middle_name": "F.", "last_name": "Beebe", "affiliation": [], "name_type": "Personal"},
         ]
         self.expected_keywords = {
             "mars",
