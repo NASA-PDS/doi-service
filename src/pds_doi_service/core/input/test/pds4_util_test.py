@@ -24,9 +24,9 @@ class Pds4UtilTestCase(unittest.TestCase):
             {"first_name": "J.", "last_name": "Maki", "affiliation": [], "name_type": "Personal"},
         ]
         self.expected_editors = [
-            {"first_name": "P. H.", "last_name": "Smith", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "P.", "middle_name": "H.", "last_name": "Smith", "affiliation": [], "name_type": "Personal"},
             {"first_name": "M.", "last_name": "Lemmon", "affiliation": [], "name_type": "Personal"},
-            {"first_name": "R. F.", "last_name": "Beebe", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "R.", "middle_name": "F.", "last_name": "Beebe", "affiliation": [], "name_type": "Personal"},
         ]
         self.expected_keywords = {
             "mars",
@@ -81,6 +81,60 @@ class Pds4UtilTestCase(unittest.TestCase):
         self.assertListEqual(doi.authors, self.expected_authors)
         self.assertListEqual(doi.editors, self.expected_editors)
         self.assertSetEqual(doi.keywords, self.expected_keywords)
+
+
+class GetNamesTestCase(unittest.TestCase):
+    def test_names_parse_correctly(self):
+        entity_names = [
+            "A. Dunn",
+            "Dunn, Alex",
+            "Dunn, A.",
+            "Dunn, A. E.",
+            "Dunn, A. E. F. G.",
+            "Dunn, Alexander E.",
+            "Dunn, Alexander E. F. G.",
+            "Jet Propulsion Laboratory",
+            "JPL",
+            "Google Inc.",
+            "Suffixed Jr., James",
+        ]
+        parsed_entities = DOIPDS4LabelUtil().get_names(entity_names)
+        expected_parsed_entities = [
+            {"first_name": "A.", "last_name": "Dunn", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "Alex", "last_name": "Dunn", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "A.", "last_name": "Dunn", "affiliation": [], "name_type": "Personal"},
+            {"first_name": "A.", "middle_name": "E.", "last_name": "Dunn", "affiliation": [], "name_type": "Personal"},
+            {
+                "first_name": "A.",
+                "middle_name": "E. F. G.",
+                "last_name": "Dunn",
+                "affiliation": [],
+                "name_type": "Personal",
+            },
+            {
+                "first_name": "Alexander",
+                "middle_name": "E.",
+                "last_name": "Dunn",
+                "affiliation": [],
+                "name_type": "Personal",
+            },
+            {
+                "first_name": "Alexander",
+                "middle_name": "E. F. G.",
+                "last_name": "Dunn",
+                "affiliation": [],
+                "name_type": "Personal",
+            },
+            {
+                "name": "Jet Propulsion Laboratory",
+                "affiliation": ["Jet Propulsion Laboratory"],
+                "name_type": "Organizational",
+            },
+            {"name": "JPL", "affiliation": ["JPL"], "name_type": "Organizational"},
+            {"name": "Google Inc.", "affiliation": ["Google Inc."], "name_type": "Organizational"},
+            {"first_name": "James", "last_name": "Suffixed Jr.", "affiliation": [], "name_type": "Personal"},
+        ]
+        self.assertListEqual(expected_parsed_entities, parsed_entities)
 
 
 if __name__ == "__main__":

@@ -14,6 +14,10 @@ Contains functions and classes for parsing PDS4 XML labels.
 from datetime import datetime
 from datetime import timezone
 from enum import Enum
+from typing import Dict
+from typing import List
+from typing import Sequence
+from typing import Union
 
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -105,9 +109,9 @@ class DOIPDS4LabelUtil:
 
     def _check_for_possible_full_name(self, names_list):
         # Given a list of names:
-        # Case 1: "R. Deen, H. Abarca, P. Zamani, J.Maki"
+        # Case 1: "R. Deen, H. Abarca, P. Zamani, J. Maki"
         # determine if each token can be potentially a person' name:
-        #   "R. Deen", "H. Abarca", "J.Maki"
+        #   "R. Deen", "H. Abarca", "J. Maki"
         # This happens very rarely but it does happen.
         # Case 4 :"VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
         o_list_contains_full_name_flag = False
@@ -120,7 +124,7 @@ class DOIPDS4LabelUtil:
                 # Now that the dot is found, look to see the name contains at
                 # least two tokens.
                 if len(one_name.strip().split(".")) >= 2:
-                    # 'R. Deen' split to ['R','Deen'], "J.Maki" split to ['J','Maki']
+                    # 'R. Deen' split to ['R','Deen'], "J. Maki" split to ['J','Maki']
                     num_person_names += 1
             else:
                 # The name does not contain a dot, split using spaces.
@@ -153,7 +157,7 @@ class DOIPDS4LabelUtil:
             Case 1 --> Should be parsed by semi-colon
                 pds4_fields_authors = "Lemmon, M."
             Case 2 --> Should be parsed by comma
-                pds4_fields_authors = "R. Deen, H. Abarca, P. Zamani, J.Maki"
+                pds4_fields_authors = "R. Deen, H. Abarca, P. Zamani, J. Maki"
             Case 3 --> Should be parsed by semi-colon
                 pds4_fields_authors = "Davies, A.; Veeder, G."
             Case 4  --> Should be parsed by semi-colon
@@ -179,7 +183,7 @@ class DOIPDS4LabelUtil:
         authors_from_semi_colon_split = pds4_fields_authors.split(";")
 
         # Check from authors_from_comma_split to see if it possibly contains full name.
-        # Mostly this case: "R. Deen, H. Abarca, P. Zamani, J.Maki"
+        # Mostly this case: "R. Deen, H. Abarca, P. Zamani, J. Maki"
         # When it is not obvious because it looks similarly to this case:
         # "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
         comma_parsed_list_contains_full_name = self._check_for_possible_full_name(authors_from_comma_split)
@@ -340,61 +344,95 @@ class DOIPDS4LabelUtil:
 
     @staticmethod
     def _get_name_components(
-        full_name, first_last_name_order, first_last_name_separators, use_smart_first_name_detector=True
-    ):
-        logger.debug(f"parse full_name {full_name}")
+        full_name: str,
+    ) -> Dict[str, Union[str, Sequence[str]]]:
+        """
+        Given a raw full_name string and some splitting configuration, return a dict describing the named entity
+        :param full_name: a raw full-name string to parse
+        :returns: the parsed entity
+        :rtype: Dict[str, Union[str, List[str]]]
+        """
 
-        full_name = full_name.strip()
+        # helper function to encapsulate logic for detecting organizational names
+        def name_str_is_organization(separators: List[str], name: str) -> bool:
+            is_mononym = not any([sep in name for sep in separators])
+            return is_mononym
 
-        person = None
+        # An ordered tuple of chars by which to split full_name into name chunks, with earlier elements taking
+        # precedence at each stage of splitting (last/given, then first/middle)
+        primary_separators = [",", ". "]
 
-        for sep in first_last_name_separators:
-            split_fullname = [name.strip() for name in full_name.split(sep)]
+        # Detect organization names, which lack separable chunks
+        if name_str_is_organization(primary_separators, full_name):
+            entity = {
+                "name": full_name,
+                "affiliation": [
+                    full_name,
+                ],
+                "name_type": "Organizational",
+            }
 
-            if len(split_fullname) >= 2:
-                # identify first/last name order
-                if use_smart_first_name_detector:
-                    first_i, last_i = DOIPDS4LabelUtil._smart_first_last_name_detector(
-                        split_fullname, default_order=first_last_name_order
-                    )
-                else:
-                    first_i, last_i = tuple(first_last_name_order)
+            logger.debug(f"parsed organization {entity}")
+            return entity
 
-                # re-add . if it has been removed as a separator
-                first_name_suffix = "." if sep == "." else ""
+        # Perform primary split, intuiting last/given name order from the separator
+        primary_separators_present_in_full_name = [sep for sep in primary_separators if sep in full_name]
+        primary_separator = primary_separators_present_in_full_name[0]
+        comma_separated = "," in primary_separator
+        if comma_separated:
+            last_name, given_names_str = [s.strip() for s in full_name.strip().split(primary_separator, maxsplit=1)]
+        else:
+            given_names_str, last_name = [s.strip() for s in full_name.strip().rsplit(primary_separator, maxsplit=1)]
 
-                person = {
-                    "first_name": split_fullname[first_i] + first_name_suffix,
-                    "last_name": split_fullname[last_i],
-                    "affiliation": [],
-                    "name_type": "Personal",
-                }
+        # Perform split of given names string into a first name and middle names, if required, and return entity
+        given_names_separators = [
+            " ",
+        ]
+        separators_present_in_given_name_str = [sep for sep in given_names_separators if sep in given_names_str]
 
-                if len(split_fullname) >= 3:
-                    person["middle_name"] = split_fullname[1]
+        if separators_present_in_given_name_str:
+            separator = separators_present_in_given_name_str[0]
+            uses_abbreviation = separator == ". "
 
-                break
+            first_name, middle_names_str = [s.strip() for s in given_names_str.split(separator, maxsplit=1)]
+            return {
+                "first_name": first_name + ("." if uses_abbreviation else ""),
+                "middle_name": middle_names_str,
+                "last_name": last_name,
+                "affiliation": [],
+                "name_type": "Personal",
+            }
+        else:
+            first_name_uses_abbreviation = primary_separator == ". "
+            return {
+                "first_name": given_names_str + ("." if first_name_uses_abbreviation else ""),
+                "last_name": last_name,
+                "affiliation": [],
+                "name_type": "Personal",
+            }
 
-        if not person:
-            person = {"full_name": full_name, "affiliation": [], "name_type": "Personal"}
-
-        logger.debug(f"parsed person {person}")
-
-        return person
-
-    def get_names(self, name_list, first_last_name_order=(0, -1), first_last_name_separator=(",", ".")):
+    def get_names(
+        self,
+        name_list: List[str],
+    ) -> List[Dict[str, Union[str, Sequence[str]]]]:
+        """
+        Given a list of personal/organizational name strings and some parsing configuration, return a list of Dicts
+        representing the named entities.
+        :param name_list: a list of raw name strings to parse
+        :returns: a List of parsed entities
+        :rtype: List[Dict[str, Union[str, List[str]]]]
+        """
         logger.debug(f"name_list {name_list}")
-        logger.debug(f"first_last_name_order {first_last_name_order}")
 
         persons = []
 
         for full_name in name_list:
-            persons.append(self._get_name_components(full_name, first_last_name_order, first_last_name_separator))
+            persons.append(self._get_name_components(full_name))
 
         return persons
 
-    def get_author_names(self, name_list):
-        return self.get_names(name_list, first_last_name_order=(-1, 0))
+    def get_author_names(self, name_list: List[str]) -> List[Dict[str, Union[str, Sequence[str]]]]:
+        return self.get_names(name_list)
 
     def get_editor_names(self, name_list):
-        return self.get_names(name_list, first_last_name_separator=(",",))
+        return self.get_names(name_list)
