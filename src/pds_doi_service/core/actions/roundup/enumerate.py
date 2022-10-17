@@ -33,20 +33,6 @@ def fetch_dois_modified_between(begin: datetime, end: datetime, database: DOIDat
     return [r for r in doi_records if begin <= r.date_added < end or begin <= r.date_updated < end]
 
 
-def prepare_doi_record(record: DoiRecord) -> Dict[str, object]:
-    """Map a DoiRecord to the set of information required for rendering it in output"""
-    update_type = "submitted" if record.date_added == record.date_updated else "updated"
-    prepared_record = {
-        "datacite_id": record.doi,
-        "pds_id": record.identifier,
-        "update_type": update_type,
-        "last_modified": record.date_updated,
-        "status": record.status.title(),
-    }
-
-    return prepared_record
-
-
 def get_previous_week_metadata(database: DOIDataBase) -> RoundupMetadata:
     target_week_begin = get_start_of_local_week() - timedelta(days=7)
     target_week_end = target_week_begin + timedelta(days=7, microseconds=-1)
@@ -55,7 +41,7 @@ def get_previous_week_metadata(database: DOIDataBase) -> RoundupMetadata:
     modified_doi_records = fetch_dois_modified_between(target_week_begin, target_week_end, database)
 
     metadata = RoundupMetadata(
-        first_date=target_week_begin, last_date=last_date_of_week, modified_doi_records=modified_doi_records
+        first_date=target_week_begin.date(), last_date=last_date_of_week, modified_doi_records=modified_doi_records
     )
 
     return metadata
