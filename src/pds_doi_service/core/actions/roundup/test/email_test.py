@@ -9,8 +9,8 @@ from datetime import timedelta
 from email.message import Message
 
 import jinja2
-from pds_doi_service.core.actions.roundup import get_start_of_local_week
-from pds_doi_service.core.actions.roundup import run as do_roundup
+from pds_doi_service.core.actions.roundup.email import run as do_roundup
+from pds_doi_service.core.actions.roundup.enumerate import get_start_of_local_week
 from pds_doi_service.core.actions.test.util.email import capture_email
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
@@ -22,7 +22,7 @@ from pkg_resources import resource_filename
 @unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #361")
 class WeeklyRoundupEmailNotificationTestCase(unittest.TestCase):
     tests_dir = os.path.abspath(resource_filename(__name__, ""))
-    resources_dir = os.path.join(tests_dir, "data", "roundup")
+    resources_dir = os.path.join(tests_dir, "../../test/data", "roundup")
 
     temp_dir = tempfile.mkdtemp()
     db_filepath = os.path.join(temp_dir, "doi_temp.sqlite")

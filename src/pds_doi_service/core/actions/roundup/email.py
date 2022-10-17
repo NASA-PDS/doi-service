@@ -6,63 +6,37 @@
 #
 """
 ======
-roundup.py
+email.py
 ======
 
-Contains functions for sending email notifications for recently-updated DOIs.
+Contains functions for sending recently-updated DOI metadata as an email.
 """
 import json
 import logging
 import os
 from datetime import date
-from datetime import datetime
 from datetime import timedelta
 from email import encoders
-from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Dict
 from typing import List
 
 import jinja2
+from pds_doi_service.core.actions.roundup.enumerate import fetch_dois_modified_between
+from pds_doi_service.core.actions.roundup.enumerate import get_start_of_local_week
+from pds_doi_service.core.actions.roundup.enumerate import prepare_doi_record_for_template
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.util.emailer import Emailer as PDSEmailer
 from pkg_resources import resource_filename
 
 
-def get_start_of_local_week() -> datetime:
-    """Return the start of the local-timezones week as a tz-aware datetime"""
-    today = datetime.now().date()
-    start_of_today = datetime(today.year, today.month, today.day)
-    return start_of_today.astimezone() - timedelta(days=today.weekday())
-
-
-def fetch_dois_modified_between(begin: datetime, end: datetime, database: DOIDataBase) -> List[DoiRecord]:
-    doi_records = database.select_latest_records({})
-    return [r for r in doi_records if begin <= r.date_added < end or begin <= r.date_updated < end]
-
-
 def get_email_content_template(template_filename: str = "email_weekly_roundup.jinja2"):
-    template_filepath = resource_filename(__name__, os.path.join("templates", template_filename))
+    template_filepath = resource_filename(__name__, os.path.join("../templates", template_filename))
     logging.info(f"Using template {template_filepath}")
     with open(template_filepath, "r") as infile:
         template = jinja2.Template(infile.read())
     return template
-
-
-def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, object]:
-    """Map a DoiRecord to the set of information required for rendering it in the template"""
-    update_type = "submitted" if record.date_added == record.date_updated else "updated"
-    prepared_record = {
-        "datacite_id": record.doi,
-        "pds_id": record.identifier,
-        "update_type": update_type,
-        "last_modified": record.date_updated,
-        "status": record.status.title(),
-    }
-
-    return prepared_record
 
 
 def prepare_email_html_content(first_date: date, last_date: date, modified_doi_records: List[DoiRecord]) -> str:
