@@ -16,6 +16,7 @@ from datetime import timedelta
 from typing import Dict
 from typing import List
 
+from pds_doi_service.core.actions.roundup.metadata import RoundupMetadata
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 
@@ -32,8 +33,8 @@ def fetch_dois_modified_between(begin: datetime, end: datetime, database: DOIDat
     return [r for r in doi_records if begin <= r.date_added < end or begin <= r.date_updated < end]
 
 
-def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, object]:
-    """Map a DoiRecord to the set of information required for rendering it in the template"""
+def prepare_doi_record(record: DoiRecord) -> Dict[str, object]:
+    """Map a DoiRecord to the set of information required for rendering it in output"""
     update_type = "submitted" if record.date_added == record.date_updated else "updated"
     prepared_record = {
         "datacite_id": record.doi,
@@ -44,3 +45,17 @@ def prepare_doi_record_for_template(record: DoiRecord) -> Dict[str, object]:
     }
 
     return prepared_record
+
+
+def get_previous_week_metadata(database: DOIDataBase) -> RoundupMetadata:
+    target_week_begin = get_start_of_local_week() - timedelta(days=7)
+    target_week_end = target_week_begin + timedelta(days=7, microseconds=-1)
+    last_date_of_week = (target_week_end - timedelta(microseconds=1)).date()
+
+    modified_doi_records = fetch_dois_modified_between(target_week_begin, target_week_end, database)
+
+    metadata = RoundupMetadata(
+        first_date=target_week_begin, last_date=last_date_of_week, modified_doi_records=modified_doi_records
+    )
+
+    return metadata

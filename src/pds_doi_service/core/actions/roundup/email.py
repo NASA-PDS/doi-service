@@ -14,16 +14,14 @@ Contains functions for sending recently-updated DOI metadata as an email.
 import json
 import logging
 import os
-from datetime import timedelta
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List
 
 import jinja2
-from pds_doi_service.core.actions.roundup.enumerate import fetch_dois_modified_between
-from pds_doi_service.core.actions.roundup.enumerate import get_start_of_local_week
-from pds_doi_service.core.actions.roundup.enumerate import prepare_doi_record_for_template
+from pds_doi_service.core.actions.roundup.enumerate import get_previous_week_metadata
+from pds_doi_service.core.actions.roundup.enumerate import prepare_doi_record
 from pds_doi_service.core.actions.roundup.metadata import RoundupMetadata
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
@@ -44,7 +42,7 @@ def prepare_email_html_content(metadata: RoundupMetadata) -> str:
     template_dict = {
         "first_date": metadata.first_date,
         "last_date": metadata.last_date,
-        "doi_records": [prepare_doi_record_for_template(r) for r in metadata.modified_doi_records],
+        "doi_records": [prepare_doi_record(r) for r in metadata.modified_doi_records],
     }
 
     full_content = template.render(template_dict)
@@ -82,15 +80,7 @@ def run(database: DOIDataBase, sender_email: str, receiver_email: str) -> None:
     Send an email consisting of a summary of all DOIs updated in the previous week (i.e. between the previous Sunday
     and the Monday before that, inclusive), with a JSON attachment for those DoiRecords.
     """
-    target_week_begin = get_start_of_local_week() - timedelta(days=7)
-    target_week_end = target_week_begin + timedelta(days=7, microseconds=-1)
-    last_date_of_week = (target_week_end - timedelta(microseconds=1)).date()
-
-    modified_doi_records = fetch_dois_modified_between(target_week_begin, target_week_end, database)
-
-    metadata = RoundupMetadata(
-        first_date=target_week_begin, last_date=last_date_of_week, modified_doi_records=modified_doi_records
-    )
+    metadata = get_previous_week_metadata(database)
 
     msg = prepare_email_message(sender_email, receiver_email, metadata)
 
