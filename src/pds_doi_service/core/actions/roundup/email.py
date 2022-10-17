@@ -14,7 +14,6 @@ Contains functions for sending recently-updated DOI metadata as an email.
 import json
 import logging
 import os
-from datetime import date
 from datetime import timedelta
 from email import encoders
 from email.mime.multipart import MIMEMultipart
@@ -25,6 +24,7 @@ import jinja2
 from pds_doi_service.core.actions.roundup.enumerate import fetch_dois_modified_between
 from pds_doi_service.core.actions.roundup.enumerate import get_start_of_local_week
 from pds_doi_service.core.actions.roundup.enumerate import prepare_doi_record_for_template
+from pds_doi_service.core.actions.roundup.metadata import RoundupMetadata
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.util.emailer import Emailer as PDSEmailer
@@ -39,12 +39,12 @@ def get_email_content_template(template_filename: str = "email_weekly_roundup.ji
     return template
 
 
-def prepare_email_html_content(first_date: date, last_date: date, modified_doi_records: List[DoiRecord]) -> str:
+def prepare_email_html_content(metadata: RoundupMetadata) -> str:
     template = get_email_content_template()
     template_dict = {
-        "first_date": first_date,
-        "last_date": last_date,
-        "doi_records": [prepare_doi_record_for_template(r) for r in modified_doi_records],
+        "first_date": metadata.first_date,
+        "last_date": metadata.last_date,
+        "doi_records": [prepare_doi_record_for_template(r) for r in metadata.modified_doi_records],
     }
 
     full_content = template.render(template_dict)
@@ -61,20 +61,18 @@ def attach_json_data(filename: str, doi_records: List[DoiRecord], msg: MIMEMulti
     msg.attach(part)
 
 
-def prepare_email_message(
-    sender_email: str, receiver_email: str, first_date: date, last_date: date, modified_doi_records: List[DoiRecord]
-) -> MIMEMultipart:
-    email_subject = f"DOI WEEKLY ROUNDUP: {first_date} through {last_date}"
+def prepare_email_message(sender_email: str, receiver_email: str, metadata: RoundupMetadata) -> MIMEMultipart:
+    email_subject = f"DOI WEEKLY ROUNDUP: {metadata.first_date} through {metadata.last_date}"
 
     msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["Subject"] = email_subject
     msg["To"] = receiver_email
 
-    email_content = prepare_email_html_content(first_date, last_date, modified_doi_records)
+    email_content = prepare_email_html_content(metadata)
     msg.attach(MIMEText(email_content, "html"))
-    attachment_filename = f"updated_dois_{first_date.isoformat()}_{last_date.isoformat()}.json"
-    attach_json_data(attachment_filename, modified_doi_records, msg)
+    attachment_filename = f"updated_dois_{metadata.first_date.isoformat()}_{metadata.last_date.isoformat()}.json"
+    attach_json_data(attachment_filename, metadata.modified_doi_records, msg)
 
     return msg
 
@@ -90,9 +88,11 @@ def run(database: DOIDataBase, sender_email: str, receiver_email: str) -> None:
 
     modified_doi_records = fetch_dois_modified_between(target_week_begin, target_week_end, database)
 
-    msg = prepare_email_message(
-        sender_email, receiver_email, target_week_begin.date(), last_date_of_week, modified_doi_records
+    metadata = RoundupMetadata(
+        first_date=target_week_begin, last_date=last_date_of_week, modified_doi_records=modified_doi_records
     )
+
+    msg = prepare_email_message(sender_email, receiver_email, metadata)
 
     emailer = PDSEmailer()
     emailer.send_message(msg)
