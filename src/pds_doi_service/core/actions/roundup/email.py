@@ -29,7 +29,7 @@ from pds_doi_service.core.util.emailer import Emailer as PDSEmailer
 from pkg_resources import resource_filename
 
 
-def get_email_content_template(template_filename: str = "email_weekly_roundup.jinja2"):
+def get_email_content_template(template_filename: str = "email_weekly_roundup.jinja2") -> jinja2.Template:
     template_filepath = resource_filename(__name__, os.path.join("../templates", template_filename))
     logging.info(f"Using template {template_filepath}")
     with open(template_filepath, "r") as infile:
