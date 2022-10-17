@@ -9,7 +9,7 @@ if __name__ == '__main__':
     """
     Transfer a JSON file consisting of a summary of all DOIs updated in the previous week (i.e. between the previous Sunday
     and the Monday before that, inclusive) to the ADS SFTP server.
-    
+
     Should be run in a crontab, preferably on Monday, for example:
     0 0 * * MON . path/to/doi-service/venv/bin/python path/to/doi-service/scripts/sftp_drop_weekly_roundup.py
     """

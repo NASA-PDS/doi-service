@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Dict, Callable
+from typing import Callable
+from typing import Dict
 from typing import List
 
 from pds_doi_service.core.actions.roundup.output import prepare_doi_record
-
 from pds_doi_service.core.entities.doi import DoiRecord
 
 

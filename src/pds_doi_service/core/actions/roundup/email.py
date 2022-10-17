@@ -21,8 +21,8 @@ from typing import List
 
 import jinja2
 from pds_doi_service.core.actions.roundup.enumerate import get_previous_week_metadata
-from pds_doi_service.core.actions.roundup.output import prepare_doi_record
 from pds_doi_service.core.actions.roundup.metadata import RoundupMetadata
+from pds_doi_service.core.actions.roundup.output import prepare_doi_record
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.util.emailer import Emailer as PDSEmailer
