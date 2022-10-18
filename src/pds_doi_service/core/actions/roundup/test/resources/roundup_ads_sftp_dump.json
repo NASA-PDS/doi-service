@@ -1,0 +1,22 @@
+{
+  "first_date": "2022-10-10",
+  "last_date": "2022-10-16",
+  "modified_doi_records": [
+    {
+      "datacite_id": "10.17189/11111",
+      "pds_id": "urn:nasa:pds:product_11111::1.0",
+      "title": "Laboratory Shocked Feldspars Bundle",
+      "update_type": "submitted",
+      "last_modified": "2022-10-14T11:56:01.550967+00:00",
+      "status": "Pending"
+    },
+    {
+      "datacite_id": "10.17189/22222",
+      "pds_id": "urn:nasa:pds:product_22222::1.0",
+      "title": "Laboratory Shocked Feldspars Bundle",
+      "update_type": "updated",
+      "last_modified": "2022-10-14T11:56:01.550967+00:00",
+      "status": "Pending"
+    }
+  ]
+}

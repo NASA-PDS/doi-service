@@ -1,5 +1,5 @@
 import os.path
-from pds_doi_service.core.actions.roundup import run as run_weekly_roundup
+from pds_doi_service.core.actions.roundup.email import run as run_weekly_roundup
 from pds_doi_service.core.db.doi_database import DOIDataBase
 
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
