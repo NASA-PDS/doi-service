@@ -22,7 +22,7 @@ from typing import List
 import jinja2
 from pds_doi_service.core.actions.roundup.enumerate import get_previous_week_metadata
 from pds_doi_service.core.actions.roundup.metadata import RoundupMetadata
-from pds_doi_service.core.actions.roundup.output import prepare_doi_record
+from pds_doi_service.core.actions.roundup.output import prepare_doi_record_for_email
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.util.emailer import Emailer as PDSEmailer
@@ -42,7 +42,7 @@ def prepare_email_html_content(metadata: RoundupMetadata) -> str:
     template_dict = {
         "first_date": metadata.first_date,
         "last_date": metadata.last_date,
-        "doi_records": [prepare_doi_record(r) for r in metadata.modified_doi_records],
+        "doi_records": [prepare_doi_record_for_email(r) for r in metadata.modified_doi_records],
     }
 
     full_content = template.render(template_dict)

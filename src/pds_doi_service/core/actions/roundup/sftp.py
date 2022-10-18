@@ -7,6 +7,7 @@ import fabric.transfer  # type: ignore
 from fabric import Connection  # type: ignore
 from paramiko.sftp import SFTPError  # type: ignore
 from pds_doi_service.core.actions.roundup.enumerate import get_previous_week_metadata
+from pds_doi_service.core.actions.roundup.output import prepare_doi_record_for_ads_sftp
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
@@ -58,7 +59,7 @@ def run(
     ensure_target_dir(dest_dir_path, conn)
 
     with tempfile.NamedTemporaryFile(mode="w") as fp:
-        output = metadata.to_json()
+        output = metadata.to_json(doi_record_mapper=prepare_doi_record_for_ads_sftp)
         json.dump(output, fp)
         fp.flush()
         temp_file_path = os.path.join(tempfile.gettempdir(), fp.name)
