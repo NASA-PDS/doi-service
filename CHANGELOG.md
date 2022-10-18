@@ -1,16 +1,12 @@
 # Changelog
 
-## [2.3.4](https://github.com/NASA-PDS/doi-service/tree/2.3.4) (2022-10-18)
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-10-18)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...2.3.4)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...v2.4.0-dev)
 
 **Improvements:**
 
 - Enhance weekly reporting to push to ADS SFTP server [\#363](https://github.com/NASA-PDS/doi-service/issues/363)
-
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-10-12)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...v2.4.0-dev)
 
 **Defects:**
 
