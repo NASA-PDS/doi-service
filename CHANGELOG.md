@@ -1,19 +1,20 @@
 # Changelog
 
-## [2.3.4](https://github.com/NASA-PDS/doi-service/tree/2.3.4) (2022-10-12)
+## [2.3.4](https://github.com/NASA-PDS/doi-service/tree/2.3.4) (2022-10-18)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...2.3.4)
 
-**Defects:**
+**Improvements:**
 
-- DOI Service does not accurately parse \<author\_list\> and \<editor\_list\> in XML labels [\#377](https://github.com/NASA-PDS/doi-service/issues/377) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+- Enhance weekly reporting to push to ADS SFTP server [\#363](https://github.com/NASA-PDS/doi-service/issues/363)
 
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-09-30)
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-10-12)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...v2.4.0-dev)
 
 **Defects:**
 
+- DOI Service does not accurately parse \<author\_list\> and \<editor\_list\> in XML labels [\#377](https://github.com/NASA-PDS/doi-service/issues/377) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - pds-doi-init loads invalid state from DataCite [\#376](https://github.com/NASA-PDS/doi-service/issues/376)
 - Bulk Record Update notebook contains confusing instructions/labeling [\#374](https://github.com/NASA-PDS/doi-service/issues/374)
 
