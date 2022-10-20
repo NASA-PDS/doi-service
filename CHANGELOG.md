@@ -2,7 +2,11 @@
 
 ## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-10-18)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...v2.4.0-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.5...v2.4.0-dev)
+
+## [release/2.3.5](https://github.com/NASA-PDS/doi-service/tree/release/2.3.5) (2022-10-18)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...release/2.3.5)
 
 **Improvements:**
 
@@ -90,7 +94,7 @@
 
 ## [v2.2.1](https://github.com/NASA-PDS/doi-service/tree/v2.2.1) (2022-07-27)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1-dev...v2.2.1)
 
 **Requirements:**
 
@@ -101,12 +105,19 @@
 **Defects:**
 
 - Fix broken build [\#341](https://github.com/NASA-PDS/doi-service/issues/341) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
-- doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Valid PDS4 xml input is converted into an invalid json that fails internal datacite validator [\#328](https://github.com/NASA-PDS/doi-service/issues/328) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)] [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 
 **Other closed issues:**
 
 - Develop script to sync DOIs to registry [\#249](https://github.com/NASA-PDS/doi-service/issues/249)
+
+## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-06-16)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
+
+**Defects:**
+
+- doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
 ## [v2.2.0](https://github.com/NASA-PDS/doi-service/tree/v2.2.0) (2022-04-14)
 
