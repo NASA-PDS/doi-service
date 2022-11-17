@@ -1,12 +1,8 @@
 # Changelog
 
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-10-18)
+## [v2.3.5](https://github.com/NASA-PDS/doi-service/tree/v2.3.5) (2022-10-20)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.5...v2.4.0-dev)
-
-## [release/2.3.5](https://github.com/NASA-PDS/doi-service/tree/release/2.3.5) (2022-10-18)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...release/2.3.5)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.4...v2.3.5)
 
 **Improvements:**
 
@@ -24,19 +20,11 @@
 
 ## [v2.3.4](https://github.com/NASA-PDS/doi-service/tree/v2.3.4) (2022-09-26)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.4...v2.3.4)
-
-## [release/2.3.4](https://github.com/NASA-PDS/doi-service/tree/release/2.3.4) (2022-09-26)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.3...release/2.3.4)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.2...v2.3.4)
 
 **Defects:**
 
 - DOI Service not logging into Datacite to import data [\#371](https://github.com/NASA-PDS/doi-service/issues/371)
-
-## [release/2.3.3](https://github.com/NASA-PDS/doi-service/tree/release/2.3.3) (2022-09-22)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.2...release/2.3.3)
 
 **Other closed issues:**
 
@@ -44,31 +32,15 @@
 
 ## [v2.3.2](https://github.com/NASA-PDS/doi-service/tree/v2.3.2) (2022-09-21)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.2...v2.3.2)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.1...v2.3.2)
 
 **Other closed issues:**
 
 - Update version spec to indicate Pandas 1.4.4 in setup.cfg [\#369](https://github.com/NASA-PDS/doi-service/issues/369)
 
-## [release/2.3.2](https://github.com/NASA-PDS/doi-service/tree/release/2.3.2) (2022-09-21)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.1...release/2.3.2)
-
 ## [v2.3.1](https://github.com/NASA-PDS/doi-service/tree/v2.3.1) (2022-09-21)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.1...v2.3.1)
-
-**Defects:**
-
-- Unit tests for reserve.py and input\_util.py due to unpinned pandas dependency [\#368](https://github.com/NASA-PDS/doi-service/issues/368)
-
-## [release/2.3.1](https://github.com/NASA-PDS/doi-service/tree/release/2.3.1) (2022-09-20)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.0...release/2.3.1)
-
-## [release/2.3.0](https://github.com/NASA-PDS/doi-service/tree/release/2.3.0) (2022-09-19)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...release/2.3.0)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1...v2.3.1)
 
 **Requirements:**
 
@@ -81,6 +53,7 @@
 
 **Defects:**
 
+- Unit tests for reserve.py and input\_util.py due to unpinned pandas dependency [\#368](https://github.com/NASA-PDS/doi-service/issues/368)
 - \#349 merged with failing unit tests [\#362](https://github.com/NASA-PDS/doi-service/issues/362) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - dataCite reserve error on title [\#350](https://github.com/NASA-PDS/doi-service/issues/350) [[s.critical](https://github.com/NASA-PDS/doi-service/labels/s.critical)]
 - DOI-service application inaccurately reports LID as being invalid [\#336](https://github.com/NASA-PDS/doi-service/issues/336) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
@@ -94,7 +67,7 @@
 
 ## [v2.2.1](https://github.com/NASA-PDS/doi-service/tree/v2.2.1) (2022-07-27)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.1-dev...v2.2.1)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1)
 
 **Requirements:**
 
@@ -105,19 +78,12 @@
 **Defects:**
 
 - Fix broken build [\#341](https://github.com/NASA-PDS/doi-service/issues/341) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+- doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Valid PDS4 xml input is converted into an invalid json that fails internal datacite validator [\#328](https://github.com/NASA-PDS/doi-service/issues/328) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)] [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 
 **Other closed issues:**
 
 - Develop script to sync DOIs to registry [\#249](https://github.com/NASA-PDS/doi-service/issues/249)
-
-## [v2.2.1-dev](https://github.com/NASA-PDS/doi-service/tree/v2.2.1-dev) (2022-06-16)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.2.0...v2.2.1-dev)
-
-**Defects:**
-
-- doi sync failing for SBN-PSI DOIs [\#331](https://github.com/NASA-PDS/doi-service/issues/331) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
 ## [v2.2.0](https://github.com/NASA-PDS/doi-service/tree/v2.2.0) (2022-04-14)
 
