@@ -322,7 +322,6 @@ class DOIPDS4LabelUtil:
             "observing_system_component",
             "target_identification",
             "primary_result_summary",
-            "description",
         }
 
         keyword_tokenizer = KeywordTokenizer()
