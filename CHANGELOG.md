@@ -1,16 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-11-30)
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-11-30)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...v2.4.0-dev)
 
 **Improvements:**
 
 - Improve metadata based upon parameters ADS keys off of [\#282](https://github.com/NASA-PDS/doi-service/issues/282)
-
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-11-29)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...v2.4.0-dev)
 
 ## [v2.3.5](https://github.com/NASA-PDS/doi-service/tree/v2.3.5) (2022-10-20)
 
