@@ -33,17 +33,10 @@ class Pds4UtilTestCase(unittest.TestCase):
             "insight",
             "lander",
             "camera",
-            "product",
             "context",
-            "reduced",
-            "experiment",
-            "edr",
-            "data",
             "raw",
             "science",
-            "rdr",
             "deployment",
-            "record",
         }
 
     def test_parse_dois_from_pds4_label(self):
