@@ -52,8 +52,8 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     # Select the appropriate URL endpoint for either a test or production deployment
     url = https://api.test.datacite.org/dois
     #url = https://api.datacite.org/dois
-    user = <ask pds-operator@jpl.nasa.gov>
-    password = <ask pds-operator@jpl.nasa.gov>
+    user = <contact [PDS Help Desk](https://pds.nasa.gov/?feedback=true)>
+    password = <contact [PDS Help Desk](https://pds.nasa.gov/?feedback=true)>
     doi_prefix = 10.17189
     validate_against_schema = True
 
@@ -61,8 +61,8 @@ Create a file in the base directory of the project named `pds_doi_service.ini`; 
     # This section is kept for posterity, but should be ignored as OSTI is no longer a supported endpoint
     url = https://www.osti.gov/iad2test/api/records
     #url = https://www.osti.gov/iad2/api/records
-    user = <ask pds-operator@jpl.nasa.gov>
-    password = <ask pds-operator@jpl.nasa.gov>
+    user = <contact [PDS Help Desk](https://pds.nasa.gov/?feedback=true)>
+    password = <contact [PDS Help Desk](https://pds.nasa.gov/?feedback=true)>
     doi_prefix = 10.17189
     validate_against_schema = True
 
