@@ -79,7 +79,6 @@
 
 **Requirements:**
 
-- As a user, I want to release a DOI with a label that does not contain the DOI [\#344](https://github.com/NASA-PDS/doi-service/issues/344)
 - The software shall validate the DOI metadata when reserving, releasing, or updating a DOI. [\#13](https://github.com/NASA-PDS/doi-service/issues/13)
 - The software shall release a DOI \(making it findable\). [\#7](https://github.com/NASA-PDS/doi-service/issues/7)
 
