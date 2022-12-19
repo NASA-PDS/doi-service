@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-This page includes FAQs for the PDS DOI Service. If you require additional support, please contact the [PDS Operator](mailto:pds-operator@jpl.nasa.gov) for assistance.
+This page includes FAQs for the PDS DOI Service. If you require additional support, please submit a request to [PDS Help Desk](https://pds.nasa.gov/?feedback=true>) for assistance.
 
 <!-- Use https://ecotrust-canada.github.io/markdown-toc/ to re-generate the TOC when new FAQs are added -->
 - [How do I know whether I should reserve or release a DOI?](#how-do-i-know-whether-i-should-reserve-or-release-a-doi-)
