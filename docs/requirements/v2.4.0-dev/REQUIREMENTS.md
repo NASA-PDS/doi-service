@@ -200,6 +200,10 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a publisher, I want to be notified when a new DOI has been minted or significant update to the metadata ([#283](https://github.com/NASA-PDS/doi-service/issues/283)) 
+
+
+This requirement is not impacted by the current version
 ## As a user, I want a simplified DOI lifecycle workflow ([#286](https://github.com/NASA-PDS/doi-service/issues/286)) 
 
 
