@@ -1,6 +1,14 @@
 # Changelog
 
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-12-19)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-12-23)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...«unknown»)
+
+**Other closed issues:**
+
+- Document how to configure / setup ADS delivery reports for ops deployment [\#396](https://github.com/NASA-PDS/doi-service/issues/396)
+
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-12-23)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...v2.4.0-dev)
 
