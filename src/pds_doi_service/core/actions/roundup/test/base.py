@@ -7,6 +7,7 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 
+from pds_doi_service.core.actions.roundup.enumerate import get_start_of_local_week
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -25,7 +26,7 @@ class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
 
     # Some reference datetimes that are referenced in SetUpClass and in tests
     _now = datetime.now()
-    _last_week = _now - timedelta(days=4)
+    _last_week = get_start_of_local_week() - timedelta(days=4)
     _ages_ago = _now - timedelta(days=30)
 
     @classmethod
