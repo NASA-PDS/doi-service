@@ -29,4 +29,4 @@ if __name__ == '__main__':
 
     run_sftp_drop_weekly_roundup(db, sftp_host, sftp_user, sftp_password)
 
-    logging.info('Completed DOI weekly roundup email transmission')
+    logging.info('Completed DOI weekly review SFTP drop')
