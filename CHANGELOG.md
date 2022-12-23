@@ -1,6 +1,6 @@
 # Changelog
 
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-11-30)
+## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-12-19)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...v2.4.0-dev)
 
@@ -53,11 +53,8 @@
 **Requirements:**
 
 - As a DOI user, I would like to know the copyright for PDS data [\#335](https://github.com/NASA-PDS/doi-service/issues/335)
-- As a DOI user, I would like to know the licensing information PDS data [\#224](https://github.com/NASA-PDS/doi-service/issues/224)
-
-**Improvements:**
-
 - As a publisher, I want to be notified when a new DOI has been minted or significant update to the metadata [\#283](https://github.com/NASA-PDS/doi-service/issues/283)
+- As a DOI user, I would like to know the licensing information PDS data [\#224](https://github.com/NASA-PDS/doi-service/issues/224)
 
 **Defects:**
 
