@@ -18,6 +18,7 @@ JWT_ALGORITHM = config.get("API_AUTHENTICATION", "jwt_algorithm")
 def decode_token(token):
     try:
         current_app.logger.debug("try to decode/validate token %s", token)
+        current_app.logger.debug(JWT_ISSUER)
         return jwt.decode(
             token,
             JSON_WEB_KEY_SET,
@@ -26,5 +27,5 @@ def decode_token(token):
             options={"verify_signature": True, "verify_iss": True},
         )
     except JWTError as e:
-        current_app.logger.error("authentication exception")
+        current_app.logger.error("authentication exception", e)
         raise Unauthorized from e
