@@ -75,6 +75,7 @@ pipeline {
                     sh 'echo "OSTI_USER=$u" >> doi_service.env'
                     sh 'echo "OSTI_PASSWORD=$p" >> doi_service.env'
                 }
+                sh "$compose pull --quiet"
             }
         }
         stage('🩺 Test') {
