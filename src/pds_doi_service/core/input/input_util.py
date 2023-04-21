@@ -40,7 +40,6 @@ logger = get_logger(__name__)
 
 
 class DOIInputUtil:
-
     MANDATORY_COLUMNS = [
         "title",
         "publication_date",

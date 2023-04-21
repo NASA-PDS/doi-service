@@ -401,8 +401,9 @@ class DoiValidatorTest(unittest.TestCase):
             self._doi_validator._check_identifier_fields(doi_obj)
 
     def test_site_url_validation(self):
-        """ """
-        # Test with an unreachable (fake) URL
+        """
+        Test validation of site URLs with an unreachable (fake) URL.
+        """
         doi_obj = Doi(
             title=self.title + " different",
             publication_date=self.transaction_date,

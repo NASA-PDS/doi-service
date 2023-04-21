@@ -247,7 +247,6 @@ class DOICoreActionUpdate(DOICoreAction):
         return updated_dois
 
     def _get_doi_record_from_pds_identifier(self, pds_identifier):
-
         # Get the record from the transaction database for the current DOI value
         transaction_record = self._list_action.transaction_for_identifier(pds_identifier)
 
@@ -265,7 +264,6 @@ class DOICoreActionUpdate(DOICoreAction):
         return existing_dois[0]
 
     def _get_doi_record_from_doi_identifier(self, doi_identifier):
-
         # Get the record from the transaction database for the current DOI value
         transaction_record = self._list_action.transaction_for_doi(doi_identifier)
 
