@@ -1,20 +1,32 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2022-12-23)
+## [2.3.6](https://github.com/NASA-PDS/doi-service/tree/2.3.6) (2023-04-27)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0-dev...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.6...2.3.6)
 
-**Other closed issues:**
+**Defects:**
 
-- Document how to configure / setup ADS delivery reports for ops deployment [\#396](https://github.com/NASA-PDS/doi-service/issues/396)
+- CICD: build does not work because of dependency conflicts [\#403](https://github.com/NASA-PDS/doi-service/issues/403) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 
-## [v2.4.0-dev](https://github.com/NASA-PDS/doi-service/tree/v2.4.0-dev) (2022-12-23)
+## [release/2.3.6](https://github.com/NASA-PDS/doi-service/tree/release/2.3.6) (2023-04-13)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...v2.4.0-dev)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...release/2.3.6)
+
+**Requirements:**
+
+- As a user, I want to release a DOI with a label that does not contain the DOI [\#344](https://github.com/NASA-PDS/doi-service/issues/344)
 
 **Improvements:**
 
 - Improve metadata based upon parameters ADS keys off of [\#282](https://github.com/NASA-PDS/doi-service/issues/282)
+
+**Defects:**
+
+- Still -- Unable to generate / export json report of DOI metadata [\#398](https://github.com/NASA-PDS/doi-service/issues/398) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+
+**Other closed issues:**
+
+- Document how to configure / setup ADS delivery reports for ops deployment [\#396](https://github.com/NASA-PDS/doi-service/issues/396)
 
 ## [v2.3.5](https://github.com/NASA-PDS/doi-service/tree/v2.3.5) (2022-10-20)
 
