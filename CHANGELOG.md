@@ -1,14 +1,6 @@
 # Changelog
 
-## [2.3.6](https://github.com/NASA-PDS/doi-service/tree/2.3.6) (2023-04-27)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/2.3.6...2.3.6)
-
-**Defects:**
-
-- CICD: build does not work because of dependency conflicts [\#403](https://github.com/NASA-PDS/doi-service/issues/403) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
-
-## [release/2.3.6](https://github.com/NASA-PDS/doi-service/tree/release/2.3.6) (2023-04-13)
+## [release/2.3.6](https://github.com/NASA-PDS/doi-service/tree/release/2.3.6) (2023-04-27)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...release/2.3.6)
 
@@ -22,6 +14,7 @@
 
 **Defects:**
 
+- CICD: build does not work because of dependency conflicts [\#403](https://github.com/NASA-PDS/doi-service/issues/403) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - Still -- Unable to generate / export json report of DOI metadata [\#398](https://github.com/NASA-PDS/doi-service/issues/398) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 
 **Other closed issues:**
