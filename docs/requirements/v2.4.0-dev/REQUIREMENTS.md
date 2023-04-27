@@ -240,3 +240,7 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a DOI User, I want to know the public available date for the initial release of a data set ([#400](https://github.com/NASA-PDS/doi-service/issues/400)) 
+
+
+This requirement is not impacted by the current version
