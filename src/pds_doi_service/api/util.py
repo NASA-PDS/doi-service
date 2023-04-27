@@ -14,7 +14,7 @@ This module is adapted from the SwaggerHub auto-generated util.py.
 """
 import datetime
 import typing
-from collections import Iterable
+from typing import Iterable
 
 import six
 

@@ -10,7 +10,6 @@ class ContributorsUtilTestCase(unittest.TestCase):
     )
 
     def test_authorized_contributor(self):
-
         authorized_contributor = (
             "Cartography and Imaging Sciences Discipline" in self._doi_contributor_util.get_permissible_values()
         )

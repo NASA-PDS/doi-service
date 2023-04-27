@@ -83,7 +83,7 @@ class DOIConfigUtil:
     def _resolve_relative_path(parser):
         # resolve relative path with sys.prefix base path
         for section in parser.sections():
-            for (key, val) in parser.items(section):
+            for key, val in parser.items(section):
                 if key.endswith("_file") or key.endswith("_dir"):
                     parser[section][key] = os.path.abspath(os.path.join(sys.prefix, val))
 
