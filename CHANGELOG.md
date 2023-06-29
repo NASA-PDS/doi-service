@@ -1,8 +1,20 @@
 # Changelog
 
-## [release/2.3.6](https://github.com/NASA-PDS/doi-service/tree/release/2.3.6) (2023-04-27)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2023-06-29)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...release/2.3.6)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.6...«unknown»)
+
+**Defects:**
+
+- ADS SFTP drop intermittently fails when deployed in production [\#407](https://github.com/NASA-PDS/doi-service/issues/407)
+
+**Other closed issues:**
+
+- Deploy ADS delivery script to operations [\#399](https://github.com/NASA-PDS/doi-service/issues/399)
+
+## [v2.3.6](https://github.com/NASA-PDS/doi-service/tree/v2.3.6) (2023-04-27)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.5...v2.3.6)
 
 **Requirements:**
 
