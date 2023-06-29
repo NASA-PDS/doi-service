@@ -1,6 +1,6 @@
 # NASA PDS DOI Service
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5764878.svg)](https://doi.org/10.5281/zenodo.5764878)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5764878.svg)](https://doi.org/10.5281/zenodo.5764878) [![🤪 Unstable integration & delivery](https://github.com/NASA-PDS/doi-service/actions/workflows/unstable-cicd.yaml/badge.svg)](https://github.com/NASA-PDS/doi-service/actions/workflows/unstable-cicd.yaml) [![😌 Stable integration & delivery](https://github.com/NASA-PDS/doi-service/actions/workflows/stable-cicd.yaml/badge.svg)](https://github.com/NASA-PDS/doi-service/actions/workflows/stable-cicd.yaml) 
 
 The Planetary Data System (PDS) Digital Object Identifier (DOI) Service provides tools for PDS operators to mint [DOI](https://www.doi.org/)s.
 
