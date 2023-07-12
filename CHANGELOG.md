@@ -1,11 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2023-06-29)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2023-07-12)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.6...«unknown»)
 
 **Defects:**
 
+- Sync script is pushing non-findable DOIs to ADS [\#408](https://github.com/NASA-PDS/doi-service/issues/408) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - ADS SFTP drop intermittently fails when deployed in production [\#407](https://github.com/NASA-PDS/doi-service/issues/407)
 
 **Other closed issues:**
