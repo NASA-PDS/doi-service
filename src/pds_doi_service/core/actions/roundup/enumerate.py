@@ -19,6 +19,7 @@ from typing import List
 from pds_doi_service.core.actions.roundup.metadata import RoundupMetadata
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
+from pds_doi_service.core.entities.doi import DoiStatus
 
 
 def get_start_of_local_week() -> datetime:
@@ -29,8 +30,13 @@ def get_start_of_local_week() -> datetime:
 
 
 def fetch_dois_modified_between(begin: datetime, end: datetime, database: DOIDataBase) -> List[DoiRecord]:
+    """Return all findable DoiRecords added or modified within the given temporal span."""
     doi_records = database.select_latest_records({})
-    return [r for r in doi_records if begin <= r.date_added < end or begin <= r.date_updated < end]
+    return [
+        r
+        for r in doi_records
+        if (begin <= r.date_added < end or begin <= r.date_updated < end) and r.status == DoiStatus.Findable
+    ]
 
 
 def get_previous_week_metadata(database: DOIDataBase) -> RoundupMetadata:

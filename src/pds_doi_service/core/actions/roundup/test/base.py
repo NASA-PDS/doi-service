@@ -38,6 +38,21 @@ class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
             cls.generate_doi_record(uid="11111", added_last_week=True, updated_last_week=True),
             cls.generate_doi_record(uid="22222", added_last_week=False, updated_last_week=True),
             cls.generate_doi_record(uid="33333", added_last_week=False, updated_last_week=False),
+            cls.generate_doi_record(uid="44444", added_last_week=True, updated_last_week=True, status=DoiStatus.Error),
+            cls.generate_doi_record(
+                uid="55555", added_last_week=True, updated_last_week=True, status=DoiStatus.Unknown
+            ),
+            cls.generate_doi_record(
+                uid="66666", added_last_week=True, updated_last_week=True, status=DoiStatus.Reserved
+            ),
+            cls.generate_doi_record(uid="77777", added_last_week=True, updated_last_week=True, status=DoiStatus.Draft),
+            cls.generate_doi_record(uid="88888", added_last_week=True, updated_last_week=True, status=DoiStatus.Review),
+            cls.generate_doi_record(
+                uid="99999", added_last_week=True, updated_last_week=True, status=DoiStatus.Pending
+            ),
+            cls.generate_doi_record(
+                uid="10101", added_last_week=True, updated_last_week=True, status=DoiStatus.Deactivated
+            ),
         ]
 
         for record in doi_records:
@@ -49,7 +64,9 @@ class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
         shutil.rmtree(cls.temp_dir, ignore_errors=True)
 
     @classmethod
-    def generate_doi_record(cls, uid: str, added_last_week: bool, updated_last_week: bool):
+    def generate_doi_record(
+        cls, uid: str, added_last_week: bool, updated_last_week: bool, status: DoiStatus = DoiStatus.Findable
+    ):
         if added_last_week:
             assert updated_last_week
 
@@ -58,7 +75,7 @@ class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
 
         return DoiRecord(
             identifier=pds_id,
-            status=DoiStatus.Pending,
+            status=status,
             date_added=cls._last_week if added_last_week else cls._ages_ago,
             date_updated=cls._last_week if updated_last_week else cls._ages_ago,
             submitter="img-submitter@jpl.nasa.gov",
