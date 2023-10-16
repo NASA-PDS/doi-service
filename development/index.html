@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>👩‍💻 Development &mdash; PDS DOI Service  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">📦 Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">👩‍💻 Development</a><ul>
@@ -166,9 +165,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="development">
+  <div class="section" id="development">
 <h1>👩‍💻 Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
-<section id="quick-start">
+<div class="section" id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <p>To obtain a copy of the code and work on a new branch:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">NASA</span><span class="o">-</span><span class="n">PDS</span><span class="o">/</span><span class="n">doi</span><span class="o">-</span><span class="n">service</span><span class="o">.</span><span class="n">git</span>
@@ -190,9 +189,9 @@ as explained in <a class="reference external" href="../usage/index.html">usage</
 <p>“Activating” the virtual environment is deprecated, as per the Python
 philosophy of “explict &gt; implicit”. Instead, invoke the commands directly
 in <code class="docutils literal notranslate"><span class="pre">venv/bin</span></code></p>
-</aside>
-</section>
-<section id="testing">
+</div>
+</div>
+<div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>The code base includes both unit and integration tests. Once you’ve installed
 the service, you can run the unit tests with the following command:</p>
@@ -203,8 +202,8 @@ the service, you can run the unit tests with the following command:</p>
 <blockquote>
 <div><p>venv/bin/behave</p>
 </div></blockquote>
-</section>
-<section id="making-releases">
+</div>
+<div class="section" id="making-releases">
 <h2>Making Releases<a class="headerlink" href="#making-releases" title="Permalink to this headline">¶</a></h2>
 <p>Releases are done on GitHub and PyPI. This is implemented through the CI/CD
 framework using GitHub <a class="reference external" href="https://github.com/features/actions">Actions</a> on the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch. To trigger a release
@@ -217,14 +216,14 @@ to trigger the <a class="reference external" href="https://github.com/features/a
 </div>
 <p>From there, the <a class="reference external" href="https://github.com/features/actions">Actions</a> framework will determine an appropriate patch version
 number, tag and build a release, and push it to PyPI.</p>
-</section>
-<section id="contribute">
+</div>
+<div class="section" id="contribute">
 <h2>Contribute<a class="headerlink" href="#contribute" title="Permalink to this headline">¶</a></h2>
 <p>Clone the repo from : <a class="reference external" href="https://github.com/NASA-PDS/doi-service">https://github.com/NASA-PDS/doi-service</a> and then
 submit a pull request for your branch when complete. At least one PDS Engineering
 Node developer must approve the request before it is merged.</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

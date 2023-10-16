@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>🏃‍ ️Usage &mdash; PDS DOI Service  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation/index.html">📦 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/index.html">👩‍💻 Development</a></li>
@@ -177,7 +176,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="usage">
+  <div class="section" id="usage">
 <h1>🏃‍ ️Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
 <p>This section describes how to use the PDS DOI Service.</p>
 <p>The service is composed of command line tools (<code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span></code>, <code class="docutils literal notranslate"><span class="pre">pds-doi-init</span></code>),
@@ -190,7 +189,7 @@ For more information on installing and running the PDS DOI UI, consult its <a cl
 (e.g.  change all license information to X, in a CSV), an example <strong>notebook for bulk updates</strong> is provided.
 It is self described and is meant to be adaptable for different cases.
 See <a class="reference external" href="https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb">https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb</a></p>
-<section id="overview">
+<div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>A DOI (Digital Object Identifier) is a handle which is used to permanently identify
 a digital object, typically a dataset or document. Once assigned, a DOI is
@@ -224,10 +223,10 @@ workflow (<code class="docutils literal notranslate"><span class="pre">Reserve</
 Node operators to interact directly with the local PDS DOI Service installation and its
 transaction database. A web API is also available to facilitate management of DOIs
 by other PDS discipline nodes (for example, when used with the DOI Service GUI).</p>
-</section>
-<section id="command-line-application-descriptions">
+</div>
+<div class="section" id="command-line-application-descriptions">
 <h2>Command Line Application Descriptions<a class="headerlink" href="#command-line-application-descriptions" title="Permalink to this headline">¶</a></h2>
-<section id="pds-doi-cmd">
+<div class="section" id="pds-doi-cmd">
 <h3>pds-doi-cmd<a class="headerlink" href="#pds-doi-cmd" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">pds-doi-cmd</span></code> is the primary command line interface for interacting with the
 PDS DOI Service. After installing the service and activating its virtual
@@ -247,7 +246,7 @@ a <code class="docutils literal notranslate"><span class="pre">--help</span></co
 <p>Descriptions of the various subcommands and their usages are provided below.
 For a full description of all available subcommand and their arguments, consult
 the <a class="reference external" href="../api/index.html">api</a> section.</p>
-<section id="pds-doi-cmd-reserve">
+<div class="section" id="pds-doi-cmd-reserve">
 <h4>pds-doi-cmd reserve<a class="headerlink" href="#pds-doi-cmd-reserve" title="Permalink to this headline">¶</a></h4>
 <p>The <cite>reserve</cite> subcommand allows a new DOI to be reserved by the DOI provider.
 Once reserved, the assigned DOI may be used for citation purposes while metadata
@@ -289,8 +288,8 @@ format JSON label containing the reserved DOI records. This label may be saved
 to disk and modified to include any additional metadata needed before release.
 An updated JSON label may then be provided to the <cite>update</cite> or <cite>release</cite> actions, as
 the workflow dictates.</p>
-</section>
-<section id="pds-doi-cmd-update">
+</div>
+<div class="section" id="pds-doi-cmd-update">
 <h4>pds-doi-cmd update<a class="headerlink" href="#pds-doi-cmd-update" title="Permalink to this headline">¶</a></h4>
 <p>The <cite>update</cite> subcommand allows the metadata associated with a reserved (or released)
 record to be updated locally within the PDS DOI Service prior to submission to
@@ -308,8 +307,8 @@ the service).</p>
 <p>If the update request is successful, the <cite>update</cite> subcommand returns a DataCite
 format JSON label representing the updated state of each record. This label may
 be saved off and reused with the <cite>release</cite> command to push the updates to DataCite.</p>
-</section>
-<section id="pds-doi-cmd-release">
+</div>
+<div class="section" id="pds-doi-cmd-release">
 <h4>pds-doi-cmd release<a class="headerlink" href="#pds-doi-cmd-release" title="Permalink to this headline">¶</a></h4>
 <p>The <cite>release</cite> subcommand encompasses both the <code class="docutils literal notranslate"><span class="pre">Review</span></code> and <code class="docutils literal notranslate"><span class="pre">Release</span></code> steps
 of the DOI workflow described above. It should be used when a reserved DOI
@@ -348,8 +347,8 @@ may still be updated or moved back into a hidden state. Note that moving a recor
 back to the hidden state currently <strong>cannot</strong> be performed via the PDS DOI Service.</p>
 <p>The output of the <cite>release</cite> command is a DataCite format JSON label containing the
 state of the record after release to review or DataCite.</p>
-</section>
-<section id="pds-doi-cmd-list">
+</div>
+<div class="section" id="pds-doi-cmd-list">
 <h4>pds-doi-cmd list<a class="headerlink" href="#pds-doi-cmd-list" title="Permalink to this headline">¶</a></h4>
 <p>The <cite>list</cite> subcommand is used primarily to query the local transaction database
 for the current state of DOI record submission requests. User’s may provide
@@ -381,8 +380,8 @@ as a DataCite format JSON label via the <code class="docutils literal notranslat
 <p>This can be very useful for obtaining a single label file containing multiple
 records to be updated in tandem. The modified label may then be provided as the
 input to the <cite>update</cite> or <cite>release</cite> subcommands.</p>
-</section>
-<section id="pds-doi-cmd-check">
+</div>
+<div class="section" id="pds-doi-cmd-check">
 <h4>pds-doi-cmd check<a class="headerlink" href="#pds-doi-cmd-check" title="Permalink to this headline">¶</a></h4>
 <p>In older versions of the PDS DOI Service, the <cite>check</cite> subcommand was used to check
 the state of DOI records that had been released, but left in a “pending” state by
@@ -391,9 +390,9 @@ the <cite>check</cite> action is no longer necessary and has been deprecated. It
 longer be used.</p>
 <p>Future versions of the PDS DOI Service may repurpose the <cite>check</cite> subcommand to be
 useful within the context of DataCite submissions.</p>
-</section>
-</section>
-<section id="pds-doi-init">
+</div>
+</div>
+<div class="section" id="pds-doi-init">
 <h3>pds-doi-init<a class="headerlink" href="#pds-doi-init" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">pds-doi-init</span></code> command line application is used to synchronize the local
 transaction database with the status of DOI records pulled directly from DataCite.
@@ -411,8 +410,8 @@ endpoint URL are defined in the INI config. See the <a class="reference external
 more details.</p>
 <p>A full description of the <code class="docutils literal notranslate"><span class="pre">pds-doi-init</span></code> application and its arguments may be
 found in the <a class="reference external" href="../api/index.html">api</a> section.</p>
-</section>
-<section id="pds-doi-api">
+</div>
+<div class="section" id="pds-doi-api">
 <h3>pds-doi-api<a class="headerlink" href="#pds-doi-api" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code> script is the main interface for launching the REST API used
 to interact with the core PDS DOI Service library. The script launches the API
@@ -440,16 +439,16 @@ described in the Configuration section above:</p>
 <span class="n">api_valid_referrers</span> <span class="o">=</span>
 </pre></div>
 </div>
-</aside>
+</div>
 <p>A copy of the Swagger API definition, with available endpoints and URL query
 parameters, for the <code class="docutils literal notranslate"><span class="pre">pds-doi-api</span></code> application is available within the <a class="reference external" href="../api/index.html">api</a> section.</p>
-</section>
-</section>
-<section id="bulk-updates-with-jupyter">
+</div>
+</div>
+<div class="section" id="bulk-updates-with-jupyter">
 <h2>Bulk Updates with Jupyter<a class="headerlink" href="#bulk-updates-with-jupyter" title="Permalink to this headline">¶</a></h2>
 <p>Bulk updates of DOI records are most easily accomplished using Python Jupyter notebooks. There is an <a class="reference external" href="https://github.com/NASA-PDS/doi-service/blob/main/src/pds_doi_service/notebooks/Bulk%20Record%20Update.ipynb">example notebook</a> in the repo and a <a class="reference external" href="https://drive.google.com/file/d/13BecbQt1aUugct9830vpbnIIoMg_yXa2/view?usp=sharing">tutorial for using the notebook</a> posted on our internal Google Workspace Shared Drive.</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
