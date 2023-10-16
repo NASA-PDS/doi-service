@@ -1,6 +1,6 @@
 # Changelog
 
-## [release/2.4.0](https://github.com/NASA-PDS/doi-service/tree/release/2.4.0) (2023-09-20)
+## [release/2.4.0](https://github.com/NASA-PDS/doi-service/tree/release/2.4.0) (2023-10-16)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.3.6...release/2.4.0)
 
