@@ -260,7 +260,7 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_remote_pds4_bundle(self):
         """Test draft request with a remote bundle URL"""
-        input_url = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml"
+        input_url = "https://planetarydata.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml"
 
         reserve_args = {
             "input": input_url,
@@ -291,7 +291,7 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_reserve_remote_collection(self):
         """Test reserve request with a remote collection URL"""
-        input_url = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml"
+        input_url = "https://planetarydata.jpl.nasa.gov/data/nsyt/insight_cameras/data/collection_data.xml"
 
         reserve_args = {
             "input": input_url,
@@ -322,7 +322,7 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_reserve_remote_browse_collection(self):
         """Test draft request with a remote browse collection URL"""
-        input_url = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml"
+        input_url = "https://planetarydata.jpl.nasa.gov/data/nsyt/insight_cameras/browse/collection_browse.xml"
 
         reserve_args = {
             "input": input_url,
@@ -354,7 +354,9 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_reserve_remote_calibration_collection(self):
         """Test reserve request with remote calibration collection URL"""
-        input_url = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml"
+        input_url = (
+            "https://planetarydata.jpl.nasa.gov/data/nsyt/insight_cameras/calibration/collection_calibration.xml"
+        )
 
         reserve_args = {
             "input": input_url,
@@ -386,7 +388,7 @@ class ReserveActionTestCase(unittest.TestCase):
     )
     def test_reserve_remote_document_collection(self):
         """Test reserve request a with remote document collection URL"""
-        input_url = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml"
+        input_url = "https://planetarydata.jpl.nasa.gov/data/nsyt/insight_cameras/document/collection_document.xml"
 
         reserve_args = {
             "input": input_url,
