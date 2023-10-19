@@ -115,7 +115,7 @@ To run the server on a Docker container, please execute the following from the p
 
 ```console
 $ # building the image
-$ docker image build --tag pds-doi-service .
+$ docker image build --tag pds-doi-service --file docker/Dockerfile .
 $ # starting up a container
 $ docker container run --publish 8080:8080 pds-doi-service
 ```
@@ -123,6 +123,7 @@ $ docker container run --publish 8080:8080 pds-doi-service
 However, note that when launching the container via `docker container run`, all configuration values are derived from the default INI file bundled with the repository. To override the configuration, it is recommended to launch the service via a Docker Composition:
 
 ```console
+$ cd docker
 $ # Make a copy of the docker composition environment template:
 $ cp doi_service.env.in doi_service.env
 $ # Edit the environment file, setting the credentials within:
@@ -131,7 +132,7 @@ $ # Start the composition; on some systems, `docker compose` is `docker-compose`
 $ docker compose up
 ```
 
-This will launch the DOI Service container using the top-level `docker-compose.yml` file, which specifies that environment variables be imported from `doi_service.env`. Modify `doi_service.env` (after copying it from `doi_service.env.in`) to define any configuration values to override when the service is launched.
+This will launch the DOI Service container using the `docker-compose.yaml` file in the `docker` subdirectory, which specifies that environment variables be imported from `doi_service.env`. Modify `doi_service.env` (after copying it from `doi_service.env.in`) to define any configuration values to override when the service is launched.
 
 ## Test
 

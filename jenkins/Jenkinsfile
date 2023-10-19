@@ -1,5 +1,5 @@
 /*
- * Copyright © 2022, California Institute of Technology ("Caltech").
+ * Copyright © 2022–2023, California Institute of Technology ("Caltech").
  * U.S. Government sponsorship acknowledged.
  *
  * All rights reserved.
@@ -49,7 +49,7 @@ pipeline {
         shutdown_timeout = "30"
 
         // Basic composition command:
-        compose = "docker-compose --file ${env.WORKSPACE}/jenkins-compose.yaml"
+        compose = "docker-compose --file ${env.WORKSPACE}/jenkins/jenkins-compose.yaml --project-directory ${env.WORKSPACE}/jenkins"
 
         // Network morphology
         PDS_DOI_PUBLISHED_PORT = "3176"
@@ -70,10 +70,10 @@ pipeline {
                 withCredentials([
                     usernamePassword(credentialsId: 'datacite-dev', passwordVariable: 'p', usernameVariable: 'u')
                 ]) {
-                    sh "rm --force doi_service.env"
-                    sh "head --lines=-2 doi_service.env.in > doi_service.env"
-                    sh 'echo "OSTI_USER=$u" >> doi_service.env'
-                    sh 'echo "OSTI_PASSWORD=$p" >> doi_service.env'
+                    sh "rm --force jenkins/doi_service.env"
+                    sh "head --lines=-2 docker/doi_service.env.in > jenkins/doi_service.env"
+                    sh 'echo "OSTI_USER=$u" >> jenkins/doi_service.env'
+                    sh 'echo "OSTI_PASSWORD=$p" >> jenkins/doi_service.env'
                 }
                 sh "$compose pull --quiet"
             }
