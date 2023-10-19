@@ -148,7 +148,13 @@ Testing details are detailed in this section.
 - linting
 - building the rich documentation.
 
-To launch the full set of tests, simply run:
+To launch the full set of tests, simply set the following environment variables:
+
+- `CI` should be set to `true`
+- `DATACITE_USER` should be set to the PDS username of the testing Datacite instance
+- `DATACITE_PASSWORD` should be set to that username's password
+
+Then run:
 
     tox
 
