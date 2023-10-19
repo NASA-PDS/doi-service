@@ -30,7 +30,7 @@ class InputUtilTestCase(unittest.TestCase):
         self.assertEqual(len(dois), 1)
 
         # Test with remote file
-        i_filepath = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml"
+        i_filepath = "https://planetarydata.jpl.nasa.gov/img/data/nsyt/insight_cameras/bundle.xml"
         dois = doi_input_util.parse_dois_from_input_file(i_filepath)
 
         self.assertEqual(len(dois), 1)
@@ -47,7 +47,7 @@ class InputUtilTestCase(unittest.TestCase):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
         # Test with invalid remote file path (does not exist)
-        i_filepath = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/fake_bundle.xml"
+        i_filepath = "https://planetarydata.jpl.nasa.gov/img/data/nsyt/insight_cameras/fake_bundle.xml"
         with self.assertRaises(InputFormatException):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
@@ -58,7 +58,7 @@ class InputUtilTestCase(unittest.TestCase):
 
         # Test remote file with invalid extension
         doi_input_util = DOIInputUtil(valid_extensions=".csv")
-        i_filepath = "https://pds-imaging.jpl.nasa.gov/data/nsyt/insight_cameras/bundle.xml"
+        i_filepath = "https://planetarydata.jpl.nasa.gov/img/data/nsyt/insight_cameras/bundle.xml"
         with self.assertRaises(InputFormatException):
             doi_input_util.parse_dois_from_input_file(i_filepath)
 
