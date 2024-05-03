@@ -50,10 +50,11 @@ To do so::
 
     mkdir -p $HOME/.venv
     python3 -m venv $HOME/.venv/pds-doi-service
-    pip3 install pds-doi-service
+    $HOME/.venv/pds-doi-service/bin/pip3 install pds-doi-service
 
 At this point, the PDS DOI Service commands are available in
-``$HOME/.venv/pds-doi-service/bin``.
+``$HOME/.venv/pds-doi-service/bin`` (e.g. ``pds-doi-cmd``,
+``pds-doi-init``).
 
 .. note::
     "Activating" the virtual environment is deprecated, as per the Python
@@ -75,9 +76,9 @@ following::
 Within the directory returned, create a file named ``pds_doi_service.ini``.
 
 In this file you can override any option set in the default configuration file
-``pds_doi_service/core/util/conf.default.ini`` found within the package. An
+``pds_doi_service/core/util/conf.ini.default`` found within the package. An
 example of this file may be found
-`here <https://raw.githubusercontent.com/NASA-PDS/pds-doi-service/main/src/pds_doi_service/core/util/conf.default.ini>`_.
+`here <https://raw.githubusercontent.com/NASA-PDS/pds-doi-service/main/src/pds_doi_service/core/util/conf.ini.default>`_.
 
 For example, if you want the service to create production DOIs, update the
 DataCite server url::
@@ -147,7 +148,7 @@ Upgrading the Service
 To check for and install an upgrade to the service, run the following command in
 your virtual environment::
 
-  pip install --upgrade pds-doi-service
+  $HOME/.venv/pds-doi-service/bin/pip3 install --upgrade pds-doi-service
 
 Upgrades to the PDS DOI Service should typically not affect any existing transaction
 database, transaction history, or INI configuration settings. If an instance of
