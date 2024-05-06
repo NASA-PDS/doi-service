@@ -12,6 +12,7 @@ requirements:
 •  Python_ 3.9 or above. Python 2 will absolutely *not* work.
 •  ``libxml2`` version 2.9.2; later 2.9 versions are fine.  Run ``xml2-config
    --version`` to find out.
+•  ``libxslt`` version 1.1.28; later 1.1 versions are OK too. Run ``xslt-config`` to see.
 
 Consult your operating system instructions or system administrator to install
 the required packages. For those without system administrator access, you
