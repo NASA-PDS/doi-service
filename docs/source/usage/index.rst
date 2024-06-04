@@ -109,7 +109,7 @@ Where the following are mandatory columns:
     * ``product_type_specific`` : The type of the object. Should be one of `PDS4 Refereed Collection`, `PDS4 Refereed Document`, or `PDS4 Refereed Data Bundle` (note that `PDS3` may be used in lieu of `PDS4` if working with PDS3 objects)
     * ``author_last_name`` : Last name of the author of the object.
     * ``author_first_name`` : First name of the author of the object.
-    * ``related_resource`` : The PDS4 LIDVID identifier associated with the object. If working with a PDS3 object, the PDS3 Site ID may be used instead.
+    * ``related_resource`` : The PDS4 LIDVID identifier associated with the object. If working with a PDS3 object, the PDS3 Data Set ID may be used instead.
 
 Additionally, the following optional columns may also be provided:
     * ``doi`` : An existing DOI already assigned to the object. Should only be provided when using spreadsheets as input for an `update` or `release` action.
@@ -133,8 +133,8 @@ of the PDS DOI Service until released to DataCite, so an update request will not
 change the findable status of an existing DOI record within DataCite.
 
 Input to the `update` subcommand may be either a PDS4 label or spreadsheet (described
-in the `reserve` section above), or a DataCite format JSON label. A DataCirte label
-may be obtained as the output from a previous action or querired for via the `list`
+in the `reserve` section above), or a DataCite format JSON label. A DataCite label
+may be obtained as the output from a previous action or queried for via the `list`
 action, described later in this document. Regardless of the format, the input must
 define an existing DOI value for each provided record. These DOI values must also
 already exist within the transaction database for the PDS DOI Service installation
