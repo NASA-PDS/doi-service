@@ -1,8 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2024-02-27)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2024-06-04)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...«unknown»)
+
+**Defects:**
+
+- Installation instructions are not entirely clear, and come back with issues about incompatible libraries in python 11 [\#430](https://github.com/NASA-PDS/doi-service/issues/430)
 
 **Other closed issues:**
 
