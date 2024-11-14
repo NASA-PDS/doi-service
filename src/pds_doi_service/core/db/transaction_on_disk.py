@@ -170,7 +170,7 @@ class TransactionOnDisk:
                     r.close()
 
                 # Set up permissions for copied input
-                os.chmod(full_input_name, 0o0664)
+                os.chmod(full_input_name, 0o0600)
 
         # Write output file with provided content
         # The extension of the file is determined by the provided content type
@@ -181,7 +181,7 @@ class TransactionOnDisk:
                 outfile.write(output_content)
 
             # Set up permissions for copied output
-            os.chmod(full_output_name, 0o0664)
+            os.chmod(full_output_name, 0o0600)
 
         logger.info(f"Transaction files saved to {transaction_dir}")
 
