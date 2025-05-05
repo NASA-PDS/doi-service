@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import unittest
+
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer
 
 
@@ -63,9 +64,21 @@ class TestKeywordTokenizer(unittest.TestCase):
         PDS data repositories include information about planetary science."""
         self.tokenizer.process_text(test_string)
         # Current implementation has different tokenization behavior
-        expected = {"perseverance", "rover", "mars", "pds", "data", "lt;mission&gt", 
-                    "repository", "information", "sample", "include", "planetary", 
-                    "collected", "science"}
+        expected = {
+            "perseverance",
+            "rover",
+            "mars",
+            "pds",
+            "data",
+            "lt;mission&gt",
+            "repository",
+            "information",
+            "sample",
+            "include",
+            "planetary",
+            "collected",
+            "science",
+        }
         self.assertEqual(expected, self.tokenizer.get_keywords())
 
     def test_process_text_with_complex_patterns(self):
@@ -75,8 +88,7 @@ class TestKeywordTokenizer(unittest.TestCase):
         self.tokenizer.process_text(complex_string)
         # Current implementation has different tokenization behavior
         result = self.tokenizer.get_keywords()
-        expected = {"lt;tag", "attr='value'&gt;complex", "keyword", "many", 
-                   "w|\\w|\\w", "characters&lt;/tag&gt"}
+        expected = {"lt;tag", "attr='value'&gt;complex", "keyword", "many", "w|\\w|\\w", "characters&lt;/tag&gt"}
         self.assertEqual(expected, result)
 
 
