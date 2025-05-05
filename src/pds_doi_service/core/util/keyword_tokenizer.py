@@ -22,19 +22,22 @@ class KeywordTokenizer:
     def process_text(self, text):
         # Remove punctuations
         logger.debug(f"extract keywords from {text}")
-        text = re.sub("^[^a-zA-Z0-9]+", " ", text)
-        text = re.sub("[^a-zA-Z0-9]+$", " ", text)
-        text = re.sub("[^a-zA-Z0-9]+ ", " ", text)
-        text = re.sub(" [^a-zA-Z0-9]+", " ", text)
+        # Fix regex patterns to avoid potential catastrophic backtracking
+        # Limit consecutive non-alphanumeric chars to a reasonable maximum (100)
+        text = re.sub("^[^a-zA-Z0-9]{1,100}", " ", text)
+        text = re.sub("[^a-zA-Z0-9]{1,100}$", " ", text)
+        text = re.sub("[^a-zA-Z0-9]{1,100} ", " ", text)
+        text = re.sub(" [^a-zA-Z0-9]{1,100}", " ", text)
 
         # Convert to lowercase
         text = text.lower()
 
-        # remove tags
-        text = re.sub("&lt;/?.*?&gt;", " &lt;&gt; ", text)
+        # Remove tags with bounded repetition
+        # Replace non-greedy .* pattern with character class and bounded repetition
+        text = re.sub("&lt;/?[^&>]{0,1000}&gt;", " &lt;&gt; ", text)
 
-        # remove special characters
-        text = re.sub(r"(\|\\W)+", " ", text)
+        # Remove special characters with bounded repetition
+        text = re.sub(r"(\|\\W){1,100}", " ", text)
 
         # Convert to list from string
         text = text.split()
