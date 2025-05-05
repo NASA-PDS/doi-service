@@ -54,6 +54,21 @@ jobs:
                     key: pds-${{runner.os}}-py-${{hashFiles('**/*.whl')}}
                     # To restore a set of files, we only need to match a prefix of the saved key.
                     restore-keys: pds-${{runner.os}}-py-
+            
+            -
+                name: Update default configuration
+                run: |
+                    import sys
+                    import os
+                    print("Running python version {}".format(sys.version))
+                    conf_file = "pds_doi_service.ini"
+                    print("Create config file for unit test {}".format(conf_file))
+                    with open(conf_file, "w") as f:
+                        f.write("[OSTI]\n")
+                        f.write("user = {}\n".format("${{secrets.osti_login}}"))
+                        f.write("password = {}\n".format("${{secrets.osti_password}}"))
+                shell: python
+
             -
                 name: 🩺 Test Software
                 run:
