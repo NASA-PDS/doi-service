@@ -17,6 +17,7 @@ on:
         branches:
             -   '**'
             -   '!main'
+    workflow_dispatch:
 
 
 # What to Do
@@ -54,6 +55,7 @@ jobs:
                     key: pds-${{runner.os}}-py-${{hashFiles('**/*.whl')}}
                     # To restore a set of files, we only need to match a prefix of the saved key.
                     restore-keys: pds-${{runner.os}}-py-
+
             -
                 name: 🩺 Test Software
                 run:
