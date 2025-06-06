@@ -154,8 +154,12 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
         )
 
         test_payload = DOIDataCiteRecord().create_doi_record(test_doi)
+        test_username = "username"  # pragma: allowlist secret
+        test_password = "fake_password"  # pragma: allowlist secret
 
-        response_doi, response_text = DOIDataCiteWebClient().submit_content(test_payload)
+        response_doi, response_text = DOIDataCiteWebClient().submit_content(
+            test_payload, username=test_username, password=test_password
+        )
 
         # Ensure the response DOI and text line up
         response_text_doi, _ = DOIDataCiteWebParser.parse_dois_from_label(response_text)

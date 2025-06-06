@@ -1,5 +1,3 @@
-import base64
-import json
 import os
 import shutil
 import tempfile
@@ -19,9 +17,6 @@ class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
     tests_dir = os.path.abspath(resource_filename(__name__, ""))
     resources_dir = os.path.join(tests_dir, "resources")
 
-    temp_dir = tempfile.mkdtemp()
-    db_filepath = os.path.join(temp_dir, "doi_temp.sqlite")
-
     _database_obj: DOIDataBase
 
     # Some reference datetimes that are referenced in SetUpClass and in tests
@@ -31,6 +26,8 @@ class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.db_filepath = os.path.join(cls.temp_dir, "doi_temp.sqlite")
         cls._database_obj = DOIDataBase(cls.db_filepath)
 
         # Write some example DOIs to the test db

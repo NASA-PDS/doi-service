@@ -25,10 +25,10 @@ class Emailer:
     status of submitted DOIs.
     """
 
-    def __init__(self):
+    def __init__(self, host=None, port=None):
         self._config = DOIConfigUtil().get_config()
-        self.m_localhost = self._config.get("OTHER", "emailer_local_host")
-        self.m_email_port = int(self._config.get("OTHER", "emailer_port"))
+        self.m_localhost = host or self._config.get("OTHER", "emailer_local_host")
+        self.m_email_port = port or int(self._config.get("OTHER", "emailer_port"))
 
     def sendmail(self, sender, receivers, subject, message_body):
         """

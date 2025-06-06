@@ -75,7 +75,9 @@ def prepare_email_message(sender_email: str, receiver_email: str, metadata: Roun
     return msg
 
 
-def run(database: DOIDataBase, sender_email: str, receiver_email: str) -> None:
+def run(
+    database: DOIDataBase, sender_email: str, receiver_email: str, email_host: str = None, smtp_port: int = None
+) -> None:
     """
     Send an email consisting of a summary of all DOIs updated in the previous week (i.e. between the previous Sunday
     and the Monday before that, inclusive), with a JSON attachment for those DoiRecords.
@@ -84,5 +86,5 @@ def run(database: DOIDataBase, sender_email: str, receiver_email: str) -> None:
 
     msg = prepare_email_message(sender_email, receiver_email, metadata)
 
-    emailer = PDSEmailer()
+    emailer = PDSEmailer(host=email_host, port=smtp_port)
     emailer.send_message(msg)

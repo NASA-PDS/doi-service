@@ -10,6 +10,7 @@ from os.path import exists
 from os.path import join
 from unittest.mock import patch
 
+import pds_doi_service.api.controllers.authentication
 import pds_doi_service.api.controllers.dois_controller
 import pds_doi_service.core.db.transaction
 import pds_doi_service.core.outputs.osti.osti_web_client
@@ -26,6 +27,13 @@ from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pkg_resources import resource_filename
 
 from ._base import BaseTestCase
+
+
+def decode_patch(
+    token, key, algorithms=None, options=None, audience=None, issuer=None, subject=None, access_token=None
+):
+    """Patch for jose.jwt.decode() to avoid obtaining and decoding of actual JWT tokens."""
+    return {}
 
 
 class TestDoisController(BaseTestCase):
@@ -307,9 +315,9 @@ class TestDoisController(BaseTestCase):
 
         self.assert400(response, "Response body is : " + response.data.decode("utf-8"))
 
-    @unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #364")
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionList, "run", list_action_run_patch)
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionUpdate, "run", update_action_run_patch)
+    @patch.object(pds_doi_service.api.controllers.authentication.jwt, "decode", decode_patch)
     def test_post_dois_update_w_url(self):
         """Test an update POST with url input"""
         # We can use a file system path since were working with a local server
@@ -328,7 +336,7 @@ class TestDoisController(BaseTestCase):
             "/PDS_APIs/pds_doi_api/0.2/dois",
             method="POST",
             query_string=query_string,
-            headers={"Referer": "http://localhost"},
+            headers={"Referer": "http://localhost", "Authorization": "Bearer test-token"},
         )
 
         self.assert200(update_response, "Response body is : " + update_response.data.decode("utf-8"))
@@ -346,9 +354,9 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(update_record.update_date, datetime.fromisoformat("2020-10-20T14:04:12.560568-07:00"))
         self.assertEqual(update_record.status, DoiStatus.Draft)
 
-    @unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #364")
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionList, "run", list_action_run_patch)
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionUpdate, "run", update_action_run_patch)
+    @patch.object(pds_doi_service.api.controllers.authentication.jwt, "decode", decode_patch)
     def test_post_dois_update_w_payload(self):
         """Test an update POST with requestBody input"""
         input_bundle = join(self.test_data_dir, "bundle_in.xml")
@@ -369,7 +377,7 @@ class TestDoisController(BaseTestCase):
             data=body,
             content_type="application/xml",
             query_string=query_string,
-            headers={"Referer": "http://localhost"},
+            headers={"Referer": "http://localhost", "Authorization": "Bearer test-token"},
         )
 
         self.assert200(update_response, "Response body is : " + update_response.data.decode("utf-8"))
@@ -390,6 +398,7 @@ class TestDoisController(BaseTestCase):
     @unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #364")
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionList, "run", list_action_run_patch)
     @patch.object(pds_doi_service.api.controllers.dois_controller.DOICoreActionReserve, "run", reserve_action_run_patch)
+    @patch.object(pds_doi_service.api.controllers.authentication.jwt, "decode", decode_patch)
     def test_post_dois_reserve(self):
         """Test dry-run reserve POST"""
         # Submit a new bundle in reserve status
@@ -420,7 +429,7 @@ class TestDoisController(BaseTestCase):
             data=JSONEncoder().encode(body),
             content_type="application/json",
             query_string=query_string,
-            headers={"Referer": "http://localhost"},
+            headers={"Referer": "http://localhost", "Authorization": "Bearer test-token"},
         )
 
         self.assert200(reserve_response, "Response body is : " + reserve_response.data.decode("utf-8"))
@@ -435,7 +444,7 @@ class TestDoisController(BaseTestCase):
         self.assertEqual(reserve_record.identifier, "urn:nasa:pds:insight_cameras::2.0")
         self.assertEqual(reserve_record.status, DoiStatus.Draft)
 
-    @unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #364")
+    @patch.object(pds_doi_service.api.controllers.authentication.jwt, "decode", decode_patch)
     def test_post_dois_invalid_requests(self):
         """Test invalid POST requests"""
 
@@ -451,7 +460,7 @@ class TestDoisController(BaseTestCase):
             "/PDS_APIs/pds_doi_api/0.2/dois",
             method="POST",
             query_string=query_string,
-            headers={"Referer": "http://localhost"},
+            headers={"Referer": "http://localhost", "Authorization": "Bearer test-token"},
         )
 
         self.assert400(error_response, "Response body is : " + error_response.data.decode("utf-8"))
@@ -468,7 +477,7 @@ class TestDoisController(BaseTestCase):
             "/PDS_APIs/pds_doi_api/0.2/dois",
             method="POST",
             query_string=query_string,
-            headers={"Referer": "http://localhost"},
+            headers={"Referer": "http://localhost", "Authorization": "Bearer test-token"},
         )
 
         self.assert400(error_response, "Response body is : " + error_response.data.decode("utf-8"))
@@ -488,7 +497,7 @@ class TestDoisController(BaseTestCase):
             "/PDS_APIs/pds_doi_api/0.2/dois",
             method="POST",
             query_string=query_string,
-            headers={"Referer": "http://localhost"},
+            headers={"Referer": "http://localhost", "Authorization": "Bearer test-token"},
         )
 
         self.assert400(error_response, "Response body is : " + error_response.data.decode("utf-8"))
