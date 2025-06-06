@@ -1,9 +1,9 @@
 import six
-from connexion import jsonifier  # type: ignore
+from connexion.apps.flask_app import FlaskJSONEncoder  # type: ignore
 from pds_doi_service.api.models import Model
 
 
-class JSONEncoder(jsonifier.JSONEncoder):
+class JSONEncoder(FlaskJSONEncoder):
     include_nulls = False
 
     def default(self, o):
@@ -16,4 +16,4 @@ class JSONEncoder(jsonifier.JSONEncoder):
                 attr = o.attribute_map[attr]
                 dikt[attr] = value
             return dikt
-        return super().default(self, o)
+        return FlaskJSONEncoder.default(self, o)
