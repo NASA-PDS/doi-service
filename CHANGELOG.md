@@ -1,16 +1,20 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2024-09-16)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-06-12)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...«unknown»)
 
 **Defects:**
 
+- Large majority of units tests failing [\#456](https://github.com/NASA-PDS/doi-service/issues/456) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - Installation instructions are not entirely clear, and come back with issues about incompatible libraries in python 11 [\#430](https://github.com/NASA-PDS/doi-service/issues/430)
+- WeeklyRoundupEmailNotificationTestCase fails when run in CI, with "Connection Refused" [\#361](https://github.com/NASA-PDS/doi-service/issues/361)
 
 **Other closed issues:**
 
+- Fix regex backtracking vulnerability in KeywordTokenizer [\#454](https://github.com/NASA-PDS/doi-service/issues/454)
 - Update organization of Docker and Jenkins info into separate subdirs in repo root [\#415](https://github.com/NASA-PDS/doi-service/issues/415)
+- Some TestDoisController test cases do not pass in CI and have been disabled [\#364](https://github.com/NASA-PDS/doi-service/issues/364)
 
 ## [v2.4.0](https://github.com/NASA-PDS/doi-service/tree/v2.4.0) (2023-10-16)
 
