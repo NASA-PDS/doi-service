@@ -12,7 +12,6 @@ from pds_doi_service.core.actions.roundup.test.base import WeeklyRoundupNotifica
 from pds_doi_service.core.actions.test.util.email import capture_email
 
 
-@unittest.skipIf(os.environ.get("CI") == "true", "Test is currently broken in Github Actions workflow. See #361")
 class WeeklyRoundupEmailNotificationTestCase(WeeklyRoundupNotificationBaseTestCase):
     _message: Message
 
@@ -23,7 +22,7 @@ class WeeklyRoundupEmailNotificationTestCase(WeeklyRoundupNotificationBaseTestCa
     def setUpClass(cls):
         super().setUpClass()
 
-        cls._message = capture_email(lambda: do_roundup(cls._database_obj, cls.sender, cls.recipient))
+        cls._message = capture_email(lambda: do_roundup(cls._database_obj, cls.sender, cls.recipient, smtp_port=1025))
 
     def test_roundup_email_sender_correct(self):
         self.assertEqual(self.sender, self._message["From"])
