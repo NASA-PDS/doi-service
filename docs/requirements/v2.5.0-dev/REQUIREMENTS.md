@@ -252,7 +252,7 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
-## As a user, I want to submit a label utilizing the updated author/contributor metadata ([#432](https://github.com/NASA-PDS/doi-service/issues/432)) 
+## As a user, I want to submit a label utilizing the updated author/contributor metadata (`List_Author`, `List_Contributor`, `List_Editor`) ([#432](https://github.com/NASA-PDS/doi-service/issues/432)) 
 
 
 This requirement is not impacted by the current version
