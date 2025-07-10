@@ -1,1 +1,208 @@
-{"data":{"id":"10.26033/6cg5-pt13","type":"dois","attributes":{"doi":"10.26033/6cg5-pt13","prefix":"10.26033","suffix":"6cg5-pt13","identifiers":[{"identifier":"urn:nasa:pds:ast.nesvorny.families::1.0","identifierType":"PDS4 Bundle LIDVID"}],"alternateIdentifiers":[{"alternateIdentifierType":"PDS4 Bundle LIDVID","alternateIdentifier":"urn:nasa:pds:ast.nesvorny.families::1.0"}],"creators":[{"name":"Nesvorny, David","nameType":"Personal","givenName":"David","familyName":"Nesvorny","nameIdentifiers":[{"schemeUri":"https://orcid.org","nameIdentifier":"https://orcid.org/0000-0002-4547-4301","nameIdentifierScheme":"ORCID"}],"affiliation":[]}],"titles":[{"title":"Nesvorny HCM Asteroid Families Bundle V1.0"}],"publisher":"NASA Planetary Data System","container":{},"publicationYear":2020,"subjects":[{"subject":"Asteroids","valueUri":"http://astrothesaurus.org/uat/72","schemeUri":"http://astrothesaurus.org/uat","subjectScheme":"Unified Astronomy Thesaurus"}],"contributors":[{"name":"PDS Small Bodies Node","nameType":"Organizational","affiliation":[],"contributorType":"DataCurator","nameIdentifiers":[{"schemeUri":"","nameIdentifierScheme":""}]}],"dates":[{"date":"2010-08-14","dateType":"Available"},{"date":"2020","dateType":"Issued"}],"language":null,"types":{"ris":"DATA","bibtex":"misc","citeproc":"dataset","schemaOrg":"Dataset","resourceType":"PDS4 Refereed Data Bundle ","resourceTypeGeneral":"Dataset"},"relatedIdentifiers":[{"relationType":"IsSupplementTo","relatedIdentifier":"10.2458/azu_uapress_9780816532131-ch016","relatedIdentifierType":"DOI"},{"relationType":"IsObsoletedBy","relatedIdentifier":"10.26033/5hyq-6k90","resourceTypeGeneral":"Dataset","relatedIdentifierType":"DOI"}],"relatedItems":[],"sizes":[],"formats":[],"version":null,"rightsList":[{"lang":"en-US","rights":"This is a work of the U.S. Government and is not subject to copyright protection in the United States. Foreign copyrights may apply.","rightsUri":"https://www.usa.gov/government-works"},{"lang":"en-US","rights":"Creative Commons Zero v1.0 Universal","rightsUri":"https://creativecommons.org/publicdomain/zero/1.0/legalcode","schemeUri":"https://spdx.org/licenses/","rightsIdentifier":"cc0-1.0","rightsIdentifierScheme":"SPDX"}],"descriptions":[{"description":"This data set contains asteroid dynamical family memberships for 122 families calculated from synthetic proper elements, including high-inclination families. These families were calculated by David Nesvorny (Nesvorny et al. 2015) using his code based on the Hierarchical Clustering Method (HCM) described in Zappala et al. (1990, 1994). The input synthetic proper elements for 384,337 numbered asteroids were calculated by Knezevic and Milani.","descriptionType":"Abstract"}],"geoLocations":[],"fundingReferences":[],"xml":"PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHJlc291cmNlIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00L21ldGFkYXRhLnhzZCI+CiAgPGlkZW50aWZpZXIgaWRlbnRpZmllclR5cGU9IkRPSSI+MTAuMjYwMzMvNkNHNS1QVDEzPC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWUgbmFtZVR5cGU9IlBlcnNvbmFsIj5OZXN2b3JueSwgRGF2aWQ8L2NyZWF0b3JOYW1lPgogICAgICA8Z2l2ZW5OYW1lPkRhdmlkPC9naXZlbk5hbWU+CiAgICAgIDxmYW1pbHlOYW1lPk5lc3Zvcm55PC9mYW1pbHlOYW1lPgogICAgICA8bmFtZUlkZW50aWZpZXIgbmFtZUlkZW50aWZpZXJTY2hlbWU9Ik9SQ0lEIiBzY2hlbWVVUkk9Imh0dHBzOi8vb3JjaWQub3JnIj5odHRwczovL29yY2lkLm9yZy8wMDAwLTAwMDItNDU0Ny00MzAxPC9uYW1lSWRlbnRpZmllcj4KICAgIDwvY3JlYXRvcj4KICA8L2NyZWF0b3JzPgogIDx0aXRsZXM+CiAgICA8dGl0bGU+TmVzdm9ybnkgSENNIEFzdGVyb2lkIEZhbWlsaWVzIEJ1bmRsZSBWMS4wPC90aXRsZT4KICA8L3RpdGxlcz4KICA8cHVibGlzaGVyPk5BU0EgUGxhbmV0YXJ5IERhdGEgU3lzdGVtPC9wdWJsaXNoZXI+CiAgPHB1YmxpY2F0aW9uWWVhcj4yMDIwPC9wdWJsaWNhdGlvblllYXI+CiAgPHJlc291cmNlVHlwZSByZXNvdXJjZVR5cGVHZW5lcmFsPSJEYXRhc2V0Ij5QRFM0IFJlZmVyZWVkIERhdGEgQnVuZGxlIDwvcmVzb3VyY2VUeXBlPgogIDxzdWJqZWN0cz4KICAgIDxzdWJqZWN0IHN1YmplY3RTY2hlbWU9IlVuaWZpZWQgQXN0cm9ub215IFRoZXNhdXJ1cyIgc2NoZW1lVVJJPSJodHRwOi8vYXN0cm90aGVzYXVydXMub3JnL3VhdCIgdmFsdWVVUkk9Imh0dHA6Ly9hc3Ryb3RoZXNhdXJ1cy5vcmcvdWF0LzcyIj5Bc3Rlcm9pZHM8L3N1YmplY3Q+CiAgPC9zdWJqZWN0cz4KICA8Y29udHJpYnV0b3JzPgogICAgPGNvbnRyaWJ1dG9yIGNvbnRyaWJ1dG9yVHlwZT0iRGF0YUN1cmF0b3IiPgogICAgICA8Y29udHJpYnV0b3JOYW1lIG5hbWVUeXBlPSJPcmdhbml6YXRpb25hbCI+UERTIFNtYWxsIEJvZGllcyBOb2RlPC9jb250cmlidXRvck5hbWU+CiAgICAgIDxuYW1lSWRlbnRpZmllciBuYW1lSWRlbnRpZmllclNjaGVtZT0iIiBzY2hlbWVVUkk9IiIvPgogICAgPC9jb250cmlidXRvcj4KICA8L2NvbnRyaWJ1dG9ycz4KICA8ZGF0ZXM+CiAgICA8ZGF0ZSBkYXRlVHlwZT0iQXZhaWxhYmxlIj4yMDEwLTA4LTE0PC9kYXRlPgogICAgPGRhdGUgZGF0ZVR5cGU9Iklzc3VlZCI+MjAyMDwvZGF0ZT4KICA8L2RhdGVzPgogIDxhbHRlcm5hdGVJZGVudGlmaWVycz4KICAgIDxhbHRlcm5hdGVJZGVudGlmaWVyIGFsdGVybmF0ZUlkZW50aWZpZXJUeXBlPSJQRFM0IEJ1bmRsZSBMSURWSUQiPnVybjpuYXNhOnBkczphc3QubmVzdm9ybnkuZmFtaWxpZXM6OjEuMDwvYWx0ZXJuYXRlSWRlbnRpZmllcj4KICA8L2FsdGVybmF0ZUlkZW50aWZpZXJzPgogIDxyZWxhdGVkSWRlbnRpZmllcnM+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSXNTdXBwbGVtZW50VG8iPjEwLjI0NTgvYXp1X3VhcHJlc3NfOTc4MDgxNjUzMjEzMS1jaDAxNjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSXNPYnNvbGV0ZWRCeSIgcmVzb3VyY2VUeXBlR2VuZXJhbD0iRGF0YXNldCI+MTAuMjYwMzMvNWh5cS02azkwPC9yZWxhdGVkSWRlbnRpZmllcj4KICA8L3JlbGF0ZWRJZGVudGlmaWVycz4KICA8c2l6ZXMvPgogIDxmb3JtYXRzLz4KICA8dmVyc2lvbi8+CiAgPHJpZ2h0c0xpc3Q+CiAgICA8cmlnaHRzIHJpZ2h0c1VSST0iaHR0cHM6Ly93d3cudXNhLmdvdi9nb3Zlcm5tZW50LXdvcmtzIiB4bWw6bGFuZz0iZW4tVVMiPlRoaXMgaXMgYSB3b3JrIG9mIHRoZSBVLlMuIEdvdmVybm1lbnQgYW5kIGlzIG5vdCBzdWJqZWN0IHRvIGNvcHlyaWdodCBwcm90ZWN0aW9uIGluIHRoZSBVbml0ZWQgU3RhdGVzLiBGb3JlaWduIGNvcHlyaWdodHMgbWF5IGFwcGx5LjwvcmlnaHRzPgogICAgPHJpZ2h0cyByaWdodHNVUkk9Imh0dHBzOi8vY3JlYXRpdmVjb21tb25zLm9yZy9wdWJsaWNkb21haW4vemVyby8xLjAvbGVnYWxjb2RlIiByaWdodHNJZGVudGlmaWVyPSJjYzAtMS4wIiByaWdodHNJZGVudGlmaWVyU2NoZW1lPSJTUERYIiBzY2hlbWVVUkk9Imh0dHBzOi8vc3BkeC5vcmcvbGljZW5zZXMvIiB4bWw6bGFuZz0iZW4tVVMiPkNyZWF0aXZlIENvbW1vbnMgWmVybyB2MS4wIFVuaXZlcnNhbDwvcmlnaHRzPgogIDwvcmlnaHRzTGlzdD4KICA8ZGVzY3JpcHRpb25zPgogICAgPGRlc2NyaXB0aW9uIGRlc2NyaXB0aW9uVHlwZT0iQWJzdHJhY3QiPlRoaXMgZGF0YSBzZXQgY29udGFpbnMgYXN0ZXJvaWQgZHluYW1pY2FsIGZhbWlseSBtZW1iZXJzaGlwcyBmb3IgMTIyIGZhbWlsaWVzIGNhbGN1bGF0ZWQgZnJvbSBzeW50aGV0aWMgcHJvcGVyIGVsZW1lbnRzLCBpbmNsdWRpbmcgaGlnaC1pbmNsaW5hdGlvbiBmYW1pbGllcy4gVGhlc2UgZmFtaWxpZXMgd2VyZSBjYWxjdWxhdGVkIGJ5IERhdmlkIE5lc3Zvcm55IChOZXN2b3JueSBldCBhbC4gMjAxNSkgdXNpbmcgaGlzIGNvZGUgYmFzZWQgb24gdGhlIEhpZXJhcmNoaWNhbCBDbHVzdGVyaW5nIE1ldGhvZCAoSENNKSBkZXNjcmliZWQgaW4gWmFwcGFsYSBldCBhbC4gKDE5OTAsIDE5OTQpLiBUaGUgaW5wdXQgc3ludGhldGljIHByb3BlciBlbGVtZW50cyBmb3IgMzg0LDMzNyBudW1iZXJlZCBhc3Rlcm9pZHMgd2VyZSBjYWxjdWxhdGVkIGJ5IEtuZXpldmljIGFuZCBNaWxhbmkuPC9kZXNjcmlwdGlvbj4KICA8L2Rlc2NyaXB0aW9ucz4KPC9yZXNvdXJjZT4K","url":"https://sbn.psi.edu/pds/resource/doi/nesvornyfam_1.0.html","contentUrl":null,"metadataVersion":11,"schemaVersion":"http://datacite.org/schema/kernel-4","source":"fabricaForm","isActive":true,"state":"findable","reason":null,"viewCount":0,"viewsOverTime":[],"downloadCount":0,"downloadsOverTime":[],"referenceCount":0,"citationCount":2,"citationsOverTime":[{"year":"2024","total":1},{"year":"2025","total":1}],"partCount":0,"partOfCount":0,"versionCount":0,"versionOfCount":0,"created":"2021-05-20T02:37:59.000Z","registered":"2021-05-20T17:58:10.000Z","published":"2020","updated":"2025-07-09T19:11:55.000Z"},"relationships":{"client":{"data":{"id":"sbn.archive","type":"clients"}},"provider":{"data":{"id":"sbn","type":"providers"}},"media":{"data":{"id":"10.26033/6cg5-pt13","type":"media"}},"references":{"data":[]},"citations":{"data":[{"id":"10.1051/0004-6361/202450665","type":"dois"},{"id":"10.2458/azu_uapress_9780816532131-ch016","type":"dois"}]},"parts":{"data":[]},"partOf":{"data":[]},"versions":{"data":[]},"versionOf":{"data":[]}}}}
+{
+  "data": {
+    "attributes": {
+      "alternateIdentifiers": [
+        {
+          "alternateIdentifier": "urn:nasa:pds:ast.nesvorny.families::1.0",
+          "alternateIdentifierType": "PDS4 Bundle LIDVID"
+        }
+      ],
+      "citationCount": 2,
+      "citationsOverTime": [
+        {
+          "total": 1,
+          "year": "2024"
+        },
+        {
+          "total": 1,
+          "year": "2025"
+        }
+      ],
+      "container": {},
+      "contentUrl": null,
+      "contributors": [
+        {
+          "affiliation": [],
+          "contributorType": "DataCurator",
+          "name": "PDS Small Bodies Node",
+          "nameIdentifiers": [
+            {
+              "nameIdentifierScheme": "",
+              "schemeUri": ""
+            }
+          ],
+          "nameType": "Organizational"
+        }
+      ],
+      "created": "2021-05-20T02:37:59.000Z",
+      "creators": [
+        {
+          "affiliation": [],
+          "familyName": "Nesvorny",
+          "givenName": "David",
+          "name": "Nesvorny, David",
+          "nameIdentifiers": [
+            {
+              "nameIdentifier": "https://orcid.org/0000-0002-4547-4301",
+              "nameIdentifierScheme": "ORCID",
+              "schemeUri": "https://orcid.org"
+            }
+          ],
+          "nameType": "Personal"
+        }
+      ],
+      "dates": [
+        {
+          "date": "2010-08-14",
+          "dateType": "Available"
+        },
+        {
+          "date": "2020",
+          "dateType": "Issued"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "This data set contains asteroid dynamical family memberships for 122 families calculated from synthetic proper elements, including high-inclination families. These families were calculated by David Nesvorny (Nesvorny et al. 2015) using his code based on the Hierarchical Clustering Method (HCM) described in Zappala et al. (1990, 1994). The input synthetic proper elements for 384,337 numbered asteroids were calculated by Knezevic and Milani.",
+          "descriptionType": "Abstract"
+        }
+      ],
+      "doi": "10.26033/6cg5-pt13",
+      "downloadCount": 0,
+      "downloadsOverTime": [],
+      "formats": [],
+      "fundingReferences": [],
+      "geoLocations": [],
+      "identifiers": [
+        {
+          "identifier": "urn:nasa:pds:ast.nesvorny.families::1.0",
+          "identifierType": "PDS4 Bundle LIDVID"
+        }
+      ],
+      "isActive": true,
+      "language": null,
+      "metadataVersion": 11,
+      "partCount": 0,
+      "partOfCount": 0,
+      "prefix": "10.26033",
+      "publicationYear": 2020,
+      "published": "2020",
+      "publisher": "NASA Planetary Data System",
+      "reason": null,
+      "referenceCount": 0,
+      "registered": "2021-05-20T17:58:10.000Z",
+      "relatedIdentifiers": [
+        {
+          "relatedIdentifier": "10.2458/azu_uapress_9780816532131-ch016",
+          "relatedIdentifierType": "DOI",
+          "relationType": "IsSupplementTo"
+        },
+        {
+          "relatedIdentifier": "10.26033/5hyq-6k90",
+          "relatedIdentifierType": "DOI",
+          "relationType": "IsObsoletedBy",
+          "resourceTypeGeneral": "Dataset"
+        }
+      ],
+      "relatedItems": [],
+      "rightsList": [
+        {
+          "lang": "en-US",
+          "rights": "This is a work of the U.S. Government and is not subject to copyright protection in the United States. Foreign copyrights may apply.",
+          "rightsUri": "https://www.usa.gov/government-works"
+        },
+        {
+          "lang": "en-US",
+          "rights": "Creative Commons Zero v1.0 Universal",
+          "rightsIdentifier": "cc0-1.0",
+          "rightsIdentifierScheme": "SPDX",
+          "rightsUri": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+          "schemeUri": "https://spdx.org/licenses/"
+        }
+      ],
+      "schemaVersion": "http://datacite.org/schema/kernel-4",
+      "sizes": [],
+      "source": "fabricaForm",
+      "state": "findable",
+      "subjects": [
+        {
+          "schemeUri": "http://astrothesaurus.org/uat",
+          "subject": "Asteroids",
+          "subjectScheme": "Unified Astronomy Thesaurus",
+          "valueUri": "http://astrothesaurus.org/uat/72"
+        }
+      ],
+      "suffix": "6cg5-pt13",
+      "titles": [
+        {
+          "title": "Nesvorny HCM Asteroid Families Bundle V1.0"
+        }
+      ],
+      "types": {
+        "bibtex": "misc",
+        "citeproc": "dataset",
+        "resourceType": "PDS4 Refereed Data Bundle ",
+        "resourceTypeGeneral": "Dataset",
+        "ris": "DATA",
+        "schemaOrg": "Dataset"
+      },
+      "updated": "2025-07-09T19:11:55.000Z",
+      "url": "https://sbn.psi.edu/pds/resource/doi/nesvornyfam_1.0.html",
+      "version": null,
+      "versionCount": 0,
+      "versionOfCount": 0,
+      "viewCount": 0,
+      "viewsOverTime": [],
+      "xml": "foobar"
+    },
+    "id": "10.26033/6cg5-pt13",
+    "relationships": {
+      "citations": {
+        "data": [
+          {
+            "id": "10.1051/0004-6361/202450665",
+            "type": "dois"
+          },
+          {
+            "id": "10.2458/azu_uapress_9780816532131-ch016",
+            "type": "dois"
+          }
+        ]
+      },
+      "client": {
+        "data": {
+          "id": "sbn.archive",
+          "type": "clients"
+        }
+      },
+      "media": {
+        "data": {
+          "id": "10.26033/6cg5-pt13",
+          "type": "media"
+        }
+      },
+      "partOf": {
+        "data": []
+      },
+      "parts": {
+        "data": []
+      },
+      "provider": {
+        "data": {
+          "id": "sbn",
+          "type": "providers"
+        }
+      },
+      "references": {
+        "data": []
+      },
+      "versionOf": {
+        "data": []
+      },
+      "versions": {
+        "data": []
+      }
+    },
+    "type": "dois"
+  }
+}
