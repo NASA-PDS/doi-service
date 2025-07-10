@@ -410,6 +410,62 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         with self.assertRaises(UnknownDoiException):
             DOIDataCiteWebParser.get_record_for_doi(input_json_file, "10.17189/1408890")
 
+    def test_parse_related_identifiers_with_none_values(self):
+        """Test parsing of DataCite records with null related identifiers"""
+        # Test with the first file that has null related identifiers
+        input_json_file = join(self.input_dir, "related_identifiers_none_1.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            dois, errors = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+
+        doi = dois[0]
+        
+        # Verify the DOI was parsed correctly
+        self.assertEqual(doi.doi, "10.26033/j028-3a58")
+        self.assertEqual(doi.title, "Arecibo Radar Doppler Spectra of Asteroids V1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:gbo.ast.radar.arecibo.doppler_spectra_of_asteroids::1.0")
+        
+        # Verify that related identifiers with null values were filtered out
+        # The original record had one related identifier with a null value that should be removed
+        self.assertEqual(len(doi.related_identifiers), 1)
+        self.assertEqual(doi.related_identifiers[0]["relatedIdentifier"], "10.3847/psj/ac8b72")
+        self.assertEqual(doi.related_identifiers[0]["relationType"], "Cites")
+
+    def test_parse_related_identifiers_with_none_values_second_file(self):
+        """Test parsing of DataCite records with null related identifiers from second file"""
+        # Test with the second file that has null related identifiers
+        input_json_file = join(self.input_dir, "related_identifiers_none_2.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            dois, errors = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+
+        doi = dois[0]
+        
+        # Verify the DOI was parsed correctly
+        self.assertEqual(doi.doi, "10.26033/6cg5-pt13")
+        self.assertEqual(doi.title, "Nesvorny HCM Asteroid Families Bundle V1.0")
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:ast.nesvorny.families::1.0")
+        
+        # Verify that related identifiers with null values were filtered out
+        # The original record had two related identifiers, both should be preserved as they have valid values
+        self.assertEqual(len(doi.related_identifiers), 2)
+        
+        # Check first related identifier
+        self.assertEqual(doi.related_identifiers[0]["relatedIdentifier"], "10.2458/azu_uapress_9780816532131-ch016")
+        self.assertEqual(doi.related_identifiers[0]["relationType"], "IsSupplementTo")
+        
+        # Check second related identifier
+        self.assertEqual(doi.related_identifiers[1]["relatedIdentifier"], "10.26033/5hyq-6k90")
+        self.assertEqual(doi.related_identifiers[1]["relationType"], "IsObsoletedBy")
+
 
 class DOIDataCiteValidatorTestCase(unittest.TestCase):
     """Unit tests for the datacite_validator.py module"""

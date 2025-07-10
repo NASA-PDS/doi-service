@@ -137,7 +137,13 @@ class DOIDataCiteWebParser(DOIWebParser):
             related_identifiers = record["relatedIdentifiers"]
 
             for related_identifier in related_identifiers:
-                related_identifier["relatedIdentifier"] = related_identifier["relatedIdentifier"].strip()
+                if related_identifier["relatedIdentifier"] is None:
+                    logger.warn(
+                        f"Odd metadata. NoneType relatedIdentifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
+                    )
+                    related_identifiers.remove(related_identifier)
+                else:
+                    related_identifier["relatedIdentifier"] = related_identifier["relatedIdentifier"].strip()
 
             return related_identifiers
         except KeyError:
