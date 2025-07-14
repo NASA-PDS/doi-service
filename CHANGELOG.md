@@ -1,12 +1,13 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-07-10)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-07-14)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...«unknown»)
 
 **Defects:**
 
 - Large majority of units tests failing [\#456](https://github.com/NASA-PDS/doi-service/issues/456) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+- SBN DOIs contain unexpected metadata that is breaking our database load script [\#455](https://github.com/NASA-PDS/doi-service/issues/455) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Installation instructions are not entirely clear, and come back with issues about incompatible libraries in python 11 [\#430](https://github.com/NASA-PDS/doi-service/issues/430)
 - WeeklyRoundupEmailNotificationTestCase fails when run in CI, with "Connection Refused" [\#361](https://github.com/NASA-PDS/doi-service/issues/361)
 
