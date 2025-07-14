@@ -1,0 +1,208 @@
+{
+  "data": {
+    "attributes": {
+      "alternateIdentifiers": [
+        {
+          "alternateIdentifier": "urn:nasa:pds:ast.nesvorny.families::1.0",
+          "alternateIdentifierType": "PDS4 Bundle LIDVID"
+        }
+      ],
+      "citationCount": 2,
+      "citationsOverTime": [
+        {
+          "total": 1,
+          "year": "2024"
+        },
+        {
+          "total": 1,
+          "year": "2025"
+        }
+      ],
+      "container": {},
+      "contentUrl": null,
+      "contributors": [
+        {
+          "affiliation": [],
+          "contributorType": "DataCurator",
+          "name": "PDS Small Bodies Node",
+          "nameIdentifiers": [
+            {
+              "nameIdentifierScheme": "",
+              "schemeUri": ""
+            }
+          ],
+          "nameType": "Organizational"
+        }
+      ],
+      "created": "2021-05-20T02:37:59.000Z",
+      "creators": [
+        {
+          "affiliation": [],
+          "familyName": "Nesvorny",
+          "givenName": "David",
+          "name": "Nesvorny, David",
+          "nameIdentifiers": [
+            {
+              "nameIdentifier": "https://orcid.org/0000-0002-4547-4301",
+              "nameIdentifierScheme": "ORCID",
+              "schemeUri": "https://orcid.org"
+            }
+          ],
+          "nameType": "Personal"
+        }
+      ],
+      "dates": [
+        {
+          "date": "2010-08-14",
+          "dateType": "Available"
+        },
+        {
+          "date": "2020",
+          "dateType": "Issued"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "This data set contains asteroid dynamical family memberships for 122 families calculated from synthetic proper elements, including high-inclination families. These families were calculated by David Nesvorny (Nesvorny et al. 2015) using his code based on the Hierarchical Clustering Method (HCM) described in Zappala et al. (1990, 1994). The input synthetic proper elements for 384,337 numbered asteroids were calculated by Knezevic and Milani.",
+          "descriptionType": "Abstract"
+        }
+      ],
+      "doi": "10.26033/6cg5-pt13",
+      "downloadCount": 0,
+      "downloadsOverTime": [],
+      "formats": [],
+      "fundingReferences": [],
+      "geoLocations": [],
+      "identifiers": [
+        {
+          "identifier": "urn:nasa:pds:ast.nesvorny.families::1.0",
+          "identifierType": "PDS4 Bundle LIDVID"
+        }
+      ],
+      "isActive": true,
+      "language": null,
+      "metadataVersion": 11,
+      "partCount": 0,
+      "partOfCount": 0,
+      "prefix": "10.26033",
+      "publicationYear": 2020,
+      "published": "2020",
+      "publisher": "NASA Planetary Data System",
+      "reason": null,
+      "referenceCount": 0,
+      "registered": "2021-05-20T17:58:10.000Z",
+      "relatedIdentifiers": [
+        {
+          "relatedIdentifier": "10.2458/azu_uapress_9780816532131-ch016",
+          "relatedIdentifierType": "DOI",
+          "relationType": "IsSupplementTo"
+        },
+        {
+          "relatedIdentifier": "10.26033/5hyq-6k90",
+          "relatedIdentifierType": "DOI",
+          "relationType": "IsObsoletedBy",
+          "resourceTypeGeneral": "Dataset"
+        }
+      ],
+      "relatedItems": [],
+      "rightsList": [
+        {
+          "lang": "en-US",
+          "rights": "This is a work of the U.S. Government and is not subject to copyright protection in the United States. Foreign copyrights may apply.",
+          "rightsUri": "https://www.usa.gov/government-works"
+        },
+        {
+          "lang": "en-US",
+          "rights": "Creative Commons Zero v1.0 Universal",
+          "rightsIdentifier": "cc0-1.0",
+          "rightsIdentifierScheme": "SPDX",
+          "rightsUri": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+          "schemeUri": "https://spdx.org/licenses/"
+        }
+      ],
+      "schemaVersion": "http://datacite.org/schema/kernel-4",
+      "sizes": [],
+      "source": "fabricaForm",
+      "state": "findable",
+      "subjects": [
+        {
+          "schemeUri": "http://astrothesaurus.org/uat",
+          "subject": "Asteroids",
+          "subjectScheme": "Unified Astronomy Thesaurus",
+          "valueUri": "http://astrothesaurus.org/uat/72"
+        }
+      ],
+      "suffix": "6cg5-pt13",
+      "titles": [
+        {
+          "title": "Nesvorny HCM Asteroid Families Bundle V1.0"
+        }
+      ],
+      "types": {
+        "bibtex": "misc",
+        "citeproc": "dataset",
+        "resourceType": "PDS4 Refereed Data Bundle ",
+        "resourceTypeGeneral": "Dataset",
+        "ris": "DATA",
+        "schemaOrg": "Dataset"
+      },
+      "updated": "2025-07-09T19:11:55.000Z",
+      "url": "https://sbn.psi.edu/pds/resource/doi/nesvornyfam_1.0.html",
+      "version": null,
+      "versionCount": 0,
+      "versionOfCount": 0,
+      "viewCount": 0,
+      "viewsOverTime": [],
+      "xml": "foobar"
+    },
+    "id": "10.26033/6cg5-pt13",
+    "relationships": {
+      "citations": {
+        "data": [
+          {
+            "id": "10.1051/0004-6361/202450665",
+            "type": "dois"
+          },
+          {
+            "id": "10.2458/azu_uapress_9780816532131-ch016",
+            "type": "dois"
+          }
+        ]
+      },
+      "client": {
+        "data": {
+          "id": "sbn.archive",
+          "type": "clients"
+        }
+      },
+      "media": {
+        "data": {
+          "id": "10.26033/6cg5-pt13",
+          "type": "media"
+        }
+      },
+      "partOf": {
+        "data": []
+      },
+      "parts": {
+        "data": []
+      },
+      "provider": {
+        "data": {
+          "id": "sbn",
+          "type": "providers"
+        }
+      },
+      "references": {
+        "data": []
+      },
+      "versionOf": {
+        "data": []
+      },
+      "versions": {
+        "data": []
+      }
+    },
+    "type": "dois"
+  }
+}

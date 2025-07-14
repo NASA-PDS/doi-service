@@ -1,0 +1,210 @@
+{
+  "data": {
+    "id": "10.26033/j028-3a58",
+    "type": "dois",
+    "attributes": {
+      "doi": "10.26033/j028-3a58",
+      "prefix": "10.26033",
+      "suffix": "j028-3a58",
+      "identifiers": [
+        {
+          "identifier": "urn:nasa:pds:gbo.ast.radar.arecibo.doppler_spectra_of_asteroids::1.0",
+          "identifierType": "PDS4 Bundle LIDVID"
+        }
+      ],
+      "alternateIdentifiers": [
+        {
+          "alternateIdentifierType": "PDS4 Bundle LIDVID",
+          "alternateIdentifier": "urn:nasa:pds:gbo.ast.radar.arecibo.doppler_spectra_of_asteroids::1.0"
+        }
+      ],
+      "creators": [
+        {
+          "name": "Nolan, Michael",
+          "nameType": "Personal",
+          "givenName": "Michael",
+          "familyName": "Nolan",
+          "nameIdentifiers": [
+            {
+              "schemeUri": "https://orcid.org",
+              "nameIdentifier": "https://orcid.org/0000-0001-8316-0680",
+              "nameIdentifierScheme": "ORCID"
+            }
+          ],
+          "affiliation": []
+        }
+      ],
+      "titles": [
+        {
+          "title": "Arecibo Radar Doppler Spectra of Asteroids V1.0"
+        }
+      ],
+      "publisher": "NASA Planetary Data System",
+      "container": {},
+      "publicationYear": 2024,
+      "subjects": [
+        {
+          "subject": "Asteroids",
+          "valueUri": "https://astrothesaurus.org/uat/72",
+          "schemeUri": "https://astrothesaurus.org/",
+          "subjectScheme": "Unified Astronomy Thesaurus"
+        },
+        {
+          "subject": "Near-Earth objects",
+          "valueUri": "https://astrothesaurus.org/uat/1092",
+          "schemeUri": "https://astrothesaurus.org/",
+          "subjectScheme": "Unified Astronomy Thesaurus"
+        }
+      ],
+      "contributors": [
+        {
+          "name": "PDS Small Bodies Node",
+          "nameType": "Organizational",
+          "affiliation": [],
+          "contributorType": "DataCurator",
+          "nameIdentifiers": [
+            {
+              "schemeUri": "",
+              "nameIdentifierScheme": ""
+            }
+          ]
+        },
+        {
+          "name": "Nolan, Michael",
+          "nameType": "Personal",
+          "givenName": "Michael",
+          "familyName": "Nolan",
+          "contributorType": "Editor",
+          "nameIdentifiers": [
+            {
+              "schemeUri": "https://orcid.org",
+              "nameIdentifier": "https://orcid.org/0000-0001-8316-0680",
+              "nameIdentifierScheme": "ORCID"
+            }
+          ],
+          "affiliation": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-12-18",
+          "dateType": "Available"
+        },
+        {
+          "date": "2024",
+          "dateType": "Issued"
+        }
+      ],
+      "language": null,
+      "types": {
+        "ris": "DATA",
+        "bibtex": "misc",
+        "citeproc": "dataset",
+        "schemaOrg": "Dataset",
+        "resourceType": "PDS4 Refereed Data Bundle",
+        "resourceTypeGeneral": "Dataset"
+      },
+      "relatedIdentifiers": [
+        {
+          "relationType": "Cites",
+          "relatedIdentifier": "10.3847/psj/ac8b72",
+          "relatedIdentifierType": "DOI"
+        }
+      ],
+      "relatedItems": [],
+      "sizes": [],
+      "formats": [],
+      "version": null,
+      "rightsList": [
+        {
+          "lang": "en-US",
+          "rights": "This is a work of the U.S. Government and is not subject to copyright protection in the United States. Foreign copyrights may apply.",
+          "rightsUri": "https://www.usa.gov/government-works"
+        },
+        {
+          "lang": "en-US",
+          "rights": "Creative Commons Zero v1.0 Universal",
+          "rightsUri": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+          "schemeUri": "https://spdx.org/licenses/",
+          "rightsIdentifier": "cc0-1.0",
+          "rightsIdentifierScheme": "SPDX"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "This bundle contains radar Doppler spectra taken with the Arecibo Observatory Planetary Radar saved as a set of comma-separated-value tables each in a singe file. This version contains the data described in Virkki et al. (2022). See the bundle description for more information.",
+          "descriptionType": "Abstract"
+        }
+      ],
+      "geoLocations": [],
+      "fundingReferences": [],
+      "xml": "foobar",
+      "url": "https://sbn.psi.edu/pds/resource/doi/cwradar_arecibo_1.0.html",
+      "contentUrl": null,
+      "metadataVersion": 3,
+      "schemaVersion": "http://datacite.org/schema/kernel-4",
+      "source": "fabricaForm",
+      "isActive": true,
+      "state": "findable",
+      "reason": null,
+      "viewCount": 0,
+      "viewsOverTime": [],
+      "downloadCount": 0,
+      "downloadsOverTime": [],
+      "referenceCount": 1,
+      "citationCount": 0,
+      "citationsOverTime": [],
+      "partCount": 0,
+      "partOfCount": 0,
+      "versionCount": 0,
+      "versionOfCount": 0,
+      "created": "2022-10-24T22:26:08.000Z",
+      "registered": "2024-12-19T04:37:57.000Z",
+      "published": "2024",
+      "updated": "2025-07-09T19:03:32.000Z"
+    },
+    "relationships": {
+      "client": {
+        "data": {
+          "id": "sbn.archive",
+          "type": "clients"
+        }
+      },
+      "provider": {
+        "data": {
+          "id": "sbn",
+          "type": "providers"
+        }
+      },
+      "media": {
+        "data": {
+          "id": "10.26033/j028-3a58",
+          "type": "media"
+        }
+      },
+      "references": {
+        "data": [
+          {
+            "id": "10.3847/psj/ac8b72",
+            "type": "dois"
+          }
+        ]
+      },
+      "citations": {
+        "data": []
+      },
+      "parts": {
+        "data": []
+      },
+      "partOf": {
+        "data": []
+      },
+      "versions": {
+        "data": []
+      },
+      "versionOf": {
+        "data": []
+      }
+    }
+  }
+}
