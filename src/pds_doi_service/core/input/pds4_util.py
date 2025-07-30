@@ -47,7 +47,7 @@ class DOIPDS4LabelUtil:
     """
 
     def __init__(self):
-        # 202501: xpath_dict is a {dict} where each key is comprised of a [list] of values
+        """ xpath_dict is a {dict} where each key is comprised of a [list] of values  """
         self.xpath_dict = {
             "lid": "/*/pds4:Identification_Area/pds4:logical_identifier",
             "vid": "/*/pds4:Identification_Area/pds4:version_id",
@@ -63,25 +63,26 @@ class DOIPDS4LabelUtil:
             "target_identification": "/*/pds4:Context_Area/pds4:Target_Identification/pds4:name",
             "primary_result_summary": "/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*",
             "doi": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi",
-            # 20250501 - add xPath to List_Authors, List_Editors, List_Contributors
+            """ add xPath to List_Authors, List_Editors, List_Contributors """
             "list_authors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*",
             "list_editors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Editor/*",
             "list_contributors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Contributor/*",
         }
 
-    # 20250501 - add function to map List_Author fields to doi fields
-    #  -- role type: str as:
-    #       -- "Author | Editor | Contributor"
-    #  -- dict_type: str as:
-    #       -- "xpath_dict" | "xpath_dict_person_attributes" | "xpath_dict_organization_attributes"
-    #  usage: xpath_dict = build_xpath_dict("Author", "xpath_dict")
-    #
-    #   {
-    #'xpath_list_author_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*',
-    #'xpath_list_authors_person_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Person/*',
-    #'xpath_list_authors_organization_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Organization/*',
-    #   }
-
+    """
+     add function to map List_Author fields to doi fields
+       -- role type: str as:
+          -- "Author | Editor | Contributor"
+       -- dict_type: str as:
+           -- "xpath_dict" | "xpath_dict_person_attributes" | "xpath_dict_organization_attributes"
+      usage: xpath_dict = build_xpath_dict("Author", "xpath_dict")
+    
+       {
+    'xpath_list_author_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*',
+    'xpath_list_authors_person_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Person/*',
+    'xpath_list_authors_organization_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Organization/*',
+       }
+    """
     def build_xpath_dict(self, role_type: str, dict_type: str) -> dict:
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
@@ -111,9 +112,11 @@ class DOIPDS4LabelUtil:
             logger.debug(f": build_xpath_dict.sys.exit() -- invalid dict_type " f"{dict_type}")
             sys.exit()
 
-    # 20250501 - add function to map List_Author fields to doi fields
+    """ add function to map List_Author fields to doi fields  """
     def map_list_author_editor_fields_to_doi_fields(self, list_authors):
-
+        """
+        map List_Author fields to doi fields
+        """
         field_map = {
             "given_name": "first_name",
             "middle_name": "middle_name",
@@ -135,24 +138,21 @@ class DOIPDS4LabelUtil:
                 logger.debug(f": map_list_author_editor_fields_to_doi_fields.key,value " f"{key,value}")
                 if key in field_map:
                     new_key = field_map[key]
-                    # 20250723 -- add comma so family_name is parsed as last_name
-                    # if key == 'family_name':
-                    #    dict_authors[new_key] = value + ","
-                    # else:
-                    #    dict_authors[new_key] = value
                     dict_authors[new_key] = value
-            # dict_authors['affiliation'] = []
+  
             mapped_list_authors.append(dict_authors)
 
         return mapped_list_authors
 
-    # 20250501 - add function to get list_authors from pds4_fields
-    #  dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
+    """ Debug code to get list_authors from pds4_fields
+    dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
+    """
     def get_list_Auth_Edit_Cont(self, xml_tree, role_type: str):
-        # Extract pds4_fields from xml_tree first
-        # pds4_fields = self.read_pds4(xml_tree)
-        #  -- role_type: str as:
-
+        """
+        Extract pds4_fields from xml_tree first
+        pds4_fields = self.read_pds4(xml_tree)
+          -- role_type: str as:
+        """
         pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
         pds4_namespace_prefix = "{http://pds.nasa.gov/pds4/pds/v1}"
 
@@ -160,17 +160,20 @@ class DOIPDS4LabelUtil:
         xpath_dict_person_attributes = self.build_xpath_dict(role_type, "xpath_dict_person_attributes")
         xpath_dict_organization_attributes = self.build_xpath_dict(role_type, "xpath_dict_organization_attributes")
 
-        # get Class in List_Auth:
-        #  -- <Person> | <Organization>
-        #       -- number of instances of each class
-        #
-        # Use list_authors as "holder" for the list of authors, editors, or contributors
-        #   -- cast list_editors and list_contributors to list_authors
+        """
+        get Class in List_Auth:
+          -- <Person> | <Organization>
+               -- number of instances of each class
+      
+        
+         Use list_authors as "holder" for the list of authors, editors, or contributors
+           -- cast list_editors and list_contributors to list_authors
+        """
         list_authors = []
         person_instance = 0  # xml instances are 1-based
         organization_instance = 0  # xml instances are 1-based
 
-        # adjust the dictionary to reflect the role_type
+        """ adjust the dictionary to reflect the role_type """
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
         xpath = xpath_dict[f"xpath_list_{role_type.lower()}_class"]
@@ -182,12 +185,14 @@ class DOIPDS4LabelUtil:
             f"{role_type,list_aec_classes,len(list_aec_classes)}"
         )
 
-        # for each Class in List_Auth:
-        #  -- <Person> | <Organization>
-        #       -- number of instances of each class
+        """
+        for each Class in List_Auth:
+          -- <Person> | <Organization>
+               -- number of instances of each class
+        """
         for list_author_class in list_aec_classes:
             logger.debug(f": get_list_aec.list_author_class.tag " f"{list_author_class.tag}")
-            # logger.debug(f": get_list_aec.list_author_class.text " f"{list_author_class.text}")
+            """ logger.debug(f": get_list_aec.list_author_class.text " f"{list_author_class.text}")  """
 
             if list_author_class.tag == pds4_namespace_prefix + "Person":
                 logger.debug(f": get_list_aec.list_author_class.tag == Person " f"{list_author_class.tag}")
@@ -199,14 +204,10 @@ class DOIPDS4LabelUtil:
                 dict_list_authors["name_type"] = "Personal"
                 dict_list_authors["Affiliation"] = []
 
-                # adjust the dictionary to reflect the role_type
+                """ adjust the dictionary to reflect the role_type """
                 xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
                 xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/*")
                 logger.debug(f": get_list_aec.xpath " f"{xpath}")
-                # 20250723 -- attempt to get xpath to Affiliation -- not working
-                # xpath_affiliation = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/") + "pds4:Affiliation/pds4:organization_name"
-                # xpath_affiliation = xpath.replace("*","") + "pds4:Affiliation/pds4:organization_name"
-                # logger.debug(f": get_list_aec.xpath_affiliation " f"{xpath_affiliation}")
 
                 xpath_person_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
@@ -215,16 +216,6 @@ class DOIPDS4LabelUtil:
                 )
 
                 for xpath_person_attribute in xpath_person_attributes:
-                    # 20250723 -- attempt to get xpath to Affiliation -- not working
-                    # if xpath_person_attribute.tag == pds4_namespace_prefix + "Affiliation":
-                    #    xpath_person_affiliation_attributes = xml_tree.xpath(xpath_affiliation, namespaces=pds4_namespace)
-                    #    logger.debug(f": get_list_aec.xpath_person_affiliation_attributes,len(xpath_person_affiliation_attributes) " f"{xpath_person_affiliation_attributes,len(xpath_person_affiliation_attributes)}")
-                    #    if len(xpath_person_affiliation_attributes) > 0:
-                    #        xpath_person_attribute = xpath_person_affiliation_attributes[0]
-                    #        logger.debug(f": get_list_aec.replaced xpath_person_attribute with xpath_affiliation " f"{xpath_person_attribute.tag}")
-                    #    else:
-                    #        logger.debug(f": get_list_aec.xpath_person_affiliation_attributes is empty")
-
                     logger.debug(f": get_list_aec.xpath_person_attribute.tag " f"{xpath_person_attribute.tag}")
                     logger.debug(f": get_list_aec.xpath_person_attribute.text " f"{xpath_person_attribute.text}")
 
@@ -260,7 +251,7 @@ class DOIPDS4LabelUtil:
                 dict_list_authors["name_type"] = "Organizational"
                 dict_list_authors["Affiliation"] = []
 
-                # adjust the dictionary to reflect the role_type
+                """ adjust the dictionary to reflect the role_type """
                 xpath = xpath_dict[f"xpath_list_{list_key}_organization_class"]
                 xpath = xpath.replace("pds4:Organization/*", "pds4:Organization[" + str(organization_instance) + "]/*")
                 logger.debug(f": get_list_aec.xpath " f"{xpath}")
@@ -307,7 +298,7 @@ class DOIPDS4LabelUtil:
                 )
                 sys.exit()
 
-        # Need to map List_Author fields to DOI fields
+        """ Need to map List_Author fields to DOI fields """
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
         logger.debug(
             f": get_list_aec.mapped_list_authors.len, mapped_list_authors "
@@ -318,20 +309,22 @@ class DOIPDS4LabelUtil:
         return mapped_list_authors
 
     def is_pds4_label(self, xml_tree):
-        # If reading xpaths with the PDS4 namespace returns anything, it should
-        # be safe to assume its a PDS4 label, additional validation can occur
-        # downstream.
+        """
+        If reading xpaths with the PDS4 namespace returns anything, it should
+        be safe to assume its a PDS4 label, additional validation can occur
+        downstream.
+        """
         if self.read_pds4(xml_tree):
             return True
 
         return False
 
     def get_doi_fields_from_pds4(self, xml_tree):
-        # 20250501 -  Store xml_tree as instance variable for use in other methods
+        """ Store xml_tree as instance variable for use in other methods """
         self.xml_tree = xml_tree
 
         pds4_fields = self.read_pds4(xml_tree)
-        # 20250501 - add logger
+        
         logger.debug(f": get_doi_fields_from_pds4.pds4_fields.type " f"{type(pds4_fields)}")
         logger.debug(f": get_doi_fields_from_pds4.pds4_fields " f"{pds4_fields}")
         doi_fields = self.process_pds4_fields(pds4_fields)
@@ -381,12 +374,14 @@ class DOIPDS4LabelUtil:
         return pds4_field_value_dict
 
     def _check_for_possible_full_name(self, names_list):
-        # Given a list of names:
-        # Case 1: "R. Deen, H. Abarca, P. Zamani, J. Maki"
-        # determine if each token can be potentially a person' name:
-        #   "R. Deen", "H. Abarca", "J. Maki"
-        # This happens very rarely but it does happen.
-        # Case 4 :"VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
+        """
+        Given a list of names:
+        Case 1: "R. Deen, H. Abarca, P. Zamani, J. Maki"
+        determine if each token can be potentially a person' name:
+          "R. Deen", "H. Abarca", "J. Maki"
+        This happens very rarely but it does happen.
+           Case 4 :"VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
+        """ 
         o_list_contains_full_name_flag = False
         num_dots_found = 0
         num_person_names = 0
@@ -394,22 +389,28 @@ class DOIPDS4LabelUtil:
         for one_name in names_list:
             if "." in one_name:
                 num_dots_found += 1
-                # Now that the dot is found, look to see the name contains at
-                # least two tokens.
+                """ 
+                Now that the dot is found, look to see the name contains at
+                least two tokens.
+                """
                 if len(one_name.strip().split(".")) >= 2:
-                    # 'R. Deen' split to ['R','Deen'], "J. Maki" split to ['J','Maki']
+                    """ 'R. Deen' split to ['R','Deen'], "J. Maki" split to ['J','Maki']   """
                     num_person_names += 1
             else:
-                # The name does not contain a dot, split using spaces.
-                # Case 4  --> Should be parsed by semi-colon
-                #  "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
-                # A person's name should contain at least two tokens.
+                """ 
+                The name does not contain a dot, split using spaces.
+                Case 4  --> Should be parsed by semi-colon
+                  "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
+                A person's name should contain at least two tokens.
+                """
                 if len(one_name.strip().split()) >= 2:
                     num_person_names += 1
 
-        # If every name contains a dot, the list can potentially hold a person's
-        # name. This does not work if the convention of having the dot
-        # in each person's name is broken.
+        """
+        If every name contains a dot, the list can potentially hold a person's
+        name. This does not work if the convention of having the dot
+        in each person's name is broken.
+        """
         if num_dots_found == len(names_list) or num_person_names == len(names_list):
             o_list_contains_full_name_flag = True
 
@@ -449,16 +450,20 @@ class DOIPDS4LabelUtil:
             The best method of parsing the list of authors.
 
         """
-        # The 'authors' field from data providers can be inconsistent.
-        # Sometimes a comma ',' is used to separate the names, sometimes its
-        # semi-colons ';'
+        """
+        The 'authors' field from data providers can be inconsistent.
+        Sometimes a comma ',' is used to separate the names, sometimes its
+        semi-colons ';'
+        """
         authors_from_comma_split = pds4_fields_authors.split(",")
         authors_from_semi_colon_split = pds4_fields_authors.split(";")
 
-        # Check from authors_from_comma_split to see if it possibly contains full name.
-        # Mostly this case: "R. Deen, H. Abarca, P. Zamani, J. Maki"
-        # When it is not obvious because it looks similarly to this case:
-        # "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
+        """
+        Check from authors_from_comma_split to see if it possibly contains full name.
+        Mostly this case: "R. Deen, H. Abarca, P. Zamani, J. Maki"
+        When it is not obvious because it looks similarly to this case:
+        "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
+        """
         comma_parsed_list_contains_full_name = self._check_for_possible_full_name(authors_from_comma_split)
 
         number_commas = pds4_fields_authors.count(",")
@@ -512,12 +517,15 @@ class DOIPDS4LabelUtil:
 
             editors = self.get_editor_names(pds4_fields["editors"].split(";")) if "editors" in pds4_fields else None
 
-            # Handle authors field - check if it exists before processing
-            # 20250723 -- process <author_list> as optional
+            """ Handle authors field - check if it exists before processing
+                 -- process <author_list> as optional 
+            """
             authors_list = []
             if "authors" in pds4_fields:
-                # The 'authors' field is inconsistent on the use of separators.
-                # Try to make a best guess on which method is better.
+                """
+                The 'authors' field is inconsistent on the use of separators.
+                Try to make a best guess on which method is better.
+                """
                 o_best_method = self._find_method_to_parse_authors(pds4_fields["authors"])
 
             if o_best_method == BestParserMethod.BY_COMMA:
@@ -544,31 +552,38 @@ class DOIPDS4LabelUtil:
 
             site_url = create_landing_page_url(identifier, product_type)
 
-            # The Doi class Constructor serves as the core data structure that flows through the entire DOI service
-            #  - initially created in the process_pds4_fields method of DOIPDS4LabelUtil class when
-            #    processing PDS4 XML labels
-            #  - from initial parsing of PDS4 labels, through validation and modification in various actions,
-            #    to final submission to DOI service providers and storage in the transaction database.
-            #
-            # Creates a standardized Doi object from the extracted PDS4 label fields.
-            # This is a critical transformation point where raw XML data is converted into
-            # a structured object that follows DOI metadata conventions. The Doi object
-            # serves as the central data structure used throughout the DOI service for
-            # all operations (reserve, update, release).
-            #
-            # The fields are populated as follows:
-            # - Basic metadata: title, description, identifiers, DOI (if existing)
-            # - Publication information: date, publisher
-            # - Product classification: product_type, product_type_specific
-            # - Contributors: authors (with name parsing), editors
-            # - Discovery metadata: keywords (extracted from multiple fields)
-            # - Administrative metadata: status, timestamps, ID suffix
-
-            # 20250501 - initial dictionary of values for list_Authots in XML label
+            """
+            The Doi class Constructor serves as the core data structure that flows through the entire DOI service
+            - initially created in the process_pds4_fields method of DOIPDS4LabelUtil class when
+            processing PDS4 XML labels
+            - from initial parsing of PDS4 labels, through validation and modification in various actions,
+              to final submission to DOI service providers and storage in the transaction database.
+            """
+            """
+            Creates a standardized Doi object from the extracted PDS4 label fields.
+            This is a critical transformation point where raw XML data is converted into
+            a structured object that follows DOI metadata conventions. The Doi object
+            serves as the central data structure used throughout the DOI service for
+            all operations (reserve, update, release).
+            
+            The fields are populated as follows:
+            - Basic metadata: title, description, identifiers, DOI (if existing)
+            - Publication information: date, publisher
+            - Product classification: product_type, product_type_specific
+            - Contributors: authors (with name parsing), editors
+            - Discovery metadata: keywords (extracted from multiple fields)
+            - Administrative metadata: status, timestamps, ID suffix
+            """
+            """
+            initialize dictionaries of values: list_Authots in XML label
+            """
             dict_list_authors = {}
             dict_list_editors = {}
-            # 20250501: debug code to test list_authors
-            # dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
+            
+            """ 
+            debug code to test list_authors 
+            dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
+            """
 
             doi = Doi(
                 doi=pds4_fields.get("doi"),
@@ -580,28 +595,17 @@ class DOIPDS4LabelUtil:
                 product_type_specific=product_specific_type,
                 pds_identifier=identifier,
                 site_url=site_url,
-                # 20250501 -- add rorid as test; not processed
-                # authors =  [{'first_name': 'first_name', 'middle_name': 'A.', 'last_name': 'last_name', 'affiliation': [], 'name_type': 'Personal'}, {'first_name': 'Kent', 'middle_name': 'L.', 'last_name': 'Ackerson', 'affiliation': [], 'name_type': 'Personal'}, {'name': ' Alphabet Inc.', 'affiliation': [' Alphabet Inc.'], 'name_type': 'Organizational', 'rorid': 'xxx'}],
-                # authors =  [{'first_name': 'first_name', 'middle_name': 'middle_A.', 'last_name': 'last_name', 'affiliation': [], 'name_type': 'Personal'}],
                 authors=self.get_author_names(authors_list),
-                # authors=self.get_list_authors(self.xml_tree),
                 editors=editors,
-                # editors=self.get_author_names(editors),
                 keywords=self.get_keywords(pds4_fields),
                 date_record_added=timestamp,
                 date_record_updated=timestamp,
                 id=doi_suffix,  # e.g., 1k63-7383
-                # 20250501 - add xPath to List_Authors, List_Editors, List_Contributors
-                # list_authors= self.get_author_names(authors_list),
-                # list_authors=list(self.get_list_authors(pds4_fields)),
-                # 20250725 -- add role_type to get_list_authors and get_list_editors
                 list_authors=self.get_list_Auth_Edit_Cont(self.xml_tree, "Author"),
                 list_editors=self.get_list_Auth_Edit_Cont(self.xml_tree, "Editor"),
-                # list_contributors=self.get_list_authors(pds4_fields),
                 list_contributors=self.get_list_Auth_Edit_Cont(self.xml_tree, "Contributor"),
             )
 
-            # 202501 -- add logger
             logger.debug(f": doi.type " f"{type(doi)}")
             logger.debug(f": doi.doi " f"{doi.doi}")
             logger.debug(f": doi.status " f"{doi.status}")
@@ -632,11 +636,13 @@ class DOIPDS4LabelUtil:
             logger.error(msg)
             raise InputFormatException(msg)
 
-        # 20250501 - can can be only a single source for  <authors>
-        #  -- ascertain if <author_list> and/or <List_Author> metadata is present in the XML label.
-        #    -- if both; <List_Author> metadata supercedes <author_list>
-        #     -- if only <author_list>; use <author_list> metadata
-        #     -- if only <List_Author>; use <List_Author> metadata
+        """
+        - can can be only a single source for  <authors>
+        -- ascertain if <author_list> and/or <List_Author> metadata is present in the XML label.
+        -- if both; <List_Author> metadata supercedes <author_list>
+        -- if only <author_list>; use <author_list> metadata
+        -- if only <List_Author>; use <List_Author> metadata
+        """
         if len(doi.list_authors) > 0:
             doi.authors = doi.list_authors
             logger.debug(
@@ -658,9 +664,8 @@ class DOIPDS4LabelUtil:
                 f"{len(doi.editors), doi.editors}"
             )
         if len(doi.list_contributors) > 0:
-            # doi.contributors = doi.list_contributors
             doi.editors.extend(doi.list_contributors)
-            # logger.debug(f": process_pds4_fields.doi.contributors replaced with doi.list_contributors " f"{len(doi.contributors), doi.contributors}")
+             """  logger.debug(f": process_pds4_fields.doi.contributors replaced with doi.list_contributors " f"{len(doi.contributors), doi.contributors}")  """ 
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors " f"{len(doi.list_contributors), doi.list_contributors}"
             )
@@ -669,7 +674,7 @@ class DOIPDS4LabelUtil:
                 f"{len(doi.editors), doi.editors}"
             )
         else:
-            # logger.debug(f": process_pds4_fields.doi.contributors NOT replaced with doi.contributors " f"{len(doi.contributors), doi.contributors}")
+            """  logger.debug(f": process_pds4_fields.doi.contributors NOT replaced with doi.contributors " f"{len(doi.contributors), doi.contributors}")  """ 
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors NOT appended to doi.editors "
                 f"{len(doi.editors), doi.editors}"
@@ -712,16 +717,20 @@ class DOIPDS4LabelUtil:
             depend on which source field was used (full date for modification_date,
             year-only precision for publication_year).
         """
-        # The field 'modification_date' is favored first.
-        # If it is present use it, otherwise use 'publication_year' field next.
+        """
+        The field 'modification_date' is favored first.
+        If it is present use it, otherwise use 'publication_year' field next.
+        """
         if "modification_date" in pds4_fields:
             logger.debug(
                 f"pds4_fields['modification_date'] "
                 f"{pds4_fields['modification_date'], type(pds4_fields['modification_date'])}"
             )
 
-            # Some PDS4 labels have more than one 'modification_date' field,
-            # so sort in ascending and select the first date.
+            """
+            Some PDS4 labels have more than one 'modification_date' field,
+            so sort in ascending and select the first date.
+            """
             latest_mod_date = sorted(pds4_fields["modification_date"].split(), reverse=False)[0]
             publication_date = datetime.strptime(latest_mod_date, "%Y-%m-%d")
         elif "publication_year" in pds4_fields:
@@ -797,16 +806,18 @@ class DOIPDS4LabelUtil:
         :rtype: Dict[str, Union[str, List[str]]]
         """
 
-        # helper function to encapsulate logic for detecting organizational names
+        """ helper function to encapsulate logic for detecting organizational names """
         def name_str_is_organization(separators: List[str], name: str) -> bool:
             is_mononym = not any([sep in name for sep in separators])
             return is_mononym
 
-        # An ordered tuple of chars by which to split full_name into name chunks, with earlier elements taking
-        # precedence at each stage of splitting (last/given, then first/middle)
+        """
+        An ordered tuple of chars by which to split full_name into name chunks, with earlier elements taking
+        precedence at each stage of splitting (last/given, then first/middle)
+        """
         primary_separators = [",", ". "]
 
-        # Detect organization names, which lack separable chunks
+        """ Detect organization names, which lack separable chunks """
         if name_str_is_organization(primary_separators, full_name):
             entity = {
                 "name": full_name,
@@ -819,7 +830,7 @@ class DOIPDS4LabelUtil:
             logger.debug(f"parsed organization {entity}")
             return entity
 
-        # Perform primary split, intuiting last/given name order from the separator
+        """ Perform primary split, intuiting last/given name order from the separator """
         primary_separators_present_in_full_name = [sep for sep in primary_separators if sep in full_name]
         primary_separator = primary_separators_present_in_full_name[0]
         comma_separated = "," in primary_separator
@@ -828,7 +839,9 @@ class DOIPDS4LabelUtil:
         else:
             given_names_str, last_name = [s.strip() for s in full_name.strip().rsplit(primary_separator, maxsplit=1)]
 
-        # Perform split of given names string into a first name and middle names, if required, and return entity
+        """
+        Perform split of given names string into a first name and middle names, if required, and return entity
+        """
         given_names_separators = [
             " ",
         ]
