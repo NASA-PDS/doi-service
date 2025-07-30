@@ -75,7 +75,9 @@ class TransactionOnDisk:
 
         prefix, suffix = doi.split("/", maxsplit=1)
 
-        return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.isoformat())
+        # 20250720: modify so transaction_time returns a string as YYYY-MM-DDThh:mm:ss.microseconds
+        # return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.isoformat())
+        return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.strftime("%Y-%m-%dT%H-%M-%S.%f"))
 
     @staticmethod
     def output_label_for_transaction(transaction_record):
@@ -165,7 +167,7 @@ class TransactionOnDisk:
                     r = requests.get(input_ref, allow_redirects=True)
 
                     with open(full_input_name, "wb") as outfile:
-                        outfile.write(r.content)
+                        outfile.write(r.content, encoding="utf-8")
 
                     r.close()
 

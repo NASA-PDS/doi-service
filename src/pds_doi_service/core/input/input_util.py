@@ -91,6 +91,8 @@ class DOIInputUtil:
         # function pointers
         self._parser_map = {
             ".xml": self.parse_xml_file,
+            # 20250527; add .lblx to be parsed as xml
+            ".lblx": self.parse_xml_file,
             ".xls": self.parse_xls_file,
             ".xlsx": self.parse_xls_file,
             ".csv": self.parse_csv_file,
@@ -99,6 +101,25 @@ class DOIInputUtil:
 
         if not all([extension in self._parser_map for extension in self._valid_extensions]):
             raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
+
+    # 20250501: Detect UTF-16/UTF-8-BOM; decode
+    def detect_and_decode_utf(Self, data: bytes) -> str:
+        # Detect and decode UTF-16 (with BOM)
+        if data.startswith(b"\xff\xfe") or data.startswith(b"\xfe\xff"):
+            logger.info(f": Detected UTF-16 BOM.")
+            return data.decode("utf-16")
+
+        try:
+            # Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)
+            logger.info(f": Trying to detect UTF-8 with BOM (utf-8-sig).")
+            decoded_data = data.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            # Fallback
+            logger.info(f":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
+            decoded_data = data.decode("utf-8", errors="replace")
+
+        dos_line_endings = decoded_data.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
+        return dos_line_endings
 
     def parse_xml_file(self, xml_path):
         """
@@ -473,12 +494,16 @@ class DOIInputUtil:
         validator = DOIServiceFactory.get_validator_service()
 
         # First read the contents of the file
-        with open(json_path, "r") as infile:
+        # 20250501: read as binary to avoid encoding issues
+        with open(json_path, "rb") as infile:
             # It's been observed that input files transferred from Windows-based
             # machines can append a UTF-8-BOM hex sequence, which breaks
             # JSON parsing later on. So we perform an encode-decode here to
             # ensure this sequence is stripped before continuing.
-            json_contents = infile.read().encode().decode("utf-8-sig")
+            # 20250501: modify code to call routine to detect and decode UTF-16/UTF-8-BOM
+            # json_contents = infile.read().encode().decode("utf-8-sig")
+            json_contents = infile.read()
+            json_contents = self.detect_and_decode_utf(json_contents)
 
         # Validate and parse the provide JSON label based on the service provider
         # configured within the INI. If there's a mismatch, the validation step
@@ -593,7 +618,7 @@ class DOIInputUtil:
             raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
         with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
-            temp_file.write(response.content)
+            temp_file.write(response.content, encoding="utf-8")
             temp_file.seek(0)
 
             dois = self._read_from_path(temp_file.name)
