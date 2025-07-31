@@ -105,19 +105,20 @@ class DOIInputUtil:
             raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
 
     """ Detect UTF-16/UTF-8-BOM; decode"""
-    def detect_and_decode_utf(Self, data: bytes) -> str:
-        """ Detect and decode UTF-16 (with BOM) """
+
+    def detect_and_decode_utf(self, data: bytes) -> str:
+        """Detect and decode UTF-16 (with BOM)"""
         if data.startswith(b"\xff\xfe") or data.startswith(b"\xfe\xff"):
-            logger.info(f": Detected UTF-16 BOM.")
+            logger.info("Detected UTF-16 BOM.")
             return data.decode("utf-16")
 
         try:
-            """ Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically) """
-            logger.info(f": Trying to detect UTF-8 with BOM (utf-8-sig).")
+            """Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)"""
+            logger.info(": Trying to detect UTF-8 with BOM (utf-8-sig).")
             decoded_data = data.decode("utf-8-sig")
         except UnicodeDecodeError:
-            """ Fallback """
-            logger.info(f":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
+            """Fallback"""
+            logger.info(":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
             decoded_data = data.decode("utf-8", errors="replace")
 
         dos_line_endings = decoded_data.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
@@ -167,9 +168,9 @@ class DOIInputUtil:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
             except Exception as err:
                 raise InputFormatException(f"Could not parse the provided xml file as a PDS4 label.\nReason: {err}")
-  
+
         else:
-            """ Otherwise, assume OSTI format """
+            """Otherwise, assume OSTI format"""
             logger.info("Parsing xml file %s as an OSTI label", basename(xml_path))
 
             try:
@@ -215,7 +216,7 @@ class DOIInputUtil:
         """ Standardize column names on lowercase """
         pd_sheet = pd_sheet.rename(columns=lambda column: column.lower())
 
-        """ 
+        """
         Rename columns in a simpler way, accounting for both Linux and Windows
         line-feeds
         """
@@ -326,12 +327,8 @@ class DOIInputUtil:
         """ We only want the first sheet. """
         actual_sheet_name = xl_wb.sheet_names[0]
 
-        xl_sheet = pd.read_excel(
-            xls_path,
-            actual_sheet_name,
-            """ Remove automatic replacement of empty columns with NaN """
-            na_filter=False,
-        )
+        """ Remove automatic replacement of empty columns with NaN """
+        xl_sheet = pd.read_excel(xls_path, actual_sheet_name, na_filter=False)
 
         """
         Any empty rows will result in NaT being filled in for the publication_date.
@@ -465,15 +462,17 @@ class DOIInputUtil:
         """
         logger.info("Parsing csv file %s", basename(csv_path))
 
-        """ Read the CSV file into memory """
-        csv_sheet = pd.read_csv(
-            csv_path,
-            """ 
+        """
+        Read the CSV file into memory
+
             for all columns to be string,
             e.g identifier could be 123 and translate into an int, that would break the code
-            """
+
+            Remove automatic replacement of empty columns with NaN
+        """
+        csv_sheet = pd.read_csv(
+            csv_path,
             dtype=str,
-            """ Remove automatic replacement of empty columns with NaN """
             na_filter=False,
             skip_blank_lines=True,
         )
@@ -516,7 +515,7 @@ class DOIInputUtil:
              ensure this sequence is stripped before continuing.
              20250501: modify code to call routine to detect and decode UTF-16/UTF-8-BOM
              json_contents = infile.read().encode().decode("utf-8-sig")
-             """
+            """
             json_contents = infile.read()
             json_contents = self.detect_and_decode_utf(json_contents)
 
@@ -568,7 +567,7 @@ class DOIInputUtil:
             extension = os.path.splitext(path)[-1]
 
             if extension in self._valid_extensions:
-                """ Select the appropriate read function based on the extension """
+                """Select the appropriate read function based on the extension"""
                 read_function = self._parser_map[extension]
 
                 try:
@@ -680,9 +679,9 @@ class DOIInputUtil:
         """
         """ See if we were handed a URL """
         if input_file.startswith("http"):
-            dois = self._read_from_remote(input_file)       
+            dois = self._read_from_remote(input_file)
         elif os.path.exists(input_file):
-            """ Otherwise see if its a local file """            
+            """Otherwise see if its a local file"""
             dois = self._read_from_path(input_file)
         else:
             raise InputFormatException(

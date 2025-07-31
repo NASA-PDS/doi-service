@@ -47,7 +47,7 @@ class DOIPDS4LabelUtil:
     """
 
     def __init__(self):
-        """ xpath_dict is a {dict} where each key is comprised of a [list] of values  """
+        """xpath_dict is a {dict} where each key is comprised of a [list] of values"""
         self.xpath_dict = {
             "lid": "/*/pds4:Identification_Area/pds4:logical_identifier",
             "vid": "/*/pds4:Identification_Area/pds4:version_id",
@@ -76,36 +76,37 @@ class DOIPDS4LabelUtil:
        -- dict_type: str as:
            -- "xpath_dict" | "xpath_dict_person_attributes" | "xpath_dict_organization_attributes"
       usage: xpath_dict = build_xpath_dict("Author", "xpath_dict")
-    
+
        {
     'xpath_list_author_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*',
     'xpath_list_authors_person_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Person/*',
     'xpath_list_authors_organization_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Organization/*',
        }
     """
+
     def build_xpath_dict(self, role_type: str, dict_type: str) -> dict:
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
         if dict_type == "xpath_dict":
             return {
-                f"xpath_list_{role_type.lower()}_class": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/*",
-                f"xpath_list_{list_key}_person_class": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/*",
-                f"xpath_list_{list_key}_organization_class": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/*",
+                "xpath_list_{role_type.lower()}_class": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/*",
+                "xpath_list_{list_key}_person_class": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/*",
+                "xpath_list_{list_key}_organization_class": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/*",
             }
 
         elif dict_type == "xpath_dict_person_attributes":
             return {
-                f"contributor_type": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:contributor_type",
-                f"given_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:given_name",
-                f"family_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:family_name",
-                f"person_orcid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:person_orcid",
+                "contributor_type": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:contributor_type",
+                "given_name": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:given_name",
+                "family_name": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:family_name",
+                "person_orcid": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:person_orcid",
             }
 
         elif dict_type == "xpath_dict_organization_attributes":
             return {
-                f"contributor_type": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:contributor_type",
-                f"organization_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_name",
-                f"organization_rorid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_rorid",
+                "contributor_type": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:contributor_type",
+                "organization_name": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_name",
+                "organization_rorid": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_rorid",
             }
 
         else:
@@ -113,6 +114,7 @@ class DOIPDS4LabelUtil:
             sys.exit()
 
     """ add function to map List_Author fields to doi fields  """
+
     def map_list_author_editor_fields_to_doi_fields(self, list_authors):
         """
         map List_Author fields to doi fields
@@ -139,7 +141,7 @@ class DOIPDS4LabelUtil:
                 if key in field_map:
                     new_key = field_map[key]
                     dict_authors[new_key] = value
-  
+
             mapped_list_authors.append(dict_authors)
 
         return mapped_list_authors
@@ -147,7 +149,8 @@ class DOIPDS4LabelUtil:
     """ Debug code to get list_authors from pds4_fields
     dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
     """
-    def get_list_Auth_Edit_Cont(self, xml_tree, role_type: str):
+
+    def get_list_auth_edit_cont(self, xml_tree, role_type: str):
         """
         Extract pds4_fields from xml_tree first
         pds4_fields = self.read_pds4(xml_tree)
@@ -164,8 +167,8 @@ class DOIPDS4LabelUtil:
         get Class in List_Auth:
           -- <Person> | <Organization>
                -- number of instances of each class
-      
-        
+
+
          Use list_authors as "holder" for the list of authors, editors, or contributors
            -- cast list_editors and list_contributors to list_authors
         """
@@ -294,9 +297,10 @@ class DOIPDS4LabelUtil:
 
             else:
                 logger.debug(
-                    f": get_list_aec.sys.exit() -- neither <Person> nor <Organization> class was found as child class of<List_Authors> class"
+                    f": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class "
+                    f"{list_author_class.text}"
                 )
-                sys.exit()
+                """ Continue processing other classes instead of exiting """
 
         """ Need to map List_Author fields to DOI fields """
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
@@ -320,11 +324,11 @@ class DOIPDS4LabelUtil:
         return False
 
     def get_doi_fields_from_pds4(self, xml_tree):
-        """ Store xml_tree as instance variable for use in other methods """
+        """Store xml_tree as instance variable for use in other methods"""
         self.xml_tree = xml_tree
 
         pds4_fields = self.read_pds4(xml_tree)
-        
+
         logger.debug(f": get_doi_fields_from_pds4.pds4_fields.type " f"{type(pds4_fields)}")
         logger.debug(f": get_doi_fields_from_pds4.pds4_fields " f"{pds4_fields}")
         doi_fields = self.process_pds4_fields(pds4_fields)
@@ -381,7 +385,7 @@ class DOIPDS4LabelUtil:
           "R. Deen", "H. Abarca", "J. Maki"
         This happens very rarely but it does happen.
            Case 4 :"VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
-        """ 
+        """
         o_list_contains_full_name_flag = False
         num_dots_found = 0
         num_person_names = 0
@@ -389,15 +393,15 @@ class DOIPDS4LabelUtil:
         for one_name in names_list:
             if "." in one_name:
                 num_dots_found += 1
-                """ 
+                """
                 Now that the dot is found, look to see the name contains at
                 least two tokens.
                 """
                 if len(one_name.strip().split(".")) >= 2:
-                    """ 'R. Deen' split to ['R','Deen'], "J. Maki" split to ['J','Maki']   """
+                    """'R. Deen' split to ['R','Deen'], "J. Maki" split to ['J','Maki']"""
                     num_person_names += 1
             else:
-                """ 
+                """
                 The name does not contain a dot, split using spaces.
                 Case 4  --> Should be parsed by semi-colon
                   "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
@@ -518,7 +522,7 @@ class DOIPDS4LabelUtil:
             editors = self.get_editor_names(pds4_fields["editors"].split(";")) if "editors" in pds4_fields else None
 
             """ Handle authors field - check if it exists before processing
-                 -- process <author_list> as optional 
+                 -- process <author_list> as optional
             """
             authors_list = []
             if "authors" in pds4_fields:
@@ -565,7 +569,7 @@ class DOIPDS4LabelUtil:
             a structured object that follows DOI metadata conventions. The Doi object
             serves as the central data structure used throughout the DOI service for
             all operations (reserve, update, release).
-            
+
             The fields are populated as follows:
             - Basic metadata: title, description, identifiers, DOI (if existing)
             - Publication information: date, publisher
@@ -579,9 +583,9 @@ class DOIPDS4LabelUtil:
             """
             dict_list_authors = {}
             dict_list_editors = {}
-            
-            """ 
-            debug code to test list_authors 
+
+            """
+            debug code to test list_authors
             dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
             """
 
@@ -601,9 +605,9 @@ class DOIPDS4LabelUtil:
                 date_record_added=timestamp,
                 date_record_updated=timestamp,
                 id=doi_suffix,  # e.g., 1k63-7383
-                list_authors=self.get_list_Auth_Edit_Cont(self.xml_tree, "Author"),
-                list_editors=self.get_list_Auth_Edit_Cont(self.xml_tree, "Editor"),
-                list_contributors=self.get_list_Auth_Edit_Cont(self.xml_tree, "Contributor"),
+                list_authors=self.get_list_auth_edit_cont(self.xml_tree, "Author"),
+                list_editors=self.get_list_auth_edit_cont(self.xml_tree, "Editor"),
+                list_contributors=self.get_list_auth_edit_cont(self.xml_tree, "Contributor"),
             )
 
             logger.debug(f": doi.type " f"{type(doi)}")
@@ -665,7 +669,7 @@ class DOIPDS4LabelUtil:
             )
         if len(doi.list_contributors) > 0:
             doi.editors.extend(doi.list_contributors)
-             """  logger.debug(f": process_pds4_fields.doi.contributors replaced with doi.list_contributors " f"{len(doi.contributors), doi.contributors}")  """ 
+            """  logger.debug(f": process_pds4_fields.doi.contributors replaced with doi.list_contributors " f"{len(doi.contributors), doi.contributors}") """
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors " f"{len(doi.list_contributors), doi.list_contributors}"
             )
@@ -674,7 +678,7 @@ class DOIPDS4LabelUtil:
                 f"{len(doi.editors), doi.editors}"
             )
         else:
-            """  logger.debug(f": process_pds4_fields.doi.contributors NOT replaced with doi.contributors " f"{len(doi.contributors), doi.contributors}")  """ 
+            """logger.debug(f": process_pds4_fields.doi.contributors NOT replaced with doi.contributors " f"{len(doi.contributors), doi.contributors}")"""
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors NOT appended to doi.editors "
                 f"{len(doi.editors), doi.editors}"
@@ -807,6 +811,7 @@ class DOIPDS4LabelUtil:
         """
 
         """ helper function to encapsulate logic for detecting organizational names """
+
         def name_str_is_organization(separators: List[str], name: str) -> bool:
             is_mononym = not any([sep in name for sep in separators])
             return is_mononym

@@ -77,10 +77,10 @@ class DOIDataCiteValidator(DOIServiceValidator):
                 json_contents = json.loads(label_contents)
 
                 if "data" in json_contents:
-                    """ Strip off the stuff that is not covered by the JSON schema """
+                    """Strip off the stuff that is not covered by the JSON schema"""
                     json_contents = json_contents["data"]
 
-                """ 
+                """
                 DataCite labels can contain a single or multiple records,
                 wrap single records in a list for a common interface
                 """
