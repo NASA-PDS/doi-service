@@ -61,7 +61,7 @@ class DOIPDS4LabelUtil:
             "investigation_area": "/*/pds4:Context_Area/pds4:Investigation_Area/pds4:name",
             "observing_system_component": "/*/pds4:Context_Area/pds4:Observing_System/pds4:Observing_System_Component/pds4:name",
             "target_identification": "/*/pds4:Context_Area/pds4:Target_Identification/pds4:name",
-            "primary_result_summary": "/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*",
+            "primary_result_summary": "/*/pds4:Context_Area/pds4:Primary_Result_Summary/*",
             "doi": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi",
             "list_authors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*",
             "list_editors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Editor/*",
@@ -153,7 +153,7 @@ class DOIPDS4LabelUtil:
         pds4_fields = self.read_pds4(xml_tree)
           -- role_type: str as:
         """
-        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
+        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1", "": "http://pds.nasa.gov/pds4/pds/v1"}
         pds4_namespace_prefix = "{http://pds.nasa.gov/pds4/pds/v1}"
 
         xpath_dict = self.build_xpath_dict(role_type, "xpath_dict")
@@ -355,7 +355,7 @@ class DOIPDS4LabelUtil:
         """
         pds4_field_value_dict = {}
 
-        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
+        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1", "": "http://pds.nasa.gov/pds4/pds/v1"}
 
         for key, xpath in self.xpath_dict.items():
             elements = xml_tree.xpath(xpath, namespaces=pds4_namespace)
