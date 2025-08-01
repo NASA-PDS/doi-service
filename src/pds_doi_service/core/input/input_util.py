@@ -87,8 +87,10 @@ class DOIInputUtil:
         if not isinstance(self._valid_extensions, (list, tuple, set)):
             self._valid_extensions = [self._valid_extensions]
 
-        # Set up the mapping of supported extensions to the corresponding read
-        # function pointers
+        """
+        Set up the mapping of supported extensions to the corresponding read
+        function pointers
+        """
         self._parser_map = {
             ".xml": self.parse_xml_file,
             # 20250527; add .lblx to be parsed as xml
@@ -102,20 +104,21 @@ class DOIInputUtil:
         if not all([extension in self._parser_map for extension in self._valid_extensions]):
             raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
 
-    # 20250501: Detect UTF-16/UTF-8-BOM; decode
-    def detect_and_decode_utf(Self, data: bytes) -> str:
-        # Detect and decode UTF-16 (with BOM)
+    """ Detect UTF-16/UTF-8-BOM; decode"""
+
+    def detect_and_decode_utf(self, data: bytes) -> str:
+        """Detect and decode UTF-16 (with BOM)"""
         if data.startswith(b"\xff\xfe") or data.startswith(b"\xfe\xff"):
-            logger.info(f": Detected UTF-16 BOM.")
+            logger.info("Detected UTF-16 BOM.")
             return data.decode("utf-16")
 
         try:
-            # Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)
-            logger.info(f": Trying to detect UTF-8 with BOM (utf-8-sig).")
+            """Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)"""
+            logger.info(": Trying to detect UTF-8 with BOM (utf-8-sig).")
             decoded_data = data.decode("utf-8-sig")
         except UnicodeDecodeError:
-            # Fallback
-            logger.info(f":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
+            """Fallback"""
+            logger.info(":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
             decoded_data = data.decode("utf-8", errors="replace")
 
         dos_line_endings = decoded_data.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
@@ -145,17 +148,19 @@ class DOIInputUtil:
         """
         dois = []
 
-        # First read the contents of the file
+        """ First read the contents of the file """
         with open(xml_path, "r") as infile:
-            # It's been observed that input files transferred from Windows-based
-            # machines can append a UTF-8-BOM hex sequence, which can break
-            # parsing later on. So we perform an encode-decode here to
-            # ensure this sequence is stripped before continuing.
+            """
+            It's been observed that input files transferred from Windows-based
+            machines can append a UTF-8-BOM hex sequence, which can break
+            parsing later on. So we perform an encode-decode here to
+            ensure this sequence is stripped before continuing.
+            """
             xml_contents = infile.read().encode().decode("utf-8-sig")
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
-        # Check if we were handed a PDS4 label
+        """ Check if we were handed a PDS4 label """
         if self._label_util.is_pds4_label(xml_tree):
             logger.info("Parsing xml file %s as a PDS4 label", basename(xml_path))
 
@@ -163,8 +168,9 @@ class DOIInputUtil:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
             except Exception as err:
                 raise InputFormatException(f"Could not parse the provided xml file as a PDS4 label.\nReason: {err}")
-        # Otherwise, assume OSTI format
+
         else:
+            """Otherwise, assume OSTI format"""
             logger.info("Parsing xml file %s as an OSTI label", basename(xml_path))
 
             try:
@@ -201,17 +207,19 @@ class DOIInputUtil:
             (missing columns, incorrect column names, etc.).
 
         """
-        # Save the column names before we modify them, for error reporting
+        """ Save the column names before we modify them, for error reporting """
         orig_columns = list(pd_sheet.columns)
 
-        # Trim leading/trailing whitespace from column names
+        """ Trim leading/trailing whitespace from column names """
         pd_sheet = pd_sheet.rename(columns=lambda column: column.strip())
 
-        # Standardize column names on lowercase
+        """ Standardize column names on lowercase """
         pd_sheet = pd_sheet.rename(columns=lambda column: column.lower())
 
-        # Rename columns in a simpler way, accounting for both Linux and Windows
-        # line-feeds
+        """
+        Rename columns in a simpler way, accounting for both Linux and Windows
+        line-feeds
+        """
         pd_sheet = pd_sheet.rename(
             columns={
                 "titles": "title",
@@ -276,12 +284,12 @@ class DOIInputUtil:
         """
         logger.debug(f"Validating row {list(row.values)}")
 
-        # Make sure theres a value defined for each expected column
+        """ Make sure theres a value defined for each expected column """
         for column_name in self.MANDATORY_COLUMNS:
             if not row[column_name]:
                 raise InputFormatException(f"No value provided for {column_name} column")
 
-        # Make sure we got a valid publication date
+        """ Make sure we got a valid publication date """
         if not isinstance(row["publication_date"], (datetime, pd.Timestamp)):
             try:
                 row["publication_date"] = datetime.strptime(row["publication_date"], "%Y-%m-%d")
@@ -316,19 +324,17 @@ class DOIInputUtil:
 
         xl_wb = pd.ExcelFile(xls_path, engine="openpyxl")
 
-        # We only want the first sheet.
+        """ We only want the first sheet. """
         actual_sheet_name = xl_wb.sheet_names[0]
 
-        xl_sheet = pd.read_excel(
-            xls_path,
-            actual_sheet_name,
-            # Remove automatic replacement of empty columns with NaN
-            na_filter=False,
-        )
+        """ Remove automatic replacement of empty columns with NaN """
+        xl_sheet = pd.read_excel(xls_path, actual_sheet_name, na_filter=False)
 
-        # Any empty rows will result in NaT being filled in for the publication_date.
-        # Key off of this to drop those rows. Since we provided na_filter=False,
-        # there should not be any N/A or NaT values anywhere else.
+        """
+        Any empty rows will result in NaT being filled in for the publication_date.
+        Key off of this to drop those rows. Since we provided na_filter=False,
+        there should not be any N/A or NaT values anywhere else.
+        """
         xl_sheet = xl_sheet.dropna(how="any")
 
         xl_sheet = self._validate_spreadsheet(xl_sheet)
@@ -359,9 +365,11 @@ class DOIInputUtil:
 
         for index, row in pd_sheet.iterrows():
             try:
-                # Check for the case where an empty row was written as a series of
-                # commas, as can occur with spreadsheets with blank rows converted from
-                # Excel to CSV. These rows should just be skipped outright before validation.
+                """
+                Check for the case where an empty row was written as a series of
+                commas, as can occur with spreadsheets with blank rows converted from
+                Excel to CSV. These rows should just be skipped outright before validation.
+                """
                 if all([str(value).strip() == "" for value in row.values]):
                     continue
 
@@ -454,13 +462,17 @@ class DOIInputUtil:
         """
         logger.info("Parsing csv file %s", basename(csv_path))
 
-        # Read the CSV file into memory
+        """
+        Read the CSV file into memory
+
+            for all columns to be string,
+            e.g identifier could be 123 and translate into an int, that would break the code
+
+            Remove automatic replacement of empty columns with NaN
+        """
         csv_sheet = pd.read_csv(
             csv_path,
-            # for all columns to be string,
-            # e.g identifier could be 123 and translate into an int, that would break the code
             dtype=str,
-            # Remove automatic replacement of empty columns with NaN
             na_filter=False,
             skip_blank_lines=True,
         )
@@ -493,21 +505,25 @@ class DOIInputUtil:
         web_parser = DOIServiceFactory.get_web_parser_service()
         validator = DOIServiceFactory.get_validator_service()
 
-        # First read the contents of the file
+        """ First read the contents of the file """
         # 20250501: read as binary to avoid encoding issues
         with open(json_path, "rb") as infile:
-            # It's been observed that input files transferred from Windows-based
-            # machines can append a UTF-8-BOM hex sequence, which breaks
-            # JSON parsing later on. So we perform an encode-decode here to
-            # ensure this sequence is stripped before continuing.
-            # 20250501: modify code to call routine to detect and decode UTF-16/UTF-8-BOM
-            # json_contents = infile.read().encode().decode("utf-8-sig")
+            """
+            It's been observed that input files transferred from Windows-based
+             machines can append a UTF-8-BOM hex sequence, which breaks
+             JSON parsing later on. So we perform an encode-decode here to
+             ensure this sequence is stripped before continuing.
+             20250501: modify code to call routine to detect and decode UTF-16/UTF-8-BOM
+             json_contents = infile.read().encode().decode("utf-8-sig")
+            """
             json_contents = infile.read()
             json_contents = self.detect_and_decode_utf(json_contents)
 
-        # Validate and parse the provide JSON label based on the service provider
-        # configured within the INI. If there's a mismatch, the validation step
-        # should catch it.
+        """
+         Validate and parse the provide JSON label based on the service provider
+         configured within the INI. If there's a mismatch, the validation step
+         should catch it.
+         """
         try:
             if DOIServiceFactory.get_service_type() == SERVICE_TYPE_DATACITE:
                 validator.validate(json_contents)
@@ -551,7 +567,7 @@ class DOIInputUtil:
             extension = os.path.splitext(path)[-1]
 
             if extension in self._valid_extensions:
-                # Select the appropriate read function based on the extension
+                """Select the appropriate read function based on the extension"""
                 read_function = self._parser_map[extension]
 
                 try:
@@ -562,9 +578,11 @@ class DOIInputUtil:
                     logger.error(msg)
                     raise InputFormatException(msg)
 
-                # Make a note of where we can find the original input file that
-                # resulted in these DOI's so we can save it to the transaction
-                # history later on
+                """
+                Make a note of where we can find the original input file that
+                resulted in these DOI's so we can save it to the transaction
+                history later on
+                """
                 for doi in dois:
                     doi.input_source = path
             else:
@@ -601,7 +619,7 @@ class DOIInputUtil:
         """
         parsed_url = urllib.parse.urlparse(input_url)
 
-        # Check for valid extension before attempting to read from remote
+        """ Check for valid extension before attempting to read from remote """
         extension = os.path.splitext(parsed_url.path)[-1]
 
         if extension not in self._valid_extensions:
@@ -623,8 +641,10 @@ class DOIInputUtil:
 
             dois = self._read_from_path(temp_file.name)
 
-        # Update input source to point to original URL, as the temp file paths
-        # assigned by _read_from_path no longer exist
+        """
+        Update input source to point to original URL, as the temp file paths
+        assigned by _read_from_path no longer exist
+        """
         for doi in dois:
             doi.input_source = input_url
 
@@ -657,18 +677,18 @@ class DOIInputUtil:
             the file (because it is an unsupported exception).
 
         """
-        # See if we were handed a URL
+        """ See if we were handed a URL """
         if input_file.startswith("http"):
             dois = self._read_from_remote(input_file)
-        # Otherwise see if its a local file
         elif os.path.exists(input_file):
+            """Otherwise see if its a local file"""
             dois = self._read_from_path(input_file)
         else:
             raise InputFormatException(
                 f"Error reading file {input_file}, path does not correspond to a remote URL or a local file path."
             )
 
-        # Make sure we got back at least one Doi
+        """ Make sure we got back at least one Doi """
         if not dois:
             raise InputFormatException(
                 f"Unable to parse DOI's from input location {input_file}\n"

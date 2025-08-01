@@ -67,7 +67,6 @@ class TransactionOnDisk:
         -------
         transaction_key : str
             The transaction key path formed from the provided arguments.
-
         """
         config = TransactionOnDisk.m_doi_config_util.get_config()
 
@@ -75,8 +74,7 @@ class TransactionOnDisk:
 
         prefix, suffix = doi.split("/", maxsplit=1)
 
-        # 20250720: modify so transaction_time returns a string as YYYY-MM-DDThh:mm:ss.microseconds
-        # return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.isoformat())
+        """ modify so transaction_time returns a string as YYYY-MM-DDThh:mm:ss.microseconds """
         return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.strftime("%Y-%m-%dT%H-%M-%S.%f"))
 
     @staticmethod
@@ -100,11 +98,12 @@ class TransactionOnDisk:
         NoTransactionHistoryForIdentifierException
             If the output label associated to the transaction cannot be found
             on local disk.
-
         """
-        # TODO: reconcile this method with the version in the list action
-        # Make sure we can locate the output label associated with this
-        # transaction
+        """
+        TODO: reconcile this method with the version in the list action
+        Make sure we can locate the output label associated with this
+        transaction
+        """
         transaction_location = transaction_record.transaction_key
         label_files = glob.glob(join(transaction_location, "output.*"))
 
@@ -140,25 +139,30 @@ class TransactionOnDisk:
             The content type of output_content. Should be one of "xml" or "json".
 
         """
-
-        # Set up the appropriate umask in-case os.makedirs needs to create any
-        # intermediate parent directories (its mask arg only affects the created leaf directory)
+        """
+        Set up the appropriate umask in-case os.makedirs needs to create any
+        intermediate parent directories (its mask arg only affects the created leaf directory)
+        """
         prev_umask = os.umask(0o0002)
 
-        # Create the new transaction history directory with group-rw enabled
+        """ Create the new transaction history directory with group-rw enabled """
         os.makedirs(transaction_dir, exist_ok=True, mode=0o0775)
 
         if input_ref:
             if os.path.isdir(input_ref):
-                # Copy the input files, but do not preserve their permissions so
-                # the umask we set above takes precedence
+                """
+                Copy the input files, but do not preserve their permissions so
+                the umask we set above takes precedence
+                """
                 copy_tree(input_ref, os.path.join(transaction_dir, "input"), preserve_mode=False)
             else:
                 input_content_type = os.path.splitext(input_ref)[-1]
 
-                # Write input file with provided content.
-                # Note that the file name is always 'input' plus the extension based
-                # on the content_type (input.xml or input.csv or input.xlsx)
+                """
+                Write input file with provided content.
+                Note that the file name is always 'input' plus the extension based
+                on the content_type (input.xml or input.csv or input.xlsx)
+                """
                 full_input_name = os.path.join(transaction_dir, "input" + input_content_type)
 
                 if os.path.isfile(input_ref):
@@ -171,21 +175,23 @@ class TransactionOnDisk:
 
                     r.close()
 
-                # Set up permissions for copied input
+                """ Set up permissions for copied input """
                 os.chmod(full_input_name, 0o0664)
 
-        # Write output file with provided content
-        # The extension of the file is determined by the provided content type
+        """
+        Write output file with provided content
+        The extension of the file is determined by the provided content type
+        """
         if output_content and output_content_type:
             full_output_name = os.path.join(transaction_dir, ".".join(["output", output_content_type]))
 
             with open(full_output_name, "w") as outfile:
                 outfile.write(output_content)
 
-            # Set up permissions for copied output
+            """ Set up permissions for copied output """
             os.chmod(full_output_name, 0o0664)
 
         logger.info(f"Transaction files saved to {transaction_dir}")
 
-        # Restore the previous umask
+        """ Restore the previous umask """
         os.umask(prev_umask)
