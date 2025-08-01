@@ -63,7 +63,6 @@ class DOIPDS4LabelUtil:
             "target_identification": "/*/pds4:Context_Area/pds4:Target_Identification/pds4:name",
             "primary_result_summary": "/pds4:Product_Bundle/pds4:Context_Area/pds4:Primary_Result_Summary/*",
             "doi": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:doi",
-            """ add xPath to List_Authors, List_Editors, List_Contributors """
             "list_authors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*",
             "list_editors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Editor/*",
             "list_contributors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Contributor/*",
@@ -113,7 +112,6 @@ class DOIPDS4LabelUtil:
             logger.debug(f": build_xpath_dict.sys.exit() -- invalid dict_type " f"{dict_type}")
             sys.exit()
 
-    """ add function to map List_Author fields to doi fields  """
 
     def map_list_author_editor_fields_to_doi_fields(self, list_authors):
         """
@@ -176,7 +174,7 @@ class DOIPDS4LabelUtil:
         person_instance = 0  # xml instances are 1-based
         organization_instance = 0  # xml instances are 1-based
 
-        """ adjust the dictionary to reflect the role_type """
+        # adjust the dictionary to reflect the role_type
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
         xpath = xpath_dict[f"xpath_list_{role_type.lower()}_class"]
@@ -207,7 +205,7 @@ class DOIPDS4LabelUtil:
                 dict_list_authors["name_type"] = "Personal"
                 dict_list_authors["Affiliation"] = []
 
-                """ adjust the dictionary to reflect the role_type """
+                # adjust the dictionary to reflect the role_type
                 xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
                 xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/*")
                 logger.debug(f": get_list_aec.xpath " f"{xpath}")
@@ -254,7 +252,7 @@ class DOIPDS4LabelUtil:
                 dict_list_authors["name_type"] = "Organizational"
                 dict_list_authors["Affiliation"] = []
 
-                """ adjust the dictionary to reflect the role_type """
+                # adjust the dictionary to reflect the role_type
                 xpath = xpath_dict[f"xpath_list_{list_key}_organization_class"]
                 xpath = xpath.replace("pds4:Organization/*", "pds4:Organization[" + str(organization_instance) + "]/*")
                 logger.debug(f": get_list_aec.xpath " f"{xpath}")
@@ -300,9 +298,9 @@ class DOIPDS4LabelUtil:
                     f": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class "
                     f"{list_author_class.text}"
                 )
-                """ Continue processing other classes instead of exiting """
+                # Continue processing other classes instead of exiting
 
-        """ Need to map List_Author fields to DOI fields """
+        # Need to map List_Author fields to DOI fields
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
         logger.debug(
             f": get_list_aec.mapped_list_authors.len, mapped_list_authors "
@@ -324,7 +322,7 @@ class DOIPDS4LabelUtil:
         return False
 
     def get_doi_fields_from_pds4(self, xml_tree):
-        """Store xml_tree as instance variable for use in other methods"""
+        # Store xml_tree as instance variable for use in other methods
         self.xml_tree = xml_tree
 
         pds4_fields = self.read_pds4(xml_tree)
@@ -810,19 +808,17 @@ class DOIPDS4LabelUtil:
         :rtype: Dict[str, Union[str, List[str]]]
         """
 
-        """ helper function to encapsulate logic for detecting organizational names """
+        # helper function to encapsulate logic for detecting organizational names
 
         def name_str_is_organization(separators: List[str], name: str) -> bool:
             is_mononym = not any([sep in name for sep in separators])
             return is_mononym
 
-        """
-        An ordered tuple of chars by which to split full_name into name chunks, with earlier elements taking
-        precedence at each stage of splitting (last/given, then first/middle)
-        """
+        # An ordered tuple of chars by which to split full_name into name chunks, with earlier elements taking
+        # precedence at each stage of splitting (last/given, then first/middle)
         primary_separators = [",", ". "]
 
-        """ Detect organization names, which lack separable chunks """
+        # Detect organization names, which lack separable chunks
         if name_str_is_organization(primary_separators, full_name):
             entity = {
                 "name": full_name,
@@ -835,7 +831,7 @@ class DOIPDS4LabelUtil:
             logger.debug(f"parsed organization {entity}")
             return entity
 
-        """ Perform primary split, intuiting last/given name order from the separator """
+        # Perform primary split, intuiting last/given name order from the separator
         primary_separators_present_in_full_name = [sep for sep in primary_separators if sep in full_name]
         primary_separator = primary_separators_present_in_full_name[0]
         comma_separated = "," in primary_separator
@@ -844,9 +840,7 @@ class DOIPDS4LabelUtil:
         else:
             given_names_str, last_name = [s.strip() for s in full_name.strip().rsplit(primary_separator, maxsplit=1)]
 
-        """
-        Perform split of given names string into a first name and middle names, if required, and return entity
-        """
+        # Perform split of given names string into a first name and middle names, if required, and return entity
         given_names_separators = [
             " ",
         ]
