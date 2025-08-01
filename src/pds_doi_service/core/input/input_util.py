@@ -104,7 +104,7 @@ class DOIInputUtil:
         if not all([extension in self._parser_map for extension in self._valid_extensions]):
             raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
 
-    """ Detect UTF-16/UTF-8-BOM; decode"""
+    # Detect UTF-16/UTF-8-BOM; decode
 
     def detect_and_decode_utf(self, data: bytes) -> str:
         """Detect and decode UTF-16 (with BOM)"""
@@ -113,11 +113,11 @@ class DOIInputUtil:
             return data.decode("utf-16")
 
         try:
-            """Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)"""
+            # Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)
             logger.info(": Trying to detect UTF-8 with BOM (utf-8-sig).")
             decoded_data = data.decode("utf-8-sig")
         except UnicodeDecodeError:
-            """Fallback"""
+            # Fallback
             logger.info(":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
             decoded_data = data.decode("utf-8", errors="replace")
 
@@ -557,7 +557,7 @@ class DOIInputUtil:
             extension = os.path.splitext(path)[-1]
 
             if extension in self._valid_extensions:
-                """Select the appropriate read function based on the extension"""
+                # Select the appropriate read function based on the extension
                 read_function = self._parser_map[extension]
 
                 try:
@@ -568,11 +568,9 @@ class DOIInputUtil:
                     logger.error(msg)
                     raise InputFormatException(msg)
 
-                """
-                Make a note of where we can find the original input file that
-                resulted in these DOI's so we can save it to the transaction
-                history later on
-                """
+                # Make a note of where we can find the original input file that
+                # resulted in these DOI's so we can save it to the transaction
+                # history later on
                 for doi in dois:
                     doi.input_source = path
             else:
@@ -676,7 +674,7 @@ class DOIInputUtil:
                 f"Error reading file {input_file}, path does not correspond to a remote URL or a local file path."
             )
 
-        """ Make sure we got back at least one Doi """
+        # Make sure we got back at least one Doi
         if not dois:
             raise InputFormatException(
                 f"Unable to parse DOI's from input location {input_file}\n"
