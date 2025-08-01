@@ -143,9 +143,8 @@ class DOIPDS4LabelUtil:
 
         return mapped_list_authors
 
-    """ Debug code to get list_authors from pds4_fields
-    dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
-    """
+    # Debug code to get list_authors from pds4_fields
+    # dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
 
     def get_list_auth_edit_cont(self, xml_tree, role_type: str):
         """
@@ -160,15 +159,13 @@ class DOIPDS4LabelUtil:
         xpath_dict_person_attributes = self.build_xpath_dict(role_type, "xpath_dict_person_attributes")
         xpath_dict_organization_attributes = self.build_xpath_dict(role_type, "xpath_dict_organization_attributes")
 
-        """
-        get Class in List_Auth:
-          -- <Person> | <Organization>
-               -- number of instances of each class
-
-
-         Use list_authors as "holder" for the list of authors, editors, or contributors
-           -- cast list_editors and list_contributors to list_authors
-        """
+        # get Class in List_Auth:
+        #   -- <Person> | <Organization>
+        #        -- number of instances of each class
+        #
+        #
+        #  Use list_authors as "holder" for the list of authors, editors, or contributors
+        #    -- cast list_editors and list_contributors to list_authors
         list_authors = []
         person_instance = 0  # xml instances are 1-based
         organization_instance = 0  # xml instances are 1-based
@@ -185,14 +182,12 @@ class DOIPDS4LabelUtil:
             f"{role_type,list_aec_classes,len(list_aec_classes)}"
         )
 
-        """
-        for each Class in List_Auth:
-          -- <Person> | <Organization>
-               -- number of instances of each class
-        """
+        # for each Class in List_Auth:
+        #   -- <Person> | <Organization>
+        #        -- number of instances of each class
         for list_author_class in list_aec_classes:
             logger.debug(f": get_list_aec.list_author_class.tag " f"{list_author_class.tag}")
-            """ logger.debug(f": get_list_aec.list_author_class.text " f"{list_author_class.text}")  """
+            # logger.debug(f": get_list_aec.list_author_class.text " f"{list_author_class.text}")
 
             if list_author_class.tag == pds4_namespace_prefix + "Person":
                 logger.debug(f": get_list_aec.list_author_class.tag == Person " f"{list_author_class.tag}")
@@ -398,20 +393,16 @@ class DOIPDS4LabelUtil:
                     """'R. Deen' split to ['R','Deen'], "J. Maki" split to ['J','Maki']"""
                     num_person_names += 1
             else:
-                """
-                The name does not contain a dot, split using spaces.
-                Case 4  --> Should be parsed by semi-colon
-                  "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
-                A person's name should contain at least two tokens.
-                """
+                # The name does not contain a dot, split using spaces.
+                # Case 4  --> Should be parsed by semi-colon
+                #   "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
+                # A person's name should contain at least two tokens.
                 if len(one_name.strip().split()) >= 2:
                     num_person_names += 1
 
-        """
-        If every name contains a dot, the list can potentially hold a person's
-        name. This does not work if the convention of having the dot
-        in each person's name is broken.
-        """
+        # If every name contains a dot, the list can potentially hold a person's
+        # name. This does not work if the convention of having the dot
+        # in each person's name is broken.
         if num_dots_found == len(names_list) or num_person_names == len(names_list):
             o_list_contains_full_name_flag = True
 
@@ -451,20 +442,16 @@ class DOIPDS4LabelUtil:
             The best method of parsing the list of authors.
 
         """
-        """
-        The 'authors' field from data providers can be inconsistent.
-        Sometimes a comma ',' is used to separate the names, sometimes its
-        semi-colons ';'
-        """
+        # The 'authors' field from data providers can be inconsistent.
+        # Sometimes a comma ',' is used to separate the names, sometimes its
+        # semi-colons ';'
         authors_from_comma_split = pds4_fields_authors.split(",")
         authors_from_semi_colon_split = pds4_fields_authors.split(";")
 
-        """
-        Check from authors_from_comma_split to see if it possibly contains full name.
-        Mostly this case: "R. Deen, H. Abarca, P. Zamani, J. Maki"
-        When it is not obvious because it looks similarly to this case:
-        "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
-        """
+        # Check from authors_from_comma_split to see if it possibly contains full name.
+        # Mostly this case: "R. Deen, H. Abarca, P. Zamani, J. Maki"
+        # When it is not obvious because it looks similarly to this case:
+        # "VanBommel, S. J., Guinness, E., Stein, T., and the MER Science Team"
         comma_parsed_list_contains_full_name = self._check_for_possible_full_name(authors_from_comma_split)
 
         number_commas = pds4_fields_authors.count(",")
@@ -553,38 +540,32 @@ class DOIPDS4LabelUtil:
 
             site_url = create_landing_page_url(identifier, product_type)
 
-            """
-            The Doi class Constructor serves as the core data structure that flows through the entire DOI service
-            - initially created in the process_pds4_fields method of DOIPDS4LabelUtil class when
-            processing PDS4 XML labels
-            - from initial parsing of PDS4 labels, through validation and modification in various actions,
-              to final submission to DOI service providers and storage in the transaction database.
-            """
-            """
-            Creates a standardized Doi object from the extracted PDS4 label fields.
-            This is a critical transformation point where raw XML data is converted into
-            a structured object that follows DOI metadata conventions. The Doi object
-            serves as the central data structure used throughout the DOI service for
-            all operations (reserve, update, release).
-
-            The fields are populated as follows:
-            - Basic metadata: title, description, identifiers, DOI (if existing)
-            - Publication information: date, publisher
-            - Product classification: product_type, product_type_specific
-            - Contributors: authors (with name parsing), editors
-            - Discovery metadata: keywords (extracted from multiple fields)
-            - Administrative metadata: status, timestamps, ID suffix
-            """
-            """
-            initialize dictionaries of values: list_Authots in XML label
-            """
+            # The Doi class Constructor serves as the core data structure that flows through the entire DOI service
+            # - initially created in the process_pds4_fields method of DOIPDS4LabelUtil class when
+            # processing PDS4 XML labels
+            # - from initial parsing of PDS4 labels, through validation and modification in various actions,
+            #   to final submission to DOI service providers and storage in the transaction database.
+            #
+            # Creates a standardized Doi object from the extracted PDS4 label fields.
+            # This is a critical transformation point where raw XML data is converted into
+            # a structured object that follows DOI metadata conventions. The Doi object
+            # serves as the central data structure used throughout the DOI service for
+            # all operations (reserve, update, release).
+            #
+            # The fields are populated as follows:
+            # - Basic metadata: title, description, identifiers, DOI (if existing)
+            # - Publication information: date, publisher
+            # - Product classification: product_type, product_type_specific
+            # - Contributors: authors (with name parsing), editors
+            # - Discovery metadata: keywords (extracted from multiple fields)
+            # - Administrative metadata: status, timestamps, ID suffix
+            #
+            # initialize dictionaries of values: list_Authots in XML label
             dict_list_authors = {}
             dict_list_editors = {}
 
-            """
-            debug code to test list_authors
-            dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
-            """
+            # debug code to test list_authors
+            # dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
 
             doi = Doi(
                 doi=pds4_fields.get("doi"),
