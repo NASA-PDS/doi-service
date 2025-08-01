@@ -112,7 +112,6 @@ class DOIPDS4LabelUtil:
             logger.debug(f": build_xpath_dict.sys.exit() -- invalid dict_type " f"{dict_type}")
             sys.exit()
 
-
     def map_list_author_editor_fields_to_doi_fields(self, list_authors):
         """
         map List_Author fields to doi fields
