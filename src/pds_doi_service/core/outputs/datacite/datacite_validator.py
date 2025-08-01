@@ -66,6 +66,9 @@ class DOIDataCiteValidator(DOIServiceValidator):
             If the provided label text fails schema validation.
 
         """
+        # 20250501: list label
+        logger.debug(f": label_contents " f"{label_contents}")
+
         validate_against_schema = self._config.get("DATACITE", "validate_against_schema", fallback="False")
 
         # Check the label contents against the DataCite JSON schema
