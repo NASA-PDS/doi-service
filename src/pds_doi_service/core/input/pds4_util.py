@@ -68,44 +68,42 @@ class DOIPDS4LabelUtil:
             "list_contributors": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Contributor/*",
         }
 
-    """
-     add function to map List_Author fields to doi fields
-       -- role type: str as:
-          -- "Author | Editor | Contributor"
-       -- dict_type: str as:
-           -- "xpath_dict" | "xpath_dict_person_attributes" | "xpath_dict_organization_attributes"
-      usage: xpath_dict = build_xpath_dict("Author", "xpath_dict")
+    #  add function to map List_Author fields to doi fields
+    #    -- role type: str as:
+    #       -- "Author | Editor | Contributor"
+    #    -- dict_type: str as:
+    #        -- "xpath_dict" | "xpath_dict_person_attributes" | "xpath_dict_organization_attributes"
+    #   usage: xpath_dict = build_xpath_dict("Author", "xpath_dict")
 
-       {
-    'xpath_list_author_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*',
-    'xpath_list_authors_person_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Person/*',
-    'xpath_list_authors_organization_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Organization/*',
-       }
-    """
+    #    {
+    # 'xpath_list_author_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/*',
+    # 'xpath_list_authors_person_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Person/*',
+    # 'xpath_list_authors_organization_class': '/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Author/pds4:Organization/*',
+    #    }
 
     def build_xpath_dict(self, role_type: str, dict_type: str) -> dict:
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
         if dict_type == "xpath_dict":
             return {
-                "xpath_list_{role_type.lower()}_class": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/*",
-                "xpath_list_{list_key}_person_class": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/*",
-                "xpath_list_{list_key}_organization_class": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/*",
+                f"xpath_list_{role_type.lower()}_class": f"/*/Identification_Area/Citation_Information/List_{role_type}/*",
+                f"xpath_list_{list_key}_person_class": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/*",
+                f"xpath_list_{list_key}_organization_class": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/*",
             }
 
         elif dict_type == "xpath_dict_person_attributes":
             return {
-                "contributor_type": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:contributor_type",
-                "given_name": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:given_name",
-                "family_name": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:family_name",
-                "person_orcid": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:person_orcid",
+                "contributor_type": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/contributor_type",
+                "given_name": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/given_name",
+                "family_name": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/family_name",
+                "person_orcid": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/person_orcid",
             }
 
         elif dict_type == "xpath_dict_organization_attributes":
             return {
-                "contributor_type": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:contributor_type",
-                "organization_name": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_name",
-                "organization_rorid": "/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_rorid",
+                "contributor_type": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/contributor_type",
+                "organization_name": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/organization_name",
+                "organization_rorid": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/organization_rorid",
             }
 
         else:
@@ -113,9 +111,6 @@ class DOIPDS4LabelUtil:
             sys.exit()
 
     def map_list_author_editor_fields_to_doi_fields(self, list_authors):
-        """
-        map List_Author fields to doi fields
-        """
         field_map = {
             "given_name": "first_name",
             "middle_name": "middle_name",
@@ -148,11 +143,50 @@ class DOIPDS4LabelUtil:
 
     def get_list_auth_edit_cont(self, xml_tree, role_type: str):
         """
-        Extract pds4_fields from xml_tree first
-        pds4_fields = self.read_pds4(xml_tree)
-          -- role_type: str as:
+        Extract and parse author, editor, or contributor information from PDS4 XML labels.
+
+        This method processes PDS4 XML labels to extract structured contributor information
+        (authors, editors, or contributors) from the List_Author, List_Editor, or List_Contributor
+        sections. It handles both Person and Organization elements, extracting their attributes
+        and organizing them into standardized dictionary structures.
+
+        The method uses XPath expressions to locate contributor elements and their attributes,
+        then builds a list of dictionaries where each dictionary represents a single contributor
+        with their metadata (name, affiliation, identifiers, etc.).
+
+        Parameters
+        ----------
+        xml_tree : lxml.etree._Element
+            The parsed XML tree representing a PDS4 label.
+        role_type : str
+            The type of contributor to extract. Must be one of: "Author", "Editor", or "Contributor".
+            This determines which XPath expressions and field mappings to use.
+
+        Returns
+        -------
+        list of dict
+            A list of contributor dictionaries, where each dictionary contains:
+            - name_type: "Personal" for Person elements or "Organizational" for Organization elements
+            - Affiliation: List of affiliation information
+            - Additional fields based on the contributor type (e.g., given_name, family_name,
+              name_identifier, etc.)
+
+        Examples
+        --------
+        >>> pds4_util = DOIPDS4LabelUtil()
+        >>> authors = pds4_util.get_list_auth_edit_cont(xml_tree, "Author")
+        >>> # Returns: [{"name_type": "Personal", "given_name": "John", "family_name": "Doe", ...}]
+
+        Notes
+        -----
+        - The method handles both Person and Organization elements within the specified role type.
+        - XML instances are 1-based for indexing purposes.
+        - All extracted text is preserved as-is from the XML source.
+        - The method uses debug logging to track the extraction process.
         """
-        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1", "": "http://pds.nasa.gov/pds4/pds/v1"}
+        # For default namespace, we need to use a different approach
+        # The XML uses default namespace, so we don't need namespace mapping for XPath
+        pds4_namespace = {}
         pds4_namespace_prefix = "{http://pds.nasa.gov/pds4/pds/v1}"
 
         xpath_dict = self.build_xpath_dict(role_type, "xpath_dict")
@@ -350,7 +384,7 @@ class DOIPDS4LabelUtil:
         """
         pds4_field_value_dict = {}
 
-        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1", "": "http://pds.nasa.gov/pds4/pds/v1"}
+        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
 
         for key, xpath in self.xpath_dict.items():
             elements = xml_tree.xpath(xpath, namespaces=pds4_namespace)
@@ -643,23 +677,26 @@ class DOIPDS4LabelUtil:
         else:
             logger.debug(
                 f": process_pds4_fields.doi.editors NOT replaced with doi.list_editors "
-                f"{len(doi.editors), doi.editors}"
+                f"{len(doi.editors) if doi.editors is not None else 0}, {doi.editors}"
             )
         if len(doi.list_contributors) > 0:
-            doi.editors.extend(doi.list_contributors)
+            if doi.editors is None:
+                doi.editors = doi.list_contributors
+            else:
+                doi.editors.extend(doi.list_contributors)
             """  logger.debug(f": process_pds4_fields.doi.contributors replaced with doi.list_contributors " f"{len(doi.contributors), doi.contributors}") """
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors " f"{len(doi.list_contributors), doi.list_contributors}"
             )
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors appended to doi.editors "
-                f"{len(doi.editors), doi.editors}"
+                f"{len(doi.editors) if doi.editors is not None else 0}, {doi.editors}"
             )
         else:
             """logger.debug(f": process_pds4_fields.doi.contributors NOT replaced with doi.contributors " f"{len(doi.contributors), doi.contributors}")"""
             logger.debug(
                 f": process_pds4_fields.doi.list_contributors NOT appended to doi.editors "
-                f"{len(doi.editors), doi.editors}"
+                f"{len(doi.editors) if doi.editors is not None else 0}, {doi.editors}"
             )
 
         logger.debug(f": doi.authors_replaced " f"{doi.authors}")
@@ -868,7 +905,55 @@ class DOIPDS4LabelUtil:
         return persons
 
     def get_author_names(self, name_list: List[str]) -> List[Dict[str, Union[str, Sequence[str]]]]:
+        """
+        Parse a list of author name strings into structured author dictionaries.
+
+        This method is a convenience wrapper around get_names() specifically for
+        author names. It processes raw author name strings and returns structured
+        dictionaries containing parsed name components.
+
+        Parameters
+        ----------
+        name_list : List[str]
+            A list of raw author name strings to parse.
+
+        Returns
+        -------
+        List[Dict[str, Union[str, Sequence[str]]]]
+            A list of parsed author dictionaries, each containing name components
+            such as first_name, last_name, middle_name, affiliation, and name_type.
+
+        Examples
+        --------
+        >>> pds4_util = DOIPDS4LabelUtil()
+        >>> authors = pds4_util.get_author_names(["Doe, John", "Smith, Jane A."])
+        >>> # Returns structured author dictionaries
+        """
         return self.get_names(name_list)
 
     def get_editor_names(self, name_list):
+        """
+        Parse a list of editor name strings into structured editor dictionaries.
+
+        This method is a convenience wrapper around get_names() specifically for
+        editor names. It processes raw editor name strings and returns structured
+        dictionaries containing parsed name components.
+
+        Parameters
+        ----------
+        name_list : List[str]
+            A list of raw editor name strings to parse.
+
+        Returns
+        -------
+        List[Dict[str, Union[str, Sequence[str]]]]
+            A list of parsed editor dictionaries, each containing name components
+            such as first_name, last_name, middle_name, affiliation, and name_type.
+
+        Examples
+        --------
+        >>> pds4_util = DOIPDS4LabelUtil()
+        >>> editors = pds4_util.get_editor_names(["Doe, John", "Smith, Jane A."])
+        >>> # Returns structured editor dictionaries
+        """
         return self.get_names(name_list)

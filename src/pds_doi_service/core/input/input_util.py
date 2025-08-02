@@ -107,7 +107,32 @@ class DOIInputUtil:
     # Detect UTF-16/UTF-8-BOM; decode
 
     def detect_and_decode_utf(self, data: bytes) -> str:
-        """Detect and decode UTF-16 (with BOM)"""
+        """
+        Detect and decode UTF-encoded byte data with automatic encoding detection.
+
+        This method attempts to detect the encoding of the provided byte data and
+        decode it to a string. It handles UTF-16 (with BOM), UTF-8 (with BOM),
+        and falls back to UTF-8 with replacement characters if other methods fail.
+
+        The method also normalizes line endings to DOS format (\r\n) for consistency.
+
+        Parameters
+        ----------
+        data : bytes
+            The byte data to decode.
+
+        Returns
+        -------
+        str
+            The decoded string with normalized line endings.
+
+        Notes
+        -----
+        - First checks for UTF-16 BOM (little-endian or big-endian)
+        - Then attempts UTF-8 with BOM detection
+        - Falls back to UTF-8 with replacement characters if decoding fails
+        - Normalizes all line endings to DOS format (\r\n)
+        """
         if data.startswith(b"\xff\xfe") or data.startswith(b"\xfe\xff"):
             logger.info("Detected UTF-16 BOM.")
             return data.decode("utf-16")
@@ -624,7 +649,7 @@ class DOIInputUtil:
             raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
         with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
-            temp_file.write(response.content, encoding="utf-8")
+            temp_file.write(response.content)
             temp_file.seek(0)
 
             dois = self._read_from_path(temp_file.name)
