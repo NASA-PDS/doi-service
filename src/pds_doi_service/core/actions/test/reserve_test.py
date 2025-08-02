@@ -305,7 +305,7 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 8)
+        self.assertEqual(len(doi.keywords), 10)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:data::1.0")
         self.assertEqual(doi.product_type, ProductType.Collection)
         self.assertTrue(all(keyword in doi.keywords for keyword in get_global_keywords()))
@@ -336,7 +336,7 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 8)
+        self.assertEqual(len(doi.keywords), 10)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:browse::1.0")
         self.assertEqual(doi.description, "Collection of BROWSE products.")
         self.assertEqual(doi.product_type, ProductType.Collection)
@@ -370,7 +370,7 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 8)
+        self.assertEqual(len(doi.keywords), 10)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:calibration::1.0")
         self.assertEqual(doi.description, "Collection of CALIBRATION files/products to include in the archive.")
         self.assertEqual(doi.product_type, ProductType.Collection)
@@ -402,7 +402,7 @@ class ReserveActionTestCase(unittest.TestCase):
         doi = dois[0]
 
         self.assertEqual(len(doi.authors), 4)
-        self.assertEqual(len(doi.keywords), 8)
+        self.assertEqual(len(doi.keywords), 10)
         self.assertEqual(doi.pds_identifier, "urn:nasa:pds:insight_cameras:document::1.0")
         self.assertEqual(doi.description, "Collection of DOCUMENT products.")
         self.assertEqual(doi.product_type, ProductType.Collection)
