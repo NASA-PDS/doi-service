@@ -73,11 +73,9 @@
                         {% endfor %}
                         ],
                         "affiliations": [
-                            {% if author.affiliation %}
-                                 {% for affiliation in author.affiliation %}
-                                    { "afffilation": "{{ affiliation }}" }{% if not loop.last %},{% endif %}
-                                 {% endfor %}
-                            {% endif %}
+                            {% for affiliation in author.affiliation %}
+                                { "affilation": "{{ affiliation }}" }{% if not loop.last %},{% endif %}
+                             {% endfor %}
                         ]
                     }{% if not loop.last %},{% endif +%}
                     {% endfor %}
