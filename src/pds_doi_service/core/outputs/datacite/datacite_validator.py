@@ -67,7 +67,7 @@ class DOIDataCiteValidator(DOIServiceValidator):
 
         """
         # 20250501: list label
-        logger.debug(f": label_contents " f"{label_contents}")
+        logger.debug(f": label_contents: \n " f"{label_contents}")
 
         validate_against_schema = self._config.get("DATACITE", "validate_against_schema", fallback="False")
 

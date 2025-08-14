@@ -163,7 +163,7 @@ class TransactionOnDisk:
                     r = requests.get(input_ref, allow_redirects=True)
 
                     with open(full_input_name, "wb") as outfile:
-                        outfile.write(r.content)
+                        outfile.write(r.content, encoding="utf-8")
 
                     r.close()
 

@@ -86,24 +86,24 @@ class DOIPDS4LabelUtil:
 
         if dict_type == "xpath_dict":
             return {
-                f"xpath_list_{role_type.lower()}_class": f"/*/Identification_Area/Citation_Information/List_{role_type}/*",
-                f"xpath_list_{list_key}_person_class": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/*",
-                f"xpath_list_{list_key}_organization_class": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/*",
+                f"xpath_list_{role_type.lower()}_class": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/*",
+                f"xpath_list_{list_key}_person_class": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/*",
+                f"xpath_list_{list_key}_organization_class": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/*",
             }
 
         elif dict_type == "xpath_dict_person_attributes":
             return {
-                "contributor_type": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/contributor_type",
-                "given_name": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/given_name",
-                "family_name": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/family_name",
-                "person_orcid": f"/*/Identification_Area/Citation_Information/List_{role_type}/Person/person_orcid",
+                "contributor_type": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:contributor_type",
+                "given_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:given_name",
+                "family_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:family_name",
+                "person_orcid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:person_orcid",
             }
 
         elif dict_type == "xpath_dict_organization_attributes":
             return {
-                "contributor_type": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/contributor_type",
-                "organization_name": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/organization_name",
-                "organization_rorid": f"/*/Identification_Area/Citation_Information/List_{role_type}/Organization/organization_rorid",
+                "contributor_type": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:contributor_type",
+                "organization_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_name",
+                "organization_rorid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Organization/pds4:organization_rorid",
             }
 
         else:
@@ -140,7 +140,6 @@ class DOIPDS4LabelUtil:
 
     # Debug code to get list_authors from pds4_fields
     # dict_list_authors = {"nameIdentifier": "Organizational", "name": "Planetary Data System: Geosciences Node", "rorid": "https://ror.org/02e9yx751"}
-
     def get_list_auth_edit_cont(self, xml_tree, role_type: str):
         """
         Extract and parse author, editor, or contributor information from PDS4 XML labels.
@@ -186,7 +185,7 @@ class DOIPDS4LabelUtil:
         """
         # For default namespace, we need to use a different approach
         # The XML uses default namespace, so we don't need namespace mapping for XPath
-        pds4_namespace = {}
+        pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
         pds4_namespace_prefix = "{http://pds.nasa.gov/pds4/pds/v1}"
 
         xpath_dict = self.build_xpath_dict(role_type, "xpath_dict")
@@ -238,6 +237,7 @@ class DOIPDS4LabelUtil:
                 xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/*")
                 logger.debug(f": get_list_aec.xpath " f"{xpath}")
 
+                # Convert XPath for default namespace
                 xpath_person_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
                     f": get_list_aec.xpath_person_attributes,len(xpath_person_attributes) "
@@ -285,6 +285,7 @@ class DOIPDS4LabelUtil:
                 xpath = xpath.replace("pds4:Organization/*", "pds4:Organization[" + str(organization_instance) + "]/*")
                 logger.debug(f": get_list_aec.xpath " f"{xpath}")
 
+                # Convert XPath for default namespace
                 xpath_organization_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
                     f": get_list_aec.xpath_organization_attributes,len(xpath_organization_attributes) "
@@ -327,6 +328,7 @@ class DOIPDS4LabelUtil:
                     f"{list_author_class.text}"
                 )
                 # Continue processing other classes instead of exiting
+                sys.exit()
 
         # Need to map List_Author fields to DOI fields
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
@@ -550,15 +552,16 @@ class DOIPDS4LabelUtil:
                 """
                 o_best_method = self._find_method_to_parse_authors(pds4_fields["authors"])
 
-            if o_best_method == BestParserMethod.BY_COMMA:
-                authors_list = pds4_fields["authors"].split(",")
-            elif o_best_method == BestParserMethod.BY_SEMI_COLON:
-                authors_list = pds4_fields["authors"].split(";")
+                if o_best_method == BestParserMethod.BY_COMMA:
+                    authors_list = pds4_fields["authors"].split(",")
+                elif o_best_method == BestParserMethod.BY_SEMI_COLON:
+                    authors_list = pds4_fields["authors"].split(";")
+                else:
+                    logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method,pds4_fields['authors']}")
+                    raise InputFormatException("Cannot split the authors using comma or semi-colon.")
             else:
-                logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method,pds4_fields['authors']}")
-                raise InputFormatException("Cannot split the authors using comma or semi-colon.")
-
-            doi_suffix = None
+                logger.warning("No 'authors' field found in PDS4 label. Using empty authors list.")
+                doi_suffix = None
 
             if "doi" in pds4_fields:
                 doi_prefix_suffix = pds4_fields["doi"].split("/")
@@ -839,9 +842,10 @@ class DOIPDS4LabelUtil:
         if name_str_is_organization(primary_separators, full_name):
             entity = {
                 "name": full_name,
-                "affiliation": [
-                    full_name,
-                ],
+                # "affiliation": [
+                #    full_name,
+                # ],
+                "affiliation": [],
                 "name_type": "Organizational",
             }
 
