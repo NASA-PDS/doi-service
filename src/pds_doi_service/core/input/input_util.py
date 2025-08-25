@@ -644,7 +644,7 @@ class DOIInputUtil:
             raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
         with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
-            temp_file.write(response.content, encoding="utf-8")
+            temp_file.write(response.content)
             temp_file.seek(0)
 
             dois = self._read_from_path(temp_file.name)
