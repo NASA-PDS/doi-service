@@ -102,7 +102,7 @@ class DOIInputUtil:
 
     # Detect UTF-16/UTF-8-BOM; decode
     def detect_and_decode_utf(self, data: bytes) -> str:
-        """
+        r"""
         Detect and decode UTF-encoded byte data with automatic encoding detection.
 
         This method attempts to detect the encoding of the provided byte data and
