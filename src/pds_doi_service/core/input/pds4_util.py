@@ -5,7 +5,6 @@ pds4_util.py
 
 Contains functions and classes for parsing PDS4 XML labels.
 """
-
 import sys
 from datetime import datetime
 from datetime import timezone

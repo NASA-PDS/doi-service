@@ -6,7 +6,6 @@ config_parser.py
 Classes and functions for locating and parsing the configuration file for the
 core DOI service.
 """
-
 import configparser
 import functools
 import os

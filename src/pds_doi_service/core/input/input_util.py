@@ -5,7 +5,6 @@ input_util.py
 
 Contains classes for working with input label files, be they local or remote.
 """
-
 import os
 import tempfile
 import urllib.parse

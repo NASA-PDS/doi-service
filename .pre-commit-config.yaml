@@ -18,14 +18,16 @@ repos:
     -   id: reorder-python-imports
         files: ^src/|tests/
 
--   repo: local
-    hooks:
-    -   id: black
-        name: black
-        entry: black
-        files: ^src/|tests/
-        language: system
-        types: [python]
+# Disabling "black" because it's conflicting with "reorder_python_imports"
+#
+# -   repo: local
+#     hooks:
+#     -   id: black
+#         name: black
+#         entry: black
+#         files: ^src/|tests/
+#         language: system
+#         types: [python]
 
 -   repo: local
     hooks:
