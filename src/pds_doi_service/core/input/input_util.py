@@ -1,9 +1,3 @@
-#
-#  Copyright 2021, by the California Institute of Technology.  ALL RIGHTS
-#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
-#  use must be negotiated with the Office of Technology Transfer at the
-#  California Institute of Technology.
-#
 """
 =============
 input_util.py
@@ -11,6 +5,7 @@ input_util.py
 
 Contains classes for working with input label files, be they local or remote.
 """
+
 import os
 import tempfile
 import urllib.parse
@@ -59,7 +54,8 @@ class DOIInputUtil:
     EXPECTED_PUBLICATION_DATE_LEN = 10
     """Expected minimum length of a parsed publication date."""
 
-    DEFAULT_VALID_EXTENSIONS = [".xml", ".csv", ".xlsx", ".xls", ".json"]
+    # add .lblx to be parsed as xml
+    DEFAULT_VALID_EXTENSIONS = [".lblx", ".xml", ".csv", ".xlsx", ".xls", ".json"]
     """The default list of valid input file extensions this module can read."""
 
     def __init__(self, valid_extensions=None):
@@ -93,7 +89,7 @@ class DOIInputUtil:
         """
         self._parser_map = {
             ".xml": self.parse_xml_file,
-            # 20250527; add .lblx to be parsed as xml
+            # add .lblx to be parsed as xml
             ".lblx": self.parse_xml_file,
             ".xls": self.parse_xls_file,
             ".xlsx": self.parse_xls_file,
@@ -105,7 +101,6 @@ class DOIInputUtil:
             raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
 
     # Detect UTF-16/UTF-8-BOM; decode
-
     def detect_and_decode_utf(self, data: bytes) -> str:
         """
         Detect and decode UTF-encoded byte data with automatic encoding detection.
@@ -649,7 +644,7 @@ class DOIInputUtil:
             raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
         with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
-            temp_file.write(response.content)
+            temp_file.write(response.content, encoding="utf-8")
             temp_file.seek(0)
 
             dois = self._read_from_path(temp_file.name)

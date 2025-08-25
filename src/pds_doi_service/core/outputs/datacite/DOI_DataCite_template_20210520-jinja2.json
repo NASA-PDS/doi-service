@@ -42,13 +42,6 @@
                         {% else %}
                         "name": "{{ author.name }}",
                         {% endif %}
-                        {% if author.affiliation and author.affiliation|length > 0 %}
-                        "affiliation": [
-                        {% for affiliation in author.affiliation %}
-                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
-                        {% endfor %}
-                        ],
-                        {% endif %}
                         "nameIdentifiers": [
                         {%- if author.rorid %}
                             {
@@ -73,9 +66,11 @@
                         {% endfor %}
                         ],
                         "affiliations": [
+                        {% if author.affiliation %}
                             {% for affiliation in author.affiliation %}
-                                { "affilation": "{{ affiliation }}" }{% if not loop.last %},{% endif %}
-                             {% endfor %}
+                            { "affilation": "{{ affiliation }}" }{% if not loop.last %},{% endif +%}
+                            {% endfor %}
+                        {% endif %}
                         ]
                     }{% if not loop.last %},{% endif +%}
                     {% endfor %}
@@ -90,7 +85,7 @@
                 "publicationYear": "{{ doi.publication_year }}",
                 "rightsList": [
                     {% for rights_element in doi.rights_list %}
-                    {{ rights_element }}{% if not loop.last %},{% endif +%}
+                    {{ rights_element }}{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "subjects": [
@@ -106,13 +101,6 @@
                         "name": "{{ editor.first_name }} {{ editor.last_name }}",
                         {% else %}
                         "name": "{{ editor.name }}",
-                        {% endif %}
-                        {% if editor.affiliation and editor.affiliation|length > 0 %}
-                        "affiliation": [
-                        {% for affiliation in editor.affiliation %}
-                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
-                        {% endfor %}
-                        ],
                         {% endif %}
                         "nameIdentifiers": [
                         {%- if editor.rorid %}
@@ -138,7 +126,7 @@
                         {% endfor %}
                         ],
                         "affiliations": [
-                            {%- if editor.affiliation %}
+                            {% if editor.affiliation %}
                                  { "affiliation": "{{editor.affiliation}}" }
                             {% endif %}
                         ],
@@ -192,7 +180,7 @@
                 "language": "en",
                 "schemaVersion": "http://datacite.org/schema/kernel-4"
             }
-        }{% if not loop.last %},{% endif +%}
+        }{% if not loop.last %},{% endif %}
     {% endfor %}
     {% if dois|length > 1 %}
     ]

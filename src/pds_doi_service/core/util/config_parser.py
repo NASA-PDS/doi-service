@@ -1,9 +1,3 @@
-#
-#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
-#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
-#  use must be negotiated with the Office of Technology Transfer at the
-#  California Institute of Technology.
-#
 """
 ================
 config_parser.py
@@ -12,10 +6,12 @@ config_parser.py
 Classes and functions for locating and parsing the configuration file for the
 core DOI service.
 """
+
 import configparser
 import functools
 import os
 import sys
+from datetime import datetime
 from os.path import abspath
 from os.path import dirname
 from os.path import join
@@ -24,6 +20,7 @@ from pds_doi_service.core.util.logging import get_logger
 from pkg_resources import resource_filename
 
 logger = get_logger()
+logger.info("config_parser.py loaded at %s", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 class DOIConfigParser(configparser.ConfigParser):
