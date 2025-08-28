@@ -47,9 +47,20 @@ class Pds4UtilTestCase(unittest.TestCase):
         # DOI metadata for
         i_filepath = join(self.input_dir, "pds4_bundle_with_doi_and_contributors.xml")
 
+        # Check if the file is a reference to another file
         with open(i_filepath, "r") as infile:
-            xml_contents = infile.read().encode().decode("utf-8-sig")
-            xml_tree = etree.fromstring(xml_contents.encode())
+            content = infile.read().strip()
+
+        if content.startswith("../../../"):
+            # It's a reference, read the actual file
+            actual_filepath = join(self.input_dir, content)
+            with open(actual_filepath, "r") as infile:
+                xml_contents = infile.read()
+        else:
+            # It's the actual content
+            xml_contents = content
+
+        xml_tree = etree.fromstring(xml_contents.encode())
 
         self.assertTrue(pds4_label_util.is_pds4_label(xml_tree))
 

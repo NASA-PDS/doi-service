@@ -22,6 +22,27 @@ logger = get_logger(__name__)
 
 
 def main():
+    """
+    Main entry point for the PDS DOI service command-line interface.
+
+    This function serves as the primary entry point for the DOI service CLI,
+    handling command-line argument parsing and delegating execution to the
+    appropriate action class based on the subcommand provided.
+
+    The function:
+    1. Creates and parses command-line arguments using DOICoreAction's parser
+    2. Dynamically imports the appropriate action module based on the subcommand
+    3. Instantiates the corresponding action class
+    4. Executes the action with the provided arguments
+    5. Prints any output returned by the action
+
+    Supported subcommands include: reserve, release, update, check, list, roundup
+
+    Returns
+    -------
+    None
+        Output is printed to stdout if the action returns any content.
+    """
     parser = DOICoreAction.create_cmd_parser()
     arguments = parser.parse_args()
     action_type = arguments.subcommand

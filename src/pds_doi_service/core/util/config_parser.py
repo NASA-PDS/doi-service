@@ -1,9 +1,3 @@
-#
-#  Copyright 2020–21, by the California Institute of Technology.  ALL RIGHTS
-#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
-#  use must be negotiated with the Office of Technology Transfer at the
-#  California Institute of Technology.
-#
 """
 ================
 config_parser.py
@@ -16,6 +10,7 @@ import configparser
 import functools
 import os
 import sys
+from datetime import datetime
 from importlib import resources
 from os.path import abspath
 from os.path import dirname
@@ -24,6 +19,7 @@ from os.path import join
 from pds_doi_service.core.util.logging import get_logger
 
 logger = get_logger()
+logger.info("config_parser.py loaded at %s", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 class DOIConfigParser(configparser.ConfigParser):
