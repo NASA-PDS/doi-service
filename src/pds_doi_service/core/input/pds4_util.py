@@ -142,9 +142,9 @@ class DOIPDS4LabelUtil:
 
         logger.debug(
             f"num_dots_found,num_person_names,len(names_list),names_list "
-            f"{num_dots_found,num_person_names,len(names_list),names_list}"
+            f"{num_dots_found, num_person_names, len(names_list), names_list}"
         )
-        logger.debug(f"o_list_contains_full_name_flag " f"{o_list_contains_full_name_flag,names_list,len(names_list)}")
+        logger.debug(f"o_list_contains_full_name_flag " f"{o_list_contains_full_name_flag, names_list, len(names_list)}")
 
         return o_list_contains_full_name_flag
 
@@ -208,13 +208,13 @@ class DOIPDS4LabelUtil:
 
         logger.debug(
             f"o_best_method,pds4_fields_authors "
-            f"{o_best_method,pds4_fields_authors} "
+            f"{o_best_method, pds4_fields_authors} "
             f"number_commas,number_semi_colons "
-            f"{number_commas,number_semi_colons}"
+            f"{number_commas, number_semi_colons}"
         )
         logger.debug(
             f"len(authors_from_comma_split),len(authors_from_semi_colon_split) "
-            f"{len(authors_from_comma_split),len(authors_from_semi_colon_split)}"
+            f"{len(authors_from_comma_split), len(authors_from_semi_colon_split)}"
         )
 
         return o_best_method
@@ -248,7 +248,7 @@ class DOIPDS4LabelUtil:
             elif o_best_method == BestParserMethod.BY_SEMI_COLON:
                 authors_list = pds4_fields["authors"].split(";")
             else:
-                logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method,pds4_fields['authors']}")
+                logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method, pds4_fields['authors']}")
                 raise InputFormatException("Cannot split the authors using comma or semi-colon.")
 
             doi_suffix = None

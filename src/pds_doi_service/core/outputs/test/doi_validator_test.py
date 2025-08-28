@@ -310,7 +310,7 @@ class DoiValidatorTest(unittest.TestCase):
 
         # Test max valid identifier length
         partial_id = "urn:nasa:pds:lab_shocked_feldspars"
-        doi_obj.pds_identifier = f"{partial_id}{'a'*(255 - len(partial_id))}"
+        doi_obj.pds_identifier = f"{partial_id}{'a' * (255 - len(partial_id))}"
 
         self._doi_validator._check_lidvid_field(doi_obj)
 
@@ -375,7 +375,7 @@ class DoiValidatorTest(unittest.TestCase):
 
         # Test invalid identifier length
         partial_id = "urn:nasa:pds:lab_shocked_feldspars"
-        doi_obj.pds_identifier = f"{partial_id}{'a'*(256 - len(partial_id))}"
+        doi_obj.pds_identifier = f"{partial_id}{'a' * (256 - len(partial_id))}"
 
         with self.assertRaises(InvalidIdentifierException):
             self._doi_validator._check_lidvid_field(doi_obj)

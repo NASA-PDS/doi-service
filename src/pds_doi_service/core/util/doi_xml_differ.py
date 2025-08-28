@@ -99,14 +99,14 @@ class DOIDiffer:
                             )
                             for kk in range(len(space_split_historical_tokens)):
                                 logger.debug(
-                                    f"KEYWORD_SEARCH_FAILED:INSPECTING_IN {space_split_historical_tokens[kk]} IN {new_value_tokens[jj],space_split_historical_tokens[kk] in new_value_tokens[jj]}"
+                                    f"KEYWORD_SEARCH_FAILED:INSPECTING_IN {space_split_historical_tokens[kk]} IN {new_value_tokens[jj], space_split_historical_tokens[kk] in new_value_tokens[jj]}"
                                 )
                                 if space_split_historical_tokens[kk] in new_value_tokens[jj]:
                                     o_difference_is_acceptable_flag = True
                                 else:
                                     pass
                                     logger.debug(
-                                        f"KEYWORD_SEARCH_FAILED:historical_value_tokens[ii] NOT_IN new_value_tokens[jj] {historical_value_tokens[ii],new_value_tokens[jj]}"
+                                        f"KEYWORD_SEARCH_FAILED:historical_value_tokens[ii] NOT_IN new_value_tokens[jj] {historical_value_tokens[ii], new_value_tokens[jj]}"
                                     )
                     if not o_difference_is_acceptable_flag:
                         logger.error(
@@ -171,11 +171,11 @@ class DOIDiffer:
                 if historical_token.lower() in sanitized_new_value:
                     num_tokens_compared += 1
                 logger.debug(
-                    f"FULL_NAME:historical_token,sanitized_new_value,o_difference_is_acceptable_flag {historical_token,sanitized_new_value,o_difference_is_acceptable_flag}"
+                    f"FULL_NAME:historical_token,sanitized_new_value,o_difference_is_acceptable_flag {historical_token, sanitized_new_value, o_difference_is_acceptable_flag}"
                 )
 
             logger.debug(
-                f"FULL_NAME:historical_value,sanitized_new_value,o_difference_is_acceptable_flag {historical_value,sanitized_new_value,o_difference_is_acceptable_flag,new_list_to_skip_compare,num_tokens_compared,len(historical_value_tokens)}"
+                f"FULL_NAME:historical_value,sanitized_new_value,o_difference_is_acceptable_flag {historical_value, sanitized_new_value, o_difference_is_acceptable_flag, new_list_to_skip_compare, num_tokens_compared, len(historical_value_tokens)}"
             )
             # If all tokens from historical_value can be found in new_value then we are successful.
             if num_tokens_compared == len(historical_value_tokens):
@@ -264,7 +264,7 @@ class DOIDiffer:
         if child_level_1.tag == "date_record_added":
             pass
 
-        logger.debug(f"FINAL_TAG {o_xpath_tag,original_tag,levels_travelled_up}")
+        logger.debug(f"FINAL_TAG {o_xpath_tag, original_tag, levels_travelled_up}")
 
         return o_xpath_tag
 
@@ -304,17 +304,17 @@ class DOIDiffer:
 
             # Because some fields are forced to exist eventhough it is an empty string, check for None-ness otherwise
             # the lstrip() will failed on None.  e.g <id> </id>
-            logger.info(f"child_level_1.tag,field_index,len(new_child) {child_level_1.tag,field_index,len(new_child)}")
+            logger.info(f"child_level_1.tag,field_index,len(new_child) {child_level_1.tag, field_index, len(new_child)}")
             if new_child[field_index].text is not None:
                 if child_level_1.text.lstrip().rstrip() == new_child[field_index].text.lstrip().rstrip():
                     pass  # Field is the same which is good.
                     logger.debug(
-                        f"FIELD_SAME_TRUE: {child_level_1,child_level_1.text} == {new_child[field_index].text}"
+                        f"FIELD_SAME_TRUE: {child_level_1, child_level_1.text} == {new_child[field_index].text}"
                     )
                 else:
                     # Fields are different.  Attempt to resolve the apparent differences.
                     logger.debug(
-                        f"FIELD_SAME_FALSE: {child_level_1,child_level_1.text} != {new_child[field_index].text}"
+                        f"FIELD_SAME_FALSE: {child_level_1, child_level_1.text} != {new_child[field_index].text}"
                     )
 
                     # It is possible for new_child[0].text to be None so do not perform lstrip() and rstrip()
@@ -328,11 +328,11 @@ class DOIDiffer:
                         # Save the values different.
                         o_values_differ = "historical:[" + child_level_1.text + "], new:[" + new_child[0].text + "]"
                         logger.info(
-                            f"FIELD_SAME_FALSE_FINALLY: {child_level_1,child_level_1.text} != {new_child[field_index].text}"
+                            f"FIELD_SAME_FALSE_FINALLY: {child_level_1, child_level_1.text} != {new_child[field_index].text}"
                         )
                     else:
                         logger.info(
-                            f"FIELD_SAME_TRUE_FINALLY: {child_level_1,child_level_1.text} == {new_child[field_index].text}"
+                            f"FIELD_SAME_TRUE_FINALLY: {child_level_1, child_level_1.text} == {new_child[field_index].text}"
                         )
 
         return o_field_differ_name, o_values_differ
@@ -425,7 +425,7 @@ class DOIDiffer:
 
         indices_where_field_occur_dict = DOIDiffer._setup_where_field_occur_dict()
 
-        logger.info(f"element_index,historical_element.tag {element_index,historical_element.tag}")
+        logger.info(f"element_index,historical_element.tag {element_index, historical_element.tag}")
         # Get the same 'record' element from the new_doc XML tree.  Assumes the ordering is the same.
         new_element = new_doc.xpath(historical_element.tag)[element_index]
 
@@ -529,7 +529,7 @@ class DOIDiffer:
                 element_index += 1
                 records_compared += 1
 
-        logger.debug(f"records_compared {records_compared,historical_xml_output,new_xml_output}")
+        logger.debug(f"records_compared {records_compared, historical_xml_output, new_xml_output}")
 
         return o_fields_differ_list, o_values_differ_list, o_record_index_differ_list
 

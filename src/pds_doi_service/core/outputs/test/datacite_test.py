@@ -2,6 +2,7 @@
 import json
 import unittest
 from datetime import datetime
+from importlib import resources
 from os.path import abspath
 from os.path import join
 from unittest.mock import patch
@@ -21,7 +22,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pkg_resources import resource_filename
 from requests.models import Response
 
 
@@ -30,7 +30,7 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     def test_create_datacite_label_json(self):
@@ -134,7 +134,7 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     @patch.object(requests, "request", requests_valid_request_patch)
@@ -257,7 +257,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         cls.expected_authors = [
@@ -474,7 +474,7 @@ class DOIDataCiteValidatorTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     def test_json_label_validation(self):

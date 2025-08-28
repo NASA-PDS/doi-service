@@ -5,6 +5,7 @@ import time
 import unittest
 from datetime import datetime
 from datetime import timezone
+from importlib import resources
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.db.transaction import Transaction
@@ -14,7 +15,6 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
-from pkg_resources import resource_filename
 
 
 class TransactionTestCase(unittest.TestCase):
@@ -23,7 +23,7 @@ class TransactionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
 
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
@@ -112,7 +112,7 @@ class TransactionBuilderTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
 
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
@@ -158,7 +158,7 @@ class TransactionOnDiskTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.data_dir = os.path.join(cls.test_dir, "data")
 
     def test_transaction_write_to_disk(self):

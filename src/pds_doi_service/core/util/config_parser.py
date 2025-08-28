@@ -16,12 +16,12 @@ import configparser
 import functools
 import os
 import sys
+from importlib import resources
 from os.path import abspath
 from os.path import dirname
 from os.path import join
 
 from pds_doi_service.core.util.logging import get_logger
-from pkg_resources import resource_filename
 
 logger = get_logger()
 
@@ -77,7 +77,7 @@ class DOIConfigUtil:
     @staticmethod
     def get_config_defaults_filepath():
         """Return the expected path of the user-specified configuration"""
-        return resource_filename(__name__, "conf.default.ini")
+        return str(resources.files(__name__) / "conf.default.ini")
 
     @staticmethod
     def _resolve_relative_path(parser):

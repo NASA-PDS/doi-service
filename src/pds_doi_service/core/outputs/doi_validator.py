@@ -123,7 +123,7 @@ class DOIValidator:
                 # the status is greater than or equal to 400.
                 if status_code >= 400:
                     # Need to check its an 404, 503, 500, 403 etc.
-                    raise requests.HTTPError(f"status_code,site_url {status_code,doi.site_url}")
+                    raise requests.HTTPError(f"status_code,site_url {status_code, doi.site_url}")
                 else:
                     logger.info("Landing page URL %s is reachable", doi.site_url)
             except (requests.exceptions.ConnectionError, Exception):

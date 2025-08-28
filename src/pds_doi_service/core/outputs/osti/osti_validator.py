@@ -12,6 +12,7 @@ osti_validator.py
 Contains functions for validating the contents of OSTI XML labels.
 """
 import tempfile
+from importlib import resources
 from os.path import exists
 
 import xmlschema  # type: ignore
@@ -22,7 +23,6 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
-from pkg_resources import resource_filename
 
 # Note that in the ↑ list of imports, the ``lxml`` module does have the ``isoschematron``
 # member, but the typing stub does not so set just it to ``type: ignore``.
@@ -40,7 +40,7 @@ class DOIOstiValidator(DOIServiceValidator):
     def __init__(self):
         super().__init__()
 
-        schematron_file = resource_filename(__name__, "IAD3_schematron.sch")
+        schematron_file = str(resources.files(__name__) / "IAD3_schematron.sch")
 
         if not exists(schematron_file):
             raise RuntimeError(
@@ -51,7 +51,7 @@ class DOIOstiValidator(DOIServiceValidator):
         sct_doc = etree.parse(schematron_file)
         self._schematron = isoschematron.Schematron(sct_doc, store_report=True)
 
-        xsd_filename = resource_filename(__name__, "iad_schema.xsd")
+        xsd_filename = str(resources.files(__name__) / "iad_schema.xsd")
 
         if not exists(xsd_filename):
             raise RuntimeError(

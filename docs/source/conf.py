@@ -34,12 +34,8 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx_rtd_theme",
     "sphinxarg.ext",
 ]
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -63,8 +59,6 @@ html_static_path = ["_static"]
 
 html_theme_options = {
     "canonical_url": "",
-    "logo_only": False,
-    "display_version": True,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
     # Toc options
@@ -77,8 +71,6 @@ html_theme_options = {
 
 html_logo = "_static/images/PDS_Planets.png"
 
-html_context = {
-    "css_files": [
-        "_static/theme_overrides.css",  # override wide tables in RTD theme
-    ],
-}
+html_css_files = [
+    'theme_overrides.css',
+]

@@ -2,6 +2,7 @@
 import json
 import unittest
 from datetime import datetime
+from importlib import resources
 from os.path import abspath
 from os.path import join
 
@@ -12,7 +13,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.osti.osti_record import DOIOstiRecord
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiJsonWebParser
 from pds_doi_service.core.outputs.osti.osti_web_parser import DOIOstiXmlWebParser
-from pkg_resources import resource_filename
 
 
 class DOIOstiRecordTestCase(unittest.TestCase):
@@ -20,7 +20,7 @@ class DOIOstiRecordTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
     def test_create_osti_label_xml(self):
@@ -78,7 +78,7 @@ class DOIOstiWebParserTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         cls.expected_authors = [

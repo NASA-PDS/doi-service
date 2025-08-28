@@ -2,6 +2,7 @@
 import os
 import unittest
 from datetime import datetime
+from importlib import resources
 from os.path import abspath
 from os.path import join
 from unittest.mock import patch
@@ -16,7 +17,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import get_global_keywords
-from pkg_resources import resource_filename
 
 
 class ReserveActionTestCase(unittest.TestCase):
@@ -26,7 +26,7 @@ class ReserveActionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         # Remove db_name if exist to have a fresh start otherwise exception will be
