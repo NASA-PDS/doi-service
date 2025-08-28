@@ -147,7 +147,7 @@ class DOIPDS4LabelUtil:
             dict_authors = {}
 
             for key, value in author.items():
-                logger.debug(f": map_list_author_editor_fields_to_doi_fields.key,value " f"{key,value}")
+                logger.debug(f": map_list_author_editor_fields_to_doi_fields.key,value " f"{key, value}")
                 if key in field_map:
                     new_key = field_map[key]
                     dict_authors[new_key] = value
@@ -225,12 +225,12 @@ class DOIPDS4LabelUtil:
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
         xpath = xpath_dict[f"xpath_list_{role_type.lower()}_class"]
-        logger.debug(f": get_list_aec.xpath,role_type,xpath " f"{role_type,xpath}")
+        logger.debug(f": get_list_aec.xpath,role_type,xpath " f"{role_type, xpath}")
 
         list_aec_classes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
         logger.debug(
             f": get_list_aec.xpath,list_aec_classes,len(list_aec_classes) "
-            f"{role_type,list_aec_classes,len(list_aec_classes)}"
+            f"{role_type, list_aec_classes, len(list_aec_classes)}"
         )
 
         # for each Class in List_Auth:
@@ -259,7 +259,7 @@ class DOIPDS4LabelUtil:
                 xpath_person_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
                     f": get_list_aec.xpath_person_attributes,len(xpath_person_attributes) "
-                    f"{xpath_person_attributes,len(xpath_person_attributes)}"
+                    f"{xpath_person_attributes, len(xpath_person_attributes)}"
                 )
 
                 for xpath_person_attribute in xpath_person_attributes:
@@ -307,7 +307,7 @@ class DOIPDS4LabelUtil:
                 xpath_organization_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
                     f": get_list_aec.xpath_organization_attributes,len(xpath_organization_attributes) "
-                    f"{xpath_organization_attributes,len(xpath_organization_attributes)}"
+                    f"{xpath_organization_attributes, len(xpath_organization_attributes)}"
                 )
 
                 for xpath_organization_attribute in xpath_organization_attributes:
@@ -411,7 +411,7 @@ class DOIPDS4LabelUtil:
             # 202501 -- add logger
             logger.debug(f": xpath.dict.elements: " f"{type(elements)}")
             logger.debug(f": xpath.dict: key, xpath " f"{key, xpath}")
-            logger.debug(f": xpath_dict.elements,len(xpath_dict.elements) " f"{elements,len(elements)}")
+            logger.debug(f": xpath_dict.elements,len(xpath_dict.elements) " f"{elements, len(elements)}")
 
             if elements:
                 pds4_field_value_dict[key] = " ".join(
@@ -419,7 +419,7 @@ class DOIPDS4LabelUtil:
                 ).strip()
             # 20250501 -- add logger
             if elements:
-                logger.debug(f": pds4_field_value_dict.key,value: " f"{key,pds4_field_value_dict[key]}")
+                logger.debug(f": pds4_field_value_dict.key,value: " f"{key, pds4_field_value_dict[key]}")
 
         return pds4_field_value_dict
 
@@ -575,7 +575,7 @@ class DOIPDS4LabelUtil:
                 elif o_best_method == BestParserMethod.BY_SEMI_COLON:
                     authors_list = pds4_fields["authors"].split(";")
                 else:
-                    logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method,pds4_fields['authors']}")
+                    logger.error(f"o_best_method,pds4_fields['authors'] " f"{o_best_method, pds4_fields['authors']}")
                     raise InputFormatException("Cannot split the authors using comma or semi-colon.")
             else:
                 logger.warning("No 'authors' field found in PDS4 label. Using empty authors list.")
