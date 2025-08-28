@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import unittest
+from importlib import resources
 from os.path import abspath
 from os.path import join
 from unittest.mock import patch
@@ -22,7 +23,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
-from pkg_resources import resource_filename
 
 
 # TODO: add additional unit tests for other list query parameters
@@ -33,7 +33,7 @@ class ListActionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
         cls.db_name = join(cls.test_dir, "doi_temp.db")
         cls._list_action = DOICoreActionList(db_name=cls.db_name)

@@ -19,6 +19,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from importlib import resources
 from os.path import exists
 
 import jinja2
@@ -29,7 +30,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.util.emailer import Emailer
 from pds_doi_service.core.util.general_util import get_logger
-from pkg_resources import resource_filename
 
 logger = get_logger(__name__)
 
@@ -55,11 +55,11 @@ class DOICoreActionCheck(DOICoreAction):
         self._email = True
         self._attachment = True
 
-        self.email_header_template_file = resource_filename(
-            __name__, os.path.join("templates", "email_template_header.txt")
+        self.email_header_template_file = str(
+            resources.files(__name__) / "templates" / "email_template_header.txt"
         )
-        self.email_body_template_file = resource_filename(
-            __name__, os.path.join("templates", "email_template_body.txt")
+        self.email_body_template_file = str(
+            resources.files(__name__) / "templates" / "email_template_body.txt"
         )
 
         # Make sure templates are where we expect them to be

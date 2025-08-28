@@ -13,6 +13,7 @@ Contains classes used to create DataCite-compatible labels from Doi objects in
 memory.
 """
 import json
+from importlib import resources
 from os.path import exists
 
 import jinja2
@@ -23,7 +24,6 @@ from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.general_util import sanitize_json_string
-from pkg_resources import resource_filename
 
 logger = get_logger(__name__)
 
@@ -41,7 +41,7 @@ class DOIDataCiteRecord(DOIRecord):
         self._config = DOIConfigUtil().get_config()
 
         # Locate the jinja template
-        self._json_template_path = resource_filename(__name__, "DOI_DataCite_template_20210520-jinja2.json")
+        self._json_template_path = str(resources.files(__name__) / "DOI_DataCite_template_20210520-jinja2.json")
 
         if not exists(self._json_template_path):
             raise RuntimeError(

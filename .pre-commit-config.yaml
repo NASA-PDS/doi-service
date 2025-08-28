@@ -18,14 +18,17 @@ repos:
     -   id: reorder-python-imports
         files: ^src/|tests/
 
--   repo: local
-    hooks:
-    -   id: black
-        name: black
-        entry: black
-        files: ^src/|tests/
-        language: system
-        types: [python]
+# Disabling "black" for now as it's conflicting with reorder_python_imports
+# (They keep fighting over whether to have a blank line before imports)
+#
+# -   repo: local
+#     hooks:
+#     -   id: black
+#         name: black
+#         entry: black
+#         files: ^src/|tests/
+#         language: system
+#         types: [python]
 
 -   repo: local
     hooks:
@@ -50,10 +53,13 @@ repos:
     hooks:
       - id: detect-secrets
         args:
+          - '--disable-plugin'
+          - 'AbsolutePathDetectorExperimental'
           - '--baseline'
           - '.secrets.baseline'
           - --exclude-files '\.secrets..*'
           - --exclude-files '\.git.*'
+          - --exclude-files '\.pre-commit-config\.yaml'
           - --exclude-files '\.mypy_cache'
           - --exclude-files '\.pytest_cache'
           - --exclude-files '\.tox'

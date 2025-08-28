@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from datetime import datetime
+from importlib import resources
 from os.path import abspath
 from os.path import join
 
@@ -9,12 +10,11 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.input.pds4_util import DOIPDS4LabelUtil
-from pkg_resources import resource_filename
 
 
 class Pds4UtilTestCase(unittest.TestCase):
     def setUp(self):
-        self.test_dir = resource_filename(__name__, "")
+        self.test_dir = str(resources.files(__name__))
         self.input_dir = abspath(join(self.test_dir, "data"))
 
         self.expected_authors = [
