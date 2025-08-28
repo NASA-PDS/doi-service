@@ -7,7 +7,7 @@ The Planetary Data System (PDS) Digital Object Identifier (DOI) Service provides
 
 ## Prerequisites
 
-- Python 3.9 or above
+- Python 3.13 or above
 - A login to the DOI Service Provider endpoint server (currently DataCite)
 
 
@@ -38,7 +38,7 @@ If you get an error like
 
     src/types.h:36:2: error: You need a compatible libgit2 version (1.1.x)
 
-then you're probably using [brew.sh](https://brew.sh)'s Python 3.10. Use their Python 3.9 instead.
+then you're probably using [brew.sh](https://brew.sh)'s Python 3.10. Use their Python 3.13 instead.
 
 Update your local configuration to access the DOI service provider's test server.
 

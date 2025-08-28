@@ -8,6 +8,7 @@ import tempfile
 import time
 import unittest
 from email import message_from_bytes
+from importlib import resources
 from os.path import abspath
 from os.path import dirname
 from os.path import join
@@ -27,11 +28,10 @@ from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_OSTI
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pkg_resources import resource_filename
 
 
 class CheckActionTestCase(unittest.TestCase):
-    test_dir = resource_filename(__name__, "")
+    test_dir = str(resources.files(__name__))
     input_dir = abspath(join(test_dir, "data"))
 
     @classmethod

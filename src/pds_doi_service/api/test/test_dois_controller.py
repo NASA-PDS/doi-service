@@ -5,6 +5,7 @@ import json
 import os
 import unittest
 from datetime import datetime
+from importlib import resources
 from os.path import abspath
 from os.path import exists
 from os.path import join
@@ -24,7 +25,6 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pkg_resources import resource_filename
 
 from ._base import BaseTestCase
 
@@ -47,7 +47,7 @@ class TestDoisController(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.test_data_dir = join(cls.test_dir, "data")
         cls.input_dir = abspath(join(cls.test_dir, os.pardir, os.pardir, os.pardir, os.pardir, "input"))
         cls.service_type = DOIServiceFactory.get_service_type()

@@ -13,6 +13,7 @@ Contains classes used to create OSTI-compatible labels from Doi objects in memor
 """
 import html
 from datetime import datetime
+from importlib import resources
 from os.path import exists
 
 import jinja2
@@ -23,7 +24,6 @@ from pds_doi_service.core.outputs.doi_record import DOIRecord
 from pds_doi_service.core.outputs.doi_record import VALID_CONTENT_TYPES
 from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.general_util import sanitize_json_string
-from pkg_resources import resource_filename
 
 logger = get_logger(__name__)
 
@@ -39,8 +39,8 @@ class DOIOstiRecord(DOIRecord):
     def __init__(self):
         """Creates a new DOIOstiRecord instance"""
         # Need to find the m̵u̵s̵t̵a̵c̵h̵e̵ Jinja2 DOI templates
-        self._xml_template_path = resource_filename(__name__, "DOI_IAD2_template_20210914-jinja2.xml")
-        self._json_template_path = resource_filename(__name__, "DOI_IAD2_template_20210914-jinja2.json")
+        self._xml_template_path = str(resources.files(__name__) / "DOI_IAD2_template_20210914-jinja2.xml")
+        self._json_template_path = str(resources.files(__name__) / "DOI_IAD2_template_20210914-jinja2.json")
 
         if not exists(self._xml_template_path) or not exists(self._json_template_path):
             raise RuntimeError(

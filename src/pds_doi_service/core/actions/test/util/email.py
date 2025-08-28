@@ -56,9 +56,10 @@ def capture_email(f: Callable[[], None], port: int = 1025) -> Message:
     with tempfile.TemporaryFile() as temp_file:
         # By default, all this server is does is echo email payloads to
         # standard out, so provide a temp file to capture it
-        debug_email_proc = subprocess.Popen(
-            [sys.executable, "-u", "-m", "smtpd", "-n", "-c", "DebuggingServer", f"localhost:{port}"], stdout=temp_file
-        )
+        debug_email_proc = subprocess.Popen([
+            sys.executable, "-u", "-m", "aiosmtpd", "--nosetuid", "--class", "aiosmtpd.handlers.Debugging",
+            "--listen", f"localhost:{port}", "stdout"
+        ], stdout=temp_file)
 
         # Give the debug smtp server a chance to start listening
         time.sleep(1)
@@ -71,10 +72,9 @@ def capture_email(f: Callable[[], None], port: int = 1025) -> Message:
             temp_file.seek(0)
             message_lines = temp_file.readlines()[1:-1]  # strip the leading/trailing server messages
             cleaned_message_lines = [
-                bytes.decode(l)[2:-2] for l in message_lines
-            ]  # strip the leading "b'" and trailing "'" from each line
+                bytes.decode(l)[0:-1] for l in message_lines
+            ]  # strip the trailing \n from each line in message_lines
             email_contents = "\n".join(cleaned_message_lines)
-
             message = Parser().parsestr(email_contents)
         finally:
             # Send the debug smtp server a ctrl+C and wait for it to stop

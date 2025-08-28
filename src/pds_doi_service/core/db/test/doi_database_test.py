@@ -3,6 +3,7 @@ import datetime
 import os
 import unittest
 from datetime import timezone
+from importlib import resources
 from os.path import exists
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
@@ -10,7 +11,6 @@ from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.util.general_util import get_logger
-from pkg_resources import resource_filename
 
 logger = get_logger(__name__)
 
@@ -19,7 +19,7 @@ class DOIDatabaseTest(unittest.TestCase):
     """Unit tests for the doi_database.py module"""
 
     def setUp(self):
-        self._db_name = resource_filename(__name__, "doi_temp.db")
+        self._db_name = str(resources.files(__name__) / "doi_temp.db")
 
         # Delete temporary db if it already exists, this can occur when tests
         # are terminated before completion (during debugging for example)

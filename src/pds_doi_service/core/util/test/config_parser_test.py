@@ -2,11 +2,11 @@
 import os
 import sys
 import unittest
+from importlib import resources
 
 from pds_doi_service.core.util import config_parser
 from pds_doi_service.core.util.config_parser import DOIConfigParser
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
-from pkg_resources import resource_filename
 
 
 class ConfigParserTest(unittest.TestCase):
@@ -27,7 +27,7 @@ class ConfigParserTest(unittest.TestCase):
         parser = DOIConfigParser()
 
         # Populate our config parser with the default INI
-        conf_file_path = resource_filename("pds_doi_service", "core/util/conf.default.ini")
+        conf_file_path = str(resources.files("pds_doi_service.core.util") / "conf.default.ini")
         parser.read(conf_file_path)
 
         # Ensure we get values from the default INI to begin with

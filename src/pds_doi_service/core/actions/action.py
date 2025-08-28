@@ -111,7 +111,7 @@ class DOICoreAction:
             if kwarg in kwargs:
                 setattr(self, f"_{kwarg}", kwargs[kwarg])
 
-            logger.debug(f"{kwarg} = {getattr(self,  f'_{kwarg}')}")
+            logger.debug(f"{kwarg} = {getattr(self, f'_{kwarg}')}")
 
     def run(self, **kwargs):
         """

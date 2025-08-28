@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from datetime import datetime
+from importlib import resources
 from os.path import abspath
 from os.path import join
 from unittest.mock import patch
@@ -22,7 +23,6 @@ from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_global_keywords
-from pkg_resources import resource_filename
 
 
 class UpdateActionTestCase(unittest.TestCase):
@@ -34,7 +34,7 @@ class UpdateActionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_dir = resource_filename(__name__, "")
+        cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
         cls.db_name = join(cls.test_dir, "doi_temp.db")
         cls._update_action = DOICoreActionUpdate(db_name=cls.db_name)

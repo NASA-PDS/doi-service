@@ -4,17 +4,17 @@ import tempfile
 import unittest
 from datetime import datetime
 from datetime import timedelta
+from importlib import resources
 
 from pds_doi_service.core.actions.roundup.enumerate import get_start_of_local_week
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
-from pkg_resources import resource_filename
 
 
 class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
-    tests_dir = os.path.abspath(resource_filename(__name__, ""))
+    tests_dir = str(resources.files(__name__))
     resources_dir = os.path.join(tests_dir, "resources")
 
     _database_obj: DOIDataBase

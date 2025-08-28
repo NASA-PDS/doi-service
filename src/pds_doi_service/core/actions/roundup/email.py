@@ -17,6 +17,7 @@ import os
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from importlib import resources
 from typing import List
 
 import jinja2
@@ -26,11 +27,10 @@ from pds_doi_service.core.actions.roundup.output import prepare_doi_record_for_e
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.util.emailer import Emailer as PDSEmailer
-from pkg_resources import resource_filename
 
 
 def get_email_content_template(template_filename: str = "email_weekly_roundup.jinja2") -> jinja2.Template:
-    template_filepath = resource_filename(__name__, os.path.join("../templates", template_filename))
+    template_filepath = str(resources.files(__name__).parent / "templates" / template_filename)
     logging.info(f"Using template {template_filepath}")
     with open(template_filepath, "r") as infile:
         template = jinja2.Template(infile.read())
