@@ -66,6 +66,7 @@ typescript
 # OS-specific artifacts
 .DS_Store
 ._*
+*.bak
 
 # Exclusions
 !.coveragerc

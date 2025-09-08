@@ -642,11 +642,21 @@ class DOIInputUtil:
         except requests.exceptions.HTTPError as http_err:
             raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
-        with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path), delete=False) as temp_file:
             temp_file.write(response.content)
-            temp_file.seek(0)
+            temp_file.flush()  # Ensure content is written to disk
+            temp_file_path = temp_file.name
 
-            dois = self._read_from_path(temp_file.name)
+        try:
+            dois = self._read_from_path(temp_file_path)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Update input source to point to original URL, as the temp file paths
         # assigned by _read_from_path no longer exist

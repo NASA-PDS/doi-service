@@ -10,6 +10,8 @@ from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -29,8 +31,11 @@ class DOIDatabaseTest(unittest.TestCase):
         self._doi_database = DOIDataBase(self._db_name)
 
     def tearDown(self):
-        if exists(self._db_name):
-            os.remove(self._db_name)
+        # Close all database connections to release file lock on Windows
+        close_all_database_connections(self)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(self._db_name)
 
     def test_select_latest_rows(self):
         """Test selecting of latest rows from the transaction database"""

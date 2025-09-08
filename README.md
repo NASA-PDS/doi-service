@@ -30,6 +30,9 @@ Install a Python virtual environment, say in a `venv` directory:
     python3 -m venv venv
     source venv/bin/activate
 
+    # On Windows
+    .\venv\Scripts\activate.ps1
+
 Install the package and its dependencies for development into the virtual environment:
 
     pip install --editable '.[dev]'

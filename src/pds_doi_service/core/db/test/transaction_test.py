@@ -15,6 +15,8 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 
 
 class TransactionTestCase(unittest.TestCase):
@@ -101,6 +103,8 @@ class TransactionTestCase(unittest.TestCase):
 
             self.assertTrue(doi_logged)
         finally:
+            # Close database connection to release file lock on Windows
+            close_all_database_connections(doi_database)
             # Clean up the fake transaction, if it was created
             if transaction_key and os.path.exists(transaction_key):
                 shutil.rmtree(transaction_key)
@@ -150,6 +154,9 @@ class TransactionBuilderTestCase(unittest.TestCase):
         self.assertEqual(transaction._doi, test_doi)
         self.assertEqual(transaction._node_id, test_doi.node_id)
         self.assertEqual(transaction._submitter_email, "pds-operator@jpl.nasa.gov")
+
+        # Close database connection to release file lock on Windows
+        close_all_database_connections(transaction_builder)
 
 
 class TransactionOnDiskTestCase(unittest.TestCase):

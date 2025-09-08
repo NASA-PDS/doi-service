@@ -22,6 +22,8 @@ from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 
 
 class DoiValidatorTest(unittest.TestCase):
@@ -68,8 +70,13 @@ class DoiValidatorTest(unittest.TestCase):
         self._database_obj.write_doi_info_to_database(doi_record)
 
     def tearDown(self):
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
+        # Close all database connections to release file lock on Windows
+        close_all_database_connections(self)
+        if hasattr(self, '_doi_validator'):
+            close_all_database_connections(self._doi_validator)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(self.db_name)
 
     def test_existing_title_new_lidvid_exception(self):
         """

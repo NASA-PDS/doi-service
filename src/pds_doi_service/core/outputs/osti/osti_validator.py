@@ -11,6 +11,7 @@ osti_validator.py
 
 Contains functions for validating the contents of OSTI XML labels.
 """
+import os
 import tempfile
 from importlib import resources
 from os.path import exists
@@ -102,13 +103,22 @@ class DOIOstiValidator(DOIServiceValidator):
         # error(s) occurred.
         if not is_valid:
             # Save doi_label to disk
-            with tempfile.NamedTemporaryFile(mode="w", suffix="temp_doi.xml") as temp_file:
+            with tempfile.NamedTemporaryFile(mode="w", suffix="temp_doi.xml", delete=False) as temp_file:
                 temp_file.write(etree.tostring(osti_root).decode())
                 temp_file.flush()
+                temp_file_path = temp_file.name
 
+            try:
                 # If the XSD fails to validate the DOI label, it will throw an
                 # exception and exit. It will report where/why the error occurred.
-                self._schema_validator.validate(temp_file.name)
+                self._schema_validator.validate(temp_file_path)
+            finally:
+                # Clean up the temporary file
+                try:
+                    os.unlink(temp_file_path)
+                except OSError:
+                    # Ignore cleanup errors on Windows
+                    pass
 
     def validate(self, label_contents):
         """
