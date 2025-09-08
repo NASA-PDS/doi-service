@@ -23,6 +23,7 @@ from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_global_keywords
+from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 
 
 class UpdateActionTestCase(unittest.TestCase):
@@ -46,15 +47,17 @@ class UpdateActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        # Close database connections to release file lock on Windows
+        # Close all database connections to release file lock on Windows
         actions = [cls._update_action, cls._reserve_action, cls._release_action]
         for action in actions:
-            if hasattr(action, 'm_transaction_builder') and hasattr(action.m_transaction_builder, 'm_doi_database'):
-                action.m_transaction_builder.m_doi_database.close_database()
-            if hasattr(action, '_doi_validator') and hasattr(action._doi_validator, '_database_obj'):
-                action._doi_validator._database_obj.close_database()
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+            close_all_database_connections(action)
+            if hasattr(action, 'm_transaction_builder'):
+                close_all_database_connections(action.m_transaction_builder)
+            if hasattr(action, '_doi_validator'):
+                close_all_database_connections(action._doi_validator)
+        
+        # Use robust file removal with retry logic
+        safe_remove_file(cls.db_name)
 
     def setUp(self) -> None:
         """

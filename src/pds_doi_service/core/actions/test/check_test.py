@@ -20,6 +20,7 @@ from pds_doi_service.core.actions import DOICoreActionCheck
 from pds_doi_service.core.actions.test.util.email import capture_email
 from pds_doi_service.core.actions.test.util.email import get_local_smtp_patched_config
 from pds_doi_service.core.db.doi_database import DOIDataBase
+from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
@@ -62,16 +63,17 @@ class CheckActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDown(cls):
-        # Close database connections to release file lock on Windows
-        if hasattr(cls, '_database_obj'):
-            cls._database_obj.close_database()
+        # Close all database connections to release file lock on Windows
+        close_all_database_connections(cls)
         if hasattr(cls, '_action'):
-            if hasattr(cls._action, 'm_transaction_builder') and hasattr(cls._action.m_transaction_builder, 'm_doi_database'):
-                cls._action.m_transaction_builder.m_doi_database.close_database()
-            if hasattr(cls._action, '_list_obj') and hasattr(cls._action._list_obj, 'm_doi_database'):
-                cls._action._list_obj.m_doi_database.close_database()
-        if os.path.exists(cls.db_name):
-            os.remove(cls.db_name)
+            close_all_database_connections(cls._action)
+            if hasattr(cls._action, 'm_transaction_builder'):
+                close_all_database_connections(cls._action.m_transaction_builder)
+            if hasattr(cls._action, '_list_obj'):
+                close_all_database_connections(cls._action._list_obj)
+        
+        # Use robust file removal with retry logic
+        safe_remove_file(cls.db_name)
 
     def webclient_query_patch_nominal(
         self, query, url=None, username=None, password=None, content_type=CONTENT_TYPE_XML

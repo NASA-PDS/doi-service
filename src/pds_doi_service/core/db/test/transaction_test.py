@@ -9,6 +9,7 @@ from importlib import resources
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.db.transaction import Transaction
+from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.db.transaction_builder import TransactionBuilder
 from pds_doi_service.core.db.transaction_on_disk import TransactionOnDisk
 from pds_doi_service.core.entities.doi import Doi
@@ -102,7 +103,7 @@ class TransactionTestCase(unittest.TestCase):
             self.assertTrue(doi_logged)
         finally:
             # Close database connection to release file lock on Windows
-            doi_database.close_database()
+            close_all_database_connections(doi_database)
             # Clean up the fake transaction, if it was created
             if transaction_key and os.path.exists(transaction_key):
                 shutil.rmtree(transaction_key)
@@ -154,7 +155,7 @@ class TransactionBuilderTestCase(unittest.TestCase):
         self.assertEqual(transaction._submitter_email, "pds-operator@jpl.nasa.gov")
         
         # Close database connection to release file lock on Windows
-        transaction_builder.m_doi_database.close_database()
+        close_all_database_connections(transaction_builder)
 
 
 class TransactionOnDiskTestCase(unittest.TestCase):

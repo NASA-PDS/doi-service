@@ -10,6 +10,7 @@ import os
 import unittest
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
+from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -68,13 +69,13 @@ class DoiValidatorTest(unittest.TestCase):
         self._database_obj.write_doi_info_to_database(doi_record)
 
     def tearDown(self):
-        # Close database connections to release file lock on Windows
-        if hasattr(self, '_database_obj'):
-            self._database_obj.close_database()
-        if hasattr(self, '_doi_validator') and hasattr(self._doi_validator, '_database_obj'):
-            self._doi_validator._database_obj.close_database()
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
+        # Close all database connections to release file lock on Windows
+        close_all_database_connections(self)
+        if hasattr(self, '_doi_validator'):
+            close_all_database_connections(self._doi_validator)
+        
+        # Use robust file removal with retry logic
+        safe_remove_file(self.db_name)
 
     def test_existing_title_new_lidvid_exception(self):
         """
