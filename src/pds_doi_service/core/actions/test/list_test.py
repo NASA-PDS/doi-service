@@ -71,21 +71,21 @@ class ListActionTestCase(unittest.TestCase):
                 close_all_database_connections(self._list_action.m_transaction_builder)
             if hasattr(self._list_action, '_doi_validator'):
                 close_all_database_connections(self._list_action._doi_validator)
-        
+
         if hasattr(self, '_reserve_action'):
             close_all_database_connections(self._reserve_action)
             if hasattr(self._reserve_action, 'm_transaction_builder'):
                 close_all_database_connections(self._reserve_action.m_transaction_builder)
             if hasattr(self._reserve_action, '_doi_validator'):
                 close_all_database_connections(self._reserve_action._doi_validator)
-        
+
         if hasattr(self, '_release_action'):
             close_all_database_connections(self._release_action)
             if hasattr(self._release_action, 'm_transaction_builder'):
                 close_all_database_connections(self._release_action.m_transaction_builder)
             if hasattr(self._release_action, '_doi_validator'):
                 close_all_database_connections(self._release_action._doi_validator)
-        
+
         # Use robust file removal with retry logic
         safe_remove_file(self.db_name)
 
