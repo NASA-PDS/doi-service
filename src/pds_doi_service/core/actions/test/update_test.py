@@ -66,8 +66,30 @@ class UpdateActionTestCase(unittest.TestCase):
         we don't have to worry about conflicts from reusing PDS ID's/DOI's between
         tests.
         """
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
+        # Close any existing database connections to release file lock on Windows
+        if hasattr(self, '_update_action'):
+            close_all_database_connections(self._update_action)
+            if hasattr(self._update_action, 'm_transaction_builder'):
+                close_all_database_connections(self._update_action.m_transaction_builder)
+            if hasattr(self._update_action, '_doi_validator'):
+                close_all_database_connections(self._update_action._doi_validator)
+        
+        if hasattr(self, '_reserve_action'):
+            close_all_database_connections(self._reserve_action)
+            if hasattr(self._reserve_action, 'm_transaction_builder'):
+                close_all_database_connections(self._reserve_action.m_transaction_builder)
+            if hasattr(self._reserve_action, '_doi_validator'):
+                close_all_database_connections(self._reserve_action._doi_validator)
+        
+        if hasattr(self, '_release_action'):
+            close_all_database_connections(self._release_action)
+            if hasattr(self._release_action, 'm_transaction_builder'):
+                close_all_database_connections(self._release_action.m_transaction_builder)
+            if hasattr(self._release_action, '_doi_validator'):
+                close_all_database_connections(self._release_action._doi_validator)
+        
+        # Use robust file removal with retry logic
+        safe_remove_file(self.db_name)
 
         self._update_action = DOICoreActionUpdate(db_name=self.db_name)
         self._reserve_action = DOICoreActionReserve(db_name=self.db_name)
