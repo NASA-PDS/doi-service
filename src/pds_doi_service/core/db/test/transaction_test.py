@@ -27,13 +27,17 @@ class TransactionTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.test_dir = str(resources.files(__name__))
 
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close any existing database connections and remove file
+        close_all_database_connections(cls)
+        safe_remove_file(cls.db_name)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close all database connections before cleanup
+        close_all_database_connections(cls)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(cls.db_name)
 
     def test_transaction_logging(self):
         """Test the Transaction.log() method"""
@@ -118,13 +122,15 @@ class TransactionBuilderTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.test_dir = str(resources.files(__name__))
 
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close any existing database connections and remove file
+        close_all_database_connections(cls)
+        safe_remove_file(cls.db_name)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close any existing database connections and remove file
+        close_all_database_connections(cls)
+        safe_remove_file(cls.db_name)
 
     def test_prepare_transaction(self):
         """Test the TransactionBuilder.prepare_transaction() method"""

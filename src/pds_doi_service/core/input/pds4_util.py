@@ -541,6 +541,9 @@ class DOIPDS4LabelUtil:
 
     def process_pds4_fields(self, pds4_fields):
         try:
+            # Initialize doi_suffix to None as default value
+            doi_suffix = None
+
             product_class = pds4_fields["product_class"]
             product_class_suffix = product_class.split("_")[1]
 

@@ -82,7 +82,7 @@ def close_all_database_connections(obj, connection_attrs=None):
         if attr_name.startswith('__') and attr_name.endswith('__'):
             continue
         db_obj = getattr(obj, attr_name, None)
-        if hasattr(db_obj, 'close_database') and callable(getattr(db_obj, 'close_database')):
+        if hasattr(db_obj, 'close_database') and callable(db_obj.close_database):
             try:
                 db_obj.close_database()
                 closed_count += 1
