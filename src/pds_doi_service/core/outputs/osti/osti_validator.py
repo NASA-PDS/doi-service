@@ -107,7 +107,7 @@ class DOIOstiValidator(DOIServiceValidator):
                 temp_file.write(etree.tostring(osti_root).decode())
                 temp_file.flush()
                 temp_file_path = temp_file.name
-            
+
             try:
                 # If the XSD fails to validate the DOI label, it will throw an
                 # exception and exit. It will report where/why the error occurred.

@@ -597,7 +597,7 @@ class DOIInputUtil:
             temp_file.write(response.content)
             temp_file.flush()  # Ensure content is written to disk
             temp_file_path = temp_file.name
-        
+
         try:
             dois = self._read_from_path(temp_file_path)
         finally:
