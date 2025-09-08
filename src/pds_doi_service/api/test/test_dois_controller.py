@@ -24,6 +24,8 @@ from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 from ._base import BaseTestCase
@@ -65,9 +67,11 @@ class TestDoisController(BaseTestCase):
         config.set("OTHER", "api_valid_referrers", "localhost,0.0.0.0")
 
     def tearDown(self):
-        # Remove the temp DB so a new one is created before each test
-        if exists(self.temp_db):
-            os.unlink(self.temp_db)
+        # Close all database connections before cleanup
+        close_all_database_connections(self)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(self.temp_db)
 
     def list_action_run_patch(self, **kwargs):
         """

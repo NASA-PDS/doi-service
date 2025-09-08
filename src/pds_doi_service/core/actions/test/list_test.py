@@ -153,12 +153,15 @@ class ListActionTestCase(unittest.TestCase):
         # this test works for both DataCite and OSTI
         doi_label = self._record_service.create_doi_record(dois, content_type=CONTENT_TYPE_JSON)
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_file:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as temp_file:
             temp_file.write(doi_label)
             temp_file.flush()
+            temp_file_path = temp_file.name
 
+        try:
             review_kwargs = {
-                "input": temp_file.name,
+                "input": temp_file_path,
                 "node": "img",
                 "submitter": "my_user@my_node.gov",
                 "force": True,
@@ -166,6 +169,13 @@ class ListActionTestCase(unittest.TestCase):
             }
 
             review_json = self._release_action.run(**review_kwargs)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         dois, _ = self._web_parser.parse_dois_from_label(review_json, content_type=CONTENT_TYPE_JSON)
 

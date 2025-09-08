@@ -163,13 +163,23 @@ class UpdateActionTestCase(unittest.TestCase):
         doi.date_record_updated = datetime.now()
         json_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
-        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json") as outfile:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json", delete=False) as outfile:
             outfile.write(json_doi_label)
             outfile.flush()
+            outfile_path = outfile.name
 
-            update_kwargs = {"input": outfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
+        try:
+            update_kwargs = {"input": outfile_path, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
 
             updated_doi_label = self._update_action.run(**update_kwargs)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(outfile_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Parse the updated label and ensure the correct fields were updated
         updated_dois, errors = self._web_parser.parse_dois_from_label(updated_doi_label)
@@ -244,17 +254,27 @@ class UpdateActionTestCase(unittest.TestCase):
         fieldnames.extend(["doi", "site_url"])
 
         # Write out a new CSV file and submit it to the update action
-        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".csv") as csvfile:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".csv", delete=False) as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for row in rows:
                 writer.writerow(row)
 
             csvfile.flush()
+            csvfile_path = csvfile.name
 
-            update_kwargs = {"input": csvfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
+        try:
+            update_kwargs = {"input": csvfile_path, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
 
             updated_doi_label = self._update_action.run(**update_kwargs)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(csvfile_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Parse the updated label and ensure the correct fields were updated
         updated_dois, errors = self._web_parser.parse_dois_from_label(updated_doi_label)
@@ -300,11 +320,14 @@ class UpdateActionTestCase(unittest.TestCase):
         doi.date_record_updated = datetime.now()
         json_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
-        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json") as outfile:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json", delete=False) as outfile:
             outfile.write(json_doi_label)
             outfile.flush()
+            outfile_path = outfile.name
 
-            update_kwargs = {"input": outfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": False}
+        try:
+            update_kwargs = {"input": outfile_path, "node": "img", "submitter": "my_user@my_node.gov", "force": False}
 
             # Since we're attempting to move a label from Findable back to Review,
             # we'll get a warning back from the service
@@ -317,6 +340,13 @@ class UpdateActionTestCase(unittest.TestCase):
             updated_doi_label = self._update_action.run(**update_kwargs)
 
             self.assertIsNotNone(updated_doi_label)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(outfile_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Parse the updated label and ensure the correct fields were updated
         updated_dois, errors = self._web_parser.parse_dois_from_label(updated_doi_label)
