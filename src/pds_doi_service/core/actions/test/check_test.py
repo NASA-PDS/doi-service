@@ -62,6 +62,9 @@ class CheckActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDown(cls):
+        # Close database connection to release file lock on Windows
+        if hasattr(cls, '_database_obj'):
+            cls._database_obj.close_database()
         if os.path.exists(cls.db_name):
             os.remove(cls.db_name)
 

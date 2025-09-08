@@ -29,6 +29,9 @@ class DOIDatabaseTest(unittest.TestCase):
         self._doi_database = DOIDataBase(self._db_name)
 
     def tearDown(self):
+        # Close database connection to release file lock on Windows
+        if hasattr(self, '_doi_database'):
+            self._doi_database.close_database()
         if exists(self._db_name):
             os.remove(self._db_name)
 

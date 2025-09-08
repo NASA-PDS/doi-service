@@ -68,6 +68,9 @@ class DoiValidatorTest(unittest.TestCase):
         self._database_obj.write_doi_info_to_database(doi_record)
 
     def tearDown(self):
+        # Close database connection to release file lock on Windows
+        if hasattr(self, '_database_obj'):
+            self._database_obj.close_database()
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
 
