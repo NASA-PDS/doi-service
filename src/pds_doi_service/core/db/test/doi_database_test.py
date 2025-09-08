@@ -7,10 +7,11 @@ from importlib import resources
 from os.path import exists
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
-from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
@@ -32,7 +33,7 @@ class DOIDatabaseTest(unittest.TestCase):
     def tearDown(self):
         # Close all database connections to release file lock on Windows
         close_all_database_connections(self)
-        
+
         # Use robust file removal with retry logic
         safe_remove_file(self._db_name)
 

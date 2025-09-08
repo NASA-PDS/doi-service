@@ -9,13 +9,14 @@ from importlib import resources
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
 from pds_doi_service.core.db.transaction import Transaction
-from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.db.transaction_builder import TransactionBuilder
 from pds_doi_service.core.db.transaction_on_disk import TransactionOnDisk
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 
 
 class TransactionTestCase(unittest.TestCase):
@@ -153,7 +154,7 @@ class TransactionBuilderTestCase(unittest.TestCase):
         self.assertEqual(transaction._doi, test_doi)
         self.assertEqual(transaction._node_id, test_doi.node_id)
         self.assertEqual(transaction._submitter_email, "pds-operator@jpl.nasa.gov")
-        
+
         # Close database connection to release file lock on Windows
         close_all_database_connections(transaction_builder)
 

@@ -10,7 +10,6 @@ import os
 import unittest
 
 from pds_doi_service.core.db.doi_database import DOIDataBase
-from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -23,6 +22,8 @@ from pds_doi_service.core.entities.exceptions import SiteURLNotExistException
 from pds_doi_service.core.entities.exceptions import TitleDoesNotMatchProductTypeException
 from pds_doi_service.core.entities.exceptions import UnexpectedDOIActionException
 from pds_doi_service.core.outputs.doi_validator import DOIValidator
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 
 
 class DoiValidatorTest(unittest.TestCase):
@@ -73,7 +74,7 @@ class DoiValidatorTest(unittest.TestCase):
         close_all_database_connections(self)
         if hasattr(self, '_doi_validator'):
             close_all_database_connections(self._doi_validator)
-        
+
         # Use robust file removal with retry logic
         safe_remove_file(self.db_name)
 

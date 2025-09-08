@@ -22,8 +22,9 @@ from pds_doi_service.core.entities.exceptions import UnknownIdentifierException
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
-from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 
 
 # TODO: add additional unit tests for other list query parameters
@@ -53,7 +54,7 @@ class ListActionTestCase(unittest.TestCase):
                 close_all_database_connections(action.m_transaction_builder)
             if hasattr(action, '_doi_validator'):
                 close_all_database_connections(action._doi_validator)
-        
+
         # Use robust file removal with retry logic
         safe_remove_file(cls.db_name)
 

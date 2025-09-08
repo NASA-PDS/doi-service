@@ -20,7 +20,6 @@ from pds_doi_service.core.actions import DOICoreActionCheck
 from pds_doi_service.core.actions.test.util.email import capture_email
 from pds_doi_service.core.actions.test.util.email import get_local_smtp_patched_config
 from pds_doi_service.core.db.doi_database import DOIDataBase
-from pds_doi_service.core.test_utils import safe_remove_file, close_all_database_connections
 from pds_doi_service.core.entities.doi import DoiRecord
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
@@ -28,6 +27,8 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_DATACITE
 from pds_doi_service.core.outputs.service import SERVICE_TYPE_OSTI
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
@@ -71,7 +72,7 @@ class CheckActionTestCase(unittest.TestCase):
                 close_all_database_connections(cls._action.m_transaction_builder)
             if hasattr(cls._action, '_list_obj'):
                 close_all_database_connections(cls._action._list_obj)
-        
+
         # Use robust file removal with retry logic
         safe_remove_file(cls.db_name)
 
