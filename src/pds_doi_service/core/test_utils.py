@@ -69,26 +69,24 @@ def close_all_database_connections(obj, connection_attrs=None):
     int
         Number of connections closed
     """
-    if connection_attrs is None:
-        connection_attrs = [
-            '_database_obj',
-            'm_doi_database',
-            '_doi_database',
-            'm_my_conn',
-            '_conn'
-        ]
-
     closed_count = 0
 
-    for attr_name in connection_attrs:
-        if hasattr(obj, attr_name):
-            db_obj = getattr(obj, attr_name)
-            if hasattr(db_obj, 'close_database'):
-                try:
-                    db_obj.close_database()
-                    closed_count += 1
-                    logger.debug(f"Closed database connection: {attr_name}")
-                except Exception as e:
-                    logger.warning(f"Error closing database connection {attr_name}: {e}")
+    if connection_attrs is None:
+        # Check all attributes of obj for a close_database method
+        attr_names = dir(obj)
+    else:
+        attr_names = connection_attrs
 
+    for attr_name in attr_names:
+        # Skip private and built-in attributes
+        if attr_name.startswith('__') and attr_name.endswith('__'):
+            continue
+        db_obj = getattr(obj, attr_name, None)
+        if hasattr(db_obj, 'close_database') and callable(getattr(db_obj, 'close_database')):
+            try:
+                db_obj.close_database()
+                closed_count += 1
+                logger.debug(f"Closed database connection: {attr_name}")
+            except Exception as e:
+                logger.warning(f"Error closing database connection {attr_name}: {e}")
     return closed_count
