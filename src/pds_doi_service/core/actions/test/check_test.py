@@ -62,9 +62,14 @@ class CheckActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDown(cls):
-        # Close database connection to release file lock on Windows
+        # Close database connections to release file lock on Windows
         if hasattr(cls, '_database_obj'):
             cls._database_obj.close_database()
+        if hasattr(cls, '_action'):
+            if hasattr(cls._action, 'm_transaction_builder') and hasattr(cls._action.m_transaction_builder, 'm_doi_database'):
+                cls._action.m_transaction_builder.m_doi_database.close_database()
+            if hasattr(cls._action, '_list_obj') and hasattr(cls._action._list_obj, 'm_doi_database'):
+                cls._action._list_obj.m_doi_database.close_database()
         if os.path.exists(cls.db_name):
             os.remove(cls.db_name)
 

@@ -101,6 +101,8 @@ class TransactionTestCase(unittest.TestCase):
 
             self.assertTrue(doi_logged)
         finally:
+            # Close database connection to release file lock on Windows
+            doi_database.close_database()
             # Clean up the fake transaction, if it was created
             if transaction_key and os.path.exists(transaction_key):
                 shutil.rmtree(transaction_key)
@@ -150,6 +152,9 @@ class TransactionBuilderTestCase(unittest.TestCase):
         self.assertEqual(transaction._doi, test_doi)
         self.assertEqual(transaction._node_id, test_doi.node_id)
         self.assertEqual(transaction._submitter_email, "pds-operator@jpl.nasa.gov")
+        
+        # Close database connection to release file lock on Windows
+        transaction_builder.m_doi_database.close_database()
 
 
 class TransactionOnDiskTestCase(unittest.TestCase):

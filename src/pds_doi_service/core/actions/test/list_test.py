@@ -44,6 +44,13 @@ class ListActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Close database connections to release file lock on Windows
+        actions = [cls._list_action, cls._reserve_action, cls._release_action]
+        for action in actions:
+            if hasattr(action, 'm_transaction_builder') and hasattr(action.m_transaction_builder, 'm_doi_database'):
+                action.m_transaction_builder.m_doi_database.close_database()
+            if hasattr(action, '_doi_validator') and hasattr(action._doi_validator, '_database_obj'):
+                action._doi_validator._database_obj.close_database()
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
 

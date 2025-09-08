@@ -39,6 +39,12 @@ class ReleaseActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Close database connections to release file lock on Windows
+        if hasattr(cls, '_release_action'):
+            if hasattr(cls._release_action, 'm_transaction_builder') and hasattr(cls._release_action.m_transaction_builder, 'm_doi_database'):
+                cls._release_action.m_transaction_builder.m_doi_database.close_database()
+            if hasattr(cls._release_action, '_doi_validator') and hasattr(cls._release_action._doi_validator, '_database_obj'):
+                cls._release_action._doi_validator._database_obj.close_database()
         if os.path.isfile(cls.db_name):
             os.remove(cls.db_name)
 
