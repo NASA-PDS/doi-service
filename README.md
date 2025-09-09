@@ -31,11 +31,11 @@ Install a Python virtual environment, say in a `venv` directory:
     source venv/bin/activate
 
     # On Windows
-    .\venv\Scripts\activate.ps1
+    .\venv\Scripts\activate
 
 Install the package and its dependencies for development into the virtual environment:
 
-    pip install --editable '.[dev]'
+    pip install --editable ".[dev]"
 
 If you get an error like
 
@@ -146,7 +146,7 @@ Testing details are detailed in this section.
 
 #### N.B. Updates to pip dependencies are not automatically applied to existing tox virtual environments, to keep unit testing fast.  The simplest way to propagate dependency updates is to delete `./.tox` and run tox again.
 
-[tox](https://tox.readthedocs.io/) is installed automatically during `pip install --editable .[dev]`, and provides virtual environments and run configurations for
+[tox](https://tox.readthedocs.io/) is installed automatically during `pip install --editable ".[dev]"`, and provides virtual environments and run configurations for
 - unit/functional testing
 - linting
 - building the rich documentation.
@@ -249,7 +249,7 @@ or the `docs` directory in the source package.
 
 ### User Documentation
 
-User documentation is managed with Sphinx, which is also installed in your Python virtual environment when you run `pip install --editable .[dev]`. You can use `tox` as described above to make the docs, or by hand at any time by running:
+User documentation is managed with Sphinx, which is also installed in your Python virtual environment when you run `pip install --editable ".[dev]"`. You can use `tox` as described above to make the docs, or by hand at any time by running:
 
     sphinx-build -ab html docs/source docs/build
 
