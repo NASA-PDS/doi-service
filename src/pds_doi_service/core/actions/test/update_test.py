@@ -21,6 +21,8 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_XML
 from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 from pds_doi_service.core.util.general_util import create_landing_page_url
 from pds_doi_service.core.util.general_util import get_global_keywords
 
@@ -46,15 +48,17 @@ class UpdateActionTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        # Close database connections to release file lock on Windows
+        # Close all database connections to release file lock on Windows
         actions = [cls._update_action, cls._reserve_action, cls._release_action]
         for action in actions:
-            if hasattr(action, 'm_transaction_builder') and hasattr(action.m_transaction_builder, 'm_doi_database'):
-                action.m_transaction_builder.m_doi_database.close_database()
-            if hasattr(action, '_doi_validator') and hasattr(action._doi_validator, '_database_obj'):
-                action._doi_validator._database_obj.close_database()
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+            close_all_database_connections(action)
+            if hasattr(action, 'm_transaction_builder'):
+                close_all_database_connections(action.m_transaction_builder)
+            if hasattr(action, '_doi_validator'):
+                close_all_database_connections(action._doi_validator)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(cls.db_name)
 
     def setUp(self) -> None:
         """
@@ -62,8 +66,30 @@ class UpdateActionTestCase(unittest.TestCase):
         we don't have to worry about conflicts from reusing PDS ID's/DOI's between
         tests.
         """
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
+        # Close any existing database connections to release file lock on Windows
+        if hasattr(self, '_update_action'):
+            close_all_database_connections(self._update_action)
+            if hasattr(self._update_action, 'm_transaction_builder'):
+                close_all_database_connections(self._update_action.m_transaction_builder)
+            if hasattr(self._update_action, '_doi_validator'):
+                close_all_database_connections(self._update_action._doi_validator)
+
+        if hasattr(self, '_reserve_action'):
+            close_all_database_connections(self._reserve_action)
+            if hasattr(self._reserve_action, 'm_transaction_builder'):
+                close_all_database_connections(self._reserve_action.m_transaction_builder)
+            if hasattr(self._reserve_action, '_doi_validator'):
+                close_all_database_connections(self._reserve_action._doi_validator)
+
+        if hasattr(self, '_release_action'):
+            close_all_database_connections(self._release_action)
+            if hasattr(self._release_action, 'm_transaction_builder'):
+                close_all_database_connections(self._release_action.m_transaction_builder)
+            if hasattr(self._release_action, '_doi_validator'):
+                close_all_database_connections(self._release_action._doi_validator)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(self.db_name)
 
         self._update_action = DOICoreActionUpdate(db_name=self.db_name)
         self._reserve_action = DOICoreActionReserve(db_name=self.db_name)
@@ -137,13 +163,23 @@ class UpdateActionTestCase(unittest.TestCase):
         doi.date_record_updated = datetime.now()
         json_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
-        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json") as outfile:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json", delete=False) as outfile:
             outfile.write(json_doi_label)
             outfile.flush()
+            outfile_path = outfile.name
 
-            update_kwargs = {"input": outfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
+        try:
+            update_kwargs = {"input": outfile_path, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
 
             updated_doi_label = self._update_action.run(**update_kwargs)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(outfile_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Parse the updated label and ensure the correct fields were updated
         updated_dois, errors = self._web_parser.parse_dois_from_label(updated_doi_label)
@@ -218,17 +254,27 @@ class UpdateActionTestCase(unittest.TestCase):
         fieldnames.extend(["doi", "site_url"])
 
         # Write out a new CSV file and submit it to the update action
-        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".csv") as csvfile:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".csv", delete=False) as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for row in rows:
                 writer.writerow(row)
 
             csvfile.flush()
+            csvfile_path = csvfile.name
 
-            update_kwargs = {"input": csvfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
+        try:
+            update_kwargs = {"input": csvfile_path, "node": "img", "submitter": "my_user@my_node.gov", "force": True}
 
             updated_doi_label = self._update_action.run(**update_kwargs)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(csvfile_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Parse the updated label and ensure the correct fields were updated
         updated_dois, errors = self._web_parser.parse_dois_from_label(updated_doi_label)
@@ -274,11 +320,14 @@ class UpdateActionTestCase(unittest.TestCase):
         doi.date_record_updated = datetime.now()
         json_doi_label = self._record_service.create_doi_record(doi, content_type=CONTENT_TYPE_JSON)
 
-        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json") as outfile:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(mode="w", dir=self.test_dir, suffix=".json", delete=False) as outfile:
             outfile.write(json_doi_label)
             outfile.flush()
+            outfile_path = outfile.name
 
-            update_kwargs = {"input": outfile.name, "node": "img", "submitter": "my_user@my_node.gov", "force": False}
+        try:
+            update_kwargs = {"input": outfile_path, "node": "img", "submitter": "my_user@my_node.gov", "force": False}
 
             # Since we're attempting to move a label from Findable back to Review,
             # we'll get a warning back from the service
@@ -291,6 +340,13 @@ class UpdateActionTestCase(unittest.TestCase):
             updated_doi_label = self._update_action.run(**update_kwargs)
 
             self.assertIsNotNone(updated_doi_label)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(outfile_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Parse the updated label and ensure the correct fields were updated
         updated_dois, errors = self._web_parser.parse_dois_from_label(updated_doi_label)

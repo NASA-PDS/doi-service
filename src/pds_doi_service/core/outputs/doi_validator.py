@@ -231,9 +231,12 @@ class DOIValidator:
 
         # Query database for rows with given id value.
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
+        logger.info("columns, rows: %i,%i", len(columns), len(rows))
 
         for row in rows:
             existing_record = dict(zip(columns, row))
+            logger.info("existing_record: %s", existing_record)
+            logger.info("doi.doi: %s", doi.doi)
 
             if doi.doi != existing_record["doi"]:
                 raise IllegalDOIActionException(
@@ -270,6 +273,7 @@ class DOIValidator:
         # Query database for rows with given DOI value (should only ever be
         # at most one)
         columns, rows = self._database_obj.select_latest_rows(query_criterias)
+        logger.debug("columns, rows: %s,%s", columns, rows)
 
         for row in rows:
             existing_record = dict(zip(columns, row))

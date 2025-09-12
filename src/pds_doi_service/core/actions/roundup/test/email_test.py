@@ -41,7 +41,10 @@ class WeeklyRoundupEmailNotificationTestCase(WeeklyRoundupNotificationBaseTestCa
         with open(expected_content_filepath, "r") as infile:
             template = jinja2.Template(infile.read())
             expected_html_content = template.render(template_dict)
-        self.assertEqual(expected_html_content.replace(" ", "").strip(), html_content.replace(" ", "").strip())
+        # Normalize line endings for cross-platform compatibility
+        expected_normalized = expected_html_content.replace("\r\n", "\n").replace(" ", "").strip()
+        actual_normalized = html_content.replace("\r\n", "\n").replace(" ", "").strip()
+        self.assertEqual(expected_normalized, actual_normalized)
 
     def test_attachment_content(self):
         attachment_content = self._message.get_payload(1).get_payload()

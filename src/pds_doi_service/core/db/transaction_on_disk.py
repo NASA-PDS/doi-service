@@ -67,7 +67,6 @@ class TransactionOnDisk:
         -------
         transaction_key : str
             The transaction key path formed from the provided arguments.
-
         """
         config = TransactionOnDisk.m_doi_config_util.get_config()
 
@@ -75,7 +74,8 @@ class TransactionOnDisk:
 
         prefix, suffix = doi.split("/", maxsplit=1)
 
-        return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.isoformat())
+        # modify so transaction_time returns a string as YYYY-MM-DDThh:mm:ss.microseconds
+        return os.path.join(transaction_dir, node_id, prefix, suffix, transaction_time.strftime("%Y-%m-%dT%H-%M-%S.%f"))
 
     @staticmethod
     def output_label_for_transaction(transaction_record):
@@ -98,7 +98,6 @@ class TransactionOnDisk:
         NoTransactionHistoryForIdentifierException
             If the output label associated to the transaction cannot be found
             on local disk.
-
         """
         # TODO: reconcile this method with the version in the list action
         # Make sure we can locate the output label associated with this
@@ -138,7 +137,6 @@ class TransactionOnDisk:
             The content type of output_content. Should be one of "xml" or "json".
 
         """
-
         # Set up the appropriate umask in-case os.makedirs needs to create any
         # intermediate parent directories (its mask arg only affects the created leaf directory)
         prev_umask = os.umask(0o0002)
