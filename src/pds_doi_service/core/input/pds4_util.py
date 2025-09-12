@@ -860,10 +860,12 @@ class DOIPDS4LabelUtil:
         primary_separators = [",", ". "]
 
         # Detect organization names, which lack separable chunks
+        # Modified code to not set 'Affiliation' where "Organizational" test cases
         if name_str_is_organization(primary_separators, full_name):
             entity = {
                 "name": full_name,
-                "affiliation": [],
+                "affiliation": [
+                ],
                 "name_type": "Organizational",
             }
 

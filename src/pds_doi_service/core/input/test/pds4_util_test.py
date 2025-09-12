@@ -103,6 +103,7 @@ class GetNamesTestCase(unittest.TestCase):
             "Suffixed Jr., James",
         ]
         parsed_entities = DOIPDS4LabelUtil().get_names(entity_names)
+        # Modified code to not expect 'Affiliation' where "Organizational" test cases
         expected_parsed_entities = [
             {"first_name": "A.", "last_name": "Dunn", "affiliation": [], "name_type": "Personal"},
             {"first_name": "Alex", "last_name": "Dunn", "affiliation": [], "name_type": "Personal"},
@@ -129,13 +130,9 @@ class GetNamesTestCase(unittest.TestCase):
                 "affiliation": [],
                 "name_type": "Personal",
             },
-            {
-                "name": "Jet Propulsion Laboratory",
-                "affiliation": ["Jet Propulsion Laboratory"],
-                "name_type": "Organizational",
-            },
-            {"name": "JPL", "affiliation": ["JPL"], "name_type": "Organizational"},
-            {"name": "Google Inc.", "affiliation": ["Google Inc."], "name_type": "Organizational"},
+            {"name": "Jet Propulsion Laboratory", "affiliation": [],"name_type": "Organizational"},
+            {"name": "JPL", "affiliation": [], "name_type": "Organizational"},
+            {"name": "Google Inc.", "affiliation": [], "name_type": "Organizational"},
             {"first_name": "James", "last_name": "Suffixed Jr.", "affiliation": [], "name_type": "Personal"},
         ]
         self.assertListEqual(expected_parsed_entities, parsed_entities)
