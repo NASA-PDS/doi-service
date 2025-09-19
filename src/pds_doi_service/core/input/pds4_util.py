@@ -347,7 +347,7 @@ class DOIPDS4LabelUtil:
                     f"{list_author_class.text}"
                 )
                 # Continue processing other classes instead of exiting
-                sys.exit()
+                pass
 
         # Need to map List_Author fields to DOI fields
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
