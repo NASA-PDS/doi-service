@@ -22,7 +22,10 @@ from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_PUT
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
+from pds_doi_service.core.util.general_util import get_logger
 from requests.models import Response
+
+logger = get_logger(__name__)
 
 
 class DOIDataCiteRecordTestCase(unittest.TestCase):
@@ -32,6 +35,10 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
+        logger.debug(f"Input directory: {cls.input_dir}")
+
+    def setUp(self):
+        self.maxDiff = None
 
     def test_create_datacite_label_json(self):
         """Test creation of a DataCite JSON label from a Doi object"""
@@ -131,6 +138,9 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
     """Unit tests for the datacite_web_client.py module"""
 
     input_dir = None
+
+    def setUp(self):
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):
@@ -255,35 +265,29 @@ class DOIDataCiteWebClientTestCase(unittest.TestCase):
 class DOIDataCiteWebParserTestCase(unittest.TestCase):
     """Unit tests for the datacite_web_parser.py module"""
 
+    def setUp(self):
+        self.maxDiff = None
+
     @classmethod
     def setUpClass(cls):
         cls.test_dir = str(resources.files(__name__))
         cls.input_dir = abspath(join(cls.test_dir, "data"))
 
         # Commenting out for now for debugging purposes
-        # cls.expected_authors = [
-        #    {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
-        #    {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
-        #    {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
-        #    {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
-        # ]
         cls.expected_authors = [
-            {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal", "affiliation": []},
-            {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal", "affiliation": []},
-            {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal", "affiliation": []},
-            {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal", "affiliation": []},
-        ]
+            {"name": "R. Deen", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+            {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
+         ]
+
         # Commenting out for now for debugging purposes
-        # cls.expected_editors = [
-        #    {"name": "P. H. Smith", "name_identifiers": [], "affiliation": ["NASA PDS"]},
-        #    {"name": "M. Lemmon", "name_identifiers": [], "affiliation": ["NASA PDS"]},
-        #    {"name": "R. F. Beebe", "name_identifiers": [], "affiliation": ["NASA PDS"]},
-        # ]
         cls.expected_editors = [
-            {"name": "P. H. Smith", "name_identifiers": [], "affiliation": []},
-            {"name": "M. Lemmon", "name_identifiers": [], "affiliation": []},
-            {"name": "R. F. Beebe", "name_identifiers": [], "affiliation": []},
-        ]
+            {"name": "P. H. Smith", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+            {"name": "M. Lemmon", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+            {"name": "R. F. Beebe", "name_identifiers": [], "affiliation": ["NASA PDS"]},
+         ]
+
         cls.expected_keywords = {
             "data",
             "rdr",
@@ -336,7 +340,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
     def test_parse_datacite_response_json(self):
         """Test parsing of an DataCite label in JSON format"""
         # Test with a nominal file containing most of the optional fields
-        input_json_file = join(self.input_dir, "datacite_record_draft.json")
+        input_json_file = join(self.input_dir, "datacite_record_draft_with_affiliation.json")
 
         with open(input_json_file, "r") as infile:
             input_json = infile.read()
@@ -484,6 +488,9 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
 
 class DOIDataCiteValidatorTestCase(unittest.TestCase):
     """Unit tests for the datacite_validator.py module"""
+
+    def setUp(self):
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):

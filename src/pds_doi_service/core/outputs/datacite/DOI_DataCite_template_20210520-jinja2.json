@@ -26,7 +26,7 @@
                     {
                         "identifier": "{{ identifier.identifier.strip() }}",
                         "identifierType": "{{ identifier.identifierType }}"
-                    }{% if not loop.last %},{% endif +%}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "creators": [
@@ -41,6 +41,13 @@
                         "name": "{{ author.first_name }} {{ author.last_name }}",
                         {% else %}
                         "name": "{{ author.name }}",
+                        {% endif %}
+                        {% if author.affiliation and author.affiliation|length > 0 %}
+                        "affiliation": [
+                        {% for affiliation in author.affiliation %}
+                            "{{affiliation}}"{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                        ],
                         {% endif %}
                         "nameIdentifiers": [
                         {%- if author.rorid %}
@@ -60,19 +67,12 @@
                         {% for name_identifier in author.name_identifiers %}
                             {
                             {% for key, value in name_identifier.items() %}
-                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif +%}
+                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif %}
                             {% endfor %}
                             }
                         {% endfor %}
-                        ],
-                        "affiliations": [
-                        {% if author.affiliation %}
-                            {% for affiliation in author.affiliation %}
-                            { "affilation": "{{ affiliation }}" }{% if not loop.last %},{% endif +%}
-                            {% endfor %}
-                        {% endif %}
                         ]
-                    }{% if not loop.last %},{% endif +%}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "titles": [
@@ -90,7 +90,7 @@
                 ],
                 "subjects": [
                     {% for keyword in doi.keywords %}
-                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif +%}
+                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "contributors": [
@@ -120,7 +120,7 @@
                         {% for name_identifier in editor.name_identifiers %}
                             {
                             {% for key, value in name_identifier.items() %}
-                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif +%}
+                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif %}
                             {% endfor %}
                             }
                         {% endfor %}
@@ -155,7 +155,7 @@
                         "relatedIdentifier": "{{ related_identifier.relatedIdentifier.strip() }}",
                         "relatedIdentifierType": "{{ related_identifier.relatedIdentifierType }}",
                         "relationType": "{{ related_identifier.relationType }}"
-                    }{% if not loop.last %},{% endif +%}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 {% if doi.description %}

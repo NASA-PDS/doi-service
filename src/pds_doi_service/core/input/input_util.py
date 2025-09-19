@@ -168,12 +168,12 @@ class DOIInputUtil:
         dois = []
 
         # First read the contents of the file
-        with open(xml_path, "r") as infile:
+        with open(xml_path, "rb") as infile:
             # It's been observed that input files transferred from Windows-based
             # machines can append a UTF-8-BOM hex sequence, which can break
-            # parsing later on. So we perform an encode-decode here to
-            # ensure this sequence is stripped before continuing.
-            xml_contents = infile.read().encode().decode("utf-8-sig")
+            # parsing later on. So we read in binary mode and decode with utf-8-sig
+            # to ensure this sequence is stripped before continuing.
+            xml_contents = infile.read().decode("utf-8-sig")
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
