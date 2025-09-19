@@ -279,14 +279,14 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
             {"name": "H. Abarca", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
             {"name": "P. Zamani", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
             {"name": "J. Maki", "name_identifiers": [], "name_type": "Personal", "affiliation": ["NASA PDS"]},
-         ]
+        ]
 
         # Commenting out for now for debugging purposes
         cls.expected_editors = [
             {"name": "P. H. Smith", "name_identifiers": [], "affiliation": ["NASA PDS"]},
             {"name": "M. Lemmon", "name_identifiers": [], "affiliation": ["NASA PDS"]},
             {"name": "R. F. Beebe", "name_identifiers": [], "affiliation": ["NASA PDS"]},
-         ]
+        ]
 
         cls.expected_keywords = {
             "data",

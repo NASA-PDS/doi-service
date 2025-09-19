@@ -130,7 +130,7 @@ class GetNamesTestCase(unittest.TestCase):
                 "affiliation": [],
                 "name_type": "Personal",
             },
-            {"name": "Jet Propulsion Laboratory", "affiliation": [],"name_type": "Organizational"},
+            {"name": "Jet Propulsion Laboratory", "affiliation": [], "name_type": "Organizational"},
             {"name": "JPL", "affiliation": [], "name_type": "Organizational"},
             {"name": "Google Inc.", "affiliation": [], "name_type": "Organizational"},
             {"first_name": "James", "last_name": "Suffixed Jr.", "affiliation": [], "name_type": "Personal"},
