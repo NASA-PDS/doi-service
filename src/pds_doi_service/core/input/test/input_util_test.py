@@ -299,9 +299,8 @@ class InputUtilTestCase(unittest.TestCase):
         i_filepath = join(self.input_dir, "pds4_bundle_with_utf-8-bom.xml")
 
         # Run a quick sanity check to ensure the input file starts with the BOM
-        with open(i_filepath, "r") as infile:
-            file_contents = infile.read()
-            file_contents_bytes = file_contents.encode()
+        with open(i_filepath, "rb") as infile:
+            file_contents_bytes = infile.read()
             self.assertTrue(file_contents_bytes.startswith(b"\xef\xbb\xbf"))
 
         # Parse the label and ensure we still get a Doi back
@@ -338,9 +337,8 @@ class InputUtilTestCase(unittest.TestCase):
             i_filepath = join(self.input_dir, "datacite_record_draft_with_utf-8-bom.json")
 
         # Run a quick sanity check to ensure the input file starts with the BOM
-        with open(i_filepath, "r") as infile:
-            file_contents = infile.read()
-            file_contents_bytes = file_contents.encode()
+        with open(i_filepath, "rb") as infile:
+            file_contents_bytes = infile.read()
             self.assertTrue(file_contents_bytes.startswith(b"\xef\xbb\xbf"))
 
         # Parse the label and ensure we still get a Doi back

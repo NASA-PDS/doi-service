@@ -1,9 +1,3 @@
-#
-#  Copyright 2021, by the California Institute of Technology.  ALL RIGHTS
-#  RESERVED. United States Government Sponsorship acknowledged. Any commercial
-#  use must be negotiated with the Office of Technology Transfer at the
-#  California Institute of Technology.
-#
 """
 =============
 input_util.py
@@ -59,7 +53,8 @@ class DOIInputUtil:
     EXPECTED_PUBLICATION_DATE_LEN = 10
     """Expected minimum length of a parsed publication date."""
 
-    DEFAULT_VALID_EXTENSIONS = [".xml", ".csv", ".xlsx", ".xls", ".json"]
+    # add .lblx to be parsed as xml
+    DEFAULT_VALID_EXTENSIONS = [".lblx", ".xml", ".csv", ".xlsx", ".xls", ".json"]
     """The default list of valid input file extensions this module can read."""
 
     def __init__(self, valid_extensions=None):
@@ -87,10 +82,14 @@ class DOIInputUtil:
         if not isinstance(self._valid_extensions, (list, tuple, set)):
             self._valid_extensions = [self._valid_extensions]
 
-        # Set up the mapping of supported extensions to the corresponding read
-        # function pointers
+        """
+        Set up the mapping of supported extensions to the corresponding read
+        function pointers
+        """
         self._parser_map = {
             ".xml": self.parse_xml_file,
+            # add .lblx to be parsed as xml
+            ".lblx": self.parse_xml_file,
             ".xls": self.parse_xls_file,
             ".xlsx": self.parse_xls_file,
             ".csv": self.parse_csv_file,
@@ -99,6 +98,50 @@ class DOIInputUtil:
 
         if not all([extension in self._parser_map for extension in self._valid_extensions]):
             raise ValueError("One or more the provided extensions are not supported by the DOIInputUtil class.")
+
+    # Detect UTF-16/UTF-8-BOM; decode
+    def detect_and_decode_utf(self, data: bytes) -> str:
+        r"""
+        Detect and decode UTF-encoded byte data with automatic encoding detection.
+
+        This method attempts to detect the encoding of the provided byte data and
+        decode it to a string. It handles UTF-16 (with BOM), UTF-8 (with BOM),
+        and falls back to UTF-8 with replacement characters if other methods fail.
+
+        The method also normalizes line endings to DOS format (\r\n) for consistency.
+
+        Parameters
+        ----------
+        data : bytes
+            The byte data to decode.
+
+        Returns
+        -------
+        str
+            The decoded string with normalized line endings.
+
+        Notes
+        -----
+        - First checks for UTF-16 BOM (little-endian or big-endian)
+        - Then attempts UTF-8 with BOM detection
+        - Falls back to UTF-8 with replacement characters if decoding fails
+        - Normalizes all line endings to DOS format (\r\n)
+        """
+        if data.startswith(b"\xff\xfe") or data.startswith(b"\xfe\xff"):
+            logger.info("Detected UTF-16 BOM.")
+            return data.decode("utf-16")
+
+        try:
+            # Try decoding as UTF-8 with BOM (utf-8-sig handles BOM automatically)
+            logger.info(": Trying to detect UTF-8 with BOM (utf-8-sig).")
+            decoded_data = data.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            # Fallback
+            logger.info(":Could not decode as UTF-8-sig. Using fallback UTF-8 with replacement.")
+            decoded_data = data.decode("utf-8", errors="replace")
+
+        dos_line_endings = decoded_data.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
+        return dos_line_endings
 
     def parse_xml_file(self, xml_path):
         """
@@ -125,12 +168,12 @@ class DOIInputUtil:
         dois = []
 
         # First read the contents of the file
-        with open(xml_path, "r") as infile:
+        with open(xml_path, "rb") as infile:
             # It's been observed that input files transferred from Windows-based
             # machines can append a UTF-8-BOM hex sequence, which can break
-            # parsing later on. So we perform an encode-decode here to
-            # ensure this sequence is stripped before continuing.
-            xml_contents = infile.read().encode().decode("utf-8-sig")
+            # parsing later on. So we read in binary mode and decode with utf-8-sig
+            # to ensure this sequence is stripped before continuing.
+            xml_contents = infile.read().decode("utf-8-sig")
 
         xml_tree = etree.fromstring(xml_contents.encode())
 
@@ -142,8 +185,9 @@ class DOIInputUtil:
                 dois.append(self._label_util.get_doi_fields_from_pds4(xml_tree))
             except Exception as err:
                 raise InputFormatException(f"Could not parse the provided xml file as a PDS4 label.\nReason: {err}")
-        # Otherwise, assume OSTI format
+
         else:
+            # Otherwise, assume OSTI format
             logger.info("Parsing xml file %s as an OSTI label", basename(xml_path))
 
             try:
@@ -298,16 +342,14 @@ class DOIInputUtil:
         # We only want the first sheet.
         actual_sheet_name = xl_wb.sheet_names[0]
 
-        xl_sheet = pd.read_excel(
-            xls_path,
-            actual_sheet_name,
-            # Remove automatic replacement of empty columns with NaN
-            na_filter=False,
-        )
+        # Remove automatic replacement of empty columns with NaN
+        xl_sheet = pd.read_excel(xls_path, actual_sheet_name, na_filter=False)
 
-        # Any empty rows will result in NaT being filled in for the publication_date.
-        # Key off of this to drop those rows. Since we provided na_filter=False,
-        # there should not be any N/A or NaT values anywhere else.
+        """
+        Any empty rows will result in NaT being filled in for the publication_date.
+        Key off of this to drop those rows. Since we provided na_filter=False,
+        there should not be any N/A or NaT values anywhere else.
+        """
         xl_sheet = xl_sheet.dropna(how="any")
 
         xl_sheet = self._validate_spreadsheet(xl_sheet)
@@ -433,13 +475,17 @@ class DOIInputUtil:
         """
         logger.info("Parsing csv file %s", basename(csv_path))
 
-        # Read the CSV file into memory
+        """
+        Read the CSV file into memory
+
+            for all columns to be string,
+            e.g identifier could be 123 and translate into an int, that would break the code
+
+            Remove automatic replacement of empty columns with NaN
+        """
         csv_sheet = pd.read_csv(
             csv_path,
-            # for all columns to be string,
-            # e.g identifier could be 123 and translate into an int, that would break the code
             dtype=str,
-            # Remove automatic replacement of empty columns with NaN
             na_filter=False,
             skip_blank_lines=True,
         )
@@ -473,12 +519,16 @@ class DOIInputUtil:
         validator = DOIServiceFactory.get_validator_service()
 
         # First read the contents of the file
-        with open(json_path, "r") as infile:
+        # 20250501: read as binary to avoid encoding issues
+        with open(json_path, "rb") as infile:
             # It's been observed that input files transferred from Windows-based
             # machines can append a UTF-8-BOM hex sequence, which breaks
             # JSON parsing later on. So we perform an encode-decode here to
             # ensure this sequence is stripped before continuing.
-            json_contents = infile.read().encode().decode("utf-8-sig")
+            # 20250501: modify code to call routine to detect and decode UTF-16/UTF-8-BOM
+            # json_contents = infile.read().encode().decode("utf-8-sig")
+            json_contents = infile.read()
+            json_contents = self.detect_and_decode_utf(json_contents)
 
         # Validate and parse the provide JSON label based on the service provider
         # configured within the INI. If there's a mismatch, the validation step
@@ -592,11 +642,21 @@ class DOIInputUtil:
         except requests.exceptions.HTTPError as http_err:
             raise InputFormatException(f"Could not read remote file {input_url}, reason: {str(http_err)}")
 
-        with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path)) as temp_file:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with tempfile.NamedTemporaryFile(suffix=basename(parsed_url.path), delete=False) as temp_file:
             temp_file.write(response.content)
-            temp_file.seek(0)
+            temp_file.flush()  # Ensure content is written to disk
+            temp_file_path = temp_file.name
 
-            dois = self._read_from_path(temp_file.name)
+        try:
+            dois = self._read_from_path(temp_file_path)
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
 
         # Update input source to point to original URL, as the temp file paths
         # assigned by _read_from_path no longer exist
@@ -635,8 +695,8 @@ class DOIInputUtil:
         # See if we were handed a URL
         if input_file.startswith("http"):
             dois = self._read_from_remote(input_file)
-        # Otherwise see if its a local file
         elif os.path.exists(input_file):
+            # Otherwise see if its a local file
             dois = self._read_from_path(input_file)
         else:
             raise InputFormatException(
