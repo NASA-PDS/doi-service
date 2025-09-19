@@ -345,8 +345,10 @@ class DOIPDS4LabelUtil:
                     f": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class "
                     f"{list_author_class.text}"
                 )
-                # Continue processing other classes instead of exiting
-                pass
+                # Formerly sys.exit, we want to raise an exception because this is an invalid label
+                raise InputFormatException(
+                    f"Unexpected class type '{list_author_class.tag}' found as child of <List_Authors>. Expected <Person> or <Organization>."
+                )
 
         # Need to map List_Author fields to DOI fields
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
