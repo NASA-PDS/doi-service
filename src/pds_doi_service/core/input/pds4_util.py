@@ -23,7 +23,6 @@ from pds_doi_service.core.util.general_util import get_logger
 from pds_doi_service.core.util.keyword_tokenizer import KeywordTokenizer
 
 logger = get_logger(__name__)
-logger.info(f": sys.getdefaultencoding: " f"{sys.getdefaultencoding()}")
 
 
 class BestParserMethod(Enum):
