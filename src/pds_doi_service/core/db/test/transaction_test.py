@@ -15,6 +15,8 @@ from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.doi import ProductType
 from pds_doi_service.core.outputs.doi_record import CONTENT_TYPE_JSON
+from pds_doi_service.core.test_utils import close_all_database_connections
+from pds_doi_service.core.test_utils import safe_remove_file
 
 
 class TransactionTestCase(unittest.TestCase):
@@ -25,13 +27,17 @@ class TransactionTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.test_dir = str(resources.files(__name__))
 
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close any existing database connections and remove file
+        close_all_database_connections(cls)
+        safe_remove_file(cls.db_name)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close all database connections before cleanup
+        close_all_database_connections(cls)
+
+        # Use robust file removal with retry logic
+        safe_remove_file(cls.db_name)
 
     def test_transaction_logging(self):
         """Test the Transaction.log() method"""
@@ -102,7 +108,7 @@ class TransactionTestCase(unittest.TestCase):
             self.assertTrue(doi_logged)
         finally:
             # Close database connection to release file lock on Windows
-            doi_database.close_database()
+            close_all_database_connections(doi_database)
             # Clean up the fake transaction, if it was created
             if transaction_key and os.path.exists(transaction_key):
                 shutil.rmtree(transaction_key)
@@ -116,13 +122,15 @@ class TransactionBuilderTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.test_dir = str(resources.files(__name__))
 
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close any existing database connections and remove file
+        close_all_database_connections(cls)
+        safe_remove_file(cls.db_name)
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if os.path.isfile(cls.db_name):
-            os.remove(cls.db_name)
+        # Close any existing database connections and remove file
+        close_all_database_connections(cls)
+        safe_remove_file(cls.db_name)
 
     def test_prepare_transaction(self):
         """Test the TransactionBuilder.prepare_transaction() method"""
@@ -152,9 +160,9 @@ class TransactionBuilderTestCase(unittest.TestCase):
         self.assertEqual(transaction._doi, test_doi)
         self.assertEqual(transaction._node_id, test_doi.node_id)
         self.assertEqual(transaction._submitter_email, "pds-operator@jpl.nasa.gov")
-        
+
         # Close database connection to release file lock on Windows
-        transaction_builder.m_doi_database.close_database()
+        close_all_database_connections(transaction_builder)
 
 
 class TransactionOnDiskTestCase(unittest.TestCase):

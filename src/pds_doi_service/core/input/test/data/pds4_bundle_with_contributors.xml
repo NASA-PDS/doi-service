@@ -104,8 +104,6 @@
         <reference_type>bundle_has_data_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-    </Bundle_Member_Entry>
-    <Bundle_Member_Entry>
         <lid_reference>urn:nasa:pds:insight_cameras:miscellaneous</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_document_collection</reference_type>

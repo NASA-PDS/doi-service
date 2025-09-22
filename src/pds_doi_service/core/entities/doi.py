@@ -117,8 +117,17 @@ class Doi:
     identifiers: list[dict] = field(default_factory=list)
     related_identifiers: list[dict] = field(default_factory=list)
     authors: Optional[list[dict]] = field(default_factory=list)  # type: ignore
+    # add list_authors
+    # -- optional because older XML labels did not implement this field
+    list_authors: Optional[list[dict]] = field(default_factory=list)  # type: ignore
     keywords: set[str] = field(default_factory=get_global_keywords)
     editors: Optional[list[dict]] = field(default_factory=list)  # type: ignore
+    # add list_editors
+    # -- add contributors and list_contributors as they didn't exist in the DOI structure
+    # -- optional because older XML labels did not implement this field
+    list_editors: Optional[list[dict]] = field(default_factory=list)  # type: ignore
+    contributors: Optional[list[dict]] = field(default_factory=list)  # type: ignore
+    list_contributors: Optional[list[dict]] = field(default_factory=list)  # type: ignore
     description: Optional[str] = None
     id: Optional[str] = None
     doi: Optional[str] = None

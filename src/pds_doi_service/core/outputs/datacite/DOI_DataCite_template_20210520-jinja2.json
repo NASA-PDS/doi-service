@@ -26,7 +26,7 @@
                     {
                         "identifier": "{{ identifier.identifier.strip() }}",
                         "identifierType": "{{ identifier.identifierType }}"
-                    }{% if not loop.last %},{% endif +%}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "creators": [
@@ -36,7 +36,7 @@
                         "nameType": "{{author.name_type}}",
                         {% else %}
                         "nameType": "Personal",
-                        {% endif %}
+                        {%- endif %}
                         {% if author.first_name and author.last_name %}
                         "name": "{{ author.first_name }} {{ author.last_name }}",
                         {% else %}
@@ -45,20 +45,34 @@
                         {% if author.affiliation and author.affiliation|length > 0 %}
                         "affiliation": [
                         {% for affiliation in author.affiliation %}
-                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
+                            "{{affiliation}}"{% if not loop.last %},{% endif %}
                         {% endfor %}
                         ],
                         {% endif %}
                         "nameIdentifiers": [
+                        {%- if author.rorid %}
+                            {
+                                "nameIdentifier": "{{ author.rorid }}",
+                                "nameIdentifierScheme": "ROR",
+                                "schemeUri": "https://ror.org"
+                            }{%- if author.orcid or author.name_identifiers %},{%- endif %}
+                        {%- endif %}
+                        {%- if author.orcid %}
+                            {
+                                "nameIdentifier": "{{ author.orcid }}",
+                                "nameIdentifierScheme": "ORCID",
+                                "schemeUri": "https://orcid.org"
+                            }
+                        {%- endif %}
                         {% for name_identifier in author.name_identifiers %}
                             {
                             {% for key, value in name_identifier.items() %}
-                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif +%}
+                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif %}
                             {% endfor %}
                             }
                         {% endfor %}
                         ]
-                    }{% if not loop.last %},{% endif +%}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "titles": [
@@ -71,12 +85,12 @@
                 "publicationYear": "{{ doi.publication_year }}",
                 "rightsList": [
                     {% for rights_element in doi.rights_list %}
-                    {{ rights_element }}{% if not loop.last %},{% endif +%}
+                    {{ rights_element }}{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "subjects": [
                     {% for keyword in doi.keywords %}
-                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif +%}
+                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 "contributors": [
@@ -88,21 +102,33 @@
                         {% else %}
                         "name": "{{ editor.name }}",
                         {% endif %}
-                        {% if editor.affiliation and editor.affiliation|length > 0 %}
-                        "affiliation": [
-                        {% for affiliation in editor.affiliation %}
-                            "{{affiliation}}"{% if not loop.last %},{% endif +%}
-                        {% endfor %}
-                        ],
-                        {% endif %}
                         "nameIdentifiers": [
+                        {%- if editor.rorid %}
+                            {
+                                "nameIdentifier": "{{ editor.rorid }}",
+                                "nameIdentifierScheme": "ROR",
+                                "schemeUri": "https://ror.org"
+                            }{%- if editor.orcid or editor.name_identifiers %},{%- endif %}
+                        {%- endif %}
+                        {%- if editor.orcid %}
+                            {
+                                "nameIdentifier": "{{ editor.orcid }}",
+                                "nameIdentifierScheme": "ORCID",
+                                "schemeUri": "https://orcid.org"
+                            }
+                        {% endif %}
                         {% for name_identifier in editor.name_identifiers %}
                             {
                             {% for key, value in name_identifier.items() %}
-                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif +%}
+                                "{{key}}": "{{value}}"{% if not loop.last %},{% endif %}
                             {% endfor %}
                             }
                         {% endfor %}
+                        ],
+                        "affiliations": [
+                            {% if editor.affiliation %}
+                                 { "affiliation": "{{editor.affiliation}}" }
+                            {% endif %}
                         ],
                         "contributorType": "Editor"
                     },
@@ -129,7 +155,7 @@
                         "relatedIdentifier": "{{ related_identifier.relatedIdentifier.strip() }}",
                         "relatedIdentifierType": "{{ related_identifier.relatedIdentifierType }}",
                         "relationType": "{{ related_identifier.relationType }}"
-                    }{% if not loop.last %},{% endif +%}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ],
                 {% if doi.description %}
@@ -154,7 +180,7 @@
                 "language": "en",
                 "schemaVersion": "http://datacite.org/schema/kernel-4"
             }
-        }{% if not loop.last %},{% endif +%}
+        }{% if not loop.last %},{% endif %}
     {% endfor %}
     {% if dois|length > 1 %}
     ]

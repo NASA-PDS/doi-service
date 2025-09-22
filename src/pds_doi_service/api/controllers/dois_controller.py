@@ -13,6 +13,7 @@ Contains the request handlers for the PDS DOI API.
 """
 import csv
 import json
+import os
 from tempfile import NamedTemporaryFile
 
 import connexion  # type: ignore
@@ -287,14 +288,25 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
 
             reserve_action = DOICoreActionReserve(db_name=_get_db_name())
 
-            with NamedTemporaryFile("w", prefix="labels_", suffix=".csv") as csv_file:
+            # Use delete=False for Windows compatibility to avoid permission issues
+            with NamedTemporaryFile("w", prefix="labels_", suffix=".csv", delete=False) as csv_file:
                 logger.debug("Writing temporary label to %s", csv_file.name)
 
                 _write_csv_from_labels(csv_file, body["labels"])
+                csv_file.flush()
+                csv_file_path = csv_file.name
 
-                reserve_kwargs = {"node": node, "submitter": submitter, "input": csv_file.name, "force": force}
+            try:
+                reserve_kwargs = {"node": node, "submitter": submitter, "input": csv_file_path, "force": force}
 
                 doi_label = reserve_action.run(**reserve_kwargs)
+            finally:
+                # Clean up the temporary file
+                try:
+                    os.unlink(csv_file_path)
+                except OSError:
+                    # Ignore cleanup errors on Windows
+                    pass
 
             # Parse the JSON string back into a list of DOIs
             dois, _ = web_parser.parse_dois_from_label(doi_label, content_type=CONTENT_TYPE_JSON)
@@ -322,15 +334,25 @@ def post_dois(action, submitter, node, url=None, body=None, force=False):
                 else:
                     content_type = CONTENT_TYPE_XML
 
-                with NamedTemporaryFile("wb", prefix="labels_", suffix=f".{content_type}") as outfile:
+                # Use delete=False for Windows compatibility to avoid permission issues
+                with NamedTemporaryFile("wb", prefix="labels_", suffix=f".{content_type}", delete=False) as outfile:
                     logger.debug("Writing temporary label to %s", outfile.name)
 
                     outfile.write(body)
                     outfile.flush()
+                    outfile_path = outfile.name
 
-                    update_kwargs = {"node": node, "submitter": submitter, "input": outfile.name, "force": force}
+                try:
+                    update_kwargs = {"node": node, "submitter": submitter, "input": outfile_path, "force": force}
 
                     doi_label = update_action.run(**update_kwargs)
+                finally:
+                    # Clean up the temporary file
+                    try:
+                        os.unlink(outfile_path)
+                    except OSError:
+                        # Ignore cleanup errors on Windows
+                        pass
 
             # Parse the label back into a list of DOIs
             dois, _ = web_parser.parse_dois_from_label(doi_label)
@@ -413,19 +435,22 @@ def post_release_doi(identifier, force=False, **kwargs):
         web_parser = DOIServiceFactory.get_web_parser_service()
         record, content_type = web_parser.get_record_for_identifier(label_file, identifier)
 
-        with NamedTemporaryFile("w", prefix="output_", suffix=f".{content_type}") as temp_file:
+        # Use delete=False for Windows compatibility to avoid permission issues
+        with NamedTemporaryFile("w", prefix="output_", suffix=f".{content_type}", delete=False) as temp_file:
             logger.debug("Writing temporary label to %s", temp_file.name)
 
             temp_file.write(record)
             temp_file.flush()
+            temp_file_path = temp_file.name
 
+        try:
             # Prepare the release action
             release_action = DOICoreActionRelease(db_name=_get_db_name())
 
             release_kwargs = {
                 "node": list_record["node_id"],
                 "submitter": list_record["submitter"],
-                "input": temp_file.name,
+                "input": temp_file_path,
                 "force": force,
                 # Default for this endpoint should be to skip review and release
                 # directly to the DOI service provider
@@ -434,13 +459,20 @@ def post_release_doi(identifier, force=False, **kwargs):
 
             release_label = release_action.run(**release_kwargs)
 
-        dois, errors = web_parser.parse_dois_from_label(release_label, content_type=CONTENT_TYPE_JSON)
+            dois, errors = web_parser.parse_dois_from_label(release_label, content_type=CONTENT_TYPE_JSON)
 
-        # Propagate any errors returned from the attempt in a single exception
-        if errors:
-            raise WarningDOIException(
-                "Received the following errors from the release request:\n" "{}".format("\n".join(errors))
-            )
+            # Propagate any errors returned from the attempt in a single exception
+            if errors:
+                raise WarningDOIException(
+                    "Received the following errors from the release request:\n" "{}".format("\n".join(errors))
+                )
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                # Ignore cleanup errors on Windows
+                pass
     except (ValueError, WarningDOIException) as err:
         # Some warning or error prevented release of the DOI
         return format_exceptions(err), 400

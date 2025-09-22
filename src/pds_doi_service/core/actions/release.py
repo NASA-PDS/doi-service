@@ -46,7 +46,7 @@ class DOICoreActionRelease(DOICoreAction):
     def __init__(self, db_name=None):
         super().__init__(db_name=db_name)
         self._doi_validator = DOIValidator(db_name=db_name)
-        self._input_util = DOIInputUtil(valid_extensions=[".xml", ".json"])
+        self._input_util = DOIInputUtil(valid_extensions=[".lblx", ".xml", ".json"])
         self._record_service = DOIServiceFactory.get_doi_record_service()
         self._validator_service = DOIServiceFactory.get_validator_service()
         self._web_client = DOIServiceFactory.get_web_client_service()
