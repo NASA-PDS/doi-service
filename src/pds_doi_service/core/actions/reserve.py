@@ -197,6 +197,7 @@ class DOICoreActionReserve(DOICoreAction):
                 InvalidIdentifierException,
                 UnexpectedDOIActionException,
                 TitleDoesNotMatchProductTypeException,
+                IllegalDOIActionException,
             ) as err:
                 (exception_classes, exception_messages) = collect_exception_classes_and_messages(
                     err, exception_classes, exception_messages
