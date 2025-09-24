@@ -379,8 +379,9 @@ class UpdateActionTestCase(unittest.TestCase):
         """Test invalid update requests to ensure exceptions are raised"""
 
         # Attempting to update a record with no DOI assigned should result in an exception
+        # Use unique test files that won't conflict with other tests
         update_kwargs = {
-            "input": join(self.input_dir, "pds4_bundle_with_contributors.xml"),
+            "input": join(self.input_dir, "test_invalid_update.xml"),
             "node": "img",
             "submitter": "my_user@my_node.gov",
             "force": True,
@@ -390,7 +391,7 @@ class UpdateActionTestCase(unittest.TestCase):
             self._update_action.run(**update_kwargs)
 
         # This should go for spreadsheet submissions as well
-        update_kwargs["input"] = join(self.input_dir, "spreadsheet_with_pds3_identifiers.csv")
+        update_kwargs["input"] = join(self.input_dir, "test_invalid_update.csv")
 
         with self.assertRaises(CriticalDOIException):
             self._update_action.run(**update_kwargs)
