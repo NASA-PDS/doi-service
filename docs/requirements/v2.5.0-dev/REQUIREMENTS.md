@@ -256,3 +256,7 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a user, I want to support labels with lblx suffix ([#478](https://github.com/NASA-PDS/doi-service/issues/478)) 
+
+
+This requirement is not impacted by the current version
