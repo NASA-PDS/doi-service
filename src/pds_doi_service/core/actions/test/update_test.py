@@ -67,26 +67,27 @@ class UpdateActionTestCase(unittest.TestCase):
         tests.
         """
         # Close any existing database connections to release file lock on Windows
-        if hasattr(self, '_update_action'):
-            close_all_database_connections(self._update_action)
-            if hasattr(self._update_action, 'm_transaction_builder'):
-                close_all_database_connections(self._update_action.m_transaction_builder)
-            if hasattr(self._update_action, '_doi_validator'):
-                close_all_database_connections(self._update_action._doi_validator)
+        # Check both instance and class attributes for robustness
+        actions_to_cleanup = []
 
-        if hasattr(self, '_reserve_action'):
-            close_all_database_connections(self._reserve_action)
-            if hasattr(self._reserve_action, 'm_transaction_builder'):
-                close_all_database_connections(self._reserve_action.m_transaction_builder)
-            if hasattr(self._reserve_action, '_doi_validator'):
-                close_all_database_connections(self._reserve_action._doi_validator)
+        # Check instance attributes first
+        for attr_name in ['_update_action', '_reserve_action', '_release_action']:
+            if hasattr(self, attr_name):
+                actions_to_cleanup.append(getattr(self, attr_name))
 
-        if hasattr(self, '_release_action'):
-            close_all_database_connections(self._release_action)
-            if hasattr(self._release_action, 'm_transaction_builder'):
-                close_all_database_connections(self._release_action.m_transaction_builder)
-            if hasattr(self._release_action, '_doi_validator'):
-                close_all_database_connections(self._release_action._doi_validator)
+        # Check class attributes as fallback
+        for attr_name in ['_update_action', '_reserve_action', '_release_action']:
+            if hasattr(self.__class__, attr_name):
+                actions_to_cleanup.append(getattr(self.__class__, attr_name))
+
+        # Clean up all found actions
+        for action in actions_to_cleanup:
+            if action is not None:
+                close_all_database_connections(action)
+                if hasattr(action, 'm_transaction_builder'):
+                    close_all_database_connections(action.m_transaction_builder)
+                if hasattr(action, '_doi_validator'):
+                    close_all_database_connections(action._doi_validator)
 
         # Use robust file removal with retry logic
         safe_remove_file(self.db_name)
