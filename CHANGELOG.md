@@ -1,15 +1,17 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-09-22)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-09-24)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...«unknown»)
 
 **Requirements:**
 
+- As a user, I want to support labels with lblx suffix [\#478](https://github.com/NASA-PDS/doi-service/issues/478)
 - As a user, I want to submit a label utilizing the updated author/contributor metadata \(`List_Author`, `List_Contributor`, `List_Editor`\) [\#432](https://github.com/NASA-PDS/doi-service/issues/432)
 
 **Defects:**
 
+- Tests do not run successfully on windows [\#476](https://github.com/NASA-PDS/doi-service/issues/476) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - DOI service does not properly process UTF-16 in a JSON label [\#466](https://github.com/NASA-PDS/doi-service/issues/466) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
 - Large majority of units tests failing [\#456](https://github.com/NASA-PDS/doi-service/issues/456) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 - SBN DOIs contain unexpected metadata that is breaking our database load script [\#455](https://github.com/NASA-PDS/doi-service/issues/455) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
