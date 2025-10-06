@@ -93,7 +93,7 @@ jobs:
                     DATACITE_PASSWORD: ${{secrets.DATACITE_PASSWORD}}
             -
                 name: 🛏️ Upload Coverage
-                uses: SonarSource/sonarqube-scan-action@v5
+                uses: SonarSource/sonarqube-scan-action@v6
                 env:
                     SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
 
