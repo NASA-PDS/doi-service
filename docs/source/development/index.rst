@@ -9,7 +9,7 @@ To obtain a copy of the code and work on a new branch::
     git clone https://github.com/NASA-PDS/doi-service.git
     git checkout -b "<issue number>_<issue name>"
 
-Create a virtual environment in ``venv`` using Python 3.9 or later::
+Create a virtual environment in ``venv`` using Python 3.12 or later::
 
     python3 -m venv venv
 
@@ -32,7 +32,7 @@ Testing
 The code base includes both unit and integration tests. Once you've installed
 the service, you can run the unit tests with the following command:
 
-    venv/bin/tox py39
+    venv/bin/tox py312
 
 You can run the integration tests with:
 
