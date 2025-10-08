@@ -125,7 +125,7 @@
                         {% if editor.affiliation and editor.affiliation|length > 0 %}
                         "affiliation": [
                             {% for affiliation in editor.affiliation %}
-                                {"name": "{{affiliation}}" }{% if not loop.last %},{% endif +%}
+                                {"name": "{{affiliation}}" }{% if not loop.last %},{% endif %}
                             {% endfor %}
                         ],
                         {% endif %}
