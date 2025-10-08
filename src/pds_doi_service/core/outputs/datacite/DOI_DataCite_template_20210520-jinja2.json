@@ -107,7 +107,8 @@
                                 "nameIdentifierScheme": "ROR",
                                 "schemeUri": "https://ror.org"
                             }{% if editor.orcid or editor.name_identifiers %},{% endif %}
-                        {% elif editor.orcid %}
+                        {% endif %}
+                        {% if editor.orcid %}
                             {
                                 "nameIdentifier": "{{ editor.orcid }}",
                                 "nameIdentifierScheme": "ORCID",
