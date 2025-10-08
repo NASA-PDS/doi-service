@@ -44,32 +44,30 @@
                         {% endif %}
                         {% if author.affiliation and author.affiliation|length > 0 %}
                         "affiliation": [
-                        {% for affiliation in author.affiliation %}
-                            "{{affiliation}}"{% if not loop.last %},{% endif %}
-                        {% endfor %}
+                            {% for affiliation in author.affiliation %}
+                                {"name": "{{affiliation}}" }{% if not loop.last %},{% endif +%}
+                            {% endfor %}
                         ],
                         {% endif %}
                         "nameIdentifiers": [
-                        {%- if author.rorid %}
-                            {
-                                "nameIdentifier": "{{ author.rorid }}",
+                        {% if author.rorid %}
+                            {   "nameIdentifier": "{{ author.rorid }}",
                                 "nameIdentifierScheme": "ROR",
                                 "schemeUri": "https://ror.org"
-                            }{%- if author.orcid or author.name_identifiers %},{%- endif %}
-                        {%- endif %}
-                        {%- if author.orcid %}
+                            }{% if author.orcid or author.name_identifiers %},{% endif %}
+                        {% elif author.orcid %}
                             {
                                 "nameIdentifier": "{{ author.orcid }}",
                                 "nameIdentifierScheme": "ORCID",
                                 "schemeUri": "https://orcid.org"
-                            }
-                        {%- endif %}
+                            }{% if author.name_identifiers %},{% endif %}
+                        {% endif %}
                         {% for name_identifier in author.name_identifiers %}
                             {
                             {% for key, value in name_identifier.items() %}
                                 "{{key}}": "{{value}}"{% if not loop.last %},{% endif %}
                             {% endfor %}
-                            }
+                            }{% if not loop.last %},{% endif %}
                         {% endfor %}
                         ]
                     }{% if not loop.last %},{% endif %}
@@ -90,7 +88,7 @@
                 ],
                 "subjects": [
                     {% for keyword in doi.keywords %}
-                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif %}
+                    { "subject": "{{ keyword }}" }{% if not loop.last %},{% endif +%}
                     {% endfor %}
                 ],
                 "contributors": [
@@ -103,33 +101,34 @@
                         "name": "{{ editor.name }}",
                         {% endif %}
                         "nameIdentifiers": [
-                        {%- if editor.rorid %}
+                        {% if editor.rorid %}
                             {
                                 "nameIdentifier": "{{ editor.rorid }}",
                                 "nameIdentifierScheme": "ROR",
                                 "schemeUri": "https://ror.org"
-                            }{%- if editor.orcid or editor.name_identifiers %},{%- endif %}
-                        {%- endif %}
-                        {%- if editor.orcid %}
+                            }{% if editor.orcid or editor.name_identifiers %},{% endif %}
+                        {% elif editor.orcid %}
                             {
                                 "nameIdentifier": "{{ editor.orcid }}",
                                 "nameIdentifierScheme": "ORCID",
                                 "schemeUri": "https://orcid.org"
-                            }
+                            }{% if editor.name_identifiers %},{% endif %}
                         {% endif %}
                         {% for name_identifier in editor.name_identifiers %}
                             {
                             {% for key, value in name_identifier.items() %}
                                 "{{key}}": "{{value}}"{% if not loop.last %},{% endif %}
                             {% endfor %}
-                            }
+                            }{% if not loop.last %},{% endif %}
                         {% endfor %}
                         ],
-                        "affiliations": [
-                            {% if editor.affiliation %}
-                                 { "affiliation": "{{editor.affiliation}}" }
-                            {% endif %}
+                        {% if editor.affiliation and editor.affiliation|length > 0 %}
+                        "affiliation": [
+                            {% for affiliation in editor.affiliation %}
+                                {"name": "{{affiliation}}" }{% if not loop.last %},{% endif +%}
+                            {% endfor %}
                         ],
+                        {% endif %}
                         "contributorType": "Editor"
                     },
                     {% endfor %}

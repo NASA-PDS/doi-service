@@ -115,6 +115,14 @@ class DOIPDS4LabelUtil:
                 "given_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:given_name",
                 "family_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:family_name",
                 "person_orcid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:person_orcid",
+                "Affiliation": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/*"
+            }
+
+        elif dict_type == "xpath_dict_person_affiliation_attributes":
+            return {
+                "organization_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_name",
+                # include rorid in the future release
+                #"organization_rorid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_rorid",
             }
 
         elif dict_type == "xpath_dict_organization_attributes":
@@ -206,9 +214,13 @@ class DOIPDS4LabelUtil:
         pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
         pds4_namespace_prefix = "{http://pds.nasa.gov/pds4/pds/v1}"
 
+        logger.debug(f": get_list_aec.role_type START " f"{role_type}")
+
         xpath_dict = self.build_xpath_dict(role_type, "xpath_dict")
         xpath_dict_person_attributes = self.build_xpath_dict(role_type, "xpath_dict_person_attributes")
         xpath_dict_organization_attributes = self.build_xpath_dict(role_type, "xpath_dict_organization_attributes")
+        xpath_dict_person_affiliation_attributes = self.build_xpath_dict(role_type, "xpath_dict_person_affiliation_attributes")
+        logger.debug(f": get_list_aec.xpath_dict_person_affiliation_attributes " f"{xpath_dict_person_affiliation_attributes}")
 
         # get Class in List_Auth:
         #   -- <Person> | <Organization>
@@ -240,14 +252,22 @@ class DOIPDS4LabelUtil:
             logger.debug(f": get_list_aec.list_author_class.tag " f"{list_author_class.tag}")
             # logger.debug(f": get_list_aec.list_author_class.text " f"{list_author_class.text}")
 
+            # Person:  parse the Person class for each attribute and class
+            #   -- <Person> attributes:  given_name, middle_name, family_name, name_type, person_orcid
+            #   -- <Person>.<Affiliation:  organization_name, organization_rorid
             if list_author_class.tag == pds4_namespace_prefix + "Person":
                 logger.debug(f": get_list_aec.list_author_class.tag == Person " f"{list_author_class.tag}")
-
+                # Advance person_instance by 1 for each <Person> instance
                 person_instance += 1
                 logger.debug(f": get_list_aec.person_instance " f"{person_instance}")
+                # Initialize the <Person>.<Affiliation> instance
+                affil_instance = 0
+                logger.debug(f": get_list_aec.affil_instance " f"{affil_instance}")
 
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Personal"
+                # debug list of values for Affiliation
+                #dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
@@ -272,10 +292,56 @@ class DOIPDS4LabelUtil:
                     logger.debug(f": get_list_aec.element_text " f"{element_text}")
 
                     if element_tag in xpath_dict_person_attributes:
-                        dict_list_authors[element_tag] = element_text
-                        logger.debug(
-                            f": get_list_aec.dict_list_authors[tag] " f"{element_tag, dict_list_authors[element_tag]}"
-                        )
+                        if (element_tag == "Affiliation"):
+                            logger.debug(f": get_list_aec.list_author_class.tag == Affiliation " f"{element_tag}")
+                            # Add Affiliation to same instance of <Person>
+                            #person_instance += 1
+                            logger.debug(f": get_list_aec.person_instance " f"{person_instance}")
+                            # Advance affil_instance by 1 for each <Affiliation> instance
+                            affil_instance += 1
+                            logger.debug(f": get_list_aec.affil_instance " f"{affil_instance}")
+
+                            dict_list_authors["name_type"] = "Personal"
+                            #debug list of values for Affiliation that is found in the <Person> instance
+                            #dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
+
+                            # adjust the dictionary to reflect the role_type
+                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
+                            #xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation/*")
+                            xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation[" + str(affil_instance) + "]/*")
+                            logger.debug(f": get_list_aec.xpath " f"{xpath}")
+
+                            # Convert XPath for default namespace
+                            xpath_affil_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
+                            logger.debug(
+                                f": get_list_aec.xpath_affil_attributes,len(xpath_affil_attributes) "
+                                f"{xpath_affil_attributes, len(xpath_affil_attributes)}"
+                            )
+
+                            for xpath_affil_attribute in xpath_affil_attributes:
+                                logger.debug(f": get_list_aec.xpath_affil_attribute.tag " f"{xpath_affil_attribute.tag}")
+                                logger.debug(f": get_list_aec.xpath_affil_attribute.text " f"{xpath_affil_attribute.text}")
+
+                                element_tag = xpath_affil_attribute.tag.replace(pds4_namespace_prefix, "")
+                                element_text = xpath_affil_attribute.text
+                                logger.debug(f": get_list_aec.element_tag " f"{element_tag}")
+                                logger.debug(f": get_list_aec.element_text " f"{element_text}")
+
+                                if element_tag in xpath_dict_person_affiliation_attributes:
+                                    dict_list_authors["Affiliation"].append(element_text)
+                                    for key, value in dict_list_authors.items():
+                                        logger.debug(f": get_list_aec.dict_list_authors.Affiliation " f"{key, value}")
+                                else:
+                                    logger.debug(
+                                        f": get_list_aec.each_element.tag not in xpath_dict_person_affiliation_attributes[key] "
+                                        f"{element_tag}"
+                                    )
+                        else:
+                            #Add every attribute found in list_authors to the dictionary
+                            dict_list_authors[element_tag] = element_text
+                            logger.debug(
+                                f": get_list_aec.dict_list_authors[tag] " f"{element_tag, dict_list_authors[element_tag]}"
+                            )
                     else:
                         logger.debug(
                             f": get_list_aec.each_element.tag not in xpath_dict_person_attributes[key] "
@@ -296,6 +362,7 @@ class DOIPDS4LabelUtil:
 
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Organizational"
+                #dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
