@@ -122,7 +122,7 @@ class DOIPDS4LabelUtil:
             return {
                 "organization_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_name",
                 # include rorid in the future release
-                #"organization_rorid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_rorid",
+                # "organization_rorid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_rorid",
             }
 
         elif dict_type == "xpath_dict_organization_attributes":
@@ -267,7 +267,7 @@ class DOIPDS4LabelUtil:
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Personal"
                 # debug list of values for Affiliation
-                #dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
+                # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
@@ -295,19 +295,18 @@ class DOIPDS4LabelUtil:
                         if (element_tag == "Affiliation"):
                             logger.debug(f": get_list_aec.list_author_class.tag == Affiliation " f"{element_tag}")
                             # Add Affiliation to same instance of <Person>
-                            #person_instance += 1
+                            # person_instance += 1
                             logger.debug(f": get_list_aec.person_instance " f"{person_instance}")
                             # Advance affil_instance by 1 for each <Affiliation> instance
                             affil_instance += 1
                             logger.debug(f": get_list_aec.affil_instance " f"{affil_instance}")
 
                             dict_list_authors["name_type"] = "Personal"
-                            #debug list of values for Affiliation that is found in the <Person> instance
-                            #dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
+                            # debug list of values for Affiliation that is found in the <Person> instance
+                            # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
 
                             # adjust the dictionary to reflect the role_type
-                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
-                            #xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation/*")
+                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]                           
                             xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation[" + str(affil_instance) + "]/*")
                             logger.debug(f": get_list_aec.xpath " f"{xpath}")
 
@@ -337,7 +336,7 @@ class DOIPDS4LabelUtil:
                                         f"{element_tag}"
                                     )
                         else:
-                            #Add every attribute found in list_authors to the dictionary
+                            # Add every attribute found in list_authors to the dictionary
                             dict_list_authors[element_tag] = element_text
                             logger.debug(
                                 f": get_list_aec.dict_list_authors[tag] " f"{element_tag, dict_list_authors[element_tag]}"
@@ -362,7 +361,8 @@ class DOIPDS4LabelUtil:
 
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Organizational"
-                #dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
+                # Debug: to test the Affiliation field
+                # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
