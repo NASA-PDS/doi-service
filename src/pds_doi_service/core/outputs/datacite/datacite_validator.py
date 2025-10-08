@@ -36,7 +36,8 @@ class DOIDataCiteValidator(DOIServiceValidator):
         # Define schema file directory and pull schema from that
         #   -- used to ensure schema is valid JSON schema
         #   -- updated with new versions in order to support the new schema version
-        #schema_file = str(resources.files(__name__) / "datacite_4.3_schema.json")
+        # Debug: use the 4.3 schema for now
+        # schema_file = str(resources.files(__name__) / "datacite_4.3_schema.json")
         schema_file = str(resources.files(__name__) / "datacite_4.6_schema.json")
         logger.info(f"Using datacite schema file: {schema_file}")
 
