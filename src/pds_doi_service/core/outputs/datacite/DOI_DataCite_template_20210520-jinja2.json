@@ -45,7 +45,7 @@
                         {% if author.affiliation and author.affiliation|length > 0 %}
                         "affiliation": [
                             {% for affiliation in author.affiliation %}
-                                {"name": "{{affiliation}}" }{% if not loop.last %},{% endif +%}
+                                {"name": "{{affiliation}}" }{% if not loop.last %},{% endif %}
                             {% endfor %}
                         ],
                         {% endif %}
