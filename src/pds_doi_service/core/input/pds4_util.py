@@ -306,7 +306,7 @@ class DOIPDS4LabelUtil:
                             # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
 
                             # adjust the dictionary to reflect the role_type
-                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]                           
+                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
                             xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation[" + str(affil_instance) + "]/*")
                             logger.debug(f": get_list_aec.xpath " f"{xpath}")
 
