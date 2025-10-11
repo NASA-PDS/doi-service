@@ -66,7 +66,7 @@ class ListActionTestCase(unittest.TestCase):
         if os.path.exists(transaction_dir):
             try:
                 shutil.rmtree(transaction_dir)
-            except (OSError, PermissionError):
+            except OSError:
                 # On Windows, files may be locked - try to continue anyway
                 pass
 
@@ -108,7 +108,7 @@ class ListActionTestCase(unittest.TestCase):
         if os.path.exists(transaction_dir):
             try:
                 shutil.rmtree(transaction_dir)
-            except (OSError, PermissionError):
+            except OSError:
                 # On Windows, files may be locked - try to continue anyway
                 pass
 
