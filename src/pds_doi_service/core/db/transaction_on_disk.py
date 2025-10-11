@@ -19,7 +19,6 @@ from os.path import exists
 from os.path import join
 
 import requests
-from distutils.dir_util import copy_tree
 from pds_doi_service.core.entities.exceptions import NoTransactionHistoryForIdentifierException
 from pds_doi_service.core.util.config_parser import DOIConfigUtil
 from pds_doi_service.core.util.general_util import get_logger
@@ -148,7 +147,11 @@ class TransactionOnDisk:
             if os.path.isdir(input_ref):
                 # Copy the input files, but do not preserve their permissions so
                 # the umask we set above takes precedence
-                copy_tree(input_ref, os.path.join(transaction_dir, "input"), preserve_mode=False)
+                # Using shutil.copytree instead of deprecated distutils.dir_util.copy_tree
+                dest_path = os.path.join(transaction_dir, "input")
+                if os.path.exists(dest_path):
+                    shutil.rmtree(dest_path)
+                shutil.copytree(input_ref, dest_path, copy_function=shutil.copy)
             else:
                 input_content_type = os.path.splitext(input_ref)[-1]
 
