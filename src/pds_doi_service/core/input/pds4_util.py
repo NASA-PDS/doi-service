@@ -361,7 +361,6 @@ class DOIPDS4LabelUtil:
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Organizational"
                 # Debug: to test the Affiliation field
-                # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
