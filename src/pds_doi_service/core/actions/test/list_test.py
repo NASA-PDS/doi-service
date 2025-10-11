@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import os
+import shutil
 import tempfile
 import unittest
 from importlib import resources
@@ -25,6 +26,7 @@ from pds_doi_service.core.outputs.service import DOIServiceFactory
 from pds_doi_service.core.outputs.web_client import WEB_METHOD_POST
 from pds_doi_service.core.test_utils import close_all_database_connections
 from pds_doi_service.core.test_utils import safe_remove_file
+from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
 # TODO: add additional unit tests for other list query parameters
@@ -58,6 +60,16 @@ class ListActionTestCase(unittest.TestCase):
         # Use robust file removal with retry logic
         safe_remove_file(cls.db_name)
 
+        # Clean up transaction history directory
+        config = DOIConfigUtil().get_config()
+        transaction_dir = config.get("OTHER", "transaction_dir")
+        if os.path.exists(transaction_dir):
+            try:
+                shutil.rmtree(transaction_dir)
+            except OSError:
+                # On Windows, files may be locked - try to continue anyway
+                pass
+
     def setUp(self) -> None:
         """
         Remove previous transaction DB and reinitialize the action objects so
@@ -88,6 +100,17 @@ class ListActionTestCase(unittest.TestCase):
 
         # Use robust file removal with retry logic
         safe_remove_file(self.db_name)
+
+        # Clean up transaction history directory to prevent stale files from affecting tests
+        # This is especially important on Windows where files may persist between test runs
+        config = DOIConfigUtil().get_config()
+        transaction_dir = config.get("OTHER", "transaction_dir")
+        if os.path.exists(transaction_dir):
+            try:
+                shutil.rmtree(transaction_dir)
+            except OSError:
+                # On Windows, files may be locked - try to continue anyway
+                pass
 
         self._list_action = DOICoreActionList(db_name=self.db_name)
         self._reserve_action = DOICoreActionReserve(db_name=self.db_name)

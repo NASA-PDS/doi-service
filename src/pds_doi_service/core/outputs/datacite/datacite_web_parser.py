@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import List
 
 from dateutil.parser import isoparse
-from distutils.version import LooseVersion
+from packaging.version import Version
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiEvent
 from pds_doi_service.core.entities.doi import DoiStatus
@@ -120,7 +120,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             for identifier in identifiers:
                 if identifier["identifier"] is None:
-                    logger.warn(
+                    logger.warning(
                         f"Odd metadata. NoneType identifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
                     )
                     identifiers.remove(identifier)
@@ -138,7 +138,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             for related_identifier in related_identifiers:
                 if related_identifier["relatedIdentifier"] is None:
-                    logger.warn(
+                    logger.warning(
                         f"Odd metadata. NoneType relatedIdentifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
                     )
                     related_identifiers.remove(related_identifier)
@@ -289,8 +289,8 @@ class DOIDataCiteWebParser(DOIWebParser):
                     pds4_identifiers.append(identifier_record["identifier"])
 
             # There could be multiple PDS4 ID's with the same LID but different
-            # VIDs, so take the newest one. The LooseVersion class is used to
-            # sort VIDs by basic semantic versioning rules (1.9.0 < 1.10.0)
+            # VIDs, so take the newest one. The Version class is used to
+            # sort VIDs by semantic versioning rules (1.9.0 < 1.10.0)
             # For LID's only, assign a version 0.0 so they're always superseded by
             # a LIDVID
             if pds4_identifiers:
@@ -298,7 +298,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                     pds4_identifier.split("::")[-1] if "::" in pds4_identifier else "0.0"
                     for pds4_identifier in pds4_identifiers
                 ]
-                sorted_vids = list(sorted(vids, key=LooseVersion))
+                sorted_vids = list(sorted(vids, key=Version))
                 identifier = pds4_identifiers[vids.index(sorted_vids[-1])]
 
         # Lastly, try to parse an ID from the site URL
