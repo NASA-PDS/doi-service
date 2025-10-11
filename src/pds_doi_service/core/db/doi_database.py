@@ -82,12 +82,12 @@ class DOIDataBase:
             # Set m_my_conn to None to signify that there is no connection.
             self.m_my_conn = None
         else:
-            logger.warn("Database connection to %s has not been started or is already closed", self.m_database_name)
+            logger.warning("Database connection to %s has not been started or is already closed", self.m_database_name)
 
     def create_connection(self):
         """Create and return a connection to the SQLite database."""
         if self.m_my_conn is not None:
-            logger.warn("There is already an open database connection, closing existing connection.")
+            logger.warning("There is already an open database connection, closing existing connection.")
             self.close_database()
 
         logger.info("Connecting to SQLite3 (ver %s) database %s", sqlite3.version, self.m_database_name)
@@ -135,7 +135,7 @@ class DOIDataBase:
         o_table_exists_flag = False
 
         if self.m_my_conn is None:
-            logger.warn("Not connected to %s, establishing new connection...", self.m_database_name)
+            logger.warning("Not connected to %s, establishing new connection...", self.m_database_name)
             self.create_connection()
 
         table_pointer = self.m_my_conn.cursor()

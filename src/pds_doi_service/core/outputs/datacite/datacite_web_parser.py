@@ -120,7 +120,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             for identifier in identifiers:
                 if identifier["identifier"] is None:
-                    logger.warn(
+                    logger.warning(
                         f"Odd metadata. NoneType identifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
                     )
                     identifiers.remove(identifier)
@@ -138,7 +138,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
             for related_identifier in related_identifiers:
                 if related_identifier["relatedIdentifier"] is None:
-                    logger.warn(
+                    logger.warning(
                         f"Odd metadata. NoneType relatedIdentifier in record: {json.dumps(record, indent=4, sort_keys=True)}"
                     )
                     related_identifiers.remove(related_identifier)
