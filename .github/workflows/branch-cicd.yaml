@@ -70,8 +70,8 @@ jobs:
                     DATACITE_USER: ${{secrets.DATACITE_USER}}
                     DATACITE_PASSWORD: ${{secrets.DATACITE_PASSWORD}}
 
-branch-testing-windows:
-        name: 🪵 Branch Testing on Windoze
+    branch-testing-windows:
+        name: 😴 Branch Testing on Windoze
         runs-on: windows-latest
         if: github.actor != 'pdsen-ci'
         strategy:
