@@ -81,6 +81,38 @@ def get_logger(module_name=None):
 logger = get_logger(__name__)
 
 
+def str_to_bool(value):
+    """
+    Convert a string representation of truth to a boolean.
+
+    Replaces deprecated distutils.util.strtobool for Python 3.12+ compatibility.
+
+    Parameters
+    ----------
+    value : str
+        String value to convert. Accepts: 'y', 'yes', 't', 'true', 'on', '1' (case-insensitive) for True
+                                         'n', 'no', 'f', 'false', 'off', '0' (case-insensitive) for False
+
+    Returns
+    -------
+    bool
+        Boolean representation of the input value.
+
+    Raises
+    ------
+    ValueError
+        If value is not a recognized boolean string.
+
+    """
+    value = str(value).lower()
+    if value in ('y', 'yes', 't', 'true', 'on', '1'):
+        return True
+    elif value in ('n', 'no', 'f', 'false', 'off', '0'):
+        return False
+    else:
+        raise ValueError(f"Cannot convert '{value}' to boolean")
+
+
 def parse_identifier_from_site_url(site_url):
     """
     For some records, the PDS identifier can be parsed from the site url as a

@@ -87,7 +87,7 @@ class DOIDataBase:
     def create_connection(self):
         """Create and return a connection to the SQLite database."""
         if self.m_my_conn is not None:
-            logger.warning("There is already an open database connection, closing existing connection.")
+            logger.warn("There is already an open database connection, closing existing connection.")
             self.close_database()
 
         logger.info("Connecting to SQLite3 (ver %s) database %s", sqlite3.version, self.m_database_name)

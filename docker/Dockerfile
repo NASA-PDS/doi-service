@@ -28,7 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 RUN mkdir --parents /usr/src/app
 WORKDIR /usr/src/app

@@ -8,3 +8,8 @@ line-length = 120
 [tool.pytest.ini_options]
 # This is required for non-re-entrant tests in ``pds-doi-service``:
 numprocesses = 1
+filterwarnings = [
+    "ignore::DeprecationWarning:pkg_resources",
+    "ignore::DeprecationWarning:pytz",
+    "ignore::UserWarning:jsonschema",
+]

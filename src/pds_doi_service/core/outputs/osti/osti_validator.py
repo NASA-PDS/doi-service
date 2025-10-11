@@ -17,13 +17,13 @@ from importlib import resources
 from os.path import exists
 
 import xmlschema  # type: ignore
-from distutils.util import strtobool
 from lxml import etree
 from lxml import isoschematron  # type: ignore
 from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import InputFormatException
 from pds_doi_service.core.outputs.service_validator import DOIServiceValidator
 from pds_doi_service.core.util.general_util import get_logger
+from pds_doi_service.core.util.general_util import str_to_bool
 
 # Note that in the ↑ list of imports, the ``lxml`` module does have the ``isoschematron``
 # member, but the typing stub does not so set just it to ``type: ignore``.
@@ -185,5 +185,5 @@ class DOIOstiValidator(DOIServiceValidator):
         # Determine if we need to validate against the schema as well
         validate_against_schema = self._config.get("OSTI", "validate_against_schema", fallback="False")
 
-        if strtobool(validate_against_schema):
+        if str_to_bool(validate_against_schema):
             self._validate_against_xsd(osti_root)
