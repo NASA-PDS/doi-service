@@ -69,36 +69,3 @@ jobs:
                 env:
                     DATACITE_USER: ${{secrets.DATACITE_USER}}
                     DATACITE_PASSWORD: ${{secrets.DATACITE_PASSWORD}}
-
-    branch-testing-windows:
-        name: 😴 Branch Testing on Windoze
-        runs-on: windows-latest
-        if: github.actor != 'pdsen-ci'
-        strategy:
-            matrix:
-                python-version: ['3.12', '3.13']
-
-        steps:
-            -
-                name: 💳 Checkout
-                uses: actions/checkout@v5
-                with:
-                    lfs: true
-                    fetch-depth: 0
-                    token: ${{secrets.ADMIN_GITHUB_TOKEN}}
-            -
-                name: Set up Python ${{ matrix.python-version }}
-                uses: actions/setup-python@v6
-                with:
-                    python-version: ${{ matrix.python-version }}
-
-            -
-                name: 🩺 Test Software
-                run:
-                    pip install --editable '.[dev]'
-
-                    tox
-                shell: bash
-                env:
-                    DATACITE_USER: ${{secrets.DATACITE_USER}}
-                    DATACITE_PASSWORD: ${{secrets.DATACITE_PASSWORD}}
