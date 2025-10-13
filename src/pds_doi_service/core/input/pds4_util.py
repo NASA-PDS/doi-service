@@ -597,9 +597,9 @@ class DOIPDS4LabelUtil:
             ": o_best_method,pds4_fields_authors %s, %s", o_best_method, pds4_fields_authors)
         logger.debug(
             ": number_commas,number_semi_colons %d, %d", number_commas, number_semi_colons)
-        
+
         logger.debug(
-            ": len(authors_from_comma_split),len(authors_from_semi_colon_split): %d, %d", len(authors_from_comma_split), len(authors_from_semi_colon_split)) 
+            ": len(authors_from_comma_split),len(authors_from_semi_colon_split): %d, %d", len(authors_from_comma_split), len(authors_from_semi_colon_split))
 
         return o_best_method
 
