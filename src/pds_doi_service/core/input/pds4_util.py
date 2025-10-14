@@ -115,6 +115,14 @@ class DOIPDS4LabelUtil:
                 "given_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:given_name",
                 "family_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:family_name",
                 "person_orcid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:person_orcid",
+                "Affiliation": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/*"
+            }
+
+        elif dict_type == "xpath_dict_person_affiliation_attributes":
+            return {
+                "organization_name": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_name",
+                # include rorid in the future release
+                # "organization_rorid": f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}/pds4:Person/pds4:Affiliation/pds4:organization_rorid",
             }
 
         elif dict_type == "xpath_dict_organization_attributes":
@@ -125,7 +133,7 @@ class DOIPDS4LabelUtil:
             }
 
         else:
-            logger.debug(f": build_xpath_dict.sys.exit() -- invalid dict_type " f"{dict_type}")
+            logger.debug(": build_xpath_dict.sys.exit() -- invalid dict_type %s", dict_type)
             raise ValueError(f"Invalid dict_type '{dict_type}' passed to build_xpath_dict")
 
     def map_list_author_editor_fields_to_doi_fields(self, list_authors):
@@ -147,7 +155,7 @@ class DOIPDS4LabelUtil:
             dict_authors = {}
 
             for key, value in author.items():
-                logger.debug(f": map_list_author_editor_fields_to_doi_fields.key,value " f"{key, value}")
+                logger.debug(": map_list_author_editor_fields_to_doi_fields.key,value: %s, %s", key, value)
                 if key in field_map:
                     new_key = field_map[key]
                     dict_authors[new_key] = value
@@ -206,9 +214,13 @@ class DOIPDS4LabelUtil:
         pds4_namespace = {"pds4": "http://pds.nasa.gov/pds4/pds/v1"}
         pds4_namespace_prefix = "{http://pds.nasa.gov/pds4/pds/v1}"
 
+        logger.debug(": get_list_aec.role_type START %s", role_type)
+
         xpath_dict = self.build_xpath_dict(role_type, "xpath_dict")
         xpath_dict_person_attributes = self.build_xpath_dict(role_type, "xpath_dict_person_attributes")
         xpath_dict_organization_attributes = self.build_xpath_dict(role_type, "xpath_dict_organization_attributes")
+        xpath_dict_person_affiliation_attributes = self.build_xpath_dict(role_type, "xpath_dict_person_affiliation_attributes")
+        logger.debug(": get_list_aec.xpath_dict_person_affiliation_attributes %s", xpath_dict_person_affiliation_attributes)
 
         # get Class in List_Auth:
         #   -- <Person> | <Organization>
@@ -225,125 +237,178 @@ class DOIPDS4LabelUtil:
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
         xpath = xpath_dict[f"xpath_list_{role_type.lower()}_class"]
-        logger.debug(f": get_list_aec.xpath,role_type,xpath " f"{role_type, xpath}")
+        logger.debug(": get_list_aec.xpath,role_type,xpath: %s, %s", role_type, xpath)
 
         list_aec_classes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
         logger.debug(
-            f": get_list_aec.xpath,list_aec_classes,len(list_aec_classes) "
-            f"{role_type, list_aec_classes, len(list_aec_classes)}"
+            ": get_list_aec.xpath,list_aec_classes,len(list_aec_classes) %s",
+            (role_type, list_aec_classes, len(list_aec_classes))
         )
 
         # for each Class in List_Auth:
         #   -- <Person> | <Organization>
         #        -- number of instances of each class
         for list_author_class in list_aec_classes:
-            logger.debug(f": get_list_aec.list_author_class.tag " f"{list_author_class.tag}")
-            # logger.debug(f": get_list_aec.list_author_class.text " f"{list_author_class.text}")
+            logger.debug(": get_list_aec.list_author_class.tag %s", list_author_class.tag)
+            # logger.debug(": get_list_aec.list_author_class.text %s", list_author_class.text)
 
+            # Person:  parse the Person class for each attribute and class
+            #   -- <Person> attributes:  given_name, middle_name, family_name, name_type, person_orcid
+            #   -- <Person>.<Affiliation:  organization_name, organization_rorid
             if list_author_class.tag == pds4_namespace_prefix + "Person":
-                logger.debug(f": get_list_aec.list_author_class.tag == Person " f"{list_author_class.tag}")
-
+                logger.debug(": get_list_aec.list_author_class.tag == Person %s", list_author_class.tag)
+                # Advance person_instance by 1 for each <Person> instance
                 person_instance += 1
-                logger.debug(f": get_list_aec.person_instance " f"{person_instance}")
+                logger.debug(": get_list_aec.person_instance %d", person_instance)
+                # Initialize the <Person>.<Affiliation> instance
+                affil_instance = 0
+                logger.debug(": get_list_aec.affil_instance %d", affil_instance)
 
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Personal"
+                # debug list of values for Affiliation
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
                 xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
                 xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/*")
-                logger.debug(f": get_list_aec.xpath " f"{xpath}")
+                logger.debug(": get_list_aec.xpath %s", xpath)
 
                 # Convert XPath for default namespace
                 xpath_person_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
-                    f": get_list_aec.xpath_person_attributes,len(xpath_person_attributes) "
-                    f"{xpath_person_attributes, len(xpath_person_attributes)}"
+                    ": get_list_aec.xpath_person_attributes,len(xpath_person_attributes) %s",
+                    (xpath_person_attributes, len(xpath_person_attributes))
                 )
 
                 for xpath_person_attribute in xpath_person_attributes:
-                    logger.debug(f": get_list_aec.xpath_person_attribute.tag " f"{xpath_person_attribute.tag}")
-                    logger.debug(f": get_list_aec.xpath_person_attribute.text " f"{xpath_person_attribute.text}")
+                    logger.debug(": get_list_aec.xpath_person_attribute.tag %s", xpath_person_attribute.tag)
+                    logger.debug(": get_list_aec.xpath_person_attribute.text %s", xpath_person_attribute.text)
 
                     element_tag = xpath_person_attribute.tag.replace(pds4_namespace_prefix, "")
                     element_text = xpath_person_attribute.text
-                    logger.debug(f": get_list_aec.element_tag " f"{element_tag}")
-                    logger.debug(f": get_list_aec.element_text " f"{element_text}")
+                    logger.debug(": get_list_aec.element_tag %s", element_tag)
+                    logger.debug(": get_list_aec.element_text %s", element_text)
 
                     if element_tag in xpath_dict_person_attributes:
-                        dict_list_authors[element_tag] = element_text
-                        logger.debug(
-                            f": get_list_aec.dict_list_authors[tag] " f"{element_tag, dict_list_authors[element_tag]}"
-                        )
+                        if (element_tag == "Affiliation"):
+                            logger.debug(": get_list_aec.list_author_class.tag == Affiliation %s", element_tag)
+                            # Add Affiliation to same instance of <Person>
+                            # person_instance += 1
+                            logger.debug(": get_list_aec.person_instance %d", person_instance)
+                            # Advance affil_instance by 1 for each <Affiliation> instance
+                            affil_instance += 1
+                            logger.debug(": get_list_aec.affil_instance %d", affil_instance)
+
+                            dict_list_authors["name_type"] = "Personal"
+                            # debug list of values for Affiliation that is found in the <Person> instance
+                            # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
+
+                            # adjust the dictionary to reflect the role_type
+                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
+                            xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation[" + str(affil_instance) + "]/*")
+                            logger.debug(": get_list_aec.xpath %s", xpath)
+
+                            # Convert XPath for default namespace
+                            xpath_affil_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
+                            logger.debug(
+                                ": get_list_aec.xpath_affil_attributes,len(xpath_affil_attributes) %s",
+                                (xpath_affil_attributes, len(xpath_affil_attributes))
+                            )
+
+                            for xpath_affil_attribute in xpath_affil_attributes:
+                                logger.debug(": get_list_aec.xpath_affil_attribute.tag %s", xpath_affil_attribute.tag)
+                                logger.debug(": get_list_aec.xpath_affil_attribute.text %s", xpath_affil_attribute.text)
+
+                                element_tag = xpath_affil_attribute.tag.replace(pds4_namespace_prefix, "")
+                                element_text = xpath_affil_attribute.text
+                                logger.debug(": get_list_aec.element_tag %s", element_tag)
+                                logger.debug(": get_list_aec.element_text %s", element_text)
+
+                                if element_tag in xpath_dict_person_affiliation_attributes:
+                                    dict_list_authors["Affiliation"].append(element_text)
+                                    for key, value in dict_list_authors.items():
+                                        logger.debug(": get_list_aec.dict_list_authors.Affiliation: %s, %s", key, value)
+                                else:
+                                    logger.debug(
+                                        ": get_list_aec.each_element.tag not in xpath_dict_person_affiliation_attributes[key] %s",
+                                        element_tag
+                                    )
+                        else:
+                            # Add every attribute found in list_authors to the dictionary
+                            dict_list_authors[element_tag] = element_text
+                            logger.debug(
+                                ": get_list_aec.dict_list_authors[tag] %s", (element_tag, dict_list_authors[element_tag])
+                            )
                     else:
                         logger.debug(
-                            f": get_list_aec.each_element.tag not in xpath_dict_person_attributes[key] "
-                            f"{element_tag}"
+                            ": get_list_aec.each_element.tag not in xpath_dict_person_attributes[key] %s",
+                            element_tag
                         )
 
                 list_authors.append(dict_list_authors)
-                logger.debug(f": get_list_aec.list_authors.len, list_authors " f"{len(list_authors), list_authors}")
+                logger.debug(": get_list_aec.list_authors.len, list_authors %s", (len(list_authors), list_authors))
 
                 for each_item in list_authors:
-                    logger.debug(f": get_list_aec.each_item " f"{each_item}")
+                    logger.debug(": get_list_aec.each_item %s", each_item)
 
             elif list_author_class.tag == pds4_namespace_prefix + "Organization":
-                logger.debug(f": get_list_aec.list_author_class.tag == Organization " f"{list_author_class.tag}")
+                logger.debug(": get_list_aec.list_author_class.tag == Organization %s", list_author_class.tag)
 
                 organization_instance += 1
-                logger.debug(f": get_list_aec.organization_instance " f"{organization_instance}")
+                logger.debug(": get_list_aec.organization_instance %d", organization_instance)
 
                 dict_list_authors = {}
                 dict_list_authors["name_type"] = "Organizational"
+                # Debug: to test the Affiliation field
                 dict_list_authors["Affiliation"] = []
 
                 # adjust the dictionary to reflect the role_type
                 xpath = xpath_dict[f"xpath_list_{list_key}_organization_class"]
                 xpath = xpath.replace("pds4:Organization/*", "pds4:Organization[" + str(organization_instance) + "]/*")
-                logger.debug(f": get_list_aec.xpath " f"{xpath}")
+                logger.debug(": get_list_aec.xpath %s", xpath)
 
                 # Convert XPath for default namespace
                 xpath_organization_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
                 logger.debug(
-                    f": get_list_aec.xpath_organization_attributes,len(xpath_organization_attributes) "
-                    f"{xpath_organization_attributes, len(xpath_organization_attributes)}"
+                    ": get_list_aec.xpath_organization_attributes,len(xpath_organization_attributes) %s",
+                    (xpath_organization_attributes, len(xpath_organization_attributes))
                 )
 
                 for xpath_organization_attribute in xpath_organization_attributes:
                     logger.debug(
-                        f": get_list_aec.xpath_organization_attribute.tag " f"{xpath_organization_attribute.tag}"
+                        ": get_list_aec.xpath_organization_attribute.tag %s", xpath_organization_attribute.tag
                     )
                     logger.debug(
-                        f": get_list_aec.xpath_organization_attribute.text " f"{xpath_organization_attribute.text}"
+                        ": get_list_aec.xpath_organization_attribute.text %s", xpath_organization_attribute.text
                     )
 
                     element_tag = xpath_organization_attribute.tag.replace(pds4_namespace_prefix, "")
                     element_text = xpath_organization_attribute.text
-                    logger.debug(f": get_list_aec.element_tag " f"{element_tag}")
-                    logger.debug(f": get_list_aec.element_text " f"{element_text}")
+                    logger.debug(": get_list_aec.element_tag %s", element_tag)
+                    logger.debug(": get_list_aec.element_text %s", element_text)
 
                     if element_tag in xpath_dict_organization_attributes:
                         dict_list_authors[element_tag] = element_text
                         logger.debug(
-                            f": get_list_aec.dict_list_authors[tag] " f"{element_tag, dict_list_authors[element_tag]}"
+                            ": get_list_aec.dict_list_authors[tag] %s", (element_tag, dict_list_authors[element_tag])
                         )
                     else:
                         logger.debug(
-                            f": get_list_aec.each_element.tag not in xpath_dict_organization_attributes[key] "
-                            f"{element_tag}"
+                            ": get_list_aec.each_element.tag not in xpath_dict_organization_attributes[key] %s",
+                            element_tag
                         )
 
                 list_authors.append(dict_list_authors)
-                logger.debug(f": get_list_aec.list_authors.len, list_authors " f"{len(list_authors), list_authors}")
+                logger.debug(": get_list_aec.list_authors.len, list_authors %s", (len(list_authors), list_authors))
 
                 for each_item in list_authors:
-                    logger.debug(f": get_list_aec.each_item " f"{each_item}")
+                    logger.debug(": get_list_aec.each_item %s", each_item)
 
             else:
                 logger.debug(
-                    f": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class "
-                    f"{list_author_class.text}"
+                    ": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class %s",
+                    list_author_class.text
                 )
                 # Formerly sys.exit, we want to raise an exception because this is an invalid label
                 raise InputFormatException(
@@ -353,10 +418,10 @@ class DOIPDS4LabelUtil:
         # Need to map List_Author fields to DOI fields
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
         logger.debug(
-            f": get_list_aec.mapped_list_authors.len, mapped_list_authors "
-            f"{len(mapped_list_authors), mapped_list_authors}"
+            ": get_list_aec.mapped_list_authors.len, mapped_list_authors %s",
+            (len(mapped_list_authors), mapped_list_authors)
         )
-        logger.debug(f": get_list_aec.role_type END " f"{role_type}")
+        logger.debug(": get_list_aec.role_type END %s", role_type)
 
         return mapped_list_authors
 
@@ -377,10 +442,10 @@ class DOIPDS4LabelUtil:
 
         pds4_fields = self.read_pds4(xml_tree)
 
-        logger.debug(f": get_doi_fields_from_pds4.pds4_fields.type " f"{type(pds4_fields)}")
-        logger.debug(f": get_doi_fields_from_pds4.pds4_fields " f"{pds4_fields}")
+        logger.debug(": get_doi_fields_from_pds4.pds4_fields.type %s", type(pds4_fields))
+        logger.debug(": get_doi_fields_from_pds4.pds4_fields %s", pds4_fields)
         doi_fields = self.process_pds4_fields(pds4_fields)
-        logger.debug(f": get_doi_fields_from_pds4.doi_fields " f"{doi_fields}")
+        logger.debug(": get_doi_fields_from_pds4.doi_fields %s", doi_fields)
 
         return doi_fields
 
@@ -411,9 +476,9 @@ class DOIPDS4LabelUtil:
         for key, xpath in self.xpath_dict.items():
             elements = xml_tree.xpath(xpath, namespaces=pds4_namespace)
             # 202501 -- add logger
-            logger.debug(f": xpath.dict.elements: " f"{type(elements)}")
-            logger.debug(f": xpath.dict: key, xpath " f"{key, xpath}")
-            logger.debug(f": xpath_dict.elements,len(xpath_dict.elements) " f"{elements, len(elements)}")
+            logger.debug(": xpath.dict.elements: %s", type(elements))
+            logger.debug(": xpath.dict: key, xpath %s", (key, xpath))
+            logger.debug(": xpath_dict.elements,len(xpath_dict.elements) %s", (elements, len(elements)))
 
             if elements:
                 pds4_field_value_dict[key] = " ".join(
@@ -421,7 +486,7 @@ class DOIPDS4LabelUtil:
                 ).strip()
             # 20250501 -- add logger
             if elements:
-                logger.debug(f": pds4_field_value_dict.key,value: " f"{key, pds4_field_value_dict[key]}")
+                logger.debug(": pds4_field_value_dict.key,value: %s", (key, pds4_field_value_dict[key]))
 
         return pds4_field_value_dict
 
@@ -463,10 +528,10 @@ class DOIPDS4LabelUtil:
             o_list_contains_full_name_flag = True
 
         logger.debug(
-            f"num_dots_found,num_person_names,len(names_list),names_list "
-            f"{num_dots_found, num_person_names, len(names_list), names_list}"
+            ": num_dots_found,num_person_names,len(names_list),names_list %s",
+            (num_dots_found, num_person_names, len(names_list), names_list)
         )
-        logger.debug(f"o_list_contains_full_name_flag " f"{o_list_contains_full_name_flag, names_list, len(names_list)}")
+        logger.debug(": o_list_contains_full_name_flag %s", (o_list_contains_full_name_flag, names_list, len(names_list)))
 
         return o_list_contains_full_name_flag
 
@@ -529,15 +594,12 @@ class DOIPDS4LabelUtil:
             o_best_method = BestParserMethod.BY_SEMI_COLON
 
         logger.debug(
-            f"o_best_method,pds4_fields_authors "
-            f"{o_best_method, pds4_fields_authors} "
-            f"number_commas,number_semi_colons "
-            f"{number_commas, number_semi_colons}"
-        )
+            ": o_best_method,pds4_fields_authors %s, %s", o_best_method, pds4_fields_authors)
         logger.debug(
-            f"len(authors_from_comma_split),len(authors_from_semi_colon_split) "
-            f"{len(authors_from_comma_split), len(authors_from_semi_colon_split)}"
-        )
+            ": number_commas,number_semi_colons %d, %d", number_commas, number_semi_colons)
+
+        logger.debug(
+            ": len(authors_from_comma_split),len(authors_from_semi_colon_split): %d, %d", len(authors_from_comma_split), len(authors_from_semi_colon_split))
 
         return o_best_method
 
@@ -648,25 +710,25 @@ class DOIPDS4LabelUtil:
                 list_contributors=self.get_list_auth_edit_cont(self.xml_tree, "Contributor"),
             )
 
-            logger.debug(f": doi.type " f"{type(doi)}")
-            logger.debug(f": doi.doi " f"{doi.doi}")
-            logger.debug(f": doi.status " f"{doi.status}")
-            logger.debug(f": doi.title " f"{doi.title}")
-            logger.debug(f": doi.description " f"{doi.description}")
-            logger.debug(f": doi.publication_date " f"{doi.publication_date}")
-            logger.debug(f": doi.product_type " f"{doi.product_type}")
-            logger.debug(f": doi.product_type_specific " f"{doi.product_type_specific}")
-            logger.debug(f": doi.pds_identifier " f"{doi.pds_identifier}")
-            logger.debug(f": doi.site_url " f"{doi.site_url}")
-            logger.debug(f": doi.authors " f"{doi.authors}")
-            logger.debug(f": doi.editors " f"{doi.editors}")
-            logger.debug(f": doi.keywords " f"{doi.keywords}")
-            logger.debug(f": doi.date_record_added " f"{doi.date_record_added}")
-            logger.debug(f": doi.date_record_updated " f"{doi.date_record_updated}")
-            logger.debug(f": doi.id " f"{doi.id}")
-            logger.debug(f": doi.list_authors " f"{doi.list_authors}")
-            logger.debug(f": doi.list_editors " f"{doi.list_editors}")
-            logger.debug(f": doi.list_contributors " f"{doi.list_contributors}")
+            logger.debug(": doi.type %s", type(doi))
+            logger.debug(": doi.doi %s", doi.doi)
+            logger.debug(": doi.status %s", doi.status)
+            logger.debug(": doi.title %s", doi.title)
+            logger.debug(": doi.description %s", doi.description)
+            logger.debug(": doi.publication_date %s", doi.publication_date)
+            logger.debug(": doi.product_type %s", doi.product_type)
+            logger.debug(": doi.product_type_specific %s", doi.product_type_specific)
+            logger.debug(": doi.pds_identifier %s", doi.pds_identifier)
+            logger.debug(": doi.site_url %s", doi.site_url)
+            logger.debug(": doi.authors %s", doi.authors)
+            logger.debug(": doi.editors %s", doi.editors)
+            logger.debug(": doi.keywords %s", doi.keywords)
+            logger.debug(": doi.date_record_added %s", doi.date_record_added)
+            logger.debug(": doi.date_record_updated %s", doi.date_record_updated)
+            logger.debug(": doi.id %s", doi.id)
+            logger.debug(": doi.list_authors %s", doi.list_authors)
+            logger.debug(": doi.list_editors %s", doi.list_editors)
+            logger.debug(": doi.list_contributors %s", doi.list_contributors)
 
         except KeyError as key_err:
             missing_key = key_err.args[0]
@@ -688,22 +750,21 @@ class DOIPDS4LabelUtil:
         if len(doi.list_authors) > 0:
             doi.authors = doi.list_authors
             logger.debug(
-                f": process_pds4_fields.doi.authors replaced with doi.list_authors " f"{len(doi.authors), doi.authors}"
+                ": process_pds4_fields.doi.authors replaced with doi.list_authors %s", (len(doi.authors), doi.authors)
             )
         else:
             logger.debug(
-                f": process_pds4_fields.doi.authors NOT replaced with doi.list_authors "
-                f"{len(doi.authors), doi.authors}"
+                ": process_pds4_fields.doi.authors NOT replaced with doi.list_authors %s", (len(doi.authors), doi.authors)
             )
         if len(doi.list_editors) > 0:
             doi.editors = doi.list_editors
             logger.debug(
-                f": process_pds4_fields.doi.editors replaced with doi.list_editors " f"{len(doi.editors), doi.editors}"
+                ": process_pds4_fields.doi.editors replaced with doi.list_editors %s", (len(doi.editors), doi.editors)
             )
         else:
             logger.debug(
-                f": process_pds4_fields.doi.editors NOT replaced with doi.list_editors "
-                f"{len(doi.editors) if doi.editors is not None else 0}, {doi.editors}"
+                ": process_pds4_fields.doi.editors NOT replaced with doi.list_editors %s",
+                (len(doi.editors) if doi.editors is not None else 0, doi.editors)
             )
         if len(doi.list_contributors) > 0:
             if doi.editors is None:
@@ -712,21 +773,21 @@ class DOIPDS4LabelUtil:
                 doi.editors.extend(doi.list_contributors)
             """  logger.debug(f": process_pds4_fields.doi.contributors replaced with doi.list_contributors " f"{len(doi.contributors), doi.contributors}") """
             logger.debug(
-                f": process_pds4_fields.doi.list_contributors " f"{len(doi.list_contributors), doi.list_contributors}"
+                ": process_pds4_fields.doi.list_contributors %s", (len(doi.list_contributors), doi.list_contributors)
             )
             logger.debug(
-                f": process_pds4_fields.doi.list_contributors appended to doi.editors "
-                f"{len(doi.editors) if doi.editors is not None else 0}, {doi.editors}"
+                ": process_pds4_fields.doi.list_contributors appended to doi.editors %s",
+                (len(doi.editors) if doi.editors is not None else 0, doi.editors)
             )
         else:
             """logger.debug(f": process_pds4_fields.doi.contributors NOT replaced with doi.contributors " f"{len(doi.contributors), doi.contributors}")"""
             logger.debug(
-                f": process_pds4_fields.doi.list_contributors NOT appended to doi.editors "
-                f"{len(doi.editors) if doi.editors is not None else 0}, {doi.editors}"
+                ": process_pds4_fields.doi.list_contributors NOT appended to doi.editors %s",
+                (len(doi.editors) if doi.editors is not None else 0, doi.editors)
             )
 
-        logger.debug(f": doi.authors_replaced " f"{doi.authors}")
-        logger.debug(f": doi.editors_replaced " f"{doi.editors}")
+        logger.debug(": doi.authors_replaced %s", doi.authors)
+        logger.debug(": doi.editors_replaced %s", doi.editors)
 
         return doi
 
@@ -768,9 +829,7 @@ class DOIPDS4LabelUtil:
         """
         if "modification_date" in pds4_fields:
             logger.debug(
-                f"pds4_fields['modification_date'] "
-                f"{pds4_fields['modification_date'], type(pds4_fields['modification_date'])}"
-            )
+                ": pds4_fields['modification_date'] %s, %s", pds4_fields['modification_date'], type(pds4_fields['modification_date']))
 
             """
             Some PDS4 labels have more than one 'modification_date' field,
@@ -827,7 +886,7 @@ class DOIPDS4LabelUtil:
             if keyword_src in pds4_fields.keys():
                 keyword_tokenizer.process_text(pds4_fields[keyword_src])
 
-        logger.debug(f": keyword_tokenizer.get_keywords() " f"{keyword_tokenizer.get_keywords()}")
+        logger.debug(": keyword_tokenizer.get_keywords() %s", keyword_tokenizer.get_keywords())
 
         return keyword_tokenizer.get_keywords()
 
@@ -871,7 +930,7 @@ class DOIPDS4LabelUtil:
                 "name_type": "Organizational",
             }
 
-            logger.debug(f"parsed organization {entity}")
+            logger.debug("parsed organization %s", entity)
             return entity
 
         # Perform primary split, intuiting last/given name order from the separator
@@ -921,7 +980,7 @@ class DOIPDS4LabelUtil:
         :returns: a List of parsed entities
         :rtype: List[Dict[str, Union[str, List[str]]]]
         """
-        logger.debug(f"name_list {name_list}")
+        logger.debug("name_list %s", name_list)
 
         persons = []
 
