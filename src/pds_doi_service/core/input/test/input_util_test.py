@@ -350,6 +350,47 @@ class InputUtilTestCase(unittest.TestCase):
 
         self.assertIsInstance(doi, Doi)
 
+    def test_read_lblx(self):
+        """Test the DOIInputUtil.parse_xml_file() method with .lblx files.
+
+        Tests that .lblx files (PDS4 label extension) are accepted and parsed
+        identically to .xml files.
+
+        Related to: NASA-PDS/doi-service#478
+        """
+        doi_input_util = DOIInputUtil()
+
+        # Test with a PDS4 label that has a .lblx extension
+        i_filepath_lblx = join(self.input_dir, "pds4_bundle_with_contributors.lblx")
+        dois_lblx = doi_input_util.parse_xml_file(i_filepath_lblx)
+
+        self.assertEqual(len(dois_lblx), 1)
+
+        doi_lblx = dois_lblx[0]
+
+        self.assertIsInstance(doi_lblx, Doi)
+
+        # Test that .lblx and .xml files with identical content produce identical results
+        i_filepath_xml = join(self.input_dir, "pds4_bundle_with_contributors.xml")
+        dois_xml = doi_input_util.parse_xml_file(i_filepath_xml)
+
+        self.assertEqual(len(dois_xml), 1)
+
+        doi_xml = dois_xml[0]
+
+        # Compare key fields to ensure both extensions are parsed identically
+        self.assertEqual(doi_lblx.title, doi_xml.title)
+        self.assertEqual(doi_lblx.pds_identifier, doi_xml.pds_identifier)
+        self.assertEqual(doi_lblx.publication_date, doi_xml.publication_date)
+        self.assertEqual(doi_lblx.authors, doi_xml.authors)
+        self.assertEqual(doi_lblx.editors, doi_xml.editors)
+
+        # Test that .lblx is accepted via parse_dois_from_input_file
+        dois_from_input = doi_input_util.parse_dois_from_input_file(i_filepath_lblx)
+
+        self.assertEqual(len(dois_from_input), 1)
+        self.assertIsInstance(dois_from_input[0], Doi)
+
 
 if __name__ == "__main__":
     unittest.main()

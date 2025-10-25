@@ -19,7 +19,7 @@
                     "name": "Deen, R.",
                     "givenName": "R.",
                     "familyName": "Deen",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 },
                 {
@@ -27,7 +27,7 @@
                     "name": "Abarca, H.",
                     "givenName": "H.",
                     "familyName": "Abarca",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 },
                 {
@@ -35,7 +35,7 @@
                     "name": "Zamani, P.",
                     "givenName": "P.",
                     "familyName": "Zamani",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 },
                 {
@@ -43,7 +43,7 @@
                     "name": "Maki, J.",
                     "givenName": "J.",
                     "familyName": "Maki",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 }
             ],
@@ -118,7 +118,7 @@
                     "givenName": "P. H.",
                     "familyName": "Smith",
                     "contributorType": "Editor",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 },
                 {
@@ -127,7 +127,7 @@
                     "givenName": "M.",
                     "familyName": "Lemmon",
                     "contributorType": "Editor",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 },
                 {
@@ -136,14 +136,14 @@
                     "givenName": "R. F.",
                     "familyName": "Beebe",
                     "contributorType": "Editor",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 },
                 {
                     "nameType": "Organizational",
                     "name": "Planetary Data System: Engineering Node",
                     "contributorType": "DataCurator",
-                    "affiliation": ["NASA PDS"],
+                    "affiliation": [{"name": "NASA PDS"}],
                     "nameIdentifiers": []
                 }
             ],
