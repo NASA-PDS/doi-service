@@ -245,6 +245,34 @@ class ReleaseActionTestCase(unittest.TestCase):
 
         self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Findable)
 
+    @patch.object(
+        pds_doi_service.core.outputs.osti.osti_web_client.DOIOstiWebClient, "submit_content", webclient_submit_patch
+    )
+    @patch.object(
+        pds_doi_service.core.outputs.datacite.datacite_web_client.DOIDataCiteWebClient,
+        "submit_content",
+        webclient_submit_patch,
+    )
+    def test_release_with_lblx_file(self):
+        """Test release action with .lblx input file to verify extension support.
+
+        Verifies that the CLI release command accepts .lblx files (PDS4 label extension)
+        and processes them identically to .xml files through the full release workflow.
+
+        Related to: NASA-PDS/doi-service#478
+        """
+
+        release_args = {
+            "input": join(self.input_dir, "pds4_bundle_with_contributors.lblx"),
+            "node": "img",
+            "submitter": "img-submitter@jpl.nasa.gov",
+            "force": True,
+            "review": False,
+        }
+
+        # Verify that .lblx files are processed identically to .xml files
+        self.run_release_test(release_args, expected_dois=1, expected_status=DoiStatus.Findable)
+
 
 if __name__ == "__main__":
     unittest.main()
