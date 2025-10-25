@@ -1,8 +1,8 @@
 # Changelog
 
-## [release/3.0.0](https://github.com/NASA-PDS/doi-service/tree/release/3.0.0) (2025-10-25)
+## [v3.0.0](https://github.com/NASA-PDS/doi-service/tree/v3.0.0) (2025-10-25)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...release/3.0.0)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...v3.0.0)
 
 **Requirements:**
 
