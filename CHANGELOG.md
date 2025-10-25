@@ -1,8 +1,8 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-10-25)
+## [release/3.0.0](https://github.com/NASA-PDS/doi-service/tree/release/3.0.0) (2025-10-25)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...«unknown»)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...release/3.0.0)
 
 **Requirements:**
 
