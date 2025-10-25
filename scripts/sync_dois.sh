@@ -37,7 +37,7 @@ echo
 echo "PREFIX=${PREFIX}"
 echo "SUBMITTER=${SUBMITTER}"
 
-source /home/pds4/pds-doi-service/bin/activate
+source $HOME/pds-doi-service/bin/activate
 
 pds-doi-init --service datacite --prefix ${PREFIX} --submitter ${SUBMITTER}
 
