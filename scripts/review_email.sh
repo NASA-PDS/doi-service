@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "=================================================="
-echo "pdscloud-gamma: Starting DOI review email $(date)"
+echo "Staging: Starting DOI review email $(date)"
 echo
 
 source $HOME/pds-doi-service/bin/activate
