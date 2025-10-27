@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import List
 
 from dateutil.parser import isoparse
+from packaging.version import InvalidVersion
 from packaging.version import Version
 from pds_doi_service.core.entities.doi import Doi
 from pds_doi_service.core.entities.doi import DoiEvent
@@ -298,8 +299,26 @@ class DOIDataCiteWebParser(DOIWebParser):
                     pds4_identifier.split("::")[-1] if "::" in pds4_identifier else "0.0"
                     for pds4_identifier in pds4_identifiers
                 ]
-                sorted_vids = list(sorted(vids, key=Version))
-                identifier = pds4_identifiers[vids.index(sorted_vids[-1])]
+
+                # Try to sort by Version, but handle invalid version strings
+                try:
+                    sorted_vids = list(sorted(vids, key=Version))
+                    identifier = pds4_identifiers[vids.index(sorted_vids[-1])]
+                except InvalidVersion as e:
+                    # If Version sorting fails (e.g., invalid version strings),
+                    # log a warning and just use the first identifier
+                    doi_value = record.get("doi", "unknown")
+                    logger.warning(
+                        "Failed to sort identifiers by version for DOI %s (%s). "
+                        "Identifiers: %s, VIDs: %s. Using first identifier: %s",
+                        doi_value,
+                        str(e),
+                        pds4_identifiers,
+                        vids,
+                        pds4_identifiers[0] if pds4_identifiers else None
+                    )
+                    if pds4_identifiers:
+                        identifier = pds4_identifiers[0]
 
         # Lastly, try to parse an ID from the site URL
         if not identifier and "url" in record:
