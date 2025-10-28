@@ -4,7 +4,7 @@ import re
 
 import nltk  # type: ignore
 
-# Redirect nltk.downloader.md5 to include usedforsecurity=False
+# Monkeypatch nltk.downloader.md5 to include usedforsecurity=False
 nltk.downloader.md5 = functools.partial(hashlib.md5, usedforsecurity=False)
 
 nltk.download("stopwords", quiet=True)
