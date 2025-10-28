@@ -15,7 +15,8 @@ import html
 import json
 from collections import defaultdict
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict
+from typing import List
 
 from dateutil.parser import isoparse
 from packaging.version import InvalidVersion
@@ -397,7 +398,7 @@ class DOIDataCiteWebParser(DOIWebParser):
 
         dois = []
         errors = []  # DataCite does not return error information in response
-        
+
         # Track parsing issues by category for summary reporting
         parsing_issues: Dict[str, List[str]] = defaultdict(list)
         optional_field_warnings: Dict[str, List[str]] = defaultdict(list)
@@ -438,7 +439,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                 doi_value = datacite_record.get("attributes", {}).get("doi", f"record index {index}")
             except (AttributeError, TypeError):
                 doi_value = f"record index {index}"
-            
+
             try:
                 logger.info("Parsing record index %d (DOI: %s)", index, doi_value)
                 doi_fields = {}
@@ -497,18 +498,18 @@ class DOIDataCiteWebParser(DOIWebParser):
                 continue
 
         logger.info("Parsed %d DOI objects from %d records", len(dois), len(datacite_records))
-        
+
         # Log summary of parsing issues if any were encountered
         # Debug: log the counts
-        logger.info("Debug: parsing_issues has %d categories, optional_field_warnings has %d categories", 
+        logger.info("Debug: parsing_issues has %d categories, optional_field_warnings has %d categories",
                     len(parsing_issues), len(optional_field_warnings))
-        
+
         if parsing_issues or optional_field_warnings:
             logger.info("=" * 80)
             logger.info("PARSING ISSUES SUMMARY")
             logger.info("=" * 80)
             logger.info("")
-            
+
             if parsing_issues:
                 logger.info("Mandatory Field Issues (DOIs that failed to parse):")
                 for issue_type, doi_list in sorted(parsing_issues.items()):
@@ -516,7 +517,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                     for doi in sorted(doi_list):
                         logger.info("    - %s", doi)
                 logger.info("")
-            
+
             if optional_field_warnings:
                 logger.info("Optional Field Warnings (DOIs parsed with missing optional fields):")
                 for warning_type, doi_list in sorted(optional_field_warnings.items()):
@@ -532,7 +533,7 @@ class DOIDataCiteWebParser(DOIWebParser):
                         for doi in sorted(doi_list):
                             logger.info("    - %s", doi)
                 logger.info("")
-            
+
             logger.info("=" * 80)
 
         return dois, errors

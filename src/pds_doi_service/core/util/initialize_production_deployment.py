@@ -87,9 +87,9 @@ m_config = m_doi_config_util.get_config()
 
 # Map command-line state choices to DoiStatus enum values
 VALID_STATE_FILTERS = {
-    "findable": DoiStatus.Findable,
-    "registered": DoiStatus.Registered,
-    "draft": DoiStatus.Draft,
+    "findable": "DoiStatus.Findable",
+    "registered": "DoiStatus.Registered",
+    "draft": "DoiStatus.Draft",
 }
 
 
@@ -392,7 +392,7 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         prefix = m_config.get(service.upper(), "doi_prefix")
 
     logger.info("Using DOI prefix %s", prefix)
-    
+
     if state:
         logger.info("State filter: %s", state)
 
