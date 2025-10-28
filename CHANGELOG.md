@@ -1,5 +1,13 @@
 # Changelog
 
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-10-28)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.0...«unknown»)
+
+**Improvements:**
+
+- Remove or ignore use of MD5 from code [\#493](https://github.com/NASA-PDS/doi-service/issues/493)
+
 ## [v3.0.0](https://github.com/NASA-PDS/doi-service/tree/v3.0.0) (2025-10-25)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v2.4.0...v3.0.0)
