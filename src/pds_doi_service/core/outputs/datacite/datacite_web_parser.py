@@ -367,7 +367,7 @@ class DOIDataCiteWebParser(DOIWebParser):
             raise InputFormatException('Failed to parse mandatory field "product_type_specific"')
 
     @staticmethod
-    def parse_dois_from_label(label_text, content_type=CONTENT_TYPE_JSON):
+    def parse_dois_from_label(label_text, content_type=CONTENT_TYPE_JSON, state=None):
         """
         Parses one or more Doi objects from the provided DataCite label.
 
@@ -377,6 +377,10 @@ class DOIDataCiteWebParser(DOIWebParser):
             Text body of the label to parse.
         content_type : str
             The format of the label's content.
+        state : str, optional
+            Filter DOIs by state before parsing (e.g., 'findable', 'registered', 'draft').
+            If provided, only records matching this state will be parsed, avoiding
+            unnecessary parsing errors on DOIs that would be filtered out anyway.
 
         Returns
         -------
@@ -404,6 +408,28 @@ class DOIDataCiteWebParser(DOIWebParser):
         # a just a dictionary for a single record, make the loop work either way
         if not isinstance(datacite_records, list):
             datacite_records = [datacite_records]
+
+        # Filter by state before parsing to avoid unnecessary parsing errors
+        # on DOIs that will be discarded anyway
+        if state:
+            original_count = len(datacite_records)
+            original_records = datacite_records  # Keep reference for debugging
+            datacite_records = [
+                record for record in datacite_records
+                if record.get("attributes", {}).get("state", "").lower() == state.lower()
+            ]
+            filtered_count = len(datacite_records)
+            logger.info(
+                "Filtered records by state '%s' before parsing: %d of %d records will be parsed",
+                state, filtered_count, original_count
+            )
+            if filtered_count == 0 and original_count > 0:
+                # Log the states we actually found to help with debugging
+                states_found = set(
+                    record.get("attributes", {}).get("state", "unknown")
+                    for record in original_records
+                )
+                logger.warning("No records found with state '%s'. States found in results: %s", state, states_found)
 
         for index, datacite_record in enumerate(datacite_records):
             # Extract DOI early for error reporting

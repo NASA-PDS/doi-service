@@ -64,6 +64,7 @@ import os
 from datetime import datetime
 
 from pds_doi_service.core.db.transaction_builder import TransactionBuilder
+from pds_doi_service.core.entities.doi import DoiStatus
 from pds_doi_service.core.entities.exceptions import CriticalDOIException
 from pds_doi_service.core.entities.exceptions import InputFormatException  # noqa
 from pds_doi_service.core.entities.exceptions import UnknownNodeException  # noqa
@@ -83,6 +84,13 @@ logger.setLevel(logging.INFO)
 
 m_doi_config_util = DOIConfigUtil()
 m_config = m_doi_config_util.get_config()
+
+# Map command-line state choices to DoiStatus enum values
+VALID_STATE_FILTERS = {
+    "findable": DoiStatus.Findable,
+    "registered": DoiStatus.Registered,
+    "draft": DoiStatus.Draft,
+}
 
 
 def create_cmd_parser():
@@ -120,9 +128,10 @@ def create_cmd_parser():
         "--state",
         required=False,
         default=None,
-        help="Filter DOIs by state (e.g., 'findable', 'registered', 'draft'). "
-        "Only applicable when querying DataCite. If not provided, "
-        "all DOIs regardless of state are returned.",
+        choices=["findable", "registered", "draft"],
+        help="Filter DOIs by state. Only applicable when querying DataCite. "
+        "Valid values: 'findable', 'registered', 'draft'. "
+        "If not provided, all DOIs regardless of state are returned.",
     )
     parser.add_argument(
         "-s",
@@ -324,21 +333,13 @@ def get_dois_from_provider(service, prefix, state=None, output_file=None):
 
     web_parser = DOIServiceFactory.get_web_parser_service(service)
 
-    dois, _ = web_parser.parse_dois_from_label(doi_json, content_type=CONTENT_TYPE_JSON)
-    
-    # Filter by state if specified (only for DataCite)
+    # Pass state filter to parser so it can filter BEFORE parsing
+    # This avoids unnecessary parsing errors on DOIs that don't match the desired state
+    parser_kwargs = {"content_type": CONTENT_TYPE_JSON}
     if state and service == SERVICE_TYPE_DATACITE:
-        original_count = len(dois)
-        original_dois = dois  # Keep reference for debugging
-        # DoiStatus is a string enum, so we can compare the status value directly
-        dois = [doi for doi in dois if doi.status and str(doi.status).lower() == state.lower()]
-        filtered_count = len(dois)
-        logger.info("Filtered DOIs by state '%s': %d of %d DOIs retained", 
-                    state, filtered_count, original_count)
-        if filtered_count == 0 and original_count > 0:
-            # Log the states we actually found to help with debugging
-            states_found = set(str(doi.status) for doi in original_dois if doi.status)
-            logger.warning("No DOIs found with state '%s'. States found in results: %s", state, states_found)
+        parser_kwargs["state"] = state
+
+    dois, _ = web_parser.parse_dois_from_label(doi_json, **parser_kwargs)
 
     return dois, server_url
 
