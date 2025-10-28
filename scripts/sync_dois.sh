@@ -16,6 +16,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --state)
+      STATE="$2"
+      shift
+      shift
+      ;;
     *)
       echo "Unknown option $1"
       exit 1
@@ -31,6 +36,11 @@ if [[ -z ${SUBMITTER} ]]; then
   SUBMITTER="pds-operator@jpl.nasa.gov"
 fi
 
+STATEARG=
+if [[ -n ${STATE} ]]; then
+  STATEARG="--state ${STATE}"
+fi
+
 echo "=================================================="
 echo "Starting DOI sync for $(date)"
 echo
@@ -39,7 +49,7 @@ echo "SUBMITTER=${SUBMITTER}"
 
 source $HOME/pds-doi-service/bin/activate
 
-pds-doi-init --service datacite --prefix ${PREFIX} --submitter ${SUBMITTER}
+pds-doi-init --service datacite --prefix ${PREFIX} --submitter ${SUBMITTER} ${STATEARG}
 
 echo "Sync complete"
 echo

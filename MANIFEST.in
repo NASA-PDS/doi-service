@@ -8,4 +8,5 @@ graft features
 graft inputs
 graft tests
 include *.rst *.sch *.xslx *.csv *.xml *.xsd *.pdf *.txt *.default
+recursive-include src/pds_doi_service/nltk_data *
 global-exclude *.py[cod]

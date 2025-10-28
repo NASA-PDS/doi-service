@@ -1,15 +1,24 @@
+import os
 import re
 
 import nltk  # type: ignore
-
-nltk.download("stopwords", quiet=True)
-from nltk.corpus import stopwords  # type: ignore # noqa: E402
-
-nltk.download("wordnet", quiet=True)
-from nltk.stem.wordnet import WordNetLemmatizer  # type: ignore # noqa: E402 # @nutjob4life: 😩
-from pds_doi_service.core.util.general_util import get_logger  # noqa: E402
+from pds_doi_service.core.util.general_util import get_logger
 
 logger = get_logger(__name__)
+
+# Configure NLTK to use bundled data (FIPS-compatible, no MD5 downloads needed)
+# Get the path to the bundled nltk_data directory
+_bundled_nltk_data = os.path.join(os.path.dirname(__file__), "..", "..", "nltk_data")
+_bundled_nltk_data = os.path.abspath(_bundled_nltk_data)
+
+# Prepend bundled data path to NLTK's search path (takes precedence)
+if _bundled_nltk_data not in nltk.data.path:
+    nltk.data.path.insert(0, _bundled_nltk_data)
+    logger.debug(f"Added bundled NLTK data path: {_bundled_nltk_data}")
+
+# Import NLTK resources from bundled data (no download needed)
+from nltk.corpus import stopwords  # type: ignore # noqa: E402
+from nltk.stem.wordnet import WordNetLemmatizer  # type: ignore # noqa: E402
 
 
 class KeywordTokenizer:

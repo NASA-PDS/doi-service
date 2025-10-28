@@ -117,6 +117,14 @@ def create_cmd_parser():
         "used by default.",
     )
     parser.add_argument(
+        "--state",
+        required=False,
+        default=None,
+        help="Filter DOIs by state (e.g., 'findable', 'registered', 'draft'). "
+        "Only applicable when querying DataCite. If not provided, "
+        "all DOIs regardless of state are returned.",
+    )
+    parser.add_argument(
         "-s",
         "--submitter-email",
         required=False,
@@ -269,7 +277,7 @@ def _read_from_path(service, path):
     raise InputFormatException(f"File {path} is not supported. Only .xml and .json are supported.")
 
 
-def get_dois_from_provider(service, prefix, output_file=None):
+def get_dois_from_provider(service, prefix, state=None, output_file=None):
     """
     Queries the service provider for all the current DOI associated with the
     provided prefix.
@@ -280,6 +288,9 @@ def get_dois_from_provider(service, prefix, output_file=None):
         Name of the service provider to pull DOI's from.
     prefix : str
         DOI prefix to query for.
+    state : str, optional
+        Filter DOIs by state (e.g., 'findable', 'registered', 'draft').
+        Only applicable for DataCite queries.
     output_file : str, optional
         If provided, path to an output file to write the results of the DOI
         query to.
@@ -314,11 +325,25 @@ def get_dois_from_provider(service, prefix, output_file=None):
     web_parser = DOIServiceFactory.get_web_parser_service(service)
 
     dois, _ = web_parser.parse_dois_from_label(doi_json, content_type=CONTENT_TYPE_JSON)
+    
+    # Filter by state if specified (only for DataCite)
+    if state and service == SERVICE_TYPE_DATACITE:
+        original_count = len(dois)
+        original_dois = dois  # Keep reference for debugging
+        # DoiStatus is a string enum, so we can compare the status value directly
+        dois = [doi for doi in dois if doi.status and str(doi.status).lower() == state.lower()]
+        filtered_count = len(dois)
+        logger.info("Filtered DOIs by state '%s': %d of %d DOIs retained", 
+                    state, filtered_count, original_count)
+        if filtered_count == 0 and original_count > 0:
+            # Log the states we actually found to help with debugging
+            states_found = set(str(doi.status) for doi in original_dois if doi.status)
+            logger.warning("No DOIs found with state '%s'. States found in results: %s", state, states_found)
 
     return dois, server_url
 
 
-def perform_import_to_database(service, prefix, db_name, input_source, dry_run, submitter_email, output_file):
+def perform_import_to_database(service, prefix, db_name, input_source, dry_run, submitter_email, state, output_file):
     """
     Imports all records from the input source into a local database.
     The input source may either be an existing file containing DOIs to parse,
@@ -344,6 +369,9 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         database.
     submitter_email : str
         Email address of the user initiating the import.
+    state : str, optional
+        Filter DOIs by state (e.g., 'findable', 'registered', 'draft').
+        Only applicable for DataCite queries.
     output_file : str
         Path to write out the label obtained from the server. If not specified,
         no file is written.
@@ -363,6 +391,9 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         prefix = m_config.get(service.upper(), "doi_prefix")
 
     logger.info("Using DOI prefix %s", prefix)
+    
+    if state:
+        logger.info("State filter: %s", state)
 
     # If db_name is not provided, get one from config file:
     if not db_name:
@@ -381,7 +412,7 @@ def perform_import_to_database(service, prefix, db_name, input_source, dry_run, 
         # Get the dois from the server.
         # Note that because the name of the server obtained from the config file,
         # it could be the OPS or TEST server.
-        dois, server_url = get_dois_from_provider(service, prefix, output_file)
+        dois, server_url = get_dois_from_provider(service, prefix, state, output_file)
 
     o_records_found = len(dois)
 
@@ -452,6 +483,7 @@ def main():
         arguments.input_file,
         arguments.dry_run,
         arguments.submitter_email,
+        arguments.state,
         arguments.output_file,
     )
 

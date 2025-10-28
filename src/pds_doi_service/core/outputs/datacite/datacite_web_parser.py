@@ -13,8 +13,9 @@ Contains classes used to parse response labels from DataCite DOI service request
 """
 import html
 import json
+from collections import defaultdict
 from datetime import datetime
-from typing import List
+from typing import Dict, List
 
 from dateutil.parser import isoparse
 from packaging.version import InvalidVersion
@@ -392,6 +393,10 @@ class DOIDataCiteWebParser(DOIWebParser):
 
         dois = []
         errors = []  # DataCite does not return error information in response
+        
+        # Track parsing issues by category for summary reporting
+        parsing_issues: Dict[str, List[str]] = defaultdict(list)
+        optional_field_warnings: Dict[str, List[str]] = defaultdict(list)
 
         datacite_records = json.loads(label_text)["data"]
 
@@ -401,18 +406,37 @@ class DOIDataCiteWebParser(DOIWebParser):
             datacite_records = [datacite_records]
 
         for index, datacite_record in enumerate(datacite_records):
+            # Extract DOI early for error reporting
+            doi_value = None
             try:
-                logger.info("Parsing record index %d", index)
+                doi_value = datacite_record.get("attributes", {}).get("doi", f"record index {index}")
+            except (AttributeError, TypeError):
+                doi_value = f"record index {index}"
+            
+            try:
+                logger.info("Parsing record index %d (DOI: %s)", index, doi_value)
                 doi_fields = {}
 
                 # Everything we care about in a DataCite response is under attributes
                 datacite_record = datacite_record["attributes"]
 
                 for mandatory_field in DOIDataCiteWebParser._mandatory_fields:
-                    doi_fields[mandatory_field] = getattr(DOIDataCiteWebParser, f"_parse_{mandatory_field}")(
-                        datacite_record
-                    )
-                    logger.debug("Parsed value %s for mandatory field %s", doi_fields[mandatory_field], mandatory_field)
+                    try:
+                        doi_fields[mandatory_field] = getattr(DOIDataCiteWebParser, f"_parse_{mandatory_field}")(
+                            datacite_record
+                        )
+                        logger.debug("Parsed value %s for mandatory field %s", doi_fields[mandatory_field], mandatory_field)
+                    except InputFormatException as err:
+                        # Track the issue category for summary
+                        error_msg = str(err)
+                        # Extract the field name from error message (uses double quotes, not single)
+                        if "mandatory field" in error_msg:
+                            field_match = error_msg.split('"')
+                            if len(field_match) >= 2:
+                                field_name = field_match[1]
+                                parsing_issues[f"Missing mandatory field: {field_name}"].append(doi_value)
+                        # Add DOI context to mandatory field parsing errors
+                        raise InputFormatException(f"DOI {doi_value}: {str(err)}")
 
                 for optional_field in DOIDataCiteWebParser._optional_fields:
                     try:
@@ -423,20 +447,67 @@ class DOIDataCiteWebParser(DOIWebParser):
                             doi_fields[optional_field] = parsed_value
                             logger.debug("Parsed value %s for optional field %s", parsed_value, optional_field)
                     except UserWarning as warning:
-                        logger.warning("Record %d: %s", index, str(warning))
+                        warning_msg = str(warning)
+                        # Track optional field warnings (uses double quotes, not single)
+                        if "optional field" in warning_msg:
+                            field_match = warning_msg.split('"')
+                            if len(field_match) >= 2:
+                                field_name = field_match[1]
+                                optional_field_warnings[f"Missing optional field: {field_name}"].append(doi_value)
+                        logger.warning("DOI %s, Record %d: %s", doi_value, index, str(warning))
 
                 doi = Doi(**doi_fields)
 
                 dois.append(doi)
             except InputFormatException as err:
+                # Track that this DOI failed to parse completely
+                # The specific field issue was already tracked in parsing_issues above
                 logger.warning(
-                    "Failed to parse a DOI object from record index %d of the provided label, reason: %s",
+                    "Failed to parse a DOI object from record index %d (DOI: %s), reason: %s",
                     index,
+                    doi_value,
                     str(err),
                 )
                 continue
 
         logger.info("Parsed %d DOI objects from %d records", len(dois), len(datacite_records))
+        
+        # Log summary of parsing issues if any were encountered
+        # Debug: log the counts
+        logger.info("Debug: parsing_issues has %d categories, optional_field_warnings has %d categories", 
+                    len(parsing_issues), len(optional_field_warnings))
+        
+        if parsing_issues or optional_field_warnings:
+            logger.info("=" * 80)
+            logger.info("PARSING ISSUES SUMMARY")
+            logger.info("=" * 80)
+            logger.info("")
+            
+            if parsing_issues:
+                logger.info("Mandatory Field Issues (DOIs that failed to parse):")
+                for issue_type, doi_list in sorted(parsing_issues.items()):
+                    logger.info("  %s: %d DOI(s)", issue_type, len(doi_list))
+                    for doi in sorted(doi_list):
+                        logger.info("    - %s", doi)
+                logger.info("")
+            
+            if optional_field_warnings:
+                logger.info("Optional Field Warnings (DOIs parsed with missing optional fields):")
+                for warning_type, doi_list in sorted(optional_field_warnings.items()):
+                    # Only log if more than 5 DOIs have this issue
+                    if len(doi_list) > 5:
+                        logger.info("  %s: %d DOI(s)", warning_type, len(doi_list))
+                        logger.info("    (showing first 5)")
+                        for doi in sorted(doi_list)[:5]:
+                            logger.info("    - %s", doi)
+                        logger.info("    ... and %d more", len(doi_list) - 5)
+                    else:
+                        logger.info("  %s: %d DOI(s)", warning_type, len(doi_list))
+                        for doi in sorted(doi_list):
+                            logger.info("    - %s", doi)
+                logger.info("")
+            
+            logger.info("=" * 80)
 
         return dois, errors
 
