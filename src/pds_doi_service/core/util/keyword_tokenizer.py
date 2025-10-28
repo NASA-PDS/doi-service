@@ -1,6 +1,11 @@
+import functools
+import hashlib
 import re
 
 import nltk  # type: ignore
+
+# Redirect nltk.downloader.md5 to include usedforsecurity=False
+nltk.downloader.md5 = functools.partial(hashlib.md5, usedforsecurity=False)
 
 nltk.download("stopwords", quiet=True)
 from nltk.corpus import stopwords  # type: ignore # noqa: E402
