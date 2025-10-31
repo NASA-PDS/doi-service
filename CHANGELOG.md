@@ -1,8 +1,16 @@
 # Changelog
 
-## [release/3.0.1](https://github.com/NASA-PDS/doi-service/tree/release/3.0.1) (2025-10-28)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-10-31)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.0...release/3.0.1)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.1...«unknown»)
+
+**Defects:**
+
+- FIPS Compliance: MD5 usage in checksum\(\) function still causes ValueError on FIPS-enabled systems [\#497](https://github.com/NASA-PDS/doi-service/issues/497) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+
+## [v3.0.1](https://github.com/NASA-PDS/doi-service/tree/v3.0.1) (2025-10-29)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.0...v3.0.1)
 
 **Improvements:**
 
