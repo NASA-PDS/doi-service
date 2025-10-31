@@ -45,7 +45,7 @@ def checksum(record_payload):
         The hex digest of the md5 checksum.
 
     """
-    md5 = hashlib.md5()
+    md5 = hashlib.md5(usedforsecurity=False)
     md5.update(record_payload.encode())
     return md5.hexdigest()
 
