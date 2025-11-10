@@ -33,7 +33,7 @@ from pds_doi_service.core.util.config_parser import DOIConfigUtil
 
 
 class CheckActionTestCase(unittest.TestCase):
-    test_dir = str(resources.files(__name__))
+    test_dir = os.path.dirname(__file__)
     input_dir = abspath(join(test_dir, "data"))
 
     @classmethod

@@ -7,7 +7,6 @@ import unittest
 from datetime import datetime
 from importlib import resources
 from os.path import abspath
-from os.path import exists
 from os.path import join
 from unittest.mock import patch
 

@@ -14,7 +14,7 @@ from pds_doi_service.core.entities.doi import ProductType
 
 
 class WeeklyRoundupNotificationBaseTestCase(unittest.TestCase):
-    tests_dir = str(resources.files(__name__))
+    tests_dir = os.path.dirname(__file__)
     resources_dir = os.path.join(tests_dir, "resources")
 
     _database_obj: DOIDataBase

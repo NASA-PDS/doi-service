@@ -73,7 +73,7 @@ class DOIConfigUtil:
     @staticmethod
     def get_config_defaults_filepath():
         """Return the expected path of the user-specified configuration"""
-        return str(resources.files(__name__) / "conf.default.ini")
+        return os.path.join(os.path.dirname(__file__), "conf.default.ini")
 
     @staticmethod
     def _resolve_relative_path(parser):
