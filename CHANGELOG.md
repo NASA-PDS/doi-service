@@ -1,8 +1,16 @@
 # Changelog
 
-## [release/3.0.2](https://github.com/NASA-PDS/doi-service/tree/release/3.0.2) (2025-10-31)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-11-10)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.1...release/3.0.2)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.2...«unknown»)
+
+**Other closed issues:**
+
+- Deploy v3.0.2 of DOI Service to Prod [\#496](https://github.com/NASA-PDS/doi-service/issues/496)
+
+## [v3.0.2](https://github.com/NASA-PDS/doi-service/tree/v3.0.2) (2025-10-31)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.1...v3.0.2)
 
 **Defects:**
 
