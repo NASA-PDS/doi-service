@@ -1,12 +1,13 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-11-10)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-11-25)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.2...«unknown»)
 
 **Other closed issues:**
 
 - Deploy v3.0.2 of DOI Service to Prod [\#496](https://github.com/NASA-PDS/doi-service/issues/496)
+- Update DOI Service to Support Improved Editor/Author Lists [\#451](https://github.com/NASA-PDS/doi-service/issues/451)
 
 ## [v3.0.2](https://github.com/NASA-PDS/doi-service/tree/v3.0.2) (2025-10-31)
 
