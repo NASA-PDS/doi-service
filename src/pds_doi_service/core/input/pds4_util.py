@@ -290,7 +290,7 @@ class DOIPDS4LabelUtil:
                                 if affil_tag == "organization_name":
                                     dict_list_authors["Affiliation"].append(affil_text)
                                     logger.debug(": get_list_aec.added affiliation: %s", affil_text)
-                        elif element_text:
+                        elif element_text is not None:
                             # Add Person attributes (given_name, family_name, etc.)
                             dict_list_authors[element_tag] = element_text
                             logger.debug(": get_list_aec.added person attribute: %s = %s", element_tag, element_text)
