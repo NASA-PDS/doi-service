@@ -111,10 +111,11 @@ class DOIDataCiteRecord(DOIRecord):
             for author in doi.authors:
                 if "name" in author:
                     author["name"] = sanitize_json_string(author["name"])
-                else:
+                elif "first_name" in author and "last_name" in author:
                     author["first_name"] = sanitize_json_string(author["first_name"])
                     author["last_name"] = sanitize_json_string(author["last_name"])
-
+                else:
+                    logger.warning(f"Author entry missing required name fields, skipping: {author}")
             # Publication year is a must-have
             doi_fields["publication_year"] = doi.publication_date.strftime("%Y")
 

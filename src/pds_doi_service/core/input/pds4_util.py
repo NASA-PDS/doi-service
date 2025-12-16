@@ -236,184 +236,101 @@ class DOIPDS4LabelUtil:
         # adjust the dictionary to reflect the role_type
         list_key = role_type.lower() + "s"  # "authors" or "editors" or "contributors"
 
-        xpath = xpath_dict[f"xpath_list_{role_type.lower()}_class"]
-        logger.debug(": get_list_aec.xpath,role_type,xpath: %s, %s", role_type, xpath)
-
-        list_aec_classes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
+        # First, find all List_Author/List_Editor/List_Contributor elements
+        # (there can be multiple List_Author elements, each with one or more Person/Organization children)
+        list_container_xpath = f"/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_{role_type}"
+        list_containers = xml_tree.xpath(list_container_xpath, namespaces=pds4_namespace)
         logger.debug(
-            ": get_list_aec.xpath,list_aec_classes,len(list_aec_classes) %s",
-            (role_type, list_aec_classes, len(list_aec_classes))
+            ": get_list_aec.list_containers found %d List_%s elements",
+            len(list_containers), role_type
         )
 
-        # for each Class in List_Auth:
-        #   -- <Person> | <Organization>
-        #        -- number of instances of each class
-        for list_author_class in list_aec_classes:
-            logger.debug(": get_list_aec.list_author_class.tag %s", list_author_class.tag)
-            # logger.debug(": get_list_aec.list_author_class.text %s", list_author_class.text)
+        # Now iterate through each List_Author/List_Editor/List_Contributor container
+        for container in list_containers:
+            # Get all Person and Organization children within this specific List_* container
+            container_children = list(container)
+            logger.debug(
+                ": get_list_aec.processing List_%s with %d children",
+                role_type, len(container_children)
+            )
 
-            # Person:  parse the Person class for each attribute and class
-            #   -- <Person> attributes:  given_name, middle_name, family_name, name_type, person_orcid
-            #   -- <Person>.<Affiliation:  organization_name, organization_rorid
-            if list_author_class.tag == pds4_namespace_prefix + "Person":
-                logger.debug(": get_list_aec.list_author_class.tag == Person %s", list_author_class.tag)
-                # Advance person_instance by 1 for each <Person> instance
-                person_instance += 1
-                logger.debug(": get_list_aec.person_instance %d", person_instance)
-                # Initialize the <Person>.<Affiliation> instance
-                affil_instance = 0
-                logger.debug(": get_list_aec.affil_instance %d", affil_instance)
+            # for each Class in List_Auth:
+            #   -- <Person> | <Organization>
+            #        -- number of instances of each class
+            for list_author_class in container_children:
+                logger.debug(": get_list_aec.list_author_class.tag %s", list_author_class.tag)
+                # logger.debug(": get_list_aec.list_author_class.text %s", list_author_class.text)
 
-                dict_list_authors = {}
-                dict_list_authors["name_type"] = "Personal"
-                # debug list of values for Affiliation
-                dict_list_authors["Affiliation"] = []
+                # Person:  parse the Person class for each attribute and class
+                #   -- <Person> attributes:  given_name, middle_name, family_name, name_type, person_orcid
+                #   -- <Person>.<Affiliation:  organization_name, organization_rorid
+                if list_author_class.tag == pds4_namespace_prefix + "Person":
+                    logger.debug(": get_list_aec.list_author_class.tag == Person %s", list_author_class.tag)
+                    # Advance person_instance by 1 for each <Person> instance
+                    person_instance += 1
+                    logger.debug(": get_list_aec.person_instance %d", person_instance)
 
-                # adjust the dictionary to reflect the role_type
-                xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
-                xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/*")
-                logger.debug(": get_list_aec.xpath %s", xpath)
+                    dict_list_authors = {}
+                    dict_list_authors["name_type"] = "Personal"
+                    dict_list_authors["Affiliation"] = []
 
-                # Convert XPath for default namespace
-                xpath_person_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
-                logger.debug(
-                    ": get_list_aec.xpath_person_attributes,len(xpath_person_attributes) %s",
-                    (xpath_person_attributes, len(xpath_person_attributes))
-                )
+                    # Directly iterate over Person element's children instead of using xpath
+                    for person_child in list_author_class:
+                        element_tag = person_child.tag.replace(pds4_namespace_prefix, "")
+                        element_text = person_child.text
+                        logger.debug(": get_list_aec.element_tag %s", element_tag)
+                        logger.debug(": get_list_aec.element_text %s", element_text)
 
-                for xpath_person_attribute in xpath_person_attributes:
-                    logger.debug(": get_list_aec.xpath_person_attribute.tag %s", xpath_person_attribute.tag)
-                    logger.debug(": get_list_aec.xpath_person_attribute.text %s", xpath_person_attribute.text)
-
-                    element_tag = xpath_person_attribute.tag.replace(pds4_namespace_prefix, "")
-                    element_text = xpath_person_attribute.text
-                    logger.debug(": get_list_aec.element_tag %s", element_tag)
-                    logger.debug(": get_list_aec.element_text %s", element_text)
-
-                    if element_tag in xpath_dict_person_attributes:
-                        if (element_tag == "Affiliation"):
-                            logger.debug(": get_list_aec.list_author_class.tag == Affiliation %s", element_tag)
-                            # Add Affiliation to same instance of <Person>
-                            # person_instance += 1
-                            logger.debug(": get_list_aec.person_instance %d", person_instance)
-                            # Advance affil_instance by 1 for each <Affiliation> instance
-                            affil_instance += 1
-                            logger.debug(": get_list_aec.affil_instance %d", affil_instance)
-
-                            dict_list_authors["name_type"] = "Personal"
-                            # debug list of values for Affiliation that is found in the <Person> instance
-                            # dict_list_authors["Affiliation"] = ["NASA PDS", "JPL"]
-
-                            # adjust the dictionary to reflect the role_type
-                            xpath = xpath_dict[f"xpath_list_{list_key}_person_class"]
-                            xpath = xpath.replace("pds4:Person/*", "pds4:Person[" + str(person_instance) + "]/pds4:Affiliation[" + str(affil_instance) + "]/*")
-                            logger.debug(": get_list_aec.xpath %s", xpath)
-
-                            # Convert XPath for default namespace
-                            xpath_affil_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
-                            logger.debug(
-                                ": get_list_aec.xpath_affil_attributes,len(xpath_affil_attributes) %s",
-                                (xpath_affil_attributes, len(xpath_affil_attributes))
-                            )
-
-                            for xpath_affil_attribute in xpath_affil_attributes:
-                                logger.debug(": get_list_aec.xpath_affil_attribute.tag %s", xpath_affil_attribute.tag)
-                                logger.debug(": get_list_aec.xpath_affil_attribute.text %s", xpath_affil_attribute.text)
-
-                                element_tag = xpath_affil_attribute.tag.replace(pds4_namespace_prefix, "")
-                                element_text = xpath_affil_attribute.text
-                                logger.debug(": get_list_aec.element_tag %s", element_tag)
-                                logger.debug(": get_list_aec.element_text %s", element_text)
-
-                                if element_tag in xpath_dict_person_affiliation_attributes:
-                                    dict_list_authors["Affiliation"].append(element_text)
-                                    for key, value in dict_list_authors.items():
-                                        logger.debug(": get_list_aec.dict_list_authors.Affiliation: %s, %s", key, value)
-                                else:
-                                    logger.debug(
-                                        ": get_list_aec.each_element.tag not in xpath_dict_person_affiliation_attributes[key] %s",
-                                        element_tag
-                                    )
-                        else:
-                            # Add every attribute found in list_authors to the dictionary
+                        if element_tag == "Affiliation":
+                            logger.debug(": get_list_aec.processing Affiliation")
+                            # Process Affiliation children
+                            for affil_child in person_child:
+                                affil_tag = affil_child.tag.replace(pds4_namespace_prefix, "")
+                                affil_text = affil_child.text
+                                if affil_tag == "organization_name":
+                                    dict_list_authors["Affiliation"].append(affil_text)
+                                    logger.debug(": get_list_aec.added affiliation: %s", affil_text)
+                        elif element_text:
+                            # Add Person attributes (given_name, family_name, etc.)
                             dict_list_authors[element_tag] = element_text
-                            logger.debug(
-                                ": get_list_aec.dict_list_authors[tag] %s", (element_tag, dict_list_authors[element_tag])
-                            )
-                    else:
-                        logger.debug(
-                            ": get_list_aec.each_element.tag not in xpath_dict_person_attributes[key] %s",
-                            element_tag
-                        )
+                            logger.debug(": get_list_aec.added person attribute: %s = %s", element_tag, element_text)
 
-                list_authors.append(dict_list_authors)
-                logger.debug(": get_list_aec.list_authors.len, list_authors %s", (len(list_authors), list_authors))
+                    list_authors.append(dict_list_authors)
+                    logger.debug(": get_list_aec.list_authors.len, list_authors %s", (len(list_authors), list_authors))
 
-                for each_item in list_authors:
-                    logger.debug(": get_list_aec.each_item %s", each_item)
+                elif list_author_class.tag == pds4_namespace_prefix + "Organization":
+                    logger.debug(": get_list_aec.list_author_class.tag == Organization %s", list_author_class.tag)
 
-            elif list_author_class.tag == pds4_namespace_prefix + "Organization":
-                logger.debug(": get_list_aec.list_author_class.tag == Organization %s", list_author_class.tag)
+                    organization_instance += 1
+                    logger.debug(": get_list_aec.organization_instance %d", organization_instance)
 
-                organization_instance += 1
-                logger.debug(": get_list_aec.organization_instance %d", organization_instance)
+                    dict_list_authors = {}
+                    dict_list_authors["name_type"] = "Organizational"
+                    dict_list_authors["Affiliation"] = []
 
-                dict_list_authors = {}
-                dict_list_authors["name_type"] = "Organizational"
-                # Debug: to test the Affiliation field
-                dict_list_authors["Affiliation"] = []
+                    # Directly iterate over Organization element's children
+                    for org_child in list_author_class:
+                        element_tag = org_child.tag.replace(pds4_namespace_prefix, "")
+                        element_text = org_child.text
+                        logger.debug(": get_list_aec.element_tag %s", element_tag)
+                        logger.debug(": get_list_aec.element_text %s", element_text)
 
-                # adjust the dictionary to reflect the role_type
-                xpath = xpath_dict[f"xpath_list_{list_key}_organization_class"]
-                xpath = xpath.replace("pds4:Organization/*", "pds4:Organization[" + str(organization_instance) + "]/*")
-                logger.debug(": get_list_aec.xpath %s", xpath)
+                        if element_text:
+                            dict_list_authors[element_tag] = element_text
+                            logger.debug(": get_list_aec.added org attribute: %s = %s", element_tag, element_text)
 
-                # Convert XPath for default namespace
-                xpath_organization_attributes = xml_tree.xpath(xpath, namespaces=pds4_namespace)
-                logger.debug(
-                    ": get_list_aec.xpath_organization_attributes,len(xpath_organization_attributes) %s",
-                    (xpath_organization_attributes, len(xpath_organization_attributes))
-                )
+                    list_authors.append(dict_list_authors)
+                    logger.debug(": get_list_aec.list_authors.len, list_authors %s", (len(list_authors), list_authors))
 
-                for xpath_organization_attribute in xpath_organization_attributes:
+                else:
                     logger.debug(
-                        ": get_list_aec.xpath_organization_attribute.tag %s", xpath_organization_attribute.tag
+                        ": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class %s",
+                        list_author_class.text
                     )
-                    logger.debug(
-                        ": get_list_aec.xpath_organization_attribute.text %s", xpath_organization_attribute.text
+                    # Formerly sys.exit, we want to raise an exception because this is an invalid label
+                    raise InputFormatException(
+                        f"Unexpected class type '{list_author_class.tag}' found as child of <List_Authors>. Expected <Person> or <Organization>."
                     )
-
-                    element_tag = xpath_organization_attribute.tag.replace(pds4_namespace_prefix, "")
-                    element_text = xpath_organization_attribute.text
-                    logger.debug(": get_list_aec.element_tag %s", element_tag)
-                    logger.debug(": get_list_aec.element_text %s", element_text)
-
-                    if element_tag in xpath_dict_organization_attributes:
-                        dict_list_authors[element_tag] = element_text
-                        logger.debug(
-                            ": get_list_aec.dict_list_authors[tag] %s", (element_tag, dict_list_authors[element_tag])
-                        )
-                    else:
-                        logger.debug(
-                            ": get_list_aec.each_element.tag not in xpath_dict_organization_attributes[key] %s",
-                            element_tag
-                        )
-
-                list_authors.append(dict_list_authors)
-                logger.debug(": get_list_aec.list_authors.len, list_authors %s", (len(list_authors), list_authors))
-
-                for each_item in list_authors:
-                    logger.debug(": get_list_aec.each_item %s", each_item)
-
-            else:
-                logger.debug(
-                    ": get_list_aec.sys.exit -- neither <Person> nor <Organization> class was found as child class of <List_Authors> class %s",
-                    list_author_class.text
-                )
-                # Formerly sys.exit, we want to raise an exception because this is an invalid label
-                raise InputFormatException(
-                    f"Unexpected class type '{list_author_class.tag}' found as child of <List_Authors>. Expected <Person> or <Organization>."
-                )
 
         # Need to map List_Author fields to DOI fields
         mapped_list_authors = self.map_list_author_editor_fields_to_doi_fields(list_authors)
