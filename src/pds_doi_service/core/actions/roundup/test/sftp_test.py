@@ -8,6 +8,37 @@ from pds_doi_service.core.actions.roundup.output import prepare_doi_record_for_a
 from pds_doi_service.core.actions.roundup.test.base import WeeklyRoundupNotificationBaseTestCase
 
 
+class SftpImportTestCase(unittest.TestCase):
+    """Test that SFTP dependencies (fabric, invoke) can be imported successfully.
+
+    This test ensures that all required dependencies for SFTP functionality are
+    properly installed and available, catching issues like missing transitive
+    dependencies (e.g., decorator, lexicon) that may occur with certain Python versions.
+    """
+
+    def test_fabric_imports(self):
+        """Test that fabric and its dependencies can be imported."""
+        try:
+            import fabric.transfer  # noqa: F401
+            from fabric import Connection  # noqa: F401
+        except ImportError as e:
+            self.fail(f"Failed to import fabric dependencies: {e}")
+
+    def test_paramiko_imports(self):
+        """Test that paramiko SFTP components can be imported."""
+        try:
+            from paramiko.sftp import SFTPError  # noqa: F401
+        except ImportError as e:
+            self.fail(f"Failed to import paramiko SFTP components: {e}")
+
+    def test_sftp_module_imports(self):
+        """Test that the SFTP module itself can be imported without errors."""
+        try:
+            from pds_doi_service.core.actions.roundup import sftp  # noqa: F401
+        except ImportError as e:
+            self.fail(f"Failed to import SFTP module: {e}")
+
+
 class WeeklyRoundupAdsSftpNotificationTestCase(WeeklyRoundupNotificationBaseTestCase):
     _temp_file_path: str
 
