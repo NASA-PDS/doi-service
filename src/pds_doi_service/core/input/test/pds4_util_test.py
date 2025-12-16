@@ -86,6 +86,31 @@ class Pds4UtilTestCase(unittest.TestCase):
         self.assertListEqual(doi.editors, self.expected_editors)
         self.assertSetEqual(doi.keywords, self.expected_keywords)
 
+    def test_multiple_list_author_elements(self):
+        """Test parsing labels with multiple List_Author elements (issue #500)"""
+        pds4_label_util = DOIPDS4LabelUtil()
+
+        # Test with a PDS4 label containing multiple List_Author elements
+        i_filepath = join(self.input_dir, "bundle_multiple_list_author.xml")
+
+        with open(i_filepath, "r") as infile:
+            xml_contents = infile.read()
+
+        xml_tree = etree.fromstring(xml_contents.encode())
+
+        self.assertTrue(pds4_label_util.is_pds4_label(xml_tree))
+
+        # This should not raise an exception
+        doi = pds4_label_util.get_doi_fields_from_pds4(xml_tree)
+
+        # Verify both authors from multiple List_Author elements were parsed
+        self.assertIsInstance(doi, Doi)
+        self.assertEqual(len(doi.authors), 2)
+        self.assertEqual(doi.authors[0]['first_name'], 'Scott')
+        self.assertEqual(doi.authors[0]['last_name'], 'Murchie')
+        self.assertEqual(doi.authors[1]['first_name'], 'Chris')
+        self.assertEqual(doi.authors[1]['last_name'], 'Hash')
+
 
 class GetNamesTestCase(unittest.TestCase):
     def test_names_parse_correctly(self):

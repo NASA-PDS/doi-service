@@ -102,6 +102,36 @@ class DOIDataCiteRecordTestCase(unittest.TestCase):
         self.assertIn("urn:nasa:pds:insight_cameras::1.0", identifier_values)
         self.assertIn("urn:nasa:pds:insight_cameras::2.0", identifier_values)
 
+    def test_empty_author_no_keyerror(self):
+        """Test that empty or incomplete author objects don't cause KeyError (issue #500)"""
+        # Create a DOI with various author scenarios
+        doi = Doi(
+            title="Test Bundle",
+            pds_identifier="urn:nasa:pds:test::1.0",
+            publication_date=datetime(2025, 1, 1),
+            product_type=ProductType.Bundle,
+            product_type_specific="PDS4 Bundle",
+            authors=[
+                {"first_name": "John", "last_name": "Doe"},  # Valid personal author
+                {},  # Empty author object - should be skipped with warning
+                {"name": "NASA PDS"},  # Organization author (has 'name' field)
+                {"first_name": "Jane"},  # Missing last_name - should be skipped
+                {"last_name": "Smith"},  # Missing first_name - should be skipped
+            ],
+        )
+
+        # This should NOT raise KeyError - that's the main fix
+        try:
+            record = DOIDataCiteRecord().create_doi_record(doi)
+            # If we get here, the fix worked - no KeyError was raised
+            self.assertIsNotNone(record)
+
+            # The record should be created successfully even with incomplete authors
+            # (incomplete authors are logged as warnings but not removed)
+            self.assertIn('"data"', record)
+        except KeyError as e:
+            self.fail(f"KeyError raised for missing author field: {e}")
+
 
 def requests_valid_request_patch(method, url, **kwargs):
     response = Response()
