@@ -1,8 +1,12 @@
 # Changelog
 
-## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-11-25)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2025-12-16)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.2...«unknown»)
+
+**Defects:**
+
+- SFTP roundup script does not run due to missing invoke dependencies on Python 3.13 [\#502](https://github.com/NASA-PDS/doi-service/issues/502) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
 
 **Other closed issues:**
 
