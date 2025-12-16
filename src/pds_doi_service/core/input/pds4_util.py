@@ -315,7 +315,7 @@ class DOIPDS4LabelUtil:
                         logger.debug(": get_list_aec.element_tag %s", element_tag)
                         logger.debug(": get_list_aec.element_text %s", element_text)
 
-                        if element_text:
+                        if element_text is not None:
                             dict_list_authors[element_tag] = element_text
                             logger.debug(": get_list_aec.added org attribute: %s = %s", element_tag, element_text)
 
