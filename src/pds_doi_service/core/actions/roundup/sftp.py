@@ -82,7 +82,11 @@ def run(
         host=sftp_host,
         port=sftp_port,
         user=sftp_user,
-        connect_kwargs={"password": sftp_password},
+        connect_kwargs={
+            "password": sftp_password,
+            "look_for_keys": False,  # Disable SSH key auth to avoid MD5 fingerprint in FIPS mode
+            "allow_agent": False,  # Disable SSH agent to avoid MD5 fingerprint in FIPS mode
+        },
     )
     # Set FIPS-compliant host key policy that doesn't use MD5
     conn.client.set_missing_host_key_policy(FIPSCompliantAutoAddPolicy())
