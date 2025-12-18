@@ -1,5 +1,19 @@
 # Changelog
 
+## [release/3.0.3](https://github.com/NASA-PDS/doi-service/tree/release/3.0.3) (2025-12-18)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.2...release/3.0.3)
+
+**Defects:**
+
+- SFTP roundup script does not run due to missing invoke dependencies on Python 3.13 [\#502](https://github.com/NASA-PDS/doi-service/issues/502) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+- pds-doi-cmd release fails when there are multiple `List_Author` classes in a label [\#500](https://github.com/NASA-PDS/doi-service/issues/500) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+
+**Other closed issues:**
+
+- Deploy v3.0.2 of DOI Service to Prod [\#496](https://github.com/NASA-PDS/doi-service/issues/496)
+- Update DOI Service to Support Improved Editor/Author Lists [\#451](https://github.com/NASA-PDS/doi-service/issues/451)
+
 ## [v3.0.2](https://github.com/NASA-PDS/doi-service/tree/v3.0.2) (2025-10-31)
 
 [Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.1...v3.0.2)
