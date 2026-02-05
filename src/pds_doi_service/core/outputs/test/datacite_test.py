@@ -516,7 +516,7 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.related_identifiers[1]["relationType"], "IsObsoletedBy")
 
     def test_parse_pds4_collection_id_type(self):
-        """Test parsing of DataCite records with 'PDS4 Collection ID' identifier type (issue #xxx)"""
+        """Test parsing of DataCite records with 'PDS4 Collection ID' identifier type (issue #510)"""
         # This test verifies that records with identifierType "PDS4 Collection ID"
         # are properly parsed and the pds_identifier is correctly extracted.
         # Previously, this identifier type was not recognized, causing records to be
