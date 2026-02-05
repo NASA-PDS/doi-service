@@ -425,8 +425,11 @@ class DOIDataCiteWebParser(DOIWebParser):
             datacite_records = [datacite_records]
 
         for index, datacite_record in enumerate(datacite_records):
+            # Extract DOI early for better error messages
+            doi_value = datacite_record.get("attributes", {}).get("doi", "unknown")
+
             try:
-                logger.info("Parsing record index %d", index)
+                logger.info("Parsing record index %d (DOI: %s)", index, doi_value)
                 doi_fields = {}
 
                 # Everything we care about in a DataCite response is under attributes
@@ -447,14 +450,15 @@ class DOIDataCiteWebParser(DOIWebParser):
                             doi_fields[optional_field] = parsed_value
                             logger.debug("Parsed value %s for optional field %s", parsed_value, optional_field)
                     except UserWarning as warning:
-                        logger.warning("Record %d: %s", index, str(warning))
+                        logger.warning("DOI %s (record %d): %s", doi_value, index, str(warning))
 
                 doi = Doi(**doi_fields)
 
                 dois.append(doi)
             except InputFormatException as err:
-                logger.warning(
-                    "Failed to parse a DOI object from record index %d of the provided label, reason: %s",
+                logger.error(
+                    "DOI %s (record %d): Failed to parse - record skipped. Reason: %s",
+                    doi_value,
                     index,
                     str(err),
                 )
