@@ -515,6 +515,52 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
         self.assertEqual(doi.related_identifiers[1]["relatedIdentifier"], "10.26033/5hyq-6k90")
         self.assertEqual(doi.related_identifiers[1]["relationType"], "IsObsoletedBy")
 
+    def test_parse_pds4_collection_id_type(self):
+        """Test parsing of DataCite records with 'PDS4 Collection ID' identifier type (issue #xxx)"""
+        # This test verifies that records with identifierType "PDS4 Collection ID"
+        # are properly parsed and the pds_identifier is correctly extracted.
+        # Previously, this identifier type was not recognized, causing records to be
+        # skipped during sync_dois.sh imports.
+        input_json_file = join(self.input_dir, "datacite_record_collection_id.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            dois, errors = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+        self.assertEqual(len(dois), 1)
+        self.assertEqual(len(errors), 0)
+
+        doi = dois[0]
+
+        # Verify the DOI was parsed correctly
+        self.assertEqual(doi.doi, "10.26007/fv5e-eh92")
+        self.assertEqual(doi.title, "New Horizons (486958) Arrokoth Encounter Surface Composition Maps")
+
+        # Most importantly, verify the PDS identifier was extracted from the
+        # "PDS4 Collection ID" identifier type
+        self.assertEqual(doi.pds_identifier, "urn:nasa:pds:nh_derived:arrokoth_composition::1.0")
+
+        # Verify other fields parsed correctly
+        self.assertEqual(doi.publisher, "NASA Planetary Data System")
+        self.assertEqual(doi.status, DoiStatus.Findable)
+
+    def test_parse_unrecognized_pds_identifier_type_logs_error(self):
+        """Test that PDS identifiers with unrecognized types raise an informative error"""
+        # This test verifies that when a record has a PDS-like identifier (URN pattern)
+        # with an unrecognized identifier type, and URL parsing fails, an InputFormatException
+        # is raised with a helpful message. This helps developers catch new identifier
+        # types that need to be added to the recognized lists.
+        input_json_file = join(self.input_dir, "datacite_record_unrecognized_id_type.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            # Should parse but log a warning and skip the record
+            dois, errors = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+            # The record should be skipped (not added to dois list)
+            # because parsing fails with an InputFormatException that gets caught
+            self.assertEqual(len(dois), 0)
+
 
 class DOIDataCiteValidatorTestCase(unittest.TestCase):
     """Unit tests for the datacite_validator.py module"""

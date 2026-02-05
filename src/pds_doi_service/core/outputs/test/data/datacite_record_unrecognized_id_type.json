@@ -1,0 +1,56 @@
+{
+   "data" : {
+      "attributes" : {
+         "identifiers" : [
+            {
+               "identifier" : "urn:nasa:pds:some_bundle::1.0",
+               "identifierType" : "PDS4 Unknown Type"
+            }
+         ],
+         "container" : {},
+         "contributors" : [
+            {
+               "affiliation" : ["Some Institution"],
+               "contributorType" : "DataCurator",
+               "name" : "NASA PDS Engineering Node",
+               "nameIdentifiers" : [],
+               "nameType" : "Organizational"
+            }
+         ],
+         "created" : "2025-01-01T00:00:00.000Z",
+         "creators" : [
+            {
+               "affiliation" : ["Test Institution"],
+               "familyName" : "Doe",
+               "givenName" : "John",
+               "name" : "Doe, John",
+               "nameIdentifiers" : [],
+               "nameType" : "Personal"
+            }
+         ],
+         "descriptions" : [
+            {
+               "description" : "Test description",
+               "descriptionType" : "Abstract"
+            }
+         ],
+         "doi" : "10.17189/test-unrecognized",
+         "publicationYear" : 2025,
+         "publisher" : "NASA Planetary Data System",
+         "state" : "draft",
+         "titles" : [
+            {
+               "title" : "Test Record with Unrecognized Identifier Type"
+            }
+         ],
+         "types" : {
+            "resourceType" : "PDS4 Bundle",
+            "resourceTypeGeneral" : "Dataset"
+         },
+         "updated" : "2025-01-01T00:00:00.000Z",
+         "url" : "https://example.com/no-identifier-in-url"
+      },
+      "id" : "10.17189/test-unrecognized",
+      "type" : "dois"
+   }
+}

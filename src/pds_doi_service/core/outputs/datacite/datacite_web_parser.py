@@ -77,7 +77,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     _pds3_identifier_types = ["PDS3 Data Set ID", "PDS3 Dataset ID", "Site ID", "Handle"]
     """The set of identifier types which indicate a PDS3 dataset"""
 
-    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "Site ID", "URN"]
+    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "PDS4 Collection ID", "Site ID", "URN"]
     """The set of identifier types which indicate a PDS4 dataset"""
 
     @staticmethod
@@ -266,6 +266,9 @@ class DOIDataCiteWebParser(DOIWebParser):
     @staticmethod
     def _parse_pds_identifier(record):
         identifier = None
+        all_recognized_types = (
+            DOIDataCiteWebParser._pds3_identifier_types + DOIDataCiteWebParser._pds4_identifier_types
+        )
 
         # First, check identifiers for a PDS ID, giving preference
         # to a PDS3 dataset ID, if present
@@ -324,6 +327,27 @@ class DOIDataCiteWebParser(DOIWebParser):
         if not identifier and "url" in record:
             logger.info("Parsing PDS identifier from URL")
             identifier = parse_identifier_from_site_url(record["url"])
+
+        # If we still don't have an identifier but the record has identifiers
+        # that look like PDS identifiers (URN patterns), check if the issue is
+        # unrecognized identifier types
+        if identifier is None and record.get("identifiers"):
+            # Find identifiers that look like PDS identifiers but have unrecognized types
+            pds_like_with_unrecognized_types = [
+                (id_rec.get("identifier", ""), id_rec.get("identifierType", "unknown"))
+                for id_rec in record.get("identifiers", [])
+                if id_rec.get("identifierType") not in all_recognized_types
+                and is_pds4_identifier(id_rec.get("identifier", ""))
+            ]
+            if pds_like_with_unrecognized_types:
+                doi_value = record.get("doi", "unknown")
+                unrecognized = [f'"{id_val}" (type: {id_type})' for id_val, id_type in pds_like_with_unrecognized_types]
+                raise InputFormatException(
+                    f'DOI {doi_value} has PDS identifiers with unrecognized types: {unrecognized}. '
+                    f'Recognized PDS3 types: {DOIDataCiteWebParser._pds3_identifier_types}. '
+                    f'Recognized PDS4 types: {DOIDataCiteWebParser._pds4_identifier_types}. '
+                    f'Please add the new identifier type to the appropriate list in datacite_web_parser.py.'
+                )
 
         if identifier is None:
             raise InputFormatException('Failed to parse mandatory field "pds_identifier"')
