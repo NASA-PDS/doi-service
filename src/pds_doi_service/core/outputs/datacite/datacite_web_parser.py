@@ -77,7 +77,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     _pds3_identifier_types = ["PDS3 Data Set ID", "PDS3 Dataset ID", "Site ID", "Handle"]
     """The set of identifier types which indicate a PDS3 dataset"""
 
-    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "PDS4 Bundle LID", "PDS4 Collection ID", "Site ID", "URN"]
+    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Product ID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "PDS4 Bundle LID", "PDS4 Collection ID", "Site ID", "URN"]
     """The set of identifier types which indicate a PDS4 dataset"""
 
     @staticmethod

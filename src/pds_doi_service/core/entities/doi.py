@@ -36,6 +36,7 @@ class ProductType(str, Enum):
     Bundle = "Bundle"
     Text = "Text"
     Document = "Document"
+    Report = "Report"
     Dataset = "Dataset"
     Other = "Other"
 
