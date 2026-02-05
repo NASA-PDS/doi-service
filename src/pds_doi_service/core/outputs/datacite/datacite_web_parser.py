@@ -274,7 +274,8 @@ class DOIDataCiteWebParser(DOIWebParser):
         # to a PDS3 dataset ID, if present
         for identifier_record in record.get("identifiers", []):
             # Strip whitespace from identifierType to handle malformed data
-            identifier_type = identifier_record.get("identifierType", "").strip()
+            # Use "or ''" to handle None values
+            identifier_type = (identifier_record.get("identifierType") or "").strip()
             if identifier_type in DOIDataCiteWebParser._pds3_identifier_types and not is_pds4_identifier(
                 identifier_record.get("identifier", "")
             ):
@@ -286,7 +287,8 @@ class DOIDataCiteWebParser(DOIWebParser):
             pds4_identifiers = []
             for identifier_record in record.get("identifiers", []):
                 # Strip whitespace from identifierType to handle malformed data
-                identifier_type = identifier_record.get("identifierType", "").strip()
+                # Use "or ''" to handle None values
+                identifier_type = (identifier_record.get("identifierType") or "").strip()
                 if identifier_type in DOIDataCiteWebParser._pds4_identifier_types and is_pds4_identifier(
                     identifier_record.get("identifier", "")
                 ):
@@ -333,11 +335,12 @@ class DOIDataCiteWebParser(DOIWebParser):
         # unrecognized identifier types
         if identifier is None and record.get("identifiers"):
             # Find identifiers that look like PDS identifiers but have unrecognized types
+            # Use "or ''" to handle None values
             pds_like_with_unrecognized_types = [
-                (id_rec.get("identifier", ""), id_rec.get("identifierType", "unknown").strip())
+                (id_rec.get("identifier") or "", (id_rec.get("identifierType") or "unknown").strip())
                 for id_rec in record.get("identifiers", [])
-                if id_rec.get("identifierType", "").strip() not in all_recognized_types
-                and is_pds4_identifier(id_rec.get("identifier", ""))
+                if (id_rec.get("identifierType") or "").strip() not in all_recognized_types
+                and is_pds4_identifier(id_rec.get("identifier") or "")
             ]
             if pds_like_with_unrecognized_types:
                 doi_value = record.get("doi", "unknown")
