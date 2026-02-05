@@ -77,7 +77,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     _pds3_identifier_types = ["PDS3 Data Set ID", "PDS3 Dataset ID", "Site ID", "Handle"]
     """The set of identifier types which indicate a PDS3 dataset"""
 
-    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "PDS4 Collection ID", "Site ID", "URN"]
+    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "PDS4 Bundle LID", "PDS4 Collection ID", "Site ID", "URN"]
     """The set of identifier types which indicate a PDS4 dataset"""
 
     @staticmethod
@@ -425,8 +425,9 @@ class DOIDataCiteWebParser(DOIWebParser):
             datacite_records = [datacite_records]
 
         for index, datacite_record in enumerate(datacite_records):
-            # Extract DOI early for better error messages
+            # Extract DOI and state early for better error messages
             doi_value = datacite_record.get("attributes", {}).get("doi", "unknown")
+            doi_state = datacite_record.get("attributes", {}).get("state", "unknown")
 
             try:
                 logger.info("Parsing record index %d (DOI: %s)", index, doi_value)
@@ -456,12 +457,24 @@ class DOIDataCiteWebParser(DOIWebParser):
 
                 dois.append(doi)
             except InputFormatException as err:
-                logger.error(
-                    "DOI %s (record %d): Failed to parse - record skipped. Reason: %s",
-                    doi_value,
-                    index,
-                    str(err),
-                )
+                # Check if the DOI state is "findable" - if so, this is a serious error
+                # For non-findable states (draft, registered), bad metadata is less concerning
+                if doi_state == DoiStatus.Findable.value:
+                    logger.error(
+                        "DOI %s (record %d): Failed to parse - record skipped. Reason: %s",
+                        doi_value,
+                        index,
+                        str(err),
+                    )
+                else:
+                    logger.warning(
+                        "DOI %s (record %d, state=%s): Failed to parse - record skipped. "
+                        "This is expected for non-findable DOIs with incomplete metadata. Reason: %s",
+                        doi_value,
+                        index,
+                        doi_state,
+                        str(err),
+                    )
                 continue
 
         logger.info("Parsed %d DOI objects from %d records", len(dois), len(datacite_records))
