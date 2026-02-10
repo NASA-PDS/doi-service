@@ -77,7 +77,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     _pds3_identifier_types = ["PDS3 Data Set ID", "PDS3 Dataset ID", "Site ID", "Handle"]
     """The set of identifier types which indicate a PDS3 dataset"""
 
-    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "Site ID", "URN"]
+    _pds4_identifier_types = ["PDS4 LIDVID", "PDS4 Product ID", "PDS4 Bundle LIDVID", "PDS4 Bundle ID", "PDS4 Bundle LID", "PDS4 Collection ID", "Site ID", "URN"]
     """The set of identifier types which indicate a PDS4 dataset"""
 
     @staticmethod
@@ -266,14 +266,18 @@ class DOIDataCiteWebParser(DOIWebParser):
     @staticmethod
     def _parse_pds_identifier(record):
         identifier = None
+        all_recognized_types = (
+            DOIDataCiteWebParser._pds3_identifier_types + DOIDataCiteWebParser._pds4_identifier_types
+        )
 
         # First, check identifiers for a PDS ID, giving preference
         # to a PDS3 dataset ID, if present
         for identifier_record in record.get("identifiers", []):
-            if identifier_record[
-                "identifierType"
-            ] in DOIDataCiteWebParser._pds3_identifier_types and not is_pds4_identifier(
-                identifier_record["identifier"]
+            # Strip whitespace from identifierType to handle malformed data
+            # Use "or ''" to handle None values
+            identifier_type = (identifier_record.get("identifierType") or "").strip()
+            if identifier_type in DOIDataCiteWebParser._pds3_identifier_types and not is_pds4_identifier(
+                identifier_record.get("identifier", "")
             ):
                 identifier = identifier_record["identifier"]
                 break
@@ -282,9 +286,10 @@ class DOIDataCiteWebParser(DOIWebParser):
         if not identifier:
             pds4_identifiers = []
             for identifier_record in record.get("identifiers", []):
-                if identifier_record.get(
-                    "identifierType", ""
-                ) in DOIDataCiteWebParser._pds4_identifier_types and is_pds4_identifier(
+                # Strip whitespace from identifierType to handle malformed data
+                # Use "or ''" to handle None values
+                identifier_type = (identifier_record.get("identifierType") or "").strip()
+                if identifier_type in DOIDataCiteWebParser._pds4_identifier_types and is_pds4_identifier(
                     identifier_record.get("identifier", "")
                 ):
                     pds4_identifiers.append(identifier_record["identifier"])
@@ -324,6 +329,28 @@ class DOIDataCiteWebParser(DOIWebParser):
         if not identifier and "url" in record:
             logger.info("Parsing PDS identifier from URL")
             identifier = parse_identifier_from_site_url(record["url"])
+
+        # If we still don't have an identifier but the record has identifiers
+        # that look like PDS identifiers (URN patterns), check if the issue is
+        # unrecognized identifier types
+        if identifier is None and record.get("identifiers"):
+            # Find identifiers that look like PDS identifiers but have unrecognized types
+            # Use "or ''" to handle None values
+            pds_like_with_unrecognized_types = [
+                (id_rec.get("identifier") or "", (id_rec.get("identifierType") or "unknown").strip())
+                for id_rec in record.get("identifiers", [])
+                if (id_rec.get("identifierType") or "").strip() not in all_recognized_types
+                and is_pds4_identifier(id_rec.get("identifier") or "")
+            ]
+            if pds_like_with_unrecognized_types:
+                doi_value = record.get("doi", "unknown")
+                unrecognized = [f'"{id_val}" (type: {id_type})' for id_val, id_type in pds_like_with_unrecognized_types]
+                raise InputFormatException(
+                    f'DOI {doi_value} has PDS identifiers with unrecognized types: {unrecognized}. '
+                    f'Recognized PDS3 types: {DOIDataCiteWebParser._pds3_identifier_types}. '
+                    f'Recognized PDS4 types: {DOIDataCiteWebParser._pds4_identifier_types}. '
+                    f'Please add the new identifier type to the appropriate list in datacite_web_parser.py.'
+                )
 
         if identifier is None:
             raise InputFormatException('Failed to parse mandatory field "pds_identifier"')
@@ -401,8 +428,12 @@ class DOIDataCiteWebParser(DOIWebParser):
             datacite_records = [datacite_records]
 
         for index, datacite_record in enumerate(datacite_records):
+            # Extract DOI and state early for better error messages
+            doi_value = datacite_record.get("attributes", {}).get("doi", "unknown")
+            doi_state = datacite_record.get("attributes", {}).get("state", "unknown")
+
             try:
-                logger.info("Parsing record index %d", index)
+                logger.info("Parsing record index %d (DOI: %s)", index, doi_value)
                 doi_fields = {}
 
                 # Everything we care about in a DataCite response is under attributes
@@ -423,17 +454,30 @@ class DOIDataCiteWebParser(DOIWebParser):
                             doi_fields[optional_field] = parsed_value
                             logger.debug("Parsed value %s for optional field %s", parsed_value, optional_field)
                     except UserWarning as warning:
-                        logger.warning("Record %d: %s", index, str(warning))
+                        logger.warning("DOI %s (record %d): %s", doi_value, index, str(warning))
 
                 doi = Doi(**doi_fields)
 
                 dois.append(doi)
             except InputFormatException as err:
-                logger.warning(
-                    "Failed to parse a DOI object from record index %d of the provided label, reason: %s",
-                    index,
-                    str(err),
-                )
+                # Check if the DOI state is "findable" - if so, this is a serious error
+                # For non-findable states (draft, registered), bad metadata is less concerning
+                if doi_state == DoiStatus.Findable.value:
+                    logger.error(
+                        "DOI %s (record %d): Failed to parse - record skipped. Reason: %s",
+                        doi_value,
+                        index,
+                        str(err),
+                    )
+                else:
+                    logger.warning(
+                        "DOI %s (record %d, state=%s): Failed to parse - record skipped. "
+                        "This is expected for non-findable DOIs with incomplete metadata. Reason: %s",
+                        doi_value,
+                        index,
+                        doi_state,
+                        str(err),
+                    )
                 continue
 
         logger.info("Parsed %d DOI objects from %d records", len(dois), len(datacite_records))
