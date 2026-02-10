@@ -1,8 +1,21 @@
 # Changelog
 
-## [release/3.0.3](https://github.com/NASA-PDS/doi-service/tree/release/3.0.3) (2025-12-18)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2026-02-10)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.2...release/3.0.3)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.3...«unknown»)
+
+**Defects:**
+
+- Tests fail with ModuleNotFoundError for pkg\_resources after setuptools 81 release [\#513](https://github.com/NASA-PDS/doi-service/issues/513) [[s.high](https://github.com/NASA-PDS/doi-service/labels/s.high)]
+- DOI Search is not returning all SBN collections from DataCite for 10.26007 [\#510](https://github.com/NASA-PDS/doi-service/issues/510) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
+
+**Other closed issues:**
+
+- B13.1 DOI Service [\#509](https://github.com/NASA-PDS/doi-service/issues/509)
+
+## [v3.0.3](https://github.com/NASA-PDS/doi-service/tree/v3.0.3) (2025-12-18)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.2...v3.0.3)
 
 **Defects:**
 
