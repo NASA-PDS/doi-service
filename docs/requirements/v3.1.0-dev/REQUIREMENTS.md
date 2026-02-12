@@ -260,3 +260,7 @@ This requirement is not impacted by the current version
 
 
 This requirement is not impacted by the current version
+## As a PDS operator, I want to upload DOI metadata for custom date ranges to SFTP ([#505](https://github.com/NASA-PDS/doi-service/issues/505)) 
+
+
+This requirement is not impacted by the current version
