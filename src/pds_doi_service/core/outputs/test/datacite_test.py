@@ -561,6 +561,27 @@ class DOIDataCiteWebParserTestCase(unittest.TestCase):
             # because parsing fails with an InputFormatException that gets caught
             self.assertEqual(len(dois), 0)
 
+    def test_parse_datapaper_resource_type(self):
+        """Test that DataCite records with 'Datapaper' resourceTypeGeneral are parsed correctly.
+
+        Regression test: DataCite may return 'Datapaper' (lowercase 'p') as the
+        resourceTypeGeneral, which is not in the ProductType enum. Previously this
+        caused a ValueError. Now it should parse successfully and preserve the value.
+        """
+        input_json_file = join(self.input_dir, "datacite_record_datapaper.json")
+
+        with open(input_json_file, "r") as infile:
+            input_json = infile.read()
+            dois, errors = DOIDataCiteWebParser.parse_dois_from_label(input_json)
+
+        # Should parse successfully without errors
+        self.assertGreater(len(dois), 0)
+        self.assertEqual(len(errors), 0)
+
+        # The product type value should be preserved as-is
+        doi = dois[0]
+        self.assertEqual(doi.product_type.value, "Datapaper")
+
 
 class DOIDataCiteValidatorTestCase(unittest.TestCase):
     """Unit tests for the datacite_validator.py module"""

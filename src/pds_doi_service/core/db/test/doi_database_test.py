@@ -249,5 +249,78 @@ class DOIDatabaseTest(unittest.TestCase):
         self.assertEqual(len(o_query_result[-1]), 2)
 
 
-if __name__ == "__main__":
+    def test_datapaper_type_roundtrip(self):
+        """Test that ProductType.DataPaper can be stored and retrieved without corruption.
+
+        Regression test for https://github.com/NASA-PDS/doi-service/issues/NNN:
+        Previously, _normalize_rows() used .capitalize() which converted
+        'DataPaper' → 'Datapaper', causing a ValueError when creating the enum.
+        """
+        doi_record = DoiRecord(
+            identifier="urn:nasa:pds:datapaper_test::1.0",
+            status=DoiStatus.Findable,
+            date_added=datetime.datetime.now(tz=timezone.utc),
+            date_updated=datetime.datetime.now(tz=timezone.utc),
+            submitter="img-submitter@jpl.nasa.gov",
+            title="DataPaper Test Record",
+            type=ProductType.DataPaper,
+            subtype="PDS4 DataPaper",
+            node_id="img",
+            doi="10.17189/datapaper01",
+            transaction_key="img/2020-06-15T18:42:45.653317",
+            is_latest=True,
+        )
+
+        self._doi_database.write_doi_info_to_database(doi_record)
+
+        o_query_result = self._doi_database.select_latest_rows(query_criterias={"doi": [doi_record.doi]})
+        query_result = dict(zip(o_query_result[0], o_query_result[1][0]))
+
+        # The type must round-trip exactly as "DataPaper", not "Datapaper"
+        self.assertEqual(query_result["type"], ProductType.DataPaper)
+        self.assertEqual(query_result["type"].value, "DataPaper")
+
+        self._doi_database.close_database()
+
+    def test_unknown_product_type_roundtrip(self):
+        """Test that an unknown product type from DataCite is handled gracefully.
+
+        DataCite may return product types not defined in the ProductType enum
+        (e.g., "Datapaper" with lowercase 'p'). These should be preserved as-is
+        rather than raising a ValueError.
+        """
+        # Simulate an unknown type by directly manipulating the DB
+        # (as if a DataCite record with "Datapaper" was already stored)
+        unknown_type = ProductType("Datapaper")
+        self.assertEqual(unknown_type.value, "Datapaper")
+
+        doi_record = DoiRecord(
+            identifier="urn:nasa:pds:datapaper_unknown::1.0",
+            status=DoiStatus.Findable,
+            date_added=datetime.datetime.now(tz=timezone.utc),
+            date_updated=datetime.datetime.now(tz=timezone.utc),
+            submitter="img-submitter@jpl.nasa.gov",
+            title="Unknown Type Test Record",
+            type=unknown_type,
+            subtype="PDS4 Datapaper",
+            node_id="img",
+            doi="10.17189/datapaper02",
+            transaction_key="img/2020-06-15T18:42:45.653317",
+            is_latest=True,
+        )
+
+        self._doi_database.write_doi_info_to_database(doi_record)
+
+        o_query_result = self._doi_database.select_latest_rows(query_criterias={"doi": [doi_record.doi]})
+        query_result = dict(zip(o_query_result[0], o_query_result[1][0]))
+
+        # Unknown types should be preserved as-is
+        self.assertEqual(query_result["type"].value, "Datapaper")
+
+        self._doi_database.close_database()
+
+
+
+
+if __name__ == '__main__':
     unittest.main()

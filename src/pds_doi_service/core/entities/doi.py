@@ -41,6 +41,19 @@ class ProductType(str, Enum):
     DataPaper = "DataPaper"
     Other = "Other"
 
+    @classmethod
+    def _missing_(cls, value):
+        """Handle unknown product type values by returning a dynamic member.
+
+        DataCite may return product types not in the defined set (e.g., "Datapaper"
+        with a lowercase 'p', or entirely new types). Rather than raising a
+        ValueError, create a dynamic member that passes the value through as-is.
+        """
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj._name_ = value
+        return obj
+
 
 @unique
 class DoiStatus(str, Enum):
@@ -170,6 +183,8 @@ class DoiRecord:
         for k, v in d.items():
             if type(v) is datetime:
                 d[k] = v.isoformat()
+            elif isinstance(v, ProductType):
+                d[k] = v.value
             elif issubclass(type(v), Enum):
                 d[k] = v.title()
         return d
