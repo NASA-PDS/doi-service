@@ -248,7 +248,6 @@ class DOIDatabaseTest(unittest.TestCase):
         # Should only match two DOI's
         self.assertEqual(len(o_query_result[-1]), 2)
 
-
     def test_datapaper_type_roundtrip(self):
         """Test that ProductType.DataPaper can be stored and retrieved without corruption.
 
@@ -318,8 +317,6 @@ class DOIDatabaseTest(unittest.TestCase):
         self.assertEqual(query_result["type"].value, "Datapaper")
 
         self._doi_database.close_database()
-
-
 
 
 if __name__ == '__main__':
