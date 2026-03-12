@@ -333,7 +333,7 @@ class DOIDataBase:
 
             # Convert status/product type back to Enums
             row[columns.index("status")] = DoiStatus(row[columns.index("status")].lower())
-            row[columns.index("type")] = ProductType(row[columns.index("type")].capitalize())
+            row[columns.index("type")] = ProductType(row[columns.index("type")])
 
             # Convert is_latest flag back to native Python bool (sqlite returns an int)
             row[columns.index("is_latest")] = bool(row[columns.index("is_latest")])

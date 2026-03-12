@@ -382,7 +382,7 @@ class DOIDataCiteWebParser(DOIWebParser):
     def _parse_product_type(record):
         try:
             return ProductType(record["types"]["resourceTypeGeneral"])
-        except (KeyError, ValueError):
+        except KeyError:
             raise InputFormatException('Failed to parse mandatory field "product_type"')
 
     @staticmethod
