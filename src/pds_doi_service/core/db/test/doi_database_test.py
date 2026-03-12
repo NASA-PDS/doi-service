@@ -289,8 +289,8 @@ class DOIDatabaseTest(unittest.TestCase):
         (e.g., "Datapaper" with lowercase 'p'). These should be preserved as-is
         rather than raising a ValueError.
         """
-        # Simulate an unknown type by directly manipulating the DB
-        # (as if a DataCite record with "Datapaper" was already stored)
+        # Simulate an unknown product type and round-trip it through the normal
+        # write/read path (as if a DataCite record with "Datapaper" was stored)
         unknown_type = ProductType("Datapaper")
         self.assertEqual(unknown_type.value, "Datapaper")
 
