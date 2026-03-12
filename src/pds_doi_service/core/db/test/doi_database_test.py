@@ -252,7 +252,7 @@ class DOIDatabaseTest(unittest.TestCase):
     def test_datapaper_type_roundtrip(self):
         """Test that ProductType.DataPaper can be stored and retrieved without corruption.
 
-        Regression test for https://github.com/NASA-PDS/doi-service/issues/NNN:
+        Regression test for https://github.com/NASA-PDS/doi-service/issues/515:
         Previously, _normalize_rows() used .capitalize() which converted
         'DataPaper' → 'Datapaper', causing a ValueError when creating the enum.
         """
