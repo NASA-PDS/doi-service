@@ -76,6 +76,9 @@ typescript
 !.gitignore
 !.gitkeep
 
+# detect-secrets
+.secrets.new
+
 # Project-specific
 pds_doi_service.ini
 doi_service.env
