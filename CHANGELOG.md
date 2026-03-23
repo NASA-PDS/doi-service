@@ -1,12 +1,8 @@
 # Changelog
 
-## [release/3.0.5](https://github.com/NASA-PDS/doi-service/tree/release/3.0.5) (2026-03-12)
+## [release/3.0.5](https://github.com/NASA-PDS/doi-service/tree/release/3.0.5) (2026-03-23)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/3.0.6...release/3.0.5)
-
-## [release/3.0.6](https://github.com/NASA-PDS/doi-service/tree/release/3.0.6) (2026-03-12)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.4...release/3.0.6)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.4...release/3.0.5)
 
 **Defects:**
 
