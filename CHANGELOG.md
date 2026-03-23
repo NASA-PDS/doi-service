@@ -1,16 +1,16 @@
 # Changelog
 
-## [3.0.5](https://github.com/NASA-PDS/doi-service/tree/3.0.5) (2026-03-12)
+## [release/3.0.5](https://github.com/NASA-PDS/doi-service/tree/release/3.0.5) (2026-03-12)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/3.0.5...3.0.5)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/release/3.0.6...release/3.0.5)
+
+## [release/3.0.6](https://github.com/NASA-PDS/doi-service/tree/release/3.0.6) (2026-03-12)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.4...release/3.0.6)
 
 **Defects:**
 
 - `'Datapaper' is not a valid ProductType` error [\#515](https://github.com/NASA-PDS/doi-service/issues/515) [[s.medium](https://github.com/NASA-PDS/doi-service/labels/s.medium)]
-
-## [release/3.0.5](https://github.com/NASA-PDS/doi-service/tree/release/3.0.5) (2026-03-12)
-
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.4...release/3.0.5)
 
 ## [v3.0.4](https://github.com/NASA-PDS/doi-service/tree/v3.0.4) (2026-02-11)
 
