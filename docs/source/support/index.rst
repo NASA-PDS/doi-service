@@ -1,6 +1,11 @@
 🚑 Support
 ===========
 
+.. toctree::
+   :maxdepth: 2
+
+   metadata_mapping
+
 Bugs and New Features
 ---------------------
 
