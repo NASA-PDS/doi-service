@@ -15,7 +15,7 @@ page on the PDS Engineering Node site.
    :local:
    :depth: 2
 
----
+----
 
 Parsed from PDS4 Label
 -----------------------
@@ -44,9 +44,11 @@ XPath expressions use the ``pds4:`` prefix bound to ``http://pds.nasa.gov/pds4/p
      - ``/*/pds4:Identification_Area/pds4:Modification_History/pds4:Modification_Detail/pds4:modification_date``
        (earliest date if multiple present), falling back to
        ``/*/pds4:Identification_Area/pds4:Citation_Information/pds4:publication_year``
-     - Four-digit year extracted from the resolved date. For accumulating
-       collections, should reflect the year the data was **first published**
-       (recommended by ADS).
+     - Four-digit year extracted from the resolved date. Priority order:
+       (1) earliest ``modification_date``, (2) ``publication_year``,
+       (3) current UTC date as a last resort if neither field is present.
+       For accumulating collections, should reflect the year the data was
+       **first published** (recommended by ADS).
    * - ``identifiers[].identifier``
      - ``/*/pds4:Identification_Area/pds4:logical_identifier`` + ``::`` +
        ``/*/pds4:Identification_Area/pds4:version_id``
@@ -67,8 +69,11 @@ XPath expressions use the ``pds4:`` prefix bound to ``http://pds.nasa.gov/pds4/p
    * - ``contributors[]`` (other types)
      - ``/*/pds4:Identification_Area/pds4:Citation_Information/pds4:List_Contributor/pds4:Person/*``
        or ``pds4:Organization/*``
-     - Appended to the contributors list alongside editors. ``contributorType``
-       comes from the ``pds4:contributor_type`` element within the label.
+     - Parsed from the label but currently merged into ``doi.editors`` by
+       ``process_pds4_fields``. As a result, all ``List_Contributor`` entries
+       are submitted to DataCite with ``contributorType: "Editor"`` regardless
+       of the ``pds4:contributor_type`` value in the label. This is a known
+       limitation pending a future fix.
    * - ``subjects[]``
      - Extracted from ``pds4:Context_Area`` fields — see :ref:`keywords_mapping`.
      - Auto-generated and may not follow UAT vocabulary; review and clean up.
@@ -182,7 +187,7 @@ The ``product_class`` element drives both ``resourceTypeGeneral`` and
      - ``Dataset``
      - ``PDS4 Refereed Data {suffix}`` (e.g. ``PDS4 Refereed Data Observational``)
 
----
+----
 
 Auto-generated Fields
 ----------------------
@@ -220,6 +225,7 @@ be modified manually.
        - ``rs`` → Radio Science
        - ``rms`` → Ring-Moon Systems
        - ``sbn`` → Small Bodies
+       - ``unk`` → Unknown (default when no node is specified)
    * - ``rightsList``
      - Always two entries:
 
@@ -236,7 +242,7 @@ be modified manually.
    * - ``schemaVersion``
      - Always ``http://datacite.org/schema/kernel-4``.
 
----
+----
 
 Fields Requiring Manual Curation
 ----------------------------------
@@ -248,8 +254,9 @@ human judgment to populate correctly. They can be added or updated via the
 ``descriptions[]``
 ~~~~~~~~~~~~~~~~~~~
 
-If the PDS4 label's ``Citation_Information/description`` is missing or
-insufficient, provide an abstract-quality description. It should:
+The ``Citation_Information/description`` field is required in the PDS4 label —
+the parser will raise an error if it is absent. Manual curation is for
+**improving** the parsed description after reserving. A well-curated description:
 
 - Be suitable for a non-PDS audience (e.g., ADS users)
 - Expand all acronyms
