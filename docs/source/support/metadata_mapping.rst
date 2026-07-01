@@ -121,6 +121,12 @@ is parsed with the following field mappings:
      - Used to classify the role (Author, Editor, Contributor)
      -
 
+.. note::
+   The Jinja template currently hardcodes ``"nameType": "Personal"`` for all
+   editor/contributor entries in the DataCite output, regardless of whether the
+   PDS4 label specifies an ``<Organization>``. Organizational editors are output
+   correctly by name but will carry ``nameType: Personal`` until this is fixed.
+
 **Legacy — ``author_list`` (free text):**
 
 The ``/*/pds4:Identification_Area/pds4:Citation_Information/pds4:author_list``
@@ -172,9 +178,9 @@ The ``product_class`` element drives both ``resourceTypeGeneral`` and
    * - ``Product_Document``
      - ``Text``
      - ``PDS4 Refereed Document``
-   * - Any other ``Product_*``
+   * - Any other ``Product_*`` (e.g. ``Product_Observational``)
      - ``Dataset``
-     - ``PDS4 Refereed Data {suffix}``
+     - ``PDS4 Refereed Data {suffix}`` (e.g. ``PDS4 Refereed Data Observational``)
 
 ---
 
@@ -193,8 +199,9 @@ be modified manually.
    * - ``doi``
      - Assigned by DataCite at reserve time. Do **not** set or change this value.
    * - ``url``
-     - Auto-generated PDS landing page URL derived from the LIDVID.
-       Format: ``https://pds.nasa.gov/ds-view/pds/...``
+     - Auto-generated PDS landing page URL derived from the LIDVID and product
+       type. Format varies by product type, e.g.
+       ``https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?...``
    * - ``publisher``
      - Always ``NASA Planetary Data System`` (from ``OTHER.doi_publisher`` in
        the INI config).
