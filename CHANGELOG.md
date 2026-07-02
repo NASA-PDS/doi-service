@@ -1,8 +1,16 @@
 # Changelog
 
-## [release/3.0.5](https://github.com/NASA-PDS/doi-service/tree/release/3.0.5) (2026-03-23)
+## [«unknown»](https://github.com/NASA-PDS/doi-service/tree/«unknown») (2026-07-02)
 
-[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.4...release/3.0.5)
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.5...«unknown»)
+
+**Other closed issues:**
+
+- Document PDS4-to-DataCite metadata field mappings and auto-generated defaults [\#521](https://github.com/NASA-PDS/doi-service/issues/521)
+
+## [v3.0.5](https://github.com/NASA-PDS/doi-service/tree/v3.0.5) (2026-03-23)
+
+[Full Changelog](https://github.com/NASA-PDS/doi-service/compare/v3.0.4...v3.0.5)
 
 **Defects:**
 
